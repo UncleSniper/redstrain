@@ -1,0 +1,104 @@
+#include "BitArray.hpp"
+
+namespace redengine {
+namespace util {
+
+	BitArray::BitArray(size_t sizeInBits)
+			: size((sizeInBits + (ELEMENT_BITS - static_cast<size_t>(1u))) / ELEMENT_BITS),
+			tainted(static_cast<size_t>(0u)), bits(size ? new unsigned[size] : NULL) {}
+
+	BitArray::BitArray(const BitArray& array) : size(array.size), tainted(array.tainted),
+			bits(size ? new unsigned[size] : NULL) {
+		if(tainted)
+			memcpy(bits, array.bits, tainted * sizeof(unsigned));
+	}
+
+	BitArray::~BitArray() {
+		if(bits)
+			delete bits;
+	}
+
+	bool BitArray::isSet(size_t index) const {
+		if(index < tainted)
+			return !!(bits[index / ELEMENT_BITS] & (1u << (index % ELEMENT_BITS)));
+		else
+			return false;
+	}
+
+	void BitArray::set(size_t index) {
+		size_t offset = index / ELEMENT_BITS;
+		taint(offset);
+		bits[offset] |= 1u << (index % ELEMENT_BITS);
+	}
+
+	void BitArray::unset(size_t index) {
+		size_t offset = index / ELEMENT_BITS;
+		taint(offset);
+		bits[offset] &= ~(1u << (index % ELEMENT_BITS));
+	}
+
+	void BitArray::set(size_t index, bool value) {
+		size_t offset = index / ELEMENT_BITS;
+		taint(offset);
+		if(value)
+			bits[offset] |= 1u << (index % ELEMENT_BITS);
+		else
+			bits[offset] &= ~(1u << (index % ELEMENT_BITS));
+	}
+
+	void BitArray::toggle(size_t index) {
+		size_t offset = index / ELEMENT_BITS, rest = index % ELEMENT_BITS;
+		taint(offset);
+		unsigned mask = 1u << rest;
+		if(bits[offset] & mask)
+			bits[offset] &= ~mask;
+		else
+			bits[offset] |= mask;
+	}
+
+	int BitArray::compare(const BitArray& array) const {
+		size_t compareSize = tainted < array.tainted ? tainted : array.tainted;
+		if(compareSize) {
+			int order = memcmp(bits, array.bits, compareSize * sizeof(unsigned));
+			if(order)
+				return order;
+		}
+		const unsigned *begin, *end;
+		if(compareSize < size) {
+			for(begin = bits + tainted, end = bits + size; begin != end; ++begin)
+				if(*begin)
+					return 1;
+		}
+		if(compareSize < array.size) {
+			for(begin = array.bits + array.tainted, end = array.bits + array.size; begin != end; ++begin)
+				if(*begin)
+					return -1;
+		}
+		return (array.size < size) - (size < array.size);
+	}
+
+	bool BitArray::operator==(const BitArray& array) const {
+		return !compare(array);
+	}
+
+	bool BitArray::operator<(const BitArray& array) const {
+		return compare(array) < 0;
+	}
+
+	BitArray& BitArray::operator=(const BitArray& array) {
+		size_t copySize = size < array.size ? size : array.size;
+		tainted = copySize < array.tainted ? copySize : array.tainted;
+		if(tainted)
+			memcpy(bits, array.bits, tainted);
+		return *this;
+	}
+
+	bool BitArray::isClear() const {
+		const unsigned *begin = bits, *end = bits + tainted;
+		for(; begin != end; ++begin)
+			if(*begin)
+				return false;
+		return true;
+	}
+
+}}
