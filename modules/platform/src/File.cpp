@@ -11,7 +11,7 @@
 #include <string.h>
 #elif REDSTRAIN_PLATFORM_OS == REDSTRAIN_PLATFORM_OS_WINDOWS
 #include <stdint.h>
-#include "Thread.hpP"
+#include "Thread.hpp"
 #endif /* OS-specific includes */
 
 using std::string;
