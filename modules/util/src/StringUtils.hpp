@@ -7,6 +7,7 @@
 #include <vector>
 #include <sstream>
 
+#include "api.hpp"
 #include "Appender.hpp"
 
 /**
@@ -26,7 +27,7 @@ namespace util {
 	 *
 	 * @since 0.1.0
 	 */
-	class StringUtils {
+	class REDSTRAIN_UTIL_API StringUtils {
 
 	  public:
 		/**

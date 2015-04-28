@@ -13,7 +13,11 @@ using redengine::util::IntegerBounds;
 namespace redengine {
 namespace platform {
 
+	Console::Console(const File& file) : file(file) {}
+
 	Console::Console(StandardHandle handle) : file(getStandardHandle(handle), File::OUTPUT) {}
+
+	Console::Console(const Console& console) : file(console.file) {}
 
 #if REDSTRAIN_PLATFORM_OS == REDSTRAIN_PLATFORM_OS_UNIX
 

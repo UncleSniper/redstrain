@@ -20,6 +20,10 @@ using redengine::util::IntegerBits;
 namespace redengine {
 namespace platform {
 
+	File::File(Handle handle, Direction dir) : handle(handle), dir(dir) {}
+
+	File::File(const File& file) : handle(file.handle), dir(file.dir) {}
+
 #if REDSTRAIN_PLATFORM_OS == REDSTRAIN_PLATFORM_OS_UNIX
 
 	File::File(const string& path, Direction dir, bool create) : handle(INVALID_HANDLE) {

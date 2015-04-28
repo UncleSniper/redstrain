@@ -58,8 +58,8 @@ namespace platform {
 
 	  public:
 		File(const std::string&, Direction, bool = false);
-		File(Handle handle, Direction dir) : handle(handle), dir(dir) {}
-		File(const File& file) : handle(file.handle), dir(file.dir) {}
+		File(Handle, Direction);
+		File(const File&);
 
 		inline Handle getHandle() const {
 			return handle;

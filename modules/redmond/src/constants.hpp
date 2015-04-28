@@ -1,6 +1,8 @@
 #ifndef REDSTRAIN_MOD_REDMOND_CONSTANTS_HPP
 #define REDSTRAIN_MOD_REDMOND_CONSTANTS_HPP
 
+#include "api.hpp"
+
 namespace redengine {
 namespace redmond {
 
@@ -16,8 +18,8 @@ namespace redmond {
 		COMP_UNKNOWN
 	};
 
-	extern const OperatingSystem buildHostOS;
-	extern const CompilerFlavor buildCompiler;
+	REDSTRAIN_REDMOND_API extern const OperatingSystem buildHostOS;
+	REDSTRAIN_REDMOND_API extern const CompilerFlavor buildCompiler;
 
 }}
 

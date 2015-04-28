@@ -1,6 +1,8 @@
 #ifndef REDSTRAIN_MOD_UTIL_REFERENCECOUNTED_HPP
 #define REDSTRAIN_MOD_UTIL_REFERENCECOUNTED_HPP
 
+#include "api.hpp"
+
 /**
  * @file
  * Definition of the @link redengine::util::ReferenceCounted base
@@ -26,7 +28,7 @@ namespace util {
 	 *
 	 * @since 0.1.0
 	 */
-	class ReferenceCounted {
+	class REDSTRAIN_UTIL_API ReferenceCounted {
 
 	  private:
 		unsigned refcount;
@@ -39,7 +41,7 @@ namespace util {
 		 *
 		 * @since 0.1.0
 		 */
-		ReferenceCounted(const ReferenceCounted&) : refcount(1u) {}
+		ReferenceCounted(const ReferenceCounted&);
 
 	  public:
 		/**
@@ -49,7 +51,7 @@ namespace util {
 		 *
 		 * @since 0.1.0
 		 */
-		ReferenceCounted() : refcount(1u) {}
+		ReferenceCounted();
 		/**
 		 * No-operation virtual destructor. Derived classes may safely
 		 * assume that their own destructors will be called in case
@@ -57,7 +59,7 @@ namespace util {
 		 *
 		 * @since 0.1.0
 		 */
-		virtual ~ReferenceCounted() {}
+		virtual ~ReferenceCounted();
 
 		/**
 		 * Increment the reference count by one. Note that no checks

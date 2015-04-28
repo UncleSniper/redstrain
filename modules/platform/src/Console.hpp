@@ -35,9 +35,9 @@ namespace platform {
 		File file;
 
 	  public:
-		Console(const File& file) : file(file) {}
+		Console(const File&);
 		Console(StandardHandle);
-		Console(const Console& console) : file(console.file) {}
+		Console(const Console&);
 
 		inline File& getFile() {
 			return file;
