@@ -47,7 +47,7 @@
 #error REDSTRAIN_PLATFORM_ENDIANNESS must be REDSTRAIN_PLATFORM_LITTLE_ENDIAN or REDSTRAIN_PLATFORM_BIG_ENDIAN
 #endif
 
-namespace redstrain {
+namespace redengine {
 namespace platform {
 
 	template<typename IntegerT>
