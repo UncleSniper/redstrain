@@ -6,7 +6,7 @@ namespace platform {
 	DatagramSocketCloseError::DatagramSocketCloseError(DatagramSocket::ErrorCode code) : code(code) {}
 
 	DatagramSocketCloseError::DatagramSocketCloseError(const DatagramSocketCloseError& error)
-			: IOError(error), SocketError(error), SocketCloseError(error), DatagramSocketError(error),
+			: Error(error), IOError(error), SocketError(error), SocketCloseError(error), DatagramSocketError(error),
 			code(error.code) {}
 
 	REDSTRAIN_DEFINE_ERROR(DatagramSocketCloseError) {

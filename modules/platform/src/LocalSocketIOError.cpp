@@ -7,7 +7,8 @@ namespace platform {
 			: SocketIOError(dir), code(code) {}
 
 	LocalSocketIOError::LocalSocketIOError(const LocalSocketIOError& error)
-			: IOError(error), SocketError(error), SocketIOError(error), LocalSocketError(error), code(error.code) {}
+			: Error(error), IOError(error), SocketError(error), SocketIOError(error), LocalSocketError(error),
+			code(error.code) {}
 
 	REDSTRAIN_DEFINE_ERROR(LocalSocketIOError) {
 		printDirection(out);

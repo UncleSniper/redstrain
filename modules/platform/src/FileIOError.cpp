@@ -5,7 +5,7 @@ namespace platform {
 
 	FileIOError::FileIOError(File::Direction direction, File::ErrorCode code) : FileError(direction, code) {}
 
-	FileIOError::FileIOError(const FileIOError& error) : FileError(error) {}
+	FileIOError::FileIOError(const FileIOError& error) : Error(error), FileError(error) {}
 
 	REDSTRAIN_DEFINE_ERROR(FileIOError) {
 		out << "Failed to ";

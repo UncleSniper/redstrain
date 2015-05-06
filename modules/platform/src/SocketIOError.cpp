@@ -8,7 +8,7 @@ namespace platform {
 	SocketIOError::SocketIOError(Direction dir) : dir(dir) {}
 
 	SocketIOError::SocketIOError(const SocketIOError& error)
-			: IOError(error), SocketError(error), dir(error.dir) {}
+			: Error(error), IOError(error), SocketError(error), dir(error.dir) {}
 
 	void SocketIOError::printDirection(ostream& out) const {
 		out << "Failed to ";

@@ -5,7 +5,7 @@ namespace platform {
 
 	FileCloseError::FileCloseError(File::Direction direction, File::ErrorCode code) : FileError(direction, code) {}
 
-	FileCloseError::FileCloseError(const FileCloseError& error) : FileError(error) {}
+	FileCloseError::FileCloseError(const FileCloseError& error) : Error(error), FileError(error) {}
 
 	REDSTRAIN_DEFINE_ERROR(FileCloseError) {
 		out << "Failed to close file open for ";

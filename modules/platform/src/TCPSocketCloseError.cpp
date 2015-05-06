@@ -6,7 +6,7 @@ namespace platform {
 	TCPSocketCloseError::TCPSocketCloseError(TCPSocket::ErrorCode code) : code(code) {}
 
 	TCPSocketCloseError::TCPSocketCloseError(const TCPSocketCloseError& error)
-			: IOError(error), SocketError(error), SocketCloseError(error), TCPSocketError(error),
+			: Error(error), IOError(error), SocketError(error), SocketCloseError(error), TCPSocketError(error),
 			code(error.code) {}
 
 	REDSTRAIN_DEFINE_ERROR(TCPSocketCloseError) {

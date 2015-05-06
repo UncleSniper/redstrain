@@ -6,7 +6,7 @@ namespace platform {
 	TCPSocketConnectError::TCPSocketConnectError(TCPSocket::ErrorCode code) : code(code) {}
 
 	TCPSocketConnectError::TCPSocketConnectError(const TCPSocketConnectError& error)
-			: IOError(error), SocketError(error), SocketConnectError(error), TCPSocketError(error),
+			: Error(error), IOError(error), SocketError(error), SocketConnectError(error), TCPSocketError(error),
 			NetworkError(error), code(error.code) {}
 
 	REDSTRAIN_DEFINE_ERROR(TCPSocketConnectError) {

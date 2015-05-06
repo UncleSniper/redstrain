@@ -7,7 +7,7 @@ namespace platform {
 			: SocketIOError(dir), code(code) {}
 
 	DatagramSocketIOError::DatagramSocketIOError(const DatagramSocketIOError& error)
-			: IOError(error), SocketError(error), SocketIOError(error), DatagramSocketError(error),
+			: Error(error), IOError(error), SocketError(error), SocketIOError(error), DatagramSocketError(error),
 			NetworkError(error), code(error.code) {}
 
 	REDSTRAIN_DEFINE_ERROR(DatagramSocketIOError) {

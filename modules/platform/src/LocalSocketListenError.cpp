@@ -6,7 +6,7 @@ namespace platform {
 	LocalSocketListenError::LocalSocketListenError(LocalSocket::ErrorCode code) : code(code) {}
 
 	LocalSocketListenError::LocalSocketListenError(const LocalSocketListenError& error)
-			: IOError(error), SocketError(error), SocketListenError(error), LocalSocketError(error),
+			: Error(error), IOError(error), SocketError(error), SocketListenError(error), LocalSocketError(error),
 			code(error.code) {}
 
 	REDSTRAIN_DEFINE_ERROR(LocalSocketListenError) {

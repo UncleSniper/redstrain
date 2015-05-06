@@ -5,7 +5,8 @@ namespace platform {
 
 	FileAccessDeniedError::FileAccessDeniedError(Filesystem::ErrorCode code) : FilesystemError(code) {}
 
-	FileAccessDeniedError::FileAccessDeniedError(const FileAccessDeniedError& error) : FilesystemError(error) {}
+	FileAccessDeniedError::FileAccessDeniedError(const FileAccessDeniedError& error)
+			: Error(error), FilesystemError(error) {}
 
 	REDSTRAIN_DEFINE_ERROR(FileAccessDeniedError) {
 		out << "Access to file was denied: " << Filesystem::getErrorMessage(code);

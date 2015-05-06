@@ -5,7 +5,7 @@ namespace platform {
 
 	FileOpenError::FileOpenError(File::Direction direction, File::ErrorCode code) : FileError(direction, code) {}
 
-	FileOpenError::FileOpenError(const FileOpenError& error) : FileError(error) {}
+	FileOpenError::FileOpenError(const FileOpenError& error) : Error(error), FileError(error) {}
 
 	REDSTRAIN_DEFINE_ERROR(FileOpenError) {
 		out << "Failed to open file for ";

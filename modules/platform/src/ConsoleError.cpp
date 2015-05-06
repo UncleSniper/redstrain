@@ -6,7 +6,7 @@ namespace platform {
 	ConsoleError::ConsoleError(File::ErrorCode code, Operation operation) : code(code), operation(operation) {}
 
 	ConsoleError::ConsoleError(const ConsoleError& error)
-			: IOError(error), code(error.code), operation(error.operation) {}
+			: Error(error), IOError(error), code(error.code), operation(error.operation) {}
 
 	REDSTRAIN_DEFINE_ERROR(ConsoleError) {
 		out << "Failed to ";

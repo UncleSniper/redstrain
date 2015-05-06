@@ -6,7 +6,7 @@ namespace platform {
 	TCPSocketAcceptError::TCPSocketAcceptError(TCPSocket::ErrorCode code) : code(code) {}
 
 	TCPSocketAcceptError::TCPSocketAcceptError(const TCPSocketAcceptError& error)
-			: IOError(error), SocketError(error), SocketAcceptError(error), TCPSocketError(error),
+			: Error(error), IOError(error), SocketError(error), SocketAcceptError(error), TCPSocketError(error),
 			NetworkError(error), code(error.code) {}
 
 	REDSTRAIN_DEFINE_ERROR(TCPSocketAcceptError) {

@@ -7,7 +7,7 @@ namespace platform {
 
 	LibraryCloseError::LibraryCloseError(const string& msg) : LibraryError(msg) {}
 
-	LibraryCloseError::LibraryCloseError(const LibraryCloseError& error) : LibraryError(error) {}
+	LibraryCloseError::LibraryCloseError(const LibraryCloseError& error) : Error(error), LibraryError(error) {}
 
 	REDSTRAIN_DEFINE_ERROR(LibraryCloseError) {
 		out << "Failed to close library: " << msg;

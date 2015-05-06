@@ -6,7 +6,7 @@ namespace platform {
 	LocalSocketConnectError::LocalSocketConnectError(LocalSocket::ErrorCode code) : code(code) {}
 
 	LocalSocketConnectError::LocalSocketConnectError(const LocalSocketConnectError& error)
-			: IOError(error), SocketError(error), SocketConnectError(error), LocalSocketError(error),
+			: Error(error), IOError(error), SocketError(error), SocketConnectError(error), LocalSocketError(error),
 			code(error.code) {}
 
 	REDSTRAIN_DEFINE_ERROR(LocalSocketConnectError) {
