@@ -577,7 +577,6 @@ namespace platform {
 		}
 	}
 
-	/*
 	struct SIDFreer {
 
 		PSID sid;
@@ -590,7 +589,6 @@ namespace platform {
 		}
 
 	};
-	*/
 
 	struct LocalFreer {
 
@@ -605,7 +603,25 @@ namespace platform {
 
 	};
 
+	static void getMountPointForFilename(const string& path, string& mountPoint) {
+		DWORD size = GetFullPathName(path.c_str(), static_cast<DWORD>(0u), NULL, NULL);
+		if(!size)
+			bail();
+		DeleteArray buffer(new char[size]);
+		if(!GetVolumePathName(path.c_str(), *buffer, size))
+			bail();
+		mountPoint.assign(*buffer);
+	}
+
+	static void getVolumeIDForMountPoint(const string& mountPoint, string& volumeID) {
+		char buffer[50];
+		if(!GetVolumeNameForVolumeMountPoint(mountPoint.c_str(), buffer, static_cast<DWORD>(sizeof(buffer))))
+			bail();
+		volumeID.assign(buffer);
+	}
+
 	void Filesystem::stat(const string& path, Stat& info, bool ofLink) {
+		// get type
 		DWORD attrs = GetFileAttributes(path.c_str());
 		if(attrs == INVALID_FILE_ATTRIBUTES)
 			bail();
@@ -628,20 +644,30 @@ namespace platform {
 		if(error != ERROR_SUCCESS)
 			bail();
 		LocalFreer freeSecurity(security);
-		//SIDFreer freeOwnerSID(nativeOwner), freeGroupSID(nativeGroup);
+		// need not use SIDFreer on nativeOwner nor nativeGroup,
+		// as the SID objects are part of the 'security' object
+		// and will be freed by freeSecurity
 		if(!CloseHandle(file))
 			bail();
 		LPTSTR sidString;
+		// get owner
 		if(!ConvertSidToStringSid(nativeOwner, &sidString))
 			bail();
 		LocalFreer freeSidString(sidString);
 		info.setOwner(sidString);
 		LocalFree(sidString);
 		freeSidString.object = NULL;
+		// get group
 		if(!ConvertSidToStringSid(nativeGroup, &sidString))
 			bail();
 		freeSidString.object = sidString;
 		info.setGroup(sidString);
+		// get device
+		string mountPoint, volumeID;
+		getMountPointForFilename(path, mountPoint);
+		getVolumeIDForMountPoint(mountPoint, volumeID);
+		stat.setDevice(volumeID);
+		// get permissions
 		//TODO
 		//////
 		info.setPermissions(native.st_mode & 0777);

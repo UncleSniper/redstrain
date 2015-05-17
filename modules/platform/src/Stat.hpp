@@ -27,6 +27,7 @@ namespace platform {
 #elif REDSTRAIN_PLATFORM_OS == REDSTRAIN_PLATFORM_OS_WINDOWS
 		typedef std::string UserID;
 		typedef std::string GroupID;
+		typedef std::string DeviceID;
 #else /* OS not implemented */
 #error Platform not supported
 #endif /* OS-specific types */
@@ -39,6 +40,7 @@ namespace platform {
 #elif REDSTRAIN_PLATFORM_OS == REDSTRAIN_PLATFORM_OS_WINDOWS
 		static const std::string NO_USER;
 		static const std::string NO_GROUP;
+		static const std::string NO_DEVICE;
 #else /* OS not implemented */
 #error Platform not supported
 #endif /* OS-specific constants */

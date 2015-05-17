@@ -8,6 +8,7 @@ namespace platform {
 
 	const Stat::UserID Stat::NO_USER;
 	const Stat::GroupID State::NO_GROUP;
+	const Stat::DeviceID State::NO_DEVICE;
 
 #endif /* OS-specific definitions */
 
