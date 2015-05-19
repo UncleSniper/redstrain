@@ -116,6 +116,7 @@ namespace util {
 	void StringUtils::split(const string& haystack, const string& needle, Appender<string>& sink, int flags) {
 		if(needle.empty()) {
 			sink.append(haystack);
+			sink.doneAppending();
 			return;
 		}
 		bool atFront = true;
@@ -183,6 +184,7 @@ namespace util {
 			for(; skipped; --skipped)
 				sink.append(needle);
 		}
+		sink.doneAppending();
 	}
 
 	/**
