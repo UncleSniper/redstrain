@@ -173,6 +173,7 @@ namespace io {
 					writeIndex -= segmentSize;
 				}
 			}
+			destroy.release();
 			return restSize;
 		}
 
