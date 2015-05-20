@@ -8,7 +8,7 @@
 namespace redengine {
 namespace io {
 
-	class CPPArrayOutputStream : public OutputStream<char> {
+	class REDSTRAIN_IO_API CPPArrayOutputStream : public OutputStream<char> {
 
 	  private:
 		enum State {
@@ -17,7 +17,7 @@ namespace io {
 			ENDED
 		};
 
-		class BeginningAppender : public util::Appender<std::string> {
+		class REDSTRAIN_IO_API BeginningAppender : public util::Appender<std::string> {
 
 		  private:
 			FormattedOutputStream<char>& output;
@@ -39,7 +39,7 @@ namespace io {
 
 		};
 
-		class EndingAppender : public util::Appender<std::string> {
+		class REDSTRAIN_IO_API EndingAppender : public util::Appender<std::string> {
 
 		  private:
 			enum State {

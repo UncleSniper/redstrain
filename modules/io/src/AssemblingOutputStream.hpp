@@ -28,7 +28,7 @@ namespace io {
 		typedef std::list<Segment*> Segments;
 		typedef Segments::const_iterator SegmentIterator;
 
-		class DeleteSegments {
+		class REDSTRAIN_IO_API DeleteSegments {
 
 		  private:
 			Segments* segments;
