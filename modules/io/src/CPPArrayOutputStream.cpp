@@ -119,7 +119,7 @@ namespace io {
 			unsigned code = static_cast<unsigned>(static_cast<unsigned char>(*buffer));
 			block[3] = HEX_DIGITS[code / 16u];
 			block[4] = HEX_DIGITS[code % 16u];
-			formatted.write(block, sizeof(block));
+			formatted.write(block, sizeof(block) - static_cast<size_t>(1u));
 			++columns;
 		}
 	}
