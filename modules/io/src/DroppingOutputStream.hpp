@@ -43,12 +43,16 @@ namespace io {
 					goto withTargetOffset;
 				default:
 					throw error::IllegalArgumentError("Not a valid SeekWhence: "
-							+ redengine::util::StringUtils::toString(static_cast<int>(whence)));
+							+ util::StringUtils::toString(static_cast<int>(whence)));
 			}
 		}
 
 		virtual size_t tell() const {
 			return offset;
+		}
+
+		inline size_t getDataSize() const {
+			return size;
 		}
 
 	};
