@@ -29,4 +29,8 @@ namespace error {
 		return ss.str();
 	}
 
+	const char* Error::getTypename() {
+		return "Error";
+	}
+
 }}
