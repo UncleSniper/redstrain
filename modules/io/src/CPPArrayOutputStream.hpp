@@ -67,8 +67,6 @@ namespace io {
 	  private:
 		void beginArray();
 
-		virtual void append(const std::string&);
-
 	  protected:
 		CPPArrayOutputStream(const CPPArrayOutputStream&);
 
