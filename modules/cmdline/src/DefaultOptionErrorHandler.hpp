@@ -10,7 +10,7 @@ namespace cmdline {
 
 	class CommandLineError;
 
-	class DefaultOptionErrorHandler : public OptionErrorHandler {
+	class REDSTRAIN_CMDLINE_API DefaultOptionErrorHandler : public OptionErrorHandler {
 
 	  private:
 		std::string progname;

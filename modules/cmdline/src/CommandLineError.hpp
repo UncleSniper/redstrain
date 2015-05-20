@@ -3,10 +3,12 @@
 
 #include <redstrain/error/Error.hpp>
 
+#include "api.hpp"
+
 namespace redengine {
 namespace cmdline {
 
-	class CommandLineError : public error::Error {
+	class REDSTRAIN_CMDLINE_API CommandLineError : public error::Error {
 
 	  public:
 		CommandLineError();

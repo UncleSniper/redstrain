@@ -6,7 +6,7 @@
 namespace redengine {
 namespace cmdline {
 
-	class ExcessOptionArgumentError : public OptionError {
+	class REDSTRAIN_CMDLINE_API ExcessOptionArgumentError : public OptionError {
 
 	  public:
 		ExcessOptionArgumentError(const std::string&, OptionType, char);

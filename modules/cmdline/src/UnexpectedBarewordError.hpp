@@ -6,7 +6,7 @@
 namespace redengine {
 namespace cmdline {
 
-	class UnexpectedBarewordError : public CommandLineError {
+	class REDSTRAIN_CMDLINE_API UnexpectedBarewordError : public CommandLineError {
 
 	  private:
 		const std::string word;

@@ -6,7 +6,7 @@
 namespace redengine {
 namespace cmdline {
 
-	class ConflictingOptionsError : public CommandLineError {
+	class REDSTRAIN_CMDLINE_API ConflictingOptionsError : public CommandLineError {
 
 	  private:
 		const std::string nameA, nameB;

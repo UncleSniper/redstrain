@@ -6,7 +6,7 @@
 namespace redengine {
 namespace cmdline {
 
-	class MissingOptionArgumentError : public OptionError {
+	class REDSTRAIN_CMDLINE_API MissingOptionArgumentError : public OptionError {
 
 	  public:
 		MissingOptionArgumentError(const std::string&, OptionType, char);

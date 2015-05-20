@@ -6,7 +6,7 @@
 namespace redengine {
 namespace cmdline {
 
-	class AmbiguousOptionError : public OptionError {
+	class REDSTRAIN_CMDLINE_API AmbiguousOptionError : public OptionError {
 
 	  public:
 		AmbiguousOptionError(const std::string&, char);

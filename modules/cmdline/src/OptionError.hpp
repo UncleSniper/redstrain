@@ -6,7 +6,7 @@
 namespace redengine {
 namespace cmdline {
 
-	class OptionError : public CommandLineError {
+	class REDSTRAIN_CMDLINE_API OptionError : public CommandLineError {
 
 	  public:
 		enum OptionType {

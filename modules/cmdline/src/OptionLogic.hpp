@@ -4,12 +4,14 @@
 #include <map>
 #include <string>
 
+#include "api.hpp"
+
 namespace redengine {
 namespace cmdline {
 
 	class WordAction;
 
-	class OptionLogic {
+	class REDSTRAIN_CMDLINE_API OptionLogic {
 
 	  public:
 		enum Flags {
@@ -35,7 +37,7 @@ namespace cmdline {
 			INLINE_LONG_CONFLICT_IS_ERROR
 		};
 
-		class Option {
+		class REDSTRAIN_CMDLINE_API Option {
 
 		  private:
 			Arity arity;

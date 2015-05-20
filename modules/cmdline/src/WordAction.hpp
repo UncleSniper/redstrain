@@ -3,10 +3,12 @@
 
 #include <string>
 
+#include "api.hpp"
+
 namespace redengine {
 namespace cmdline {
 
-	class WordAction {
+	class REDSTRAIN_CMDLINE_API WordAction {
 
 	  public:
 		WordAction();

@@ -6,7 +6,7 @@
 namespace redengine {
 namespace cmdline {
 
-	class UnrecognizedOptionError : public OptionError {
+	class REDSTRAIN_CMDLINE_API UnrecognizedOptionError : public OptionError {
 
 	  public:
 		UnrecognizedOptionError(const std::string&, OptionType, char);

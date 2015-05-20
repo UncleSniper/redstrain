@@ -6,7 +6,7 @@
 namespace redengine {
 namespace cmdline {
 
-	class MissingBarewordError : public CommandLineError {
+	class REDSTRAIN_CMDLINE_API MissingBarewordError : public CommandLineError {
 
 	  private:
 		const std::string word;

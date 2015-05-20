@@ -1,6 +1,8 @@
 #ifndef REDSTRAIN_MOD_CMDLINE_OPTIONERRORHANDLER_HPP
 #define REDSTRAIN_MOD_CMDLINE_OPTIONERRORHANDLER_HPP
 
+#include "api.hpp"
+
 namespace redengine {
 namespace cmdline {
 
@@ -12,7 +14,7 @@ namespace cmdline {
 	class MissingBarewordError;
 	class ConflictingOptionsError;
 
-	class OptionErrorHandler {
+	class REDSTRAIN_CMDLINE_API OptionErrorHandler {
 
 	  public:
 		OptionErrorHandler();

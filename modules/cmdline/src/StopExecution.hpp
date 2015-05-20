@@ -1,10 +1,12 @@
 #ifndef REDSTRAIN_MOD_CMDLINE_STOPEXECUTION_HPP
 #define REDSTRAIN_MOD_CMDLINE_STOPEXECUTION_HPP
 
+#include "api.hpp"
+
 namespace redengine {
 namespace cmdline {
 
-	class StopExecution {
+	class REDSTRAIN_CMDLINE_API StopExecution {
 
 	  private:
 		const int status;

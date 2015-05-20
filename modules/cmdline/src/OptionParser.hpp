@@ -11,7 +11,7 @@
 namespace redengine {
 namespace cmdline {
 
-	class OptionParser : public WordAction {
+	class REDSTRAIN_CMDLINE_API OptionParser : public WordAction {
 
 	  public:
 		typedef std::vector<std::string> Words;
