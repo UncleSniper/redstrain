@@ -370,6 +370,7 @@ namespace platform {
 		closer.directory = NULL;
 		if(closedir(dir))
 			bail();
+		sink.doneAppending();
 	}
 
 	void Filesystem::truncate(const string& path, size_t size) {
@@ -519,6 +520,7 @@ namespace platform {
 
 	void Filesystem::listRoots(Appender<string>& sink) {
 		sink.append("");
+		sink.doneAppending();
 	}
 
 	void Filesystem::mknod(const string& path, Stat::Type type, int permissions, Stat::DeviceID device) {
@@ -974,6 +976,7 @@ namespace platform {
 		closer.directory = NULL;
 		if(closedir(dir))
 			bail();
+		sink.doneAppending();
 	}
 
 	void Filesystem::truncate(const string& path, size_t size) {
@@ -1123,6 +1126,7 @@ namespace platform {
 
 	void Filesystem::listRoots(Appender<string>& sink) {
 		sink.append("");
+		sink.doneAppending();
 	}
 
 	void Filesystem::mknod(const string& path, Stat::Type type, int permissions, Stat::DeviceID device) {

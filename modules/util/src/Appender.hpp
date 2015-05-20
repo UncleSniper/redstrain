@@ -97,6 +97,8 @@ namespace util {
 		 */
 		virtual void append(const ElementT& element) = 0;
 
+		virtual void doneAppending() {}
+
 	};
 
 }}
