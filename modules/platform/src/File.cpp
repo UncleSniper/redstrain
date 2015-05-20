@@ -50,7 +50,7 @@ namespace platform {
 		}
 		if(create)
 			flags |= O_CREAT;
-		handle = ::open(path.c_str(), flags);
+		handle = ::open(path.c_str(), flags, static_cast<mode_t>(0644));
 		if(handle == INVALID_HANDLE)
 			throw FileOpenError(dir, errno);
 	}
