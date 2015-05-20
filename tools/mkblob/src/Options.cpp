@@ -1,6 +1,7 @@
 #include <iostream>
 #include <redstrain/cmdline/StopExecution.hpp>
 #include <redstrain/io/CPPArrayOutputStream.hpp>
+#include <redstrain/cmdline/UnexpectedBarewordError.hpp>
 
 #include "Options.hpp"
 
@@ -9,6 +10,7 @@ using std::endl;
 using std::string;
 using redengine::cmdline::StopExecution;
 using redengine::io::CPPArrayOutputStream;
+using redengine::cmdline::UnexpectedBarewordError;
 
 Options::Options(const Options& options) : barewordCount(options.barewordCount), progname(options.progname),
 		infile(options.infile), outfile(options.outfile), varname(options.varname) {}
@@ -20,8 +22,10 @@ void Options::usage() {
 	cout
 		<< "Usage: " << progname << " [options] [input-file [output-file]]" <<  endl
 		<< "Options:" << endl
-		<< "    --variable NAME    name the generated constant NAME instead" << endl;
-	//TODO
+		<< "    --variable NAME    name the generated constant NAME instead of the default" << endl
+		<< "                       of '" << CPPArrayOutputStream::DEFAULT_VARIABLE_NAME << '\'' << endl
+		<< "    -n NAME            same as --variable" << endl
+		<< "    --help             print this helpful message and quit" << endl;
 	throw StopExecution(0);
 }
 
@@ -30,9 +34,17 @@ void Options::setVariableName(const string& name) {
 }
 
 void Options::addBareword(const string& word) {
-	//TODO
+	switch(barewordCount) {
+		case 0u:
+			infile = word;
+			break;
+		case 1u:
+			outfile = word;
+			break;
+		default:
+			throw UnexpectedBarewordError(word);
+	}
+	++barewordCount;
 }
 
-void Options::checkBarewords() {
-	//TODO
-}
+void Options::checkBarewords() {}
