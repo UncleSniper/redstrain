@@ -44,23 +44,29 @@ namespace io {
 	}
 
 	CPPArrayOutputStream::EndingAppender::EndingAppender(FormattedOutputStream<char>& output)
-			: output(output), pristine(true) {}
+			: output(output), state(PRISTINE) {}
 
 	CPPArrayOutputStream::EndingAppender::EndingAppender(const EndingAppender& appender)
-			: Appender(appender), output(appender.output), pristine(appender.pristine) {}
+			: Appender(appender), output(appender.output), state(appender.state) {}
 
 	void CPPArrayOutputStream::EndingAppender::append(const string& part) {
 		if(part.empty())
 			return;
-		if(pristine) {
-			output.endLine();
-			pristine = false;
+		switch(state) {
+			case PRISTINE:
+				state = CACHED_ONLY;
+				break;
+			case CACHED_ONLY:
+				output.endLine();
+				state = PRINTED;
+			case PRINTED:
+				output.print("}");
+				break;
 		}
-		output.print("}");
 	}
 
 	void CPPArrayOutputStream::EndingAppender::doneAppending() {
-		if(!pristine)
+		if(state == PRINTED)
 			output.endLine();
 	}
 
@@ -108,6 +114,8 @@ namespace io {
 			}
 			else if(columns)
 				formatted.print(", ");
+			else
+				formatted.print("\t\t" + !needsIndent);
 			unsigned code = static_cast<unsigned>(static_cast<unsigned char>(*buffer));
 			block[3] = HEX_DIGITS[code / 16u];
 			block[4] = HEX_DIGITS[code % 16u];
@@ -122,7 +130,7 @@ namespace io {
 		needsIndent = !beginner.isPristine();
 		formatted.print("\tconst char " + !needsIndent);
 		formatted.print(beginner.getVariableSimpleName());
-		formatted.println(" = {");
+		formatted.println("[] = {");
 	}
 
 	void CPPArrayOutputStream::endArray() {

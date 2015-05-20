@@ -42,8 +42,15 @@ namespace io {
 		class EndingAppender : public util::Appender<std::string> {
 
 		  private:
+			enum State {
+				PRISTINE,
+				CACHED_ONLY,
+				PRINTED
+			};
+
+		  private:
 			FormattedOutputStream<char>& output;
-			bool pristine;
+			State state;
 
 		  public:
 			EndingAppender(FormattedOutputStream<char>&);
