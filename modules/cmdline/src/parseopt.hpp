@@ -61,7 +61,7 @@ namespace cmdline {
 			return mainFunction(errorHandler.getProgramName(), *logic.getBaseObject());
 		}
 		catch(const error::Error& error) {
-			std::cerr << platform::Pathname::basename(*argv) << ": ";
+			std::cerr << platform::Pathname::basename(*argv) << ": " << error.getErrorType() << ": ";
 			error.printMessage(std::cerr);
 			std::cerr << std::endl;
 		}
