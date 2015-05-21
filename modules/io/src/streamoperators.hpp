@@ -332,20 +332,16 @@ namespace io {
 				= stream.template getConfiguration<NumberPrintingOutputStreamConfig<RecordT> >();
 		switch(config.getBase()) {
 			case BINARY:
-				printInteger<RecordT, short, 2u>(stream, value,
-						config.getWidth(), config.getPadRecord());
+				printInteger<RecordT, short, 2u>(stream, value, config.getWidth(), config.getPadRecord());
 				break;
 			case OCTAL:
-				printInteger<RecordT, short, 8u>(stream, value,
-						config.getWidth(), config.getPadRecord());
+				printInteger<RecordT, short, 8u>(stream, value, config.getWidth(), config.getPadRecord());
 				break;
 			case HEXADECIMAL:
-				printInteger<RecordT, short, 16u>(stream, value,
-						config.getWidth(), config.getPadRecord());
+				printInteger<RecordT, short, 16u>(stream, value, config.getWidth(), config.getPadRecord());
 				break;
 			default:
-				printInteger<RecordT, short, 10u>(stream, value,
-						config.getWidth(), config.getPadRecord());
+				printInteger<RecordT, short, 10u>(stream, value, config.getWidth(), config.getPadRecord());
 				break;
 		}
 		return stream;
@@ -363,20 +359,16 @@ namespace io {
 				= stream.template getConfiguration<NumberPrintingOutputStreamConfig<RecordT> >();
 		switch(config.getBase()) {
 			case BINARY:
-				printInteger<RecordT, unsigned short, 2u>(stream, value,
-						config.getWidth(), config.getPadRecord());
+				printInteger<RecordT, unsigned short, 2u>(stream, value, config.getWidth(), config.getPadRecord());
 				break;
 			case OCTAL:
-				printInteger<RecordT, unsigned short, 8u>(stream, value,
-						config.getWidth(), config.getPadRecord());
+				printInteger<RecordT, unsigned short, 8u>(stream, value, config.getWidth(), config.getPadRecord());
 				break;
 			case HEXADECIMAL:
-				printInteger<RecordT, unsigned short, 16u>(stream, value,
-						config.getWidth(), config.getPadRecord());
+				printInteger<RecordT, unsigned short, 16u>(stream, value, config.getWidth(), config.getPadRecord());
 				break;
 			default:
-				printInteger<RecordT, unsigned short, 10u>(stream, value,
-						config.getWidth(), config.getPadRecord());
+				printInteger<RecordT, unsigned short, 10u>(stream, value, config.getWidth(), config.getPadRecord());
 				break;
 		}
 		return stream;
@@ -393,20 +385,16 @@ namespace io {
 				= stream.template getConfiguration<NumberPrintingOutputStreamConfig<RecordT> >();
 		switch(config.getBase()) {
 			case BINARY:
-				printInteger<RecordT, int, 2u>(stream, value,
-						config.getWidth(), config.getPadRecord());
+				printInteger<RecordT, int, 2u>(stream, value, config.getWidth(), config.getPadRecord());
 				break;
 			case OCTAL:
-				printInteger<RecordT, int, 8u>(stream, value,
-						config.getWidth(), config.getPadRecord());
+				printInteger<RecordT, int, 8u>(stream, value, config.getWidth(), config.getPadRecord());
 				break;
 			case HEXADECIMAL:
-				printInteger<RecordT, int, 16u>(stream, value,
-						config.getWidth(), config.getPadRecord());
+				printInteger<RecordT, int, 16u>(stream, value, config.getWidth(), config.getPadRecord());
 				break;
 			default:
-				printInteger<RecordT, int, 10u>(stream, value,
-						config.getWidth(), config.getPadRecord());
+				printInteger<RecordT, int, 10u>(stream, value, config.getWidth(), config.getPadRecord());
 				break;
 		}
 		return stream;
@@ -424,20 +412,16 @@ namespace io {
 				= stream.template getConfiguration<NumberPrintingOutputStreamConfig<RecordT> >();
 		switch(config.getBase()) {
 			case BINARY:
-				printInteger<RecordT, unsigned int, 2u>(stream, value,
-						config.getWidth(), config.getPadRecord());
+				printInteger<RecordT, unsigned int, 2u>(stream, value, config.getWidth(), config.getPadRecord());
 				break;
 			case OCTAL:
-				printInteger<RecordT, unsigned int, 8u>(stream, value,
-						config.getWidth(), config.getPadRecord());
+				printInteger<RecordT, unsigned int, 8u>(stream, value, config.getWidth(), config.getPadRecord());
 				break;
 			case HEXADECIMAL:
-				printInteger<RecordT, unsigned int, 16u>(stream, value,
-						config.getWidth(), config.getPadRecord());
+				printInteger<RecordT, unsigned int, 16u>(stream, value, config.getWidth(), config.getPadRecord());
 				break;
 			default:
-				printInteger<RecordT, unsigned int, 10u>(stream, value,
-						config.getWidth(), config.getPadRecord());
+				printInteger<RecordT, unsigned int, 10u>(stream, value, config.getWidth(), config.getPadRecord());
 				break;
 		}
 		return stream;
@@ -454,20 +438,16 @@ namespace io {
 				= stream.template getConfiguration<NumberPrintingOutputStreamConfig<RecordT> >();
 		switch(config.getBase()) {
 			case BINARY:
-				printInteger<RecordT, long, 2u>(stream, value,
-						config.getWidth(), config.getPadRecord());
+				printInteger<RecordT, long, 2u>(stream, value, config.getWidth(), config.getPadRecord());
 				break;
 			case OCTAL:
-				printInteger<RecordT, long, 8u>(stream, value,
-						config.getWidth(), config.getPadRecord());
+				printInteger<RecordT, long, 8u>(stream, value, config.getWidth(), config.getPadRecord());
 				break;
 			case HEXADECIMAL:
-				printInteger<RecordT, long, 16u>(stream, value,
-						config.getWidth(), config.getPadRecord());
+				printInteger<RecordT, long, 16u>(stream, value, config.getWidth(), config.getPadRecord());
 				break;
 			default:
-				printInteger<RecordT, long, 10u>(stream, value,
-						config.getWidth(), config.getPadRecord());
+				printInteger<RecordT, long, 10u>(stream, value, config.getWidth(), config.getPadRecord());
 				break;
 		}
 		return stream;
@@ -485,20 +465,16 @@ namespace io {
 				= stream.template getConfiguration<NumberPrintingOutputStreamConfig<RecordT> >();
 		switch(config.getBase()) {
 			case BINARY:
-				printInteger<RecordT, unsigned long, 2u>(stream, value,
-						config.getWidth(), config.getPadRecord());
+				printInteger<RecordT, unsigned long, 2u>(stream, value, config.getWidth(), config.getPadRecord());
 				break;
 			case OCTAL:
-				printInteger<RecordT, unsigned long, 8u>(stream, value,
-						config.getWidth(), config.getPadRecord());
+				printInteger<RecordT, unsigned long, 8u>(stream, value, config.getWidth(), config.getPadRecord());
 				break;
 			case HEXADECIMAL:
-				printInteger<RecordT, unsigned long, 16u>(stream, value,
-						config.getWidth(), config.getPadRecord());
+				printInteger<RecordT, unsigned long, 16u>(stream, value, config.getWidth(), config.getPadRecord());
 				break;
 			default:
-				printInteger<RecordT, unsigned long, 10u>(stream, value,
-						config.getWidth(), config.getPadRecord());
+				printInteger<RecordT, unsigned long, 10u>(stream, value, config.getWidth(), config.getPadRecord());
 				break;
 		}
 		return stream;
@@ -516,20 +492,16 @@ namespace io {
 				= stream.template getConfiguration<NumberPrintingOutputStreamConfig<RecordT> >();
 		switch(config.getBase()) {
 			case BINARY:
-				printInteger<RecordT, long long, 2u>(stream, value,
-						config.getWidth(), config.getPadRecord());
+				printInteger<RecordT, long long, 2u>(stream, value, config.getWidth(), config.getPadRecord());
 				break;
 			case OCTAL:
-				printInteger<RecordT, long long, 8u>(stream, value,
-						config.getWidth(), config.getPadRecord());
+				printInteger<RecordT, long long, 8u>(stream, value, config.getWidth(), config.getPadRecord());
 				break;
 			case HEXADECIMAL:
-				printInteger<RecordT, long long, 16u>(stream, value,
-						config.getWidth(), config.getPadRecord());
+				printInteger<RecordT, long long, 16u>(stream, value, config.getWidth(), config.getPadRecord());
 				break;
 			default:
-				printInteger<RecordT, long long, 10u>(stream, value,
-						config.getWidth(), config.getPadRecord());
+				printInteger<RecordT, long long, 10u>(stream, value, config.getWidth(), config.getPadRecord());
 				break;
 		}
 		return stream;
