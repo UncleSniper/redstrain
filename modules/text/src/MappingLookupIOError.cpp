@@ -1,11 +1,11 @@
 #include "MappingLookupIOError.hpp"
 
-using redstrain::error::IOError;
+using redengine::error::IOError;
 
 namespace redengine {
 namespace text {
 
-	MappingLookupIOError(IOError* cause) : cause(cause) {
+	MappingLookupIOError::MappingLookupIOError(IOError* cause) : cause(cause) {
 		if(cause)
 			cause->ref();
 	}

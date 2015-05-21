@@ -1,6 +1,7 @@
 #ifndef REDSTRAIN_MOD_TEXT_ENCODER16_HPP
 #define REDSTRAIN_MOD_TEXT_ENCODER16_HPP
 
+#include "api.hpp"
 #include "types.hpp"
 
 namespace redengine {

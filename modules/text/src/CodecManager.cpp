@@ -148,10 +148,10 @@ namespace text {
 
 	void CodecManager::registerBuiltins() {
 		Unref<Encoder16Factory> enc16factory(new DefaultCodecFactory<Encoder16, UTF8Encoder16>);
-		setEncoder16Factory("UTF-8", enc16factory);
+		setEncoder16Factory("UTF-8", *enc16factory);
 		enc16factory.set()->unref();
 		Unref<Decoder16Factory> dec16factory(new DefaultCodecFactory<Decoder16, UTF8Decoder16>);
-		setDecoder16Factory("UTF-8", dec16factory);
+		setDecoder16Factory("UTF-8", *dec16factory);
 		dec16factory.set()->unref();
 	}
 
