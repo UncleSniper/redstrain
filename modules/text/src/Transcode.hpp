@@ -13,13 +13,16 @@ namespace text {
 	class Encoder16;
 	class Decoder16;
 
-	class REDSTRAIN_TEXT_API Transcode {
+	struct REDSTRAIN_TEXT_API Transcode {
 
 		static size_t encode(io::InputStream<Char16>&, io::OutputStream<char>&, Encoder16&);
 		static size_t decode(io::InputStream<char>&, io::OutputStream<Char16>&, Decoder16&);
 
 		static void encode(const String16&, std::string&, Encoder16&);
 		static void decode(const std::string&, String16&, Decoder16&);
+
+		static String16 utf8ToBMP(const std::string&);
+		static std::string bmpToUTF8(const String16&);
 
 	};
 

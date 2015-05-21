@@ -432,7 +432,7 @@ namespace util {
 			}
 		}
 		if(skipped && !(flags & TRIM_BACK))
-			result.append(reinterpret_cast<const char*>(skipped));
+			result.append(reinterpret_cast<const char*>(skipped), static_cast<string::size_type>(end - skipped));
 		return result;
 	}
 

@@ -7,10 +7,10 @@ namespace redengine {
 namespace io {
 
 	enum NumberBase {
-		BINARY,
-		OCTAL,
-		DECIMAL,
-		HEXADECIMAL
+		BINARY = 2,
+		OCTAL = 8,
+		DECIMAL = 10,
+		HEXADECIMAL = 16
 	};
 
 	template<typename RecordT>

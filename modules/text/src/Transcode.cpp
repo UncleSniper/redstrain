@@ -2,8 +2,8 @@
 #include <redstrain/io/StringOutputStream.hpp>
 
 #include "Transcode.hpp"
-#include "Encoder16.hpp"
-#include "Decoder16.hpp"
+#include "UTF8Encoder16.hpp"
+#include "UTF8Decoder16.hpp"
 #include "tweaks.hpp"
 
 using std::string;
@@ -66,6 +66,24 @@ namespace text {
 		MemoryInputStream<char> source(input.data(), static_cast<size_t>(input.length()));
 		StringOutputStream<Char16> sink(output);
 		Transcode::decode(source, sink, codec);
+	}
+
+	String16 Transcode::utf8ToBMP(const string& str) {
+		UTF8Decoder16 codec;
+		String16 result;
+		Transcode::decode(str, result, codec);
+		return result;
+	}
+
+	string Transcode::bmpToUTF8(const String16& str) {
+		UTF8Encoder16 codec;
+		string result;
+		Transcode::encode(str, result, codec);
+		return result;
+	}
+
+	string _renderNumber16ForError(const String16& number) {
+		return Transcode::bmpToUTF8(number);
 	}
 
 }}

@@ -77,7 +77,7 @@ namespace text {
 				else {
 					for(u = 0u; u < 15u; ++u)
 						proto.writeUInt32(data.children[u] ? ids[data.children[u]]
-								: usdo::util::IntegerBounds<uint32_t>::MAX);
+								: util::IntegerBounds<uint32_t>::MAX);
 				}
 			}
 
@@ -109,7 +109,7 @@ namespace text {
 			for(; remaining; --remaining) {
 				if(!*root)
 					*root = new Trie;
-				root = (*root)->data.children + ((value >> ((remaining - 1u) * 4u)) & static_Cast<CharT>(0x0Fu));
+				root = (*root)->data.children + ((value >> ((remaining - 1u) * 4u)) & static_cast<CharT>(0x0Fu));
 				value >>= 4;
 			}
 			*root = new Trie(eight);
@@ -142,7 +142,7 @@ namespace text {
 				encTrie->saveTo(proto, ids);
 			else {
 				for(u = 0u; u < 15u; ++u)
-					proto.writeUInt32(usdo::util::IntegerBounds<uint32_t>::MAX);
+					proto.writeUInt32(util::IntegerBounds<uint32_t>::MAX);
 			}
 		}
 
