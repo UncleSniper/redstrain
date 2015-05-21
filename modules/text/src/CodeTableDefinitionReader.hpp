@@ -75,8 +75,9 @@ namespace text {
 					io::DefaultNumberErrorRenderer<DefinitionCharT>
 				>(line, io::HEXADECIMAL);
 				sink.mapChar(static_cast<char>(static_cast<unsigned char>(eight)), value);
-				if(++eight >= 256u)
+				if(++eight > 256u)
 					throw TooManyCodeTableEntriesError();
+				line.clear();
 			}
 			if(eight < 256u)
 				throw TooFewCodeTableEntriesError(eight);
