@@ -1,6 +1,7 @@
 #ifndef REDSTRAIN_MOD_TEXT_CACHEDCODETABLE_HPP
 #define REDSTRAIN_MOD_TEXT_CACHEDCODETABLE_HPP
 
+#include <map>
 #include <cstring>
 #include <redstrain/util/Delete.hpp>
 #include <redstrain/protostr/ProtocolReader.hpp>
@@ -51,6 +52,33 @@ namespace text {
 					if(data.children[u])
 						trie->data.children[u] = data.children[u]->clone();
 				return trie.set();
+			}
+
+			void mapPointers(std::map<const Trie*, uint32_t>& map) const {
+				uint32_t id = static_cast<uint32_t>(map.size());
+				map[this] = id;
+				if(isLeaf)
+					return;
+				unsigned u;
+				for(u = 0u; u < 16u; ++u)
+					if(data.children[u])
+						data.children[u]->mapPointers(map);
+			}
+
+			void saveTo(protostr::ProtocolWriter& proto, std::map<const Trie*, uint32_t>& ids) {
+				unsigned u;
+				if(isLeaf) {
+					proto.writeInt8(data.value);
+					for(u = 0u; u < 3u; ++u)
+						proto.writeInt8(static_cast<int8_t>(0));
+					for(u = 0u; u < 15u; ++u)
+						proto.writeUInt32(static_cast<uint32_t>(0u));
+				}
+				else {
+					for(u = 0u; u < 15u; ++u)
+						proto.writeUInt32(data.children[u] ? ids[data.children[u]]
+								: usdo::util::IntegerBounds<uint32_t>::MAX);
+				}
 			}
 
 		};
@@ -106,6 +134,16 @@ namespace text {
 			unsigned u;
 			for(u = 0u; u < 256u; ++u)
 				protostr::writeProtocolPrimitive<CharT>(proto, decTable[u]);
+			std::map<const Trie*, uint32_t> ids;
+			if(encTrie)
+				encTrie->mapPointers(ids);
+			proto.writeUInt32(static_cast<uint32_t>(ids.size()));
+			if(encTrie)
+				encTrie->saveTo(proto, ids);
+			else {
+				for(u = 0u; u < 15u; ++u)
+					proto.writeUInt32(usdo::util::IntegerBounds<uint32_t>::MAX);
+			}
 		}
 
 		void loadFrom(io::InputStream<char>& binaryInput) {
