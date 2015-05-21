@@ -97,6 +97,28 @@ namespace protostr {
 
 	};
 
+	template<typename PrimitiveT>
+	PrimitiveT readProtocolPrimitive(ProtocolReader&);
+
+#define REDSTRAIN_PROTOSTR_DEFINE_PRIMITIVE(type, function) \
+	template<> \
+	inline type readProtocolPrimitive<type>(ProtocolReader& reader) { \
+		return reader.read ## function(); \
+	}
+
+	REDSTRAIN_PROTOSTR_DEFINE_PRIMITIVE(int8_t, Int8)
+	REDSTRAIN_PROTOSTR_DEFINE_PRIMITIVE(uint8_t, UInt8)
+	REDSTRAIN_PROTOSTR_DEFINE_PRIMITIVE(int16_t, Int16)
+	REDSTRAIN_PROTOSTR_DEFINE_PRIMITIVE(uint16_t, UInt16)
+	REDSTRAIN_PROTOSTR_DEFINE_PRIMITIVE(int32_t, Int32)
+	REDSTRAIN_PROTOSTR_DEFINE_PRIMITIVE(uint32_t, UInt32)
+	REDSTRAIN_PROTOSTR_DEFINE_PRIMITIVE(int64_t, Int64)
+	REDSTRAIN_PROTOSTR_DEFINE_PRIMITIVE(uint64_t, UInt64)
+	REDSTRAIN_PROTOSTR_DEFINE_PRIMITIVE(float, Float32)
+	REDSTRAIN_PROTOSTR_DEFINE_PRIMITIVE(double, Float64)
+
+#undef REDSTRAIN_PROTOSTR_DEFINE_PRIMITIVE
+
 }}
 
 #endif /* REDSTRAIN_MOD_PROTOSTR_PROTOCOLREADER_HPP */
