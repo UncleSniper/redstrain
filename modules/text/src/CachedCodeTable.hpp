@@ -75,9 +75,13 @@ namespace text {
 						proto.writeUInt32(static_cast<uint32_t>(0u));
 				}
 				else {
-					for(u = 0u; u < 15u; ++u)
+					for(u = 0u; u < 16u; ++u)
 						proto.writeUInt32(data.children[u] ? ids[data.children[u]]
 								: util::IntegerBounds<uint32_t>::MAX);
+					for(u = 0u; u < 16u; ++u) {
+						if(data.children[u])
+							data.children[u]->saveTo(proto, ids);
+					}
 				}
 			}
 
@@ -110,7 +114,6 @@ namespace text {
 				if(!*root)
 					*root = new Trie;
 				root = (*root)->data.children + ((value >> ((remaining - 1u) * 4u)) & static_cast<CharT>(0x0Fu));
-				value >>= 4;
 			}
 			*root = new Trie(eight);
 		}
@@ -140,10 +143,7 @@ namespace text {
 			proto.writeUInt32(static_cast<uint32_t>(ids.size()));
 			if(encTrie)
 				encTrie->saveTo(proto, ids);
-			else {
-				for(u = 0u; u < 15u; ++u)
-					proto.writeUInt32(util::IntegerBounds<uint32_t>::MAX);
-			}
+			proto.flush();
 		}
 
 		void loadFrom(io::InputStream<char>& binaryInput) {
