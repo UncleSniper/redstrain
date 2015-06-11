@@ -44,6 +44,10 @@ namespace io {
 			}
 		}
 
+		void print(const RecordT& record) {
+			this->writeBlock(&record, static_cast<size_t>(1u));
+		}
+
 		void print(const String& text) {
 			this->writeBlock(text.data(), static_cast<size_t>(text.length()));
 		}
