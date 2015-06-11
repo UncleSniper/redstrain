@@ -8,7 +8,7 @@
 namespace redengine {
 namespace text {
 
-	class MappingLookupIOError : public MappingLookupError {
+	class REDSTRAIN_TEXT_API MappingLookupIOError : public MappingLookupError {
 
 	  private:
 		error::IOError* cause;
