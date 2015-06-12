@@ -226,18 +226,38 @@ namespace platform {
 	}
 
 #elif REDSTRAIN_PLATFORM_OS == REDSTRAIN_PLATFORM_OS_WINDOWS
-#error Not implemented yet
 
-	void Process::terminate();
-	void Process::kill();
-	void Process::interrupt();
-	int Process::wait();
+	void Process::terminate() {
+		//TODO
+	}
 
-	Process Process::run(const list<string>&, const map<string, string>* = NULL);
-	Process Process::run(const vector<string>&, const map<string, string>* = NULL);
+	void Process::kill() {
+		//TODO
+	}
+
+	void Process::interrupt() {
+		//TODO
+	}
+
+	int Process::wait() {
+		//TODO
+		return 0;
+	}
+
+	template<typename ListT>
+	DWORD execByCollections(const ListT& argv, const map<string, string>* envp) {
+		//TODO
+		return 0;
+	}
+
+	void Process::getenv(map<string, string>& drop) {
+		drop.clear();
+		//TODO
+	}
 
 	string Process::resolveExecutable(const string& name) {
 		//TODO
+		return "";
 	}
 
 #else /* OS not implemented */
