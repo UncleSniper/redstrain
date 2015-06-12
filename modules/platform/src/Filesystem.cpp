@@ -1,10 +1,11 @@
 #include <redstrain/util/DeleteArray.hpp>
 #include <redstrain/util/IntegerBits.hpp>
 
+#include "Thread.hpp"
+#include "Pathname.hpp"
 #include "NoSuchFileError.hpp"
 #include "FileAccessDeniedError.hpp"
 #include "ReadOnlyFilesystemError.hpp"
-#include "Thread.hpp"
 
 #if REDSTRAIN_PLATFORM_OS == REDSTRAIN_PLATFORM_OS_UNIX
 #include <errno.h>
@@ -1071,5 +1072,28 @@ namespace platform {
 #else /* OS not implemented */
 #error Platform not supported
 #endif /* OS-specific implementations */
+
+	struct RecursiveRemover : public Appender<string> {
+
+		const string& parent;
+
+		RecursiveRemover(const string& parent) : parent(parent) {}
+
+		virtual void append(const string& child) {
+			Filesystem::removeRecursively(parent + Pathname::SEPARATOR + child);
+		}
+
+	};
+
+	void Filesystem::removeRecursively(const string& path) {
+		Stat info;
+		stat(path, info);
+		if(info.getType() != Stat::DIRECTORY)
+			unlink(path);
+		else {
+			RecursiveRemover handler(path);
+			readdir(path, handler);
+		}
+	}
 
 }}

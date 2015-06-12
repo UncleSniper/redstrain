@@ -166,6 +166,7 @@ namespace platform {
 		static std::string getErrorMessage(ErrorCode);
 		static Stat::UserID getCurrentUser();
 		static Stat::GroupID getCurrentGroup();
+		static void removeRecursively(const std::string&);
 
 	};
 
