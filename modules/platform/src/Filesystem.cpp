@@ -132,7 +132,7 @@ namespace platform {
 		}
 		if(!::access(path.c_str(), mode))
 			return true;
-		if(errno != EACCES)
+		if(errno != (permissions == FILE_EXISTS ? ENOENT : EACCES))
 			bail();
 		return false;
 	}
