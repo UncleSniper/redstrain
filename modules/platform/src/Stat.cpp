@@ -7,8 +7,8 @@ namespace platform {
 #if REDSTRAIN_PLATFORM_OS == REDSTRAIN_PLATFORM_OS_WINDOWS
 
 	const Stat::UserID Stat::NO_USER;
-	const Stat::GroupID State::NO_GROUP;
-	const Stat::DeviceID State::NO_DEVICE;
+	const Stat::GroupID Stat::NO_GROUP;
+	const Stat::DeviceID Stat::NO_DEVICE;
 
 #endif /* OS-specific definitions */
 
