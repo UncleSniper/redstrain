@@ -17,7 +17,7 @@ namespace build {
 		FileArtifact(const std::string&);
 		FileArtifact(const FileArtifact&);
 
-		inline const std::string getPathname() const {
+		inline const std::string& getPathname() const {
 			return pathname;
 		}
 
