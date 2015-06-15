@@ -2,18 +2,8 @@
 #define REDSTRAIN_MOD_PLATFORM_PROCESS_HPP
 
 #include <map>
-#include <list>
-#include <vector>
-#include <string>
 
-#include "api.hpp"
-#include "platform.hpp"
-
-#if REDSTRAIN_PLATFORM_OS == REDSTRAIN_PLATFORM_OS_UNIX
-#include <unistd.h>
-#elif REDSTRAIN_PLATFORM_OS == REDSTRAIN_PLATFORM_OS_WINDOWS
-#include <windows.h>
-#endif /* OS-specific includes */
+#include "File.hpp"
 
 namespace redengine {
 namespace platform {
@@ -67,15 +57,27 @@ namespace platform {
 
 	  protected:
 		Handle handle;
-
-	  protected:
-		Process(Handle);
+		File::Handle stdinHandle, stdoutHandle, stderrHandle;
 
 	  public:
+		Process(Handle);
+		Process(Handle, File::Handle, File::Handle, File::Handle);
 		Process(const Process&);
 
 		inline Handle getHandle() const {
 			return handle;
+		}
+
+		inline File::Handle getStandardInputHandle() const {
+			return stdinHandle;
+		}
+
+		inline File::Handle getStandardOutputHandle() const {
+			return stdoutHandle;
+		}
+
+		inline File::Handle getStandardErrorHandle() const {
+			return stderrHandle;
 		}
 
 		void terminate();
@@ -83,12 +85,7 @@ namespace platform {
 		void interrupt();
 		int wait();
 
-		static Process run(const std::list<std::string>&, const std::map<std::string, std::string>* = NULL);
-		static Process run(const std::list<std::string>&, const std::map<std::string, std::string>&);
-		static Process run(const std::vector<std::string>&, const std::map<std::string, std::string>*);
-		static Process run(const std::vector<std::string>&, const std::map<std::string, std::string>&);
 		static std::string getErrorMessage(ErrorCode);
-
 		static const char* getenv(const std::string&);
 		static void putenv(const std::string&, const std::string&);
 		static void getenv(std::map<std::string, std::string>&);
