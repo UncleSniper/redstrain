@@ -12,6 +12,8 @@ namespace io {
 
 	StreamCloser::StreamCloser(Stream& stream) : stream(&stream) {}
 
+	StreamCloser::StreamCloser(const StreamCloser& closer) : stream(closer.stream) {}
+
 	StreamCloser::~StreamCloser() {
 		close();
 	}
@@ -23,6 +25,7 @@ namespace io {
 			stream->close();
 		}
 		catch(const Error&) {}
+		catch(...) {}
 		stream = NULL;
 	}
 
@@ -34,6 +37,22 @@ namespace io {
 		Stream* oldStream = stream;
 		stream = newStream;
 		return oldStream;
+	}
+
+	StreamCloser& StreamCloser::operator=(Stream* stream) {
+		this->stream = stream;
+		return *this;
+	}
+
+	StreamCloser& StreamCloser::operator=(Stream& stream) {
+		this->stream = &stream;
+		return *this;
+	}
+
+	StreamCloser& StreamCloser::operator=(const StreamCloser& closer) {
+		close();
+		this->stream = closer.stream;
+		return *this;
 	}
 
 }}

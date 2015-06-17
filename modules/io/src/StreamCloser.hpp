@@ -18,6 +18,7 @@ namespace io {
 	  public:
 		StreamCloser(Stream* = NULL);
 		StreamCloser(Stream&);
+		StreamCloser(const StreamCloser&);
 		~StreamCloser();
 
 		inline Stream* getStream() const {
@@ -27,6 +28,10 @@ namespace io {
 		void close();
 		void release();
 		Stream* set(Stream* = NULL);
+
+		StreamCloser& operator=(Stream*);
+		StreamCloser& operator=(Stream&);
+		StreamCloser& operator=(const StreamCloser&);
 
 	};
 
