@@ -85,11 +85,11 @@ namespace util {
 		 * @return updated pointer value, i.e. @c *pointer
 		 */
 		inline SubjectT* operator=(const Unref<SubjectT>& pointer) {
+			if(pointer.object)
+				pointer.object->ref();
 			if(this->object)
 				this->object->unref();
-			if((this->object = pointer.object))
-				this->object->ref();
-			return this->object;
+			return this->object = pointer.object;
 		}
 
 	};
