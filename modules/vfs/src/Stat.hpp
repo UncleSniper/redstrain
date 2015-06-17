@@ -1,8 +1,8 @@
 #ifndef REDSTRAIN_MOD_VFS_STAT_HPP
 #define REDSTRAIN_MOD_VFS_STAT_HPP
 
+#include <redstrain/platform/Stat.hpp>
 #include <redstrain/util/IntegerBits.hpp>
-#include <redstrain/platform/platform.hpp>
 
 #include "api.hpp"
 
