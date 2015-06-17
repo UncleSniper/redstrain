@@ -71,9 +71,8 @@ namespace platform {
 			size_t totalBlocks, freeBlocks, totalINodes, freeINodes, nameLength;
 
 		  public:
-			FSInfo() : type(UNKNOWNFS), totalBlocks(static_cast<size_t>(0u)),
-					freeBlocks(static_cast<size_t>(0u)), totalINodes(static_cast<size_t>(0u)),
-					freeINodes(static_cast<size_t>(0u)), nameLength(static_cast<size_t>(0u)) {}
+			FSInfo();
+			FSInfo(const FSInfo&);
 
 			inline FSType getType() const {
 				return type;
@@ -122,6 +121,8 @@ namespace platform {
 			inline void setMaximumFilenameLength(size_t newMaxLength) {
 				nameLength = newMaxLength;
 			}
+
+			FSInfo& operator=(const FSInfo&);
 
 		};
 

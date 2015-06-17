@@ -29,6 +29,24 @@ using redengine::util::IntegerBits;
 namespace redengine {
 namespace platform {
 
+	Filesystem::FSInfo::FSInfo() : type(UNKNOWNFS), totalBlocks(static_cast<size_t>(0u)),
+			freeBlocks(static_cast<size_t>(0u)), totalINodes(static_cast<size_t>(0u)),
+			freeINodes(static_cast<size_t>(0u)), nameLength(static_cast<size_t>(0u)) {}
+
+	Filesystem::FSInfo::FSInfo(const FSInfo& info) : type(info.type), totalBlocks(info.totalBlocks),
+			freeBlocks(info.freeBlocks), totalINodes(info.totalINodes), freeINodes(info.freeINodes),
+			nameLength(info.nameLength) {}
+
+	Filesystem::FSInfo& Filesystem::FSInfo::operator=(const FSInfo& info) {
+		type = info.type;
+		totalBlocks = info.totalBlocks;
+		freeBlocks = info.freeBlocks;
+		totalINodes = info.totalINodes;
+		freeINodes = info.freeINodes;
+		nameLength = info.nameLength;
+		return *this;
+	}
+
 #if REDSTRAIN_PLATFORM_OS == REDSTRAIN_PLATFORM_OS_UNIX
 
 	static void bail() {
