@@ -654,8 +654,12 @@ namespace vfs {
 			}
 		}
 
-		virtual void append(const String16&) {
-			//TODO
+		virtual void append(const String16& child) {
+			sourceStack.push_back(child);
+			destinationStack.push_back(child);
+			copy();
+			destinationStack.pop_back();
+			sourceStack.pop_back();
 		}
 
 	};
@@ -688,11 +692,32 @@ namespace vfs {
 	}
 
 	void TreeCopier::copyDirectory() {
-		//TODO
+		Unlinker uncreate(destinationFS, true);
+		if(destinationFS.access(destinationStack.begin(), destinationStack.end(), VFS::FILE_EXISTS)) {
+			Stat info;
+			destinationFS.stat(destinationStack.begin(), destinationStack.end(), info, false);
+			if(info.getType() != Stat::DIRECTORY) {
+				destinationFS.unlink(destinationStack.begin(), destinationStack.end());
+				destinationFS.mkdir(destinationStack.begin(), destinationStack.end(),
+						Stat::DEFAULT_DIRECORY_PERMISSIONS);
+				uncreate = destinationStack;
+			}
+		}
+		else {
+			destinationFS.mkdir(destinationStack.begin(), destinationStack.end(),
+					Stat::DEFAULT_DIRECORY_PERMISSIONS);
+			uncreate = destinationStack;
+		}
+		sourceFS.readdir(sourceStack.begin(), sourceStack.end(), *this);
+		uncreate.release();
 	}
 
 	void VFS::copyTree(PathIterator oldPathBegin, PathIterator oldPathEnd, VFS& fs,
 			PathIterator newPathBegin, PathIterator newPathEnd, int flags) {
+		if(&fs == this && flags & VFS::REMOVE_SOURCE) {
+			rename(oldPathBegin, oldPathEnd, newPathBegin, newPathEnd);
+			return;
+		}
 		Pathname oldPath, newPath;
 		oldPath.insert(oldPath.end(), oldPathBegin, oldPathEnd);
 		newPath.insert(newPath.end(), newPathBegin, newPathEnd);
@@ -700,11 +725,27 @@ namespace vfs {
 		copier.copy();
 	}
 
-	/*
-	void VFS::copyTree(const string&, const string&, int = PRESERVE_ALL);
-	void VFS::copyTree(const String16&, const String16&, int = PRESERVE_ALL);
-	void VFS::copyTree(const Pathname&, const Pathname&, int = PRESERVE_ALL);
-	void VFS::copyTree(PathIterator, PathIterator, PathIterator, PathIterator, int = PRESERVE_ALL);
-	*/
+	void VFS::copyTree(const string& oldPath, const string& newPath, int flags) {
+		Pathname oldpl, newpl;
+		deconstructPathname(oldPath, oldpl);
+		deconstructPathname(newPath, newpl);
+		copyTree(oldpl.begin(), oldpl.end(), *this, newpl.begin(), newpl.end(), flags);
+	}
+
+	void VFS::copyTree(const String16& oldPath, const String16& newPath, int flags) {
+		Pathname oldpl, newpl;
+		VFS::deconstructPathname(oldPath, oldpl);
+		VFS::deconstructPathname(newPath, newpl);
+		copyTree(oldpl.begin(), oldpl.end(), *this, newpl.begin(), newpl.end(), flags);
+	}
+
+	void VFS::copyTree(const Pathname& oldPath, const Pathname& newPath, int flags) {
+		copyTree(oldPath.begin(), oldPath.end(), *this, newPath.begin(), newPath.end(), flags);
+	}
+
+	void VFS::copyTree(PathIterator oldPathBegin, PathIterator oldPathEnd,
+			PathIterator newPathBegin, PathIterator newPathEnd, int flags) {
+		copyTree(oldPathBegin, oldPathEnd, *this, newPathBegin, newPathEnd, flags);
+	}
 
 }}
