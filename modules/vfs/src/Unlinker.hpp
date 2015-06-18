@@ -14,6 +14,7 @@ namespace vfs {
 		bool directory;
 
 	  public:
+		Unlinker(VFS&, bool);
 		Unlinker(VFS&, const VFS::Pathname&, bool);
 		Unlinker(VFS&, VFS::PathIterator, VFS::PathIterator, bool);
 		Unlinker(const Unlinker&);

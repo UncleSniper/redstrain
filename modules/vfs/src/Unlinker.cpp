@@ -8,6 +8,11 @@ using redengine::text::String16;
 namespace redengine {
 namespace vfs {
 
+	static VFS::Pathname emptyPath;
+
+	Unlinker::Unlinker(VFS& fs, bool directory)
+			: fs(fs), pathBegin(emptyPath.end()), pathEnd(emptyPath.end()), directory(directory) {}
+
 	Unlinker::Unlinker(VFS& fs, const VFS::Pathname& path, bool directory)
 			: fs(fs), pathBegin(path.begin()), pathEnd(path.end()), directory(directory) {}
 
