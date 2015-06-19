@@ -59,6 +59,11 @@ namespace vfs {
 				return *this;
 			}
 
+			Iterator& operator=(const BaseIterator& iterator) {
+				this->iterator = iterator;
+				return *this;
+			}
+
 			Pair<HostT, VirtualT> operator*() const {
 				return Pair<HostT, VirtualT>(iterator->first, iterator->second);
 			}
@@ -100,19 +105,19 @@ namespace vfs {
 		MapFileInfoMapper(const MapFileInfoMapper&);
 
 		void putUserMapping(const HostUserID&, VirtualUserID);
-		bool getHostUserID(VirtualUserID, HostUserID&) const;
-		bool getVirtualUserID(const HostUserID&, VirtualUserID&) const;
-		void getUserMappings(UserIterator&, UserIterator&) const;
+		bool getHostUserID(VirtualUserID, HostUserID&);
+		bool getVirtualUserID(const HostUserID&, VirtualUserID&);
+		void getUserMappings(UserIterator&, UserIterator&);
 
 		void putGroupMapping(const HostGroupID&, VirtualGroupID);
-		bool getHostGroupID(VirtualGroupID, HostGroupID&) const;
-		bool getVirtualGroupID(const HostGroupID&, VirtualGroupID&) const;
-		void getGroupMappings(GroupIterator&, GroupIterator&) const;
+		bool getHostGroupID(VirtualGroupID, HostGroupID&);
+		bool getVirtualGroupID(const HostGroupID&, VirtualGroupID&);
+		void getGroupMappings(GroupIterator&, GroupIterator&);
 
 		void putDeviceMapping(const HostDeviceID&, VirtualDeviceID);
-		bool getHostDeviceID(VirtualDeviceID, HostDeviceID&) const;
-		bool getVirtualDeviceID(const HostDeviceID&, VirtualDeviceID&) const;
-		void getDeviceMappings(DeviceIterator&, DeviceIterator&) const;
+		bool getHostDeviceID(VirtualDeviceID, HostDeviceID&);
+		bool getVirtualDeviceID(const HostDeviceID&, VirtualDeviceID&);
+		void getDeviceMappings(DeviceIterator&, DeviceIterator&);
 
 		virtual VirtualUserID mapHostUserToVirtual(const HostUserID&);
 		virtual HostUserID mapVirtualUserToHost(VirtualUserID);
