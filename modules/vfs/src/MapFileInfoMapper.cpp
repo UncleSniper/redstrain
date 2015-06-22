@@ -1,9 +1,12 @@
+#include <redstrain/util/StringUtils.hpp>
 #include <redstrain/platform/MutexLocker.hpp>
 
 #include "MapFileInfoMapper.hpp"
+#include "UnmappedFileInfoIDError.hpp"
 
 using std::map;
 using redengine::platform::Mutex;
+using redengine::util::StringUtils;
 using redengine::platform::MutexLocker;
 
 namespace redengine {
@@ -187,7 +190,7 @@ namespace vfs {
 		lock.release();
 	}
 
-	MapFileInfoMapper::VirtualUserID MapFileInfoMapper::mapHostUserToVirtual(const HostUserID& hostID) {
+	FileInfoMapper::VirtualUserID MapFileInfoMapper::mapHostUserToVirtual(const HostUserID& hostID) {
 		VirtualUserID virtualID;
 		MutexLocker lock(mutex);
 		UserHostToVirtual::const_iterator h2vit(userh2v.find(hostID));
@@ -210,7 +213,7 @@ namespace vfs {
 		return virtualID;
 	}
 
-	MapFileInfoMapper::HostUserID MapFileInfoMapper::mapVirtualUserToHost(VirtualUserID virtualID) {
+	FileInfoMapper::HostUserID MapFileInfoMapper::mapVirtualUserToHost(VirtualUserID virtualID) {
 		HostUserID hostID;
 		MutexLocker lock(mutex);
 		UserVirtualToHost::const_iterator v2hit(userv2h.find(virtualID));
@@ -233,17 +236,126 @@ namespace vfs {
 		return hostID;
 	}
 
-	/*TODO
-	VirtualGroupID MapFileInfoMapper::mapHostGroupToVirtual(const HostGroupID&);
-	HostGroupID MapFileInfoMapper::mapVirtualGroupToHost(VirtualGroupID);
-	VirtualDeviceID MapFileInfoMapper::mapHostDeviceToVirtual(const HostDeviceID&);
-	HostDeviceID MapFileInfoMapper::mapVirtualDeviceToHost(VirtualDeviceID);
-	VirtualUserID MapFileInfoMapper::guessHostUserToVirtual(const HostUserID&) const;
-	HostUserID MapFileInfoMapper::guessVirtualUserToHost(VirtualUserID) const;
-	VirtualGroupID MapFileInfoMapper::guessHostGroupToVirtual(const HostGroupID&) const;
-	HostGroupID MapFileInfoMapper::guessVirtualGroupToHost(VirtualGroupID) const;
-	VirtualDeviceID MapFileInfoMapper::guessHostDeviceToVirtual(const HostDeviceID&) const;
-	HostDeviceID MapFileInfoMapper::guessVirtualDeviceToHost(VirtualDeviceID) const;
-	*/
+	FileInfoMapper::VirtualGroupID MapFileInfoMapper::mapHostGroupToVirtual(const HostGroupID& hostID) {
+		VirtualGroupID virtualID;
+		MutexLocker lock(mutex);
+		GroupHostToVirtual::const_iterator h2vit(grouph2v.find(hostID));
+		if(h2vit != grouph2v.end()) {
+			virtualID = h2vit->second;
+			lock.release();
+			return virtualID;
+		}
+		virtualID = guessHostGroupToVirtual(hostID);
+		GroupVirtualToHost::iterator v2hit(groupv2h.find(virtualID));
+		if(v2hit != groupv2h.end()) {
+			grouph2v.erase(v2hit->second);
+			groupv2h.erase(v2hit);
+		}
+		grouph2v[hostID] = virtualID;
+		Eraser<HostGroupID, VirtualGroupID> eraser(&grouph2v, hostID);
+		groupv2h[virtualID] = hostID;
+		eraser.target = NULL;
+		lock.release();
+		return virtualID;
+	}
+
+	FileInfoMapper::HostGroupID MapFileInfoMapper::mapVirtualGroupToHost(VirtualGroupID virtualID) {
+		HostGroupID hostID;
+		MutexLocker lock(mutex);
+		GroupVirtualToHost::const_iterator v2hit(groupv2h.find(virtualID));
+		if(v2hit != groupv2h.end()) {
+			hostID = v2hit->second;
+			lock.release();
+			return hostID;
+		}
+		hostID = guessVirtualGroupToHost(virtualID);
+		GroupHostToVirtual::iterator h2vit(grouph2v.find(hostID));
+		if(h2vit != grouph2v.end()) {
+			groupv2h.erase(h2vit->second);
+			grouph2v.erase(h2vit);
+		}
+		grouph2v[hostID] = virtualID;
+		Eraser<HostGroupID, VirtualGroupID> eraser(&grouph2v, hostID);
+		groupv2h[virtualID] = hostID;
+		eraser.target = NULL;
+		lock.release();
+		return hostID;
+	}
+
+	FileInfoMapper::VirtualDeviceID MapFileInfoMapper::mapHostDeviceToVirtual(const HostDeviceID& hostID) {
+		VirtualDeviceID virtualID;
+		MutexLocker lock(mutex);
+		DeviceHostToVirtual::const_iterator h2vit(deviceh2v.find(hostID));
+		if(h2vit != deviceh2v.end()) {
+			virtualID = h2vit->second;
+			lock.release();
+			return virtualID;
+		}
+		virtualID = guessHostDeviceToVirtual(hostID);
+		DeviceVirtualToHost::iterator v2hit(devicev2h.find(virtualID));
+		if(v2hit != devicev2h.end()) {
+			deviceh2v.erase(v2hit->second);
+			devicev2h.erase(v2hit);
+		}
+		deviceh2v[hostID] = virtualID;
+		Eraser<HostDeviceID, VirtualDeviceID> eraser(&deviceh2v, hostID);
+		devicev2h[virtualID] = hostID;
+		eraser.target = NULL;
+		lock.release();
+		return virtualID;
+	}
+
+	FileInfoMapper::HostDeviceID MapFileInfoMapper::mapVirtualDeviceToHost(VirtualDeviceID virtualID) {
+		HostDeviceID hostID;
+		MutexLocker lock(mutex);
+		DeviceVirtualToHost::const_iterator v2hit(devicev2h.find(virtualID));
+		if(v2hit != devicev2h.end()) {
+			hostID = v2hit->second;
+			lock.release();
+			return hostID;
+		}
+		hostID = guessVirtualDeviceToHost(virtualID);
+		DeviceHostToVirtual::iterator h2vit(deviceh2v.find(hostID));
+		if(h2vit != deviceh2v.end()) {
+			devicev2h.erase(h2vit->second);
+			deviceh2v.erase(h2vit);
+		}
+		deviceh2v[hostID] = virtualID;
+		Eraser<HostDeviceID, VirtualDeviceID> eraser(&deviceh2v, hostID);
+		devicev2h[virtualID] = hostID;
+		eraser.target = NULL;
+		lock.release();
+		return hostID;
+	}
+
+	FileInfoMapper::VirtualUserID MapFileInfoMapper::guessHostUserToVirtual(const HostUserID& hostID) const {
+		throw UnmappedFileInfoIDError(FileInfoMappingError::USER_ID, FileInfoMappingError::HOST_ID,
+				StringUtils::toString(hostID));
+	}
+
+	FileInfoMapper::HostUserID MapFileInfoMapper::guessVirtualUserToHost(VirtualUserID virtualID) const {
+		throw UnmappedFileInfoIDError(FileInfoMappingError::USER_ID, FileInfoMappingError::VIRTUAL_ID,
+				StringUtils::toString(virtualID));
+	}
+
+	FileInfoMapper::VirtualGroupID MapFileInfoMapper::guessHostGroupToVirtual(const HostGroupID& hostID) const {
+		throw UnmappedFileInfoIDError(FileInfoMappingError::GROUP_ID, FileInfoMappingError::HOST_ID,
+				StringUtils::toString(hostID));
+	}
+
+	FileInfoMapper::HostGroupID MapFileInfoMapper::guessVirtualGroupToHost(VirtualGroupID virtualID) const {
+		throw UnmappedFileInfoIDError(FileInfoMappingError::GROUP_ID, FileInfoMappingError::VIRTUAL_ID,
+				StringUtils::toString(virtualID));
+	}
+
+	FileInfoMapper::VirtualDeviceID MapFileInfoMapper::guessHostDeviceToVirtual(const HostDeviceID& hostID) const {
+		throw UnmappedFileInfoIDError(FileInfoMappingError::DEVICE_ID, FileInfoMappingError::HOST_ID,
+				StringUtils::toString(hostID));
+	}
+
+	FileInfoMapper::HostDeviceID MapFileInfoMapper::guessVirtualDeviceToHost(VirtualDeviceID virtualID) const {
+		throw UnmappedFileInfoIDError(FileInfoMappingError::DEVICE_ID, FileInfoMappingError::VIRTUAL_ID,
+				StringUtils::toString(virtualID));
+	}
 
 }}
