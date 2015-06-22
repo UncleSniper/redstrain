@@ -9,7 +9,7 @@
 namespace redengine {
 namespace vfs {
 
-	class REDSTRAIN_VFS_API MapFileInfoMapper : FileInfoMapper {
+	class REDSTRAIN_VFS_API MapFileInfoMapper : public FileInfoMapper {
 
 	  private:
 		// Gnnnnn, technically, we can't rely on operator<() being
@@ -108,16 +108,19 @@ namespace vfs {
 		bool getHostUserID(VirtualUserID, HostUserID&);
 		bool getVirtualUserID(const HostUserID&, VirtualUserID&);
 		void getUserMappings(UserIterator&, UserIterator&);
+		size_t getUserMappingCount() const;
 
 		void putGroupMapping(const HostGroupID&, VirtualGroupID);
 		bool getHostGroupID(VirtualGroupID, HostGroupID&);
 		bool getVirtualGroupID(const HostGroupID&, VirtualGroupID&);
 		void getGroupMappings(GroupIterator&, GroupIterator&);
+		size_t getGroupMappingCount() const;
 
 		void putDeviceMapping(const HostDeviceID&, VirtualDeviceID);
 		bool getHostDeviceID(VirtualDeviceID, HostDeviceID&);
 		bool getVirtualDeviceID(const HostDeviceID&, VirtualDeviceID&);
 		void getDeviceMappings(DeviceIterator&, DeviceIterator&);
+		size_t getDeviceMappingCount() const;
 
 		virtual VirtualUserID mapHostUserToVirtual(const HostUserID&);
 		virtual HostUserID mapVirtualUserToHost(VirtualUserID);

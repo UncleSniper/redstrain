@@ -90,6 +90,10 @@ namespace vfs {
 		lock.release();
 	}
 
+	size_t MapFileInfoMapper::getUserMappingCount() const {
+		return static_cast<size_t>(userh2v.size());
+	}
+
 	void MapFileInfoMapper::putGroupMapping(const HostGroupID& hostID, VirtualGroupID virtualID) {
 		MutexLocker lock(mutex);
 		GroupHostToVirtual::iterator h2vit(grouph2v.find(hostID));
@@ -140,6 +144,10 @@ namespace vfs {
 		lock.release();
 	}
 
+	size_t MapFileInfoMapper::getGroupMappingCount() const {
+		return static_cast<size_t>(grouph2v.size());
+	}
+
 	void MapFileInfoMapper::putDeviceMapping(const HostDeviceID& hostID, VirtualDeviceID virtualID) {
 		MutexLocker lock(mutex);
 		DeviceHostToVirtual::iterator h2vit(deviceh2v.find(hostID));
@@ -188,6 +196,10 @@ namespace vfs {
 		begin = deviceh2v.begin();
 		end = deviceh2v.end();
 		lock.release();
+	}
+
+	size_t MapFileInfoMapper::getDeviceMappingCount() const {
+		return static_cast<size_t>(deviceh2v.size());
 	}
 
 	FileInfoMapper::VirtualUserID MapFileInfoMapper::mapHostUserToVirtual(const HostUserID& hostID) {
