@@ -6,7 +6,7 @@
 #include <redstrain/text/DefaultCodecFactory.hpp>
 
 #include "HostVFS.hpp"
-#include "FileInfoMapper.hpp"
+#include "BestEffortFileInfoMapper.hpp"
 
 using std::string;
 using redengine::util::Ref;
@@ -94,70 +94,84 @@ namespace vfs {
 
 #if REDSTRAIN_PLATFORM_OS == REDSTRAIN_PLATFORM_OS_UNIX
 
+	BestEffortFileInfoMapper bestEffortFileInfoMapper;
+
+	#define _getFileInfoMapper (infoMapper ? infoMapper : &bestEffortFileInfoMapper)
 	#define toHostPath(begin, end) (encodeHostPathname(VFS::constructPathname((begin), (end), true)))
 
 	void HostVFS::stat(PathIterator pathBegin, PathIterator pathEnd, Stat& info, bool ofLink) {
 		PlatformStat pinfo;
 		Filesystem::stat(toHostPath(pathBegin, pathEnd), pinfo, ofLink);
-		//TODO
+		FileInfoMapper& mapper = *_getFileInfoMapper;
+		info.setType(static_cast<Stat::Type>(pinfo.getType()));
+		info.setOwner(mapper.mapHostUserToVirtual(pinfo.getOwner()));
+		info.setGroup(mapper.mapHostGroupToVirtual(pinfo.getGroup()));
+		info.setDevice(mapper.mapHostDeviceToVirtual(pinfo.getDevice()));
+		info.setPermissions(pinfo.getPermissions());
+		info.setSize(pinfo.getSize());
+		info.setAccessTimestamp(pinfo.getAccessTimestamp());
+		info.setModificationTimestamp(pinfo.getModificationTimestamp());
+		info.setStatusChangeTimestamp(pinfo.getStatusChangeTimestamp());
 	}
 
-	/*
 	void HostVFS::chmod(PathIterator pathBegin, PathIterator pathEnd, int permissions) {
-		//TODO
+		Filesystem::chmod(toHostPath(pathBegin, pathEnd), permissions);
 	}
 
 	void HostVFS::chown(PathIterator pathBegin, PathIterator pathEnd, Stat::UserID owner, bool ofLink) {
-		//TODO
+		Filesystem::chown(toHostPath(pathBegin, pathEnd), _getFileInfoMapper->mapVirtualUserToHost(owner), ofLink);
 	}
 
 	void HostVFS::chgrp(PathIterator pathBegin, PathIterator pathEnd, Stat::GroupID group, bool ofLink) {
-		//TODO
+		Filesystem::chgrp(toHostPath(pathBegin, pathEnd), _getFileInfoMapper->mapVirtualGroupToHost(group), ofLink);
 	}
 
 	void HostVFS::link(PathIterator oldPathBegin, PathIterator oldPathEnd,
 			PathIterator newPathBegin, PathIterator newPathEnd) {
-		//TODO
+		Filesystem::link(toHostPath(oldPathBegin, oldPathEnd), toHostPath(newPathBegin, newPathEnd));
 	}
 
 	void HostVFS::unlink(PathIterator pathBegin, PathIterator pathEnd) {
-		//TODO
+		Filesystem::unlink(toHostPath(pathBegin, pathEnd));
 	}
 
 	void HostVFS::utime(PathIterator pathBegin, PathIterator pathEnd) {
-		//TODO
+		Filesystem::utime(toHostPath(pathBegin, pathEnd));
 	}
 
 	void HostVFS::utime(PathIterator pathBegin, PathIterator pathEnd,
 			time_t accessTimestamp, time_t modificationTimestamp) {
-		//TODO
+		Filesystem::utime(toHostPath(pathBegin, pathEnd), accessTimestamp, modificationTimestamp);
 	}
 
 	bool HostVFS::access(PathIterator pathBegin, PathIterator pathEnd, int permissions) {
-		//TODO
+		return Filesystem::access(toHostPath(pathBegin, pathEnd), permissions);
 	}
 
 	void HostVFS::rename(PathIterator oldPathBegin, PathIterator oldPathEnd,
 			PathIterator newPathBegin, PathIterator newPathEnd) {
-		//TODO
+		Filesystem::rename(toHostPath(oldPathBegin, oldPathEnd), toHostPath(newPathBegin, newPathEnd));
 	}
 
-	void HostVFS::mkdir(PathIterator pathBegin, PathIterator pathBegin, int permissions) {
-		//TODO
+	void HostVFS::mkdir(PathIterator pathBegin, PathIterator pathEnd, int permissions) {
+		Filesystem::mkdir(toHostPath(pathBegin, pathEnd), permissions);
 	}
 
 	void HostVFS::rmdir(PathIterator pathBegin, PathIterator pathEnd) {
-		//TODO
+		Filesystem::rmdir(toHostPath(pathBegin, pathEnd));
 	}
 
 	void HostVFS::symlink(PathIterator oldPathBegin, PathIterator oldPathEnd, const String16& newPath) {
-		//TODO
+		Filesystem::symlink(toHostPath(oldPathBegin, oldPathEnd), encodeHostPathname(newPath));
 	}
 
 	void HostVFS::readlink(PathIterator pathBegin, PathIterator pathEnd, String16& result) {
-		//TODO
+		string result8;
+		Filesystem::readlink(toHostPath(pathBegin, pathEnd), result8);
+		result = decodeHostPathname(result8);
 	}
 
+	/*
 	void HostVFS::readdir(PathIterator pathBegin, PathIterator pathEnd, Appender<String16>& sink) {
 		//TODO
 	}
@@ -189,6 +203,7 @@ namespace vfs {
 	*/
 
 	#undef toHostPath
+	#undef _getFileInfoMapper
 
 #elif REDSTRAIN_PLATFORM_OS == REDSTRAIN_PLATFORM_OS_WINDOWS
 
@@ -237,7 +252,7 @@ namespace vfs {
 		//TODO
 	}
 
-	void HostVFS::mkdir(PathIterator pathBegin, PathIterator pathBegin, int permissions) {
+	void HostVFS::mkdir(PathIterator pathBegin, PathIterator pathEnd, int permissions) {
 		//TODO
 	}
 
