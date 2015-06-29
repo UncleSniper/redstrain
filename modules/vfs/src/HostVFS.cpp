@@ -1,5 +1,6 @@
 #include <redstrain/util/Ref.hpp>
 #include <redstrain/util/Delete.hpp>
+#include <redstrain/io/FileStream.hpp>
 #include <redstrain/text/Transcode.hpp>
 #include <redstrain/text/UTF8Encoder16.hpp>
 #include <redstrain/text/UTF8Decoder16.hpp>
@@ -12,6 +13,7 @@ using std::string;
 using redengine::util::Ref;
 using redengine::util::Delete;
 using redengine::util::Appender;
+using redengine::io::FileStream;
 using redengine::text::String16;
 using redengine::text::Transcode;
 using redengine::text::Encoder16;
@@ -21,6 +23,8 @@ using redengine::io::OutputStream;
 using redengine::text::CodecFactory;
 using redengine::text::UTF8Encoder16;
 using redengine::text::UTF8Decoder16;
+using redengine::io::FileInputStream;
+using redengine::io::FileOutputStream;
 using redengine::platform::Filesystem;
 using redengine::io::BidirectionalStream;
 using redengine::text::DefaultCodecFactory;
@@ -171,36 +175,60 @@ namespace vfs {
 		result = decodeHostPathname(result8);
 	}
 
-	/*
+	struct EncodingAppender : Appender<string> {
+
+		HostVFS& fs;
+		Appender<String16>& sink;
+
+		EncodingAppender(HostVFS& fs, Appender<String16>& sink) : fs(fs), sink(sink) {}
+
+		virtual void append(const string& child) {
+			sink.append(fs.decodeHostPathname(child));
+		}
+
+		virtual void doneAppending() {
+			sink.doneAppending();
+		}
+
+	};
+
 	void HostVFS::readdir(PathIterator pathBegin, PathIterator pathEnd, Appender<String16>& sink) {
-		//TODO
+		EncodingAppender proxy(*this, sink);
+		Filesystem::readdir(toHostPath(pathBegin, pathEnd), proxy);
 	}
 
 	void HostVFS::truncate(PathIterator pathBegin, PathIterator pathEnd, size_t size) {
-		//TODO
+		Filesystem::truncate(toHostPath(pathBegin, pathEnd), size);
 	}
 
 	void HostVFS::statfs(PathIterator pathBegin, PathIterator pathEnd, FSInfo& info) {
-		//TODO
+		Filesystem::FSInfo pinfo;
+		Filesystem::statfs(toHostPath(pathBegin, pathEnd), pinfo);
+		info.setType(static_cast<FSType>(pinfo.getType()));
+		info.setTotalBlockCount(pinfo.getTotalBlockCount());
+		info.setFreeBlockCount(pinfo.getFreeBlockCount());
+		info.setTotalINodeCount(pinfo.getTotalINodeCount());
+		info.setFreeINodeCount(pinfo.getFreeINodeCount());
+		info.setMaximumFilenameLength(pinfo.getMaximumFilenameLength());
 	}
 
 	void HostVFS::mknod(PathIterator pathBegin, PathIterator pathEnd, Stat::Type type,
 			int permissions, Stat::DeviceID device) {
-		//TODO
+		Filesystem::mknod(toHostPath(pathBegin, pathEnd), static_cast<PlatformStat::Type>(type), permissions,
+				_getFileInfoMapper->mapVirtualDeviceToHost(device));
 	}
 
 	InputStream<char>* HostVFS::getInputStream(PathIterator pathBegin, PathIterator pathEnd) {
-		//TODO
+		return new FileInputStream(toHostPath(pathBegin, pathEnd));
 	}
 
 	OutputStream<char>* HostVFS::getOutputStream(PathIterator pathBegin, PathIterator pathEnd) {
-		//TODO
+		return new FileOutputStream(toHostPath(pathBegin, pathEnd));
 	}
 
 	BidirectionalStream<char>* HostVFS::getStream(PathIterator pathBegin, PathIterator pathEnd) {
-		//TODO
+		return new FileStream(toHostPath(pathBegin, pathEnd));
 	}
-	*/
 
 	#undef toHostPath
 	#undef _getFileInfoMapper
