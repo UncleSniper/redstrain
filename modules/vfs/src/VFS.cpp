@@ -381,7 +381,7 @@ namespace vfs {
 		readlink(path.begin(), path.end(), result);
 	}
 
-	struct EncodingAppender : public Appender<String16> {
+	struct EncodingAppender : Appender<String16> {
 
 		Appender<string>& sink;
 		VFS& encoder;
