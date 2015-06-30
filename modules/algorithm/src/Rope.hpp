@@ -1,8 +1,9 @@
 #ifndef REDSTRAIN_MOD_ALGORITHM_ROPE_HPP
 #define REDSTRAIN_MOD_ALGORITHM_ROPE_HPP
 
-#include <redstrain/util/Pointer.hpp>
+#include <redstrain/util/Delete.hpp>
 #include <redstrain/util/WithAlign.hpp>
+#include <redstrain/error/IndexOutOfBoundsError.hpp>
 
 #include "destructors.hpp"
 
@@ -173,8 +174,8 @@ namespace algorithm {
 			ElementT* elements;
 			size_t count;
 
-			DestroyElements(ElementT* elements = NULL)
-					: elements(elements), count(static_cast<size_t>(0u)) {}
+			DestroyElements(ElementT* elements = NULL, size_t count = static_cast<size_t>(0u))
+					: elements(elements), count(count) {}
 
 			DestroyElements(const DestroyElements& destroy)
 					: elements(destroy.elements), count(destroy.count) {}
@@ -696,9 +697,97 @@ namespace algorithm {
 				return new Concat(left, right, leftSize);
 		}
 
+		static Node* appendElement(Node* node, size_t size, const ElementT& value) {
+			if(node->height) {
+				Concat* cat = static_cast<Concat*>(node);
+				Node* tnode;
+				if(cat->right->height < cat->left->height) {
+					tnode = appendElement(cat->right, size - cat->weight, value);
+					cat->right = tnode;
+					return node;
+				}
+				Concat* scat = static_cast<Concat*>(cat->right);
+				tnode = appendElement(scat->right, size - cat->weight - scat->weight, value);
+				return growRightFixup(cat, tnode);
+			}
+			else if(size < static_cast<Leaf*>(node)->size) {
+				new(static_cast<Leaf*>(node)->getElements() + size) ElementT(value);
+				return node;
+			}
+			else {
+				size_t count = static_cast<size_t>(1u) + SPARE_SIZE;
+				util::Delete<Leaf> leaf(new(count) Leaf(count));
+				new(leaf->getElements()) ElementT(value);
+				DestroyElements destroyValue(leaf->getElements(), static_cast<size_t>(1u));
+				Concat* result = new Concat(node, tnode, size);
+				destroyValue.elements = NULL;
+				leaf.set();
+				return result;
+			}
+		}
+
+		static Node* prependElement(Node* node, size_t size, const ElementT& value) {
+			if(node->height) {
+				Concat* cat = static_cast<Concat*>(node);
+				Node* tnode;
+				if(cat->left->height < cat->right->height) {
+					tnode = prependElement(cat->left, cat->weight, value);
+					cat->left = tnode;
+					return node;
+				}
+				Concat* scat = static_cast<Concat*>(cat->left);
+				tnode = prependElement(scat->left, scat->weight, value);
+				return growLeftFixup(tnode, scat.weight + static_cast<size_t>(1u), cat);
+			}
+			else if(size < static_cast<Leaf*>(node)->size && size <= MOVE_LIMIT) {
+				ElementT* data = static_cast<Leaf*>(node)->getElements();
+				size_t index;
+				/*TODO
+				for(index = (size_t)0u; index < size; ++index)
+					data[index + (size_t)1u] = data[index];
+				*data = value;
+				return node;
+				*/
+			}
+			else {
+				/*TODO
+				tnode = new_leaf(SPARE_PLUS(1u));
+				if(!tnode)
+					return NULL;
+				*(void**)(tnode + 1) = value;
+				result = new_concat(tnode, node, (size_t)1u);
+				if(!result) {
+					free(tnode);
+					return NULL;
+				}
+				return result;
+				*/
+			}
+		}
+
+		static ElementT* findElement(Node* node, size_t size, size_t index) {
+			while(node->height) {
+				Concat* cat = static_cast<Concat*>(node);
+				if(index < cat->weight)
+					node = cat->left;
+				else {
+					node = cat->right;
+					index -= cat->weight;
+				}
+			}
+			return static_cast<Leaf*>(node)->getElements() + index;
+		}
+
 	  private:
 		Node* root;
 		size_t size;
+
+	  private:
+		ElementT* findElement(size_t index) const {
+			if(index >= size)
+				throw error::IndexOutOfBoundsError("List index out of bounds", index);
+			return findElement(root, size, index);
+		}
 
 	  public:
 		Rope() : root(NULL), size(static_cast<size_t>(0u)) {}
@@ -709,6 +798,14 @@ namespace algorithm {
 				root->destroy(size);
 				delete root;
 			}
+		}
+
+		ElementT& operator[](size_t index) {
+			return *findElement(index);
+		}
+
+		const ElementT& operator[](size_t index) const {
+			return *findElement(index);
 		}
 
 		template<typename IteratorT>
@@ -747,6 +844,35 @@ namespace algorithm {
 				root = *leaf;
 			size += count;
 			leaf.set();
+		}
+
+		void append(const Element& value) {
+			if(root)
+				root = appendElement(root, size, value);
+			else {
+				size_t count = static_cast<size_t>(1u) + SPARE_SIZE;
+				util::Delete<Leaf> leaf(new(count) Leaf(count));
+				new(leaf->getElements()) ElementT(value);
+				root = leaf.set();
+			}
+			++size;
+		}
+
+		void prepend(const Element& value) {
+			if(root)
+				root = prependElement(root, size, value);
+			else {
+				size_t count = static_cast<size_t>(1u) + SPARE_SIZE;
+				util::Delete<Leaf> leaf(new(count) Leaf(count));
+				new(leaf->getElements()) ElementT(value);
+				root = leaf.set();
+			}
+			++size;
+		}
+
+		Rope& operator+=(const ElementT& value) {
+			append(value);
+			return *this;
 		}
 
 	};
