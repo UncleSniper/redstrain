@@ -780,24 +780,30 @@ namespace algorithm {
 
 	  private:
 		Node* root;
-		size_t size;
+		size_t cursize;
 
 	  private:
 		ElementT* findElement(size_t index) const {
-			if(index >= size)
+			if(index >= cursize)
 				throw error::IndexOutOfBoundsError("List index out of bounds", index);
-			return findElement(root, size, index);
+			return findElement(root, cursize, index);
 		}
 
 	  public:
-		Rope() : root(NULL), size(static_cast<size_t>(0u)) {}
-		Rope(const Rope& rope) : root(rope.root ? rope.root->clone(rope.size) : NULL), size(rope.size) {}
+		Rope() : root(NULL), cursize(static_cast<size_t>(0u)) {}
+
+		Rope(const Rope& rope)
+				: root(rope.root ? rope.root->clone(rope.cursize) : NULL), cursize(rope.cursize) {}
 
 		~Rope() {
 			if(root) {
-				root->destroy(size);
+				root->destroy(cursize);
 				delete root;
 			}
+		}
+
+		inline size_t size() const {
+			return cursize;
 		}
 
 		ElementT& operator[](size_t index) {
@@ -820,10 +826,10 @@ namespace algorithm {
 				++leaf.count;
 			}
 			if(root)
-				root = concatNodes(root, size, *leaf, count);
+				root = concatNodes(root, cursize, *leaf, count);
 			else
 				root = *leaf;
-			size += count;
+			cursize += count;
 			leaf.set();
 		}
 
@@ -839,35 +845,35 @@ namespace algorithm {
 				++leaf.count;
 			}
 			if(root)
-				root = concatNodes(*leaf, count, root, size);
+				root = concatNodes(*leaf, count, root, cursize);
 			else
 				root = *leaf;
-			size += count;
+			cursize += count;
 			leaf.set();
 		}
 
 		void append(const Element& value) {
 			if(root)
-				root = appendElement(root, size, value);
+				root = appendElement(root, cursize, value);
 			else {
 				size_t count = static_cast<size_t>(1u) + SPARE_SIZE;
 				util::Delete<Leaf> leaf(new(count) Leaf(count));
 				new(leaf->getElements()) ElementT(value);
 				root = leaf.set();
 			}
-			++size;
+			++cursize;
 		}
 
 		void prepend(const Element& value) {
 			if(root)
-				root = prependElement(root, size, value);
+				root = prependElement(root, cursize, value);
 			else {
 				size_t count = static_cast<size_t>(1u) + SPARE_SIZE;
 				util::Delete<Leaf> leaf(new(count) Leaf(count));
 				new(leaf->getElements()) ElementT(value);
 				root = leaf.set();
 			}
-			++size;
+			++cursize;
 		}
 
 		Rope& operator+=(const ElementT& value) {
