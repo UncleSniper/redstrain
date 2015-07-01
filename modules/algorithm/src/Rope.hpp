@@ -22,9 +22,6 @@ namespace algorithm {
 		static const size_t MOVE_LIMIT = COMBINE_LIMIT * static_cast<size_t>(2u) / static_cast<size_t>(3u);
 		static const size_t _SPARE_SIZE = static_cast<size_t>(128u) / sizeof(ElementT);
 		static const size_t SPARE_SIZE = _SPARE_SIZE ? _SPARE_SIZE : static_cast<size_t>(1u);
-		static const size_t _DEFAULT_LEAF_SIZE = DefaultLeafSize ? DefaultLeafSize
-				: static_cast<size_t>(256u) / sizeof(ElementT);
-		static const size_t DEFAULT_LEAF_SIZE = _DEFAULT_LEAF_SIZE ? _DEFAULT_LEAF_SIZE : static_cast<size_t>(2u);
 
 	  private:
 		typedef typename util::WithAlign<util::AlignOf<ElementT>::ALIGNMENT>::Primitive AlignElement;
@@ -588,7 +585,7 @@ namespace algorithm {
 		 * node creation), the input trees will remain
 		 * unmodified.
 		 */
-		static Node* concatNodes(Node* left, size_t leftSize, Node* right, size_t rightSize) {
+		static Node* concatNodes(Node* left, size_t leftSize, Node* right, size_t rightSize, Concat* emergencyCat) {
 			Node* node;
 			Concat *cat, *scat;
 			if(left->height > right->height + static_cast<size_t>(1u)) {
@@ -636,7 +633,7 @@ namespace algorithm {
 					 * does not change, this satisfies the function invariant,
 					 * as well.
 					 */
-					node = concatNodes(cat->right, leftSize - cat->weight, right, rightSize);
+					node = concatNodes(cat->right, leftSize - cat->weight, right, rightSize, emergencyCat);
 					cat->right = node;
 					return left;
 				}
@@ -652,7 +649,8 @@ namespace algorithm {
 				 * child with 'right'.
 				 */
 				scat = static_cast<Concat*>(cat->right);
-				node = concatNodes(scat->right, leftSize - cat->weight - scat->weight, right, rightSize);
+				node = concatNodes(scat->right, leftSize - cat->weight - scat->weight,
+						right, rightSize, emergencyCat);
 				return growRightFixup(cat, node);
 			}
 			else if(right->height > left->height + static_cast<size_t>(1u)) {
@@ -667,34 +665,52 @@ namespace algorithm {
 				 */
 				cat = static_cast<Concat*>(right);
 				if(cat->left->height < cat->right->height) {
-					node = concatNodes(left, leftSize, cat->left, cat->weight);
+					node = concatNodes(left, leftSize, cat->left, cat->weight, emergencyCat);
 					cat->left = node;
 					return left;
 				}
 				scat = static_cast<Concat*>(cat->left);
-				node = concatNodes(left, leftSize, scat->left, scat->weight);
+				node = concatNodes(left, leftSize, scat->left, scat->weight, emergencyCat);
 				if(node == scat->left)
 					return right;
 				return growLeftFixup(node, leftSize + scat->weight, cat);
 			}
 			else if(!left->height && !right->height
 					&& rightSize <= static_cast<Leaf*>(left)->size - leftSize && rightSize <= COMBINE_LIMIT) {
+				util::Delete<Concat> ecat(emergencyCat);
 				const ElementT* src = static_cast<Leaf*>(right)->getElements();
 				ElementT* dest = static_cast<Leaf*>(left)->getElements() + leftSize;
 				DestroyElements destroyCopied(dest);
 				size_t index;
-				// Oooooohhh...
-				for(index = static_cast<size_t>(0u); index < rightSize; ++index) {
-					new(dest + index) ElementT(src[index]);
-					++destroyCopied.count;
+				try {
+					for(index = static_cast<size_t>(0u); index < rightSize; ++index) {
+						new(dest + index) ElementT(src[index]);
+						++destroyCopied.count;
+					}
+				}
+				catch(...) {
+					if(!emergencyCat)
+						throw;
+					emergencyCat->left = left;
+					emergencyCat->right = right;
+					emergencyCat->weight = leftSize;
+					emergencyCat->fixHeight();
+					return ecat.set();
 				}
 				right->destroy(rightSize);
 				delete right;
 				destroyCopied.elements = NULL;
 				return left;
 			}
-			else
-				return new Concat(left, right, leftSize);
+			else {
+				if(!emergencyCat)
+					return new Concat(left, right, leftSize);
+				emergencyCat->left = left;
+				emergencyCat->right = right;
+				emergencyCat->weight = leftSize;
+				emergencyCat->fixHeight();
+				return emergencyCat;
+			}
 		}
 
 		static Node* appendElement(Node* node, size_t size, const ElementT& value) {
@@ -719,7 +735,7 @@ namespace algorithm {
 				util::Delete<Leaf> leaf(new(count) Leaf(count));
 				new(leaf->getElements()) ElementT(value);
 				DestroyElements destroyValue(leaf->getElements(), static_cast<size_t>(1u));
-				Concat* result = new Concat(node, tnode, size);
+				Concat* result = new Concat(node, *leaf, size);
 				destroyValue.elements = NULL;
 				leaf.set();
 				return result;
@@ -737,45 +753,121 @@ namespace algorithm {
 				}
 				Concat* scat = static_cast<Concat*>(cat->left);
 				tnode = prependElement(scat->left, scat->weight, value);
-				return growLeftFixup(tnode, scat.weight + static_cast<size_t>(1u), cat);
+				return growLeftFixup(tnode, scat->weight + static_cast<size_t>(1u), cat);
 			}
 			else if(size < static_cast<Leaf*>(node)->size && size <= MOVE_LIMIT) {
-				ElementT* data = static_cast<Leaf*>(node)->getElements();
+				Leaf* leaf = static_cast<Leaf*>(node);
+				size_t newSize = leaf->size + static_cast<size_t>(1u);
+				size_t altSize = size + static_cast<size_t>(1u) + SPARE_SIZE;
+				if(altSize > newSize)
+					newSize = altSize;
+				DeleteLeafNode<Leaf, Leaf> newLeaf(new(newSize) Leaf(newSize));
+				const ElementT* src = leaf->getElements();
+				ElementT* dest = newLeaf->getElements();
+				new(dest) ElementT(value);
+				++newLeaf.count;
 				size_t index;
-				/*TODO
-				for(index = (size_t)0u; index < size; ++index)
-					data[index + (size_t)1u] = data[index];
-				*data = value;
-				return node;
-				*/
+				for(index = static_cast<size_t>(0u); index < size; ++index) {
+					new(dest + index + static_cast<size_t>(1u)) ElementT(src[index]);
+					++newLeaf.count;
+				}
+				leaf->destroy(size);
+				delete leaf;
+				return newLeaf.set();
 			}
 			else {
-				/*TODO
-				tnode = new_leaf(SPARE_PLUS(1u));
-				if(!tnode)
-					return NULL;
-				*(void**)(tnode + 1) = value;
-				result = new_concat(tnode, node, (size_t)1u);
-				if(!result) {
-					free(tnode);
-					return NULL;
-				}
-				return result;
-				*/
+				size_t count = static_cast<size_t>(1u) + SPARE_SIZE;
+				DeleteLeafNode<Leaf, Leaf> leaf(new(count) Leaf(count));
+				new(leaf->getElements()) ElementT(value);
+				++leaf.count;
+				Concat* cat = new Concat(*leaf, node, static_cast<size_t>(1u));
+				leaf.set();
+				return cat;
 			}
 		}
 
-		static ElementT* findElement(Node* node, size_t size, size_t index) {
-			while(node->height) {
-				Concat* cat = static_cast<Concat*>(node);
-				if(index < cat->weight)
-					node = cat->left;
-				else {
-					node = cat->right;
-					index -= cat->weight;
+		static Node* spliceNodes(Node* node, size_t size, size_t offset, size_t count, Node* replacement,
+				size_t replacementSize) {
+			size_t index;
+			if(!node->height) {
+				// The "easy" case: We have a leaf.
+				Leaf* leaf = static_cast<Leaf*>(node);
+				if(!replacement) {
+					// just fumble together the required elements into a new leaf
+					size_t newSize = size - count + SPARE_SIZE;
+					DeleteLeafNode<Leaf, Leaf> newLeaf(new(newSize) Leaf(newSize));
+					const ElementT* src = leaf->getElements();
+					ElementT* dest = newLeaf->getElements();
+					for(index = static_cast<size_t>(0u); index < offset; ++index) {
+						new(dest + index) ElementT(src[index]);
+						++newLeaf.count;
+					}
+					for(index = offset + count; index < size; ++index) {
+						new(dest + (index - count)) ElementT(src[index]);
+						++newLeaf.count;
+					}
+					leaf->destroy(size);
+					delete leaf;
+					return newLeaf.set();
 				}
+				// If we only need one piece of 'node',
+				// we only need one concatenation...
+				if(!offset) {
+					// need back piece
+					size_t newSize = leaf->size - count;
+					size_t altSize = size - count + SPARE_SIZE;
+					if(altSize > newSize)
+						newSize = altSize;
+					DeleteLeafNode<Leaf, Leaf> newLeaf(new(newSize) Leaf(newSize));
+					const ElementT* src = leaf->getElements();
+					ElementT* dest = newLeaf->getElements();
+					for(index = count; index < size; ++index) {
+						new(dest + (index - count)) ElementT(src[index]);
+						++newLeaf.count;
+					}
+					Node* cat = concatNodes(replacement, replacementSize, *newLeaf, size - count, NULL);
+					leaf->destroy(size);
+					delete leaf;
+					newLeaf.set();
+					return cat;
+				}
+				if(offset + count == size) {
+					// need front piece
+					util::Delete<Concat> emergencyCat(new Concat(leaf, replacement, size));
+					ElementT* src = leaf->getElements();
+					for(index = static_cast<size_t>(0u); index < count; ++index)
+						src[offset + index].~ElementT();
+					Node* cat = concatNodes(leaf, size - count, replacement, replacementSize, *emergencyCat);
+					emergencyCat.set();
+					return cat;
+				}
+				// If we need two (front and back) pieces of
+				// 'node', we'll just have to split it up
+				// and concat 'replacement' right into the
+				// middle; giving two new concatenation nodes.
+				size_t newSize = size - (offset + count) + SPARE_SIZE;
+				DeleteLeafNode<Leaf, Leaf> newLeaf(new(newSize) Leaf(newSize));
+				ElementT *src = leaf->getElements(), *dest = newLeaf->getElements();
+				for(index = offset + count; index < size; ++index) {
+					new(dest + (index - offset - count)) ElementT(src[index]);
+					++newLeaf.count;
+				}
+				util::Delete<Concat> emergencyCat1(new Concat(leaf, replacement, offset));
+				util::Delete<Concat> emergencyCat2(new Concat(leaf, replacement, offset));
+				for(index = offset; index < size; ++index)
+					src[index].~ElementT();
+				Node* innerCat = concatNodes(leaf, offset, replacement, replacementSize, *emergencyCat1);
+				emergencyCat1.set();
+				Node* outerCat = concatNodes(innerCat, offset + replacementSize,
+						*newLeaf, size - offset - count, *emergencyCat2);
+				emergencyCat2.set();
+				newLeaf.set();
+				return outerCat;
 			}
-			return static_cast<Leaf*>(node)->getElements() + index;
+			else {
+				// The "hard" case: We have a concatenation node.
+				// TODO.
+			}
 		}
 
 	  private:
@@ -786,7 +878,17 @@ namespace algorithm {
 		ElementT* findElement(size_t index) const {
 			if(index >= cursize)
 				throw error::IndexOutOfBoundsError("List index out of bounds", index);
-			return findElement(root, cursize, index);
+			Node* node = root;
+			while(node->height) {
+				Concat* cat = static_cast<Concat*>(node);
+				if(index < cat->weight)
+					node = cat->left;
+				else {
+					node = cat->right;
+					index -= cat->weight;
+				}
+			}
+			return static_cast<Leaf*>(node)->getElements() + index;
 		}
 
 	  public:
@@ -826,7 +928,7 @@ namespace algorithm {
 				++leaf.count;
 			}
 			if(root)
-				root = concatNodes(root, cursize, *leaf, count);
+				root = concatNodes(root, cursize, *leaf, count, NULL);
 			else
 				root = *leaf;
 			cursize += count;
@@ -845,14 +947,14 @@ namespace algorithm {
 				++leaf.count;
 			}
 			if(root)
-				root = concatNodes(*leaf, count, root, cursize);
+				root = concatNodes(*leaf, count, root, cursize, NULL);
 			else
 				root = *leaf;
 			cursize += count;
 			leaf.set();
 		}
 
-		void append(const Element& value) {
+		void append(const ElementT& value) {
 			if(root)
 				root = appendElement(root, cursize, value);
 			else {
@@ -864,7 +966,7 @@ namespace algorithm {
 			++cursize;
 		}
 
-		void prepend(const Element& value) {
+		void prepend(const ElementT& value) {
 			if(root)
 				root = prependElement(root, cursize, value);
 			else {
@@ -879,6 +981,15 @@ namespace algorithm {
 		Rope& operator+=(const ElementT& value) {
 			append(value);
 			return *this;
+		}
+
+		void clear() {
+			if(!root)
+				return;
+			root->destroy(cursize);
+			delete root;
+			root = NULL;
+			cursize = static_cast<size_t>(0u);
 		}
 
 	};
