@@ -410,11 +410,11 @@ namespace algorithm {
 			 * argument shall be referred to as 'cat'.
 			 * -> Restructure variant #1:
 			 *             +------------+                       +---------------+
-			 *             | cat:concat |                       | result:concat |
+			 *             | cat:Concat |                       | result:Concat |
 			 *             +------------+                       +---------------+
 			 *                /       \                             /       \
 			 *    +-------------+   +------+      \ \   +-------------+   +-------------+
-			 *    | scat:concat |   | cr:? |  -----\ \  | node:concat |   | tcat:concat |
+			 *    | scat:Concat |   | cr:? |  -----\ \  | node:Concat |   | tcat:Concat |
 			 *    +-------------+   +------+  -----/ /  +-------------+   +-------------+
 			 *       /        \                   / /        /   \           /       \
 			 * +-------+    +-------+                       ?     ?    +-------+   +------+
@@ -591,7 +591,7 @@ namespace algorithm {
 			if(left->height > right->height + static_cast<size_t>(1u)) {
 				/* 'Concatenation vs. Leaf' case:
 				 *   +-------------+    +---------+
-				 *   | left:concat |    | right:? |
+				 *   | left:Concat |    | right:? |
 				 *   +-------------+    +---------+
 				 *        /   \
 				 *       ?     ?
@@ -656,7 +656,7 @@ namespace algorithm {
 			else if(right->height > left->height + static_cast<size_t>(1u)) {
 				/* 'Leaf vs. Concatenation' case:
 				 *   +--------+    +--------------+
-				 *   | left:? |    | right:concat |
+				 *   | left:? |    | right:Concat |
 				 *   +--------+    +--------------+
 				 *                       /  \
 				 *                      ?    ?
@@ -793,6 +793,13 @@ namespace algorithm {
 				// The "easy" case: We have a leaf.
 				Leaf* leaf = static_cast<Leaf*>(node);
 				if(!replacement) {
+					if(offset + count == size) {
+						// we only need a prefix of this leaf
+						ElementT* erase = leaf->getElements() + offset;
+						for(index = static_cast<size_t>(0u); index < count; ++index)
+							erase[index].~ElementT();
+						return leaf;
+					}
 					// just fumble together the required elements into a new leaf
 					size_t newSize = size - count + SPARE_SIZE;
 					DeleteLeafNode<Leaf, Leaf> newLeaf(new(newSize) Leaf(newSize));
@@ -866,7 +873,57 @@ namespace algorithm {
 			}
 			else {
 				// The "hard" case: We have a concatenation node.
-				// TODO.
+				Concat* cat = static_cast<Concat*>(node);
+				/*     +------------+
+				 *     | cat:Concat |
+				 *     +------------+
+				 *      /     w    \
+				 * +--------+   +---------+
+				 * | left:? |   | right:? |
+				 * +--------+   +---------+
+				 */
+				Node* tnode;
+				if(!offset && count == cat->weight) {
+					// splice removes left child
+					if(!replacement) {
+						// return right subtree
+						tnode = cat->right;
+						cat->left->destroy(cat->weight);
+						delete cat->left;
+						delete cat;
+						return tnode;
+					}
+					// replace left subtree
+					return concatNodes(replacement, replacementSize, cat->right, size - cat->weight, cat);
+				}
+				if(offset == cat->weight && offset + count == size) {
+					// splice removes right child
+					if(!replacement) {
+						// return left subtree
+						tnode = cat->left;
+						cat->right->destroy(size - cat->weight);
+						delete cat->right;
+						delete cat;
+						return tnode;
+					}
+					// replace right subtree
+					return concatNodes(cat->left, cat->weight, replacement, replacementSize, cat);
+				}
+				if(offset + count <= cat->weight) {
+					// splice is completely in left child
+					tnode = spliceNodes(cat->left, cat->weight, offset, count, replacement, replacementSize);
+					return concatNodes(tnode, cat->weight - count + replacementSize,
+							cat->right, size - cat->weight, cat);
+				}
+				if(offset >= cat->weight) {
+					// splice is completely in right child
+					tnode = spliceNodes(cat->right, size - cat->weight, offset - cat->weight, count,
+							replacement, replacementSize);
+					return concatNodes(cat->left, cat->weight,
+							tnode, size - cat->weight - count + replacementSize, cat);
+				}
+				//TODO
+				return NULL;
 			}
 		}
 
@@ -990,6 +1047,33 @@ namespace algorithm {
 			delete root;
 			root = NULL;
 			cursize = static_cast<size_t>(0u);
+		}
+
+		void erase(size_t index) {
+			if(index >= cursize)
+				throw error::IndexOutOfBoundsError("List index out of bounds", index);
+			if(cursize == static_cast<size_t>(1u))
+				clear();
+			else {
+				root = spliceNodes(root, cursize, index, static_cast<size_t>(1u), NULL, static_cast<size_t>(0u));
+				--cursize;
+			}
+		}
+
+		void erase(size_t begin, size_t end) {
+			if(begin >= cursize)
+				throw error::IndexOutOfBoundsError("List index out of bounds", begin);
+			if(end >= cursize)
+				throw error::IndexOutOfBoundsError("List index out of bounds", end);
+			size_t count = end - begin;
+			if(!count)
+				return;
+			if(count == cursize)
+				clear();
+			else {
+				root = spliceNodes(root, cursize, begin, count, NULL, static_cast<size_t>(0u));
+				cursize -= count;
+			}
 		}
 
 	};
