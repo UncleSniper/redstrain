@@ -713,6 +713,129 @@ namespace algorithm {
 			}
 		}
 
+		static Node* insertElement(Node* node, size_t size, size_t index, const ElementT& value) {
+			if(node->height) {
+				// insert into concatenation node
+				Concat *cat = static_cast<Concat*>(node), *scat;
+				Node* tnode;
+				if(index <= cat->weight) {
+					// insert into left child
+					if(cat->left->height <= cat->right->height) {
+						// left may increase in height without fixup
+						tnode = insertElement(cat->left, cat->weight, index, value);
+						cat->left = tnode;
+						return cat;
+					}
+					scat = static_cast<Concat*>(cat->left);
+					/*              +------------+
+					 *              | cat:Concat |
+					 *              +------------+
+					 *  0             /        \                size
+					 * <-------------------------------------------->
+					 *              /            \
+					 *       +-------------+   +------+
+					 *       | scat:Concat |   | cr:? |
+					 *       +-------------+   +------+
+					 *           /      \
+					 *   0      /cat->weight   cat->weight      size
+					 * <--------------------> <--------------------->
+					 *        /            \
+					 * +-------+          +-------+
+					 * | scl:? |          | scr:? |
+					 * +-------+          +-------+
+					 *  0  scat->weight   scat->weight   cat->weight
+					 * <---------------> <-------------------------->
+					 */
+					if(index <= scat->weight) {
+						// growing cat->left->left; can use normal fixup
+						tnode = insertElement(scat->left, scat->weight, index, value);
+						return growLeftFixup(tnode, scat->weight + static_cast<size_t>(1u), cat);
+					}
+					// cannot use fixup; call down and concatenate
+					tnode = insertElement(scat, cat->weight, index, value);
+					return concatNodes(tnode, cat->weight + static_cast<size_t>(1u),
+							cat->right, size - cat->weight, cat);
+				}
+				else {
+					// insert into right child
+					if(cat->right->height <= cat->left->height) {
+						// right may increase in height without fixup
+						tnode = insertElement(cat->right, size - cat->weight, index - cat->weight, value);
+						cat->right = tnode;
+						return cat;
+					}
+					scat = static_cast<Concat*>(cat->right);
+					/*                         +------------+
+					 *                         | cat:Concat |
+					 *                         +------------+
+					 *  0                         /      \                                      size
+					 * <---------------------------------------------------------------------------->
+					 *                          /          \
+					 *                     +------+       +-------------+
+					 *                     | cl:? |       | scat:Concat |
+					 *                     +------+       +-------------+
+					 *                                      /         \
+					 *  0               cat->weight     cat->weight    \                        size
+					 * <--------------------------->   <-------------------------------------------->
+					 *                                   /               \
+					 *                                 +-------+   +------+
+					 *                                 | scl:? |   | scr:?|
+					 *                                 +-------+   +------+
+					 *  cat->weight   cat->weight + scat->weight   cat->weight + scat->weight   size
+					 * <----------------------------------------> <--------------------------------->
+					 */
+					if(index > cat->weight + scat->weight) {
+						// growing cat->right->right; can use normal fixup
+						tnode = insertElement(scat->right, size - cat->weight - scat->weight,
+								index - cat->weight - scat->weight, value);
+						return growRightFixup(cat, tnode);
+					}
+					// cannot use fixup; call down and concatenate
+					tnode = insertElement(scat, size - cat->weight, index - cat->weight, value);
+					return concatNodes(cat->left, cat->weight,
+							tnode, size - cat->weight + static_cast<size_t>(1u), cat);
+				}
+			}
+			else {
+				Leaf* leaf = static_cast<Leaf*>(node);
+				if(index == size && size < leaf->size) {
+					// appending to non-full leaf is trivial
+					new(leaf->getElements() + size) ElementT(value);
+					return leaf;
+				}
+				else if(size - index > MOVE_LIMIT && (!index || index == size)) {
+					// create new node for 'value'
+					size_t newSize = static_cast<size_t>(1u) + SPARE_SIZE;
+					DeleteLeafNode<Leaf, Leaf> newLeaf(new(newSize) Leaf(newSize));
+					new(newLeaf->getElements()) ElementT(value);
+					++leaf.count;
+					Concat* cat = index
+						? new Concat(leaf, *newLeaf, size)
+						: new Concat(*newLeaf, leaf, static_cast<size_t>(1u));
+					newLeaf.set();
+					return cat;
+				}
+				else {
+					//TODO: perform a real split if MOVE_LIMIT exceeded
+					// "split" node
+					size_t newSize = size - index + static_cast<size_t>(1u) + SPARE_SIZE;
+					DeleteLeafNode<Leaf, Leaf> newLeaf(new(newSize) Leaf(newSize));
+					const ElementT* src = leaf->getElements();
+					ElementT* dest = newLeaf->getElements();
+					size_t u;
+					for(u = static_cast<size_t>(0u); u < index; ++u, ++newLeaf.count)
+						new(dest++) ElementT(src[u]);
+					new(dest++) ElementT(value);
+					++newLeaf.count;
+					for(u = index; u < size; ++u, ++newLeaf.count)
+						new(dest++) ElementT(src[u]);
+					leaf->destroy(size);
+					delete leaf;
+					return newLeaf.set();
+				}
+			}
+		}
+
 		static Node* appendElement(Node* node, size_t size, const ElementT& value) {
 			if(node->height) {
 				Concat* cat = static_cast<Concat*>(node);
