@@ -70,6 +70,34 @@ namespace algorithm {
 
 		};
 
+		class DeleteAnyNode : public util::Pointer<Node> {
+
+		  public:
+			size_t length;
+
+		  public:
+			DeleteAnyNode(Node* node = NULL, size_t length = static_cast<size_t>(0u))
+					: util::Pointer<Node>(node), length(length) {}
+
+			DeleteAnyNode(const DeleteAnyNode& pointer)
+					: util::Pointer<Node>(pointer), length(pointer.length) {}
+
+			~DeleteAnyNode() {
+				if(this->object) {
+					this->object->destroy(length, static_cast<size_t>(0u), static_cast<size_t>(0u));
+					delete this->object;
+				}
+			}
+
+			using util::Pointer<Node>::operator=;
+
+			inline Node* operator=(const DeleteAnyNode& pointer) {
+				length = pointer.length;
+				return this->object = pointer.object;
+			}
+
+		};
+
 		struct Leaf : Node {
 
 			size_t size;
@@ -128,8 +156,8 @@ namespace algorithm {
 			}
 
 			virtual Node* clone(size_t length) const {
-				DeleteLeafNode<Node, Leaf> newLeft(left->clone(weight));
-				DeleteLeafNode<Node, Leaf> newRight(right->clone(length - weight));
+				DeleteAnyNode newLeft(left->clone(weight), weight);
+				DeleteAnyNode newRight(right->clone(length - weight), length - weight);
 				Concat* cat = new Concat(*newLeft, *newRight, weight);
 				newLeft.set();
 				newRight.set();
@@ -1092,6 +1120,43 @@ namespace algorithm {
 			}
 		}
 
+		static Node* subseqNodes(Node* node, size_t size, size_t offset, size_t count) {
+			if(!offset && count == size)
+				return node->clone(size);
+			if(!node->height) {
+				// leaf
+				const ElementT* src = static_cast<Leaf*>(node)->getElements();
+				return newIteratedLeaf<const ElementT*>(src + offset, src + (offset + count), count);
+			}
+			else {
+				// concatenation
+				Concat* cat = static_cast<Concat*>(node);
+				if(offset < cat->weight) {
+					// need left child
+					if(offset + count > cat->weight) {
+						// need both children
+						DeleteAnyNode newLeft(subseqNodes(cat->left, cat->weight, offset, cat->weight - offset),
+								cat->weight - offset);
+						DeleteAnyNode newRight(subseqNodes(cat->right, size - cat->weight,
+								static_cast<size_t>(0u), offset + count - cat->weight));
+						Node* result = concatNodes(*newLeft, cat->weight - offset,
+								*newRight, offset + count - cat->weight, NULL);
+						newLeft.set();
+						newRight.set();
+						return result;
+					}
+					else {
+						// need *only* left child
+						return subseqNodes(cat->left, cat->weight, offset, count);
+					}
+				}
+				else {
+					// need right child
+					return subseqNodes(cat->right, size - cat->weight, offset - cat->weight, count);
+				}
+			}
+		}
+
 	  private:
 		Node* root;
 		size_t cursize;
@@ -1311,6 +1376,22 @@ namespace algorithm {
 			DestroyElements destroy(destination);
 			ElementArrayAppender sink(destination, destroy);
 			subseq(begin, end, sink);
+		}
+
+		void subseq(size_t begin, size_t end, Rope& destination) const {
+			checkIndices(begin, end);
+			if(end <= begin) {
+				destination.clear();
+				return;
+			}
+			size_t count = end - begin;
+			Node* newTree = subseqNodes(root, cursize, begin, count);
+			if(destination.root) {
+				destination.root->destroy(destination.cursize, static_cast<size_t>(0u), destination.cursize);
+				delete destination.root;
+			}
+			destination.root = newTree;
+			destination.cursize = count;
 		}
 
 	};
