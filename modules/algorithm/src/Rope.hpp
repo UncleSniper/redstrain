@@ -137,35 +137,6 @@ namespace algorithm {
 
 		};
 
-		/*TODO: needed?
-		class DeleteAnyNode : public util::Pointer<Node> {
-
-		  public:
-			size_t length;
-
-		  public:
-			DeleteAnyNode(Node* node = NULL, size_t length = static_cast<size_t>(0u))
-					: util::Pointer<Node>(node), length(length) {}
-
-			DeleteAnyNode(const DeleteAnyNode& pointer)
-					: util::Pointer<Node>(pointer), length(pointer.length) {}
-
-			~DeleteAnyNode() {
-				if(this->object) {
-					this->object->destroy(length);
-					delete this->object;
-				}
-			}
-
-			using util::Pointer<Node>::operator=;
-
-			inline Node* operator=(const DeleteAnyNode& pointer) {
-				return this->object = pointer.object;
-			}
-
-		};
-		*/
-
 		struct DestroyElements {
 
 			ElementT* elements;
@@ -187,6 +158,24 @@ namespace algorithm {
 		};
 
 	  private:
+		static Leaf* newSingletonLeaf(const ElementT& value) {
+			size_t size = static_cast<size_t>(1u) + SPARE_SIZE;
+			util::Delete<Leaf> leaf(new(size) Leaf(size));
+			new(leaf->getElements()) ElementT(value);
+			return leaf.set();
+		}
+
+		template<typename IteratorT>
+		static Leaf* newIteratedLeaf(IteratorT begin, IteratorT end, size_t count) {
+			DeleteLeafNode<Leaf, Leaf> leaf(new(count) Leaf(count));
+			ElementT* dest = leaf->getElements();
+			for(; begin != end; ++begin) {
+				new(dest++) ElementT(*begin);
+				++leaf.count;
+			}
+			return leaf.set();
+		}
+
 		/* Takes a tree, 'left', which is a concatenation node
 		 * whose right child, left->right, is itsself a
 		 * concatenation node whose right child, left->right->right,
@@ -805,9 +794,7 @@ namespace algorithm {
 				}
 				else if(size - index > MOVE_LIMIT && (!index || index == size)) {
 					// create new node for 'value'
-					size_t newSize = static_cast<size_t>(1u) + SPARE_SIZE;
-					DeleteLeafNode<Leaf, Leaf> newLeaf(new(newSize) Leaf(newSize));
-					new(newLeaf->getElements()) ElementT(value);
+					DeleteLeafNode<Leaf, Leaf> newLeaf(newSingletonLeaf(value));
 					++newLeaf.count;
 					Concat* cat = index
 						? new Concat(leaf, *newLeaf, size)
@@ -1099,12 +1086,8 @@ namespace algorithm {
 			if(begin == end)
 				return;
 			size_t count = static_cast<size_t>(end - begin);
-			DeleteLeafNode<Leaf, Leaf> leaf(new(count) Leaf(count));
-			ElementT* dest = leaf->getElements();
-			for(; begin != end; ++begin) {
-				new(dest) ElementT(*begin);
-				++leaf.count;
-			}
+			DeleteLeafNode<Leaf, Leaf> leaf(newIteratedLeaf<IteratorT>(begin, end, count));
+			leaf.count = count;
 			if(root)
 				root = concatNodes(root, cursize, *leaf, count, NULL);
 			else
@@ -1118,12 +1101,8 @@ namespace algorithm {
 			if(begin == end)
 				return;
 			size_t count = static_cast<size_t>(end - begin);
-			DeleteLeafNode<Leaf, Leaf> leaf(new(count) Leaf(count));
-			ElementT* dest = leaf->getElements();
-			for(; begin != end; ++begin) {
-				new(dest) ElementT(*begin);
-				++leaf.count;
-			}
+			DeleteLeafNode<Leaf, Leaf> leaf(newIteratedLeaf<IteratorT>(begin, end, count));
+			leaf.count = count;
 			if(root)
 				root = concatNodes(*leaf, count, root, cursize, NULL);
 			else
@@ -1139,12 +1118,8 @@ namespace algorithm {
 			if(begin == end)
 				return;
 			size_t count = static_cast<size_t>(end - begin);
-			DeleteLeafNode<Leaf, Leaf> leaf(new(count) Leaf(count));
-			ElementT* dest = leaf->getElements();
-			for(; begin != end; ++begin) {
-				new(dest) ElementT(*begin);
-				++leaf.count;
-			}
+			DeleteLeafNode<Leaf, Leaf> leaf(newIteratedLeaf<IteratorT>(begin, end, count));
+			leaf.count = count;
 			if(root)
 				root = spliceNodes(root, cursize, index, static_cast<size_t>(0u), *leaf, count);
 			else
@@ -1156,24 +1131,16 @@ namespace algorithm {
 		void append(const ElementT& value) {
 			if(root)
 				root = insertElement(root, cursize, cursize, value);
-			else {
-				size_t count = static_cast<size_t>(1u) + SPARE_SIZE;
-				util::Delete<Leaf> leaf(new(count) Leaf(count));
-				new(leaf->getElements()) ElementT(value);
-				root = leaf.set();
-			}
+			else
+				root = newSingletonLeaf(value);
 			++cursize;
 		}
 
 		void prepend(const ElementT& value) {
 			if(root)
 				root = insertElement(root, cursize, static_cast<size_t>(0u), value);
-			else {
-				size_t count = static_cast<size_t>(1u) + SPARE_SIZE;
-				util::Delete<Leaf> leaf(new(count) Leaf(count));
-				new(leaf->getElements()) ElementT(value);
-				root = leaf.set();
-			}
+			else
+				root = newSingletonLeaf(value);
 			++cursize;
 		}
 
@@ -1187,12 +1154,8 @@ namespace algorithm {
 				throw error::IndexOutOfBoundsError("List index out of bounds", index);
 			if(root)
 				root = insertElement(root, cursize, index, value);
-			else {
-				size_t count = static_cast<size_t>(1u) + SPARE_SIZE;
-				util::Delete<Leaf> leaf(new(count) Leaf(count));
-				new(leaf->getElements()) ElementT(value);
-				root = leaf.set();
-			}
+			else
+				root = newSingletonLeaf(value);
 			++cursize;
 		}
 
@@ -1217,9 +1180,9 @@ namespace algorithm {
 		}
 
 		void erase(size_t begin, size_t end) {
-			if(begin >= cursize)
+			if(begin > cursize)
 				throw error::IndexOutOfBoundsError("List index out of bounds", begin);
-			if(end >= cursize)
+			if(end > cursize)
 				throw error::IndexOutOfBoundsError("List index out of bounds", end);
 			size_t count = end - begin;
 			if(!count)
@@ -1230,6 +1193,50 @@ namespace algorithm {
 				root = spliceNodes(root, cursize, begin, count, NULL, static_cast<size_t>(0u));
 				cursize -= count;
 			}
+		}
+
+		void splice(size_t begin, size_t end, const ElementT& value) {
+			if(begin > cursize)
+				throw error::IndexOutOfBoundsError("List index out of bounds", begin);
+			if(end > cursize)
+				throw error::IndexOutOfBoundsError("List index out of bounds", end);
+			size_t count = end - begin;
+			DeleteLeafNode<Leaf, Leaf> leaf(newSingletonLeaf(value));
+			++leaf.count;
+			if(count == cursize) {
+				root->destroy(cursize);
+				delete root;
+				root = *leaf;
+			}
+			else
+				root = spliceNodes(root, cursize, begin, count, *leaf, static_cast<size_t>(1u));
+			cursize = cursize - count + static_cast<size_t>(1u);
+			leaf.set();
+		}
+
+		template<typename IteratorT>
+		void splice(size_t beginIndex, size_t endIndex, IteratorT beginIterator, IteratorT endIterator) {
+			if(beginIndex > cursize)
+				throw error::IndexOutOfBoundsError("List index out of bounds", beginIndex);
+			if(endIndex > cursize)
+				throw error::IndexOutOfBoundsError("List index out of bounds", endIndex);
+			size_t indexCount = endIndex - beginIndex;
+			if(!indexCount && beginIterator == endIterator)
+				return;
+			size_t iteratorCount = static_cast<size_t>(endIterator - beginIterator);
+			DeleteLeafNode<Leaf, Leaf> leaf(iteratorCount
+					? newIteratedLeaf<IteratorT>(beginIterator, endIterator, iteratorCount) : NULL);
+			leaf.count = iteratorCount;
+			if(indexCount == cursize) {
+				if(root) {
+					root->destroy(cursize);
+					delete root;
+				}
+				root = *leaf;
+			}
+			else
+				root = spliceNodes(root, cursize, beginIndex, indexCount, *leaf, iteratorCount);
+			cursize = cursize - indexCount + iteratorCount;
 		}
 
 	};
