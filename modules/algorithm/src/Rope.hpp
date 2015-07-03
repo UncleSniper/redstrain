@@ -2,6 +2,7 @@
 #define REDSTRAIN_MOD_ALGORITHM_ROPE_HPP
 
 #include <redstrain/util/Delete.hpp>
+#include <redstrain/util/Appender.hpp>
 #include <redstrain/util/WithAlign.hpp>
 #include <redstrain/error/IndexOutOfBoundsError.hpp>
 
@@ -163,6 +164,26 @@ namespace algorithm {
 					return;
 				for(; count; ++elements, --count)
 					elements->~ElementT();
+			}
+
+		};
+
+		class ElementArrayAppender : public util::Appender<ElementT> {
+
+		  private:
+			ElementT* array;
+			DestroyElements& destroyer;
+
+		  public:
+			ElementArrayAppender(ElementT* array, DestroyElements& destroyer)
+					: array(array), destroyer(destroyer) {}
+
+			ElementArrayAppender(const ElementArrayAppender& appender)
+					: util::Appender<ElementT>(appender), array(appender.array), destroyer(appender.destroyer) {}
+
+			virtual void append(const ElementT& element) {
+				new(array++) ElementT(element);
+				++destroyer.count;
 			}
 
 		};
@@ -1049,11 +1070,47 @@ namespace algorithm {
 			}
 		}
 
+		static void subseqNodes(Node* node, size_t offset, size_t count, util::Appender<ElementT>& sink) {
+			if(!node->height) {
+				// leaf
+				const ElementT* src = static_cast<Leaf*>(node)->getElements();
+				size_t index;
+				for(index = static_cast<size_t>(0u); index < count; ++index)
+					sink.append(src[offset + index]);
+			}
+			else {
+				// concatenation
+				Concat* cat = static_cast<Concat*>(node);
+				if(offset < cat->weight) {
+					size_t available = cat->weight - offset;
+					subseqNodes(cat->left, offset, count > available ? available : count, sink);
+				}
+				if(offset + count > cat->weight) {
+					size_t begin = offset < cat->weight ? static_cast<size_t>(0u) : cat->weight - offset;
+					subseqNodes(cat->right, begin, offset + count - cat->weight - begin, sink);
+				}
+			}
+		}
+
 	  private:
 		Node* root;
 		size_t cursize;
 
 	  private:
+		void checkIndex(size_t index, bool equalAllowed) const {
+			if(equalAllowed ? index > cursize : index >= cursize)
+				throw error::IndexOutOfBoundsError("List index out of bounds", index);
+		}
+
+		void checkIndices(size_t& begin, size_t end) const {
+			if(begin > end)
+				begin = end;
+			if(begin > cursize)
+				throw error::IndexOutOfBoundsError("List index out of bounds", begin);
+			if(end > cursize)
+				throw error::IndexOutOfBoundsError("List index out of bounds", end);
+		}
+
 		ElementT* findElement(size_t index) const {
 			if(index >= cursize)
 				throw error::IndexOutOfBoundsError("List index out of bounds", index);
@@ -1183,8 +1240,7 @@ namespace algorithm {
 		}
 
 		void erase(size_t index) {
-			if(index >= cursize)
-				throw error::IndexOutOfBoundsError("List index out of bounds", index);
+			checkIndex(index, false);
 			if(cursize == static_cast<size_t>(1u))
 				clear();
 			else {
@@ -1194,10 +1250,7 @@ namespace algorithm {
 		}
 
 		void erase(size_t begin, size_t end) {
-			if(begin > cursize)
-				throw error::IndexOutOfBoundsError("List index out of bounds", begin);
-			if(end > cursize)
-				throw error::IndexOutOfBoundsError("List index out of bounds", end);
+			checkIndices(begin, end);
 			size_t count = end - begin;
 			if(!count)
 				return;
@@ -1210,10 +1263,7 @@ namespace algorithm {
 		}
 
 		void splice(size_t begin, size_t end, const ElementT& value) {
-			if(begin > cursize)
-				throw error::IndexOutOfBoundsError("List index out of bounds", begin);
-			if(end > cursize)
-				throw error::IndexOutOfBoundsError("List index out of bounds", end);
+			checkIndices(begin, end);
 			size_t count = end - begin;
 			DeleteLeafNode<Leaf, Leaf> leaf(newSingletonLeaf(value));
 			++leaf.count;
@@ -1230,10 +1280,7 @@ namespace algorithm {
 
 		template<typename IteratorT>
 		void splice(size_t beginIndex, size_t endIndex, IteratorT beginIterator, IteratorT endIterator) {
-			if(beginIndex > cursize)
-				throw error::IndexOutOfBoundsError("List index out of bounds", beginIndex);
-			if(endIndex > cursize)
-				throw error::IndexOutOfBoundsError("List index out of bounds", endIndex);
+			checkIndices(beginIndex, endIndex);
 			size_t indexCount = endIndex - beginIndex;
 			if(!indexCount && beginIterator == endIterator)
 				return;
@@ -1251,6 +1298,19 @@ namespace algorithm {
 			else
 				root = spliceNodes(root, cursize, beginIndex, indexCount, *leaf, iteratorCount);
 			cursize = cursize - indexCount + iteratorCount;
+		}
+
+		void subseq(size_t begin, size_t end, util::Appender<ElementT>& destination) const {
+			checkIndices(begin, end);
+			if(end > begin)
+				subseqNodes(root, begin, end - begin, destination);
+			destination.doneAppending();
+		}
+
+		void subseq(size_t begin, size_t end, ElementT* destination) const {
+			DestroyElements destroy(destination);
+			ElementArrayAppender sink(destination, destroy);
+			subseq(begin, end, sink);
 		}
 
 	};
