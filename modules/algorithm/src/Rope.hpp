@@ -377,7 +377,8 @@ namespace algorithm {
 		class ConstIterator : public IteratorBase {
 
 		  private:
-			ConstIterator(const Rope& rope, size_t offset, PathLink* path) : IteratorBase(rope, offset, path) {}
+			ConstIterator(const Rope& rope, size_t offset, typename IteratorBase::PathLink* path)
+					: IteratorBase(rope, offset, path) {}
 
 		  public:
 			ConstIterator(const Rope& rope, size_t offset) : IteratorBase(rope, offset) {}
@@ -393,7 +394,7 @@ namespace algorithm {
 			}
 
 			ConstIterator operator++(int) {
-				DeletePath oldPath(path ? clonePath(path) : NULL);
+				typename IteratorBase::DeletePath oldPath(this->path ? clonePath(this->path) : NULL);
 				this->forward(static_cast<size_t>(1u));
 				oldPath.path = NULL;
 				return ConstIterator(this->rope, this->offset - static_cast<size_t>(1u), *oldPath);
