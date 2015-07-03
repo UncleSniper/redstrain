@@ -808,17 +808,35 @@ namespace algorithm {
 					size_t newSize = static_cast<size_t>(1u) + SPARE_SIZE;
 					DeleteLeafNode<Leaf, Leaf> newLeaf(new(newSize) Leaf(newSize));
 					new(newLeaf->getElements()) ElementT(value);
-					++leaf.count;
+					++newLeaf.count;
 					Concat* cat = index
 						? new Concat(leaf, *newLeaf, size)
 						: new Concat(*newLeaf, leaf, static_cast<size_t>(1u));
 					newLeaf.set();
 					return cat;
 				}
-				else {
-					//TODO: perform a real split if MOVE_LIMIT exceeded
-					// "split" node
+				else if(index && size > MOVE_LIMIT) {
+					// split node and concatenate
 					size_t newSize = size - index + static_cast<size_t>(1u) + SPARE_SIZE;
+					DeleteLeafNode<Leaf, Leaf> newLeaf(new(newSize) Leaf(newSize));
+					const ElementT* src = leaf->getElements();
+					ElementT* dest = newLeaf->getElements();
+					new(dest) ElementT(value);
+					++newLeaf.count;
+					size_t u;
+					for(u = index; u < size; ++u) {
+						new(dest + (u - index + static_cast<size_t>(1u))) ElementT(src[u]);
+						++newLeaf.count;
+					}
+					Concat* cat = new Concat(leaf, *newLeaf, index);
+					for(u = index; u < size; ++u)
+						src[u].~ElementT();
+					newLeaf.set();
+					return cat;
+				}
+				else {
+					// "split" node, then reassemble it into a new one
+					size_t newSize = size + static_cast<size_t>(1u) + SPARE_SIZE;
 					DeleteLeafNode<Leaf, Leaf> newLeaf(new(newSize) Leaf(newSize));
 					const ElementT* src = leaf->getElements();
 					ElementT* dest = newLeaf->getElements();
@@ -833,79 +851,6 @@ namespace algorithm {
 					delete leaf;
 					return newLeaf.set();
 				}
-			}
-		}
-
-		static Node* appendElement(Node* node, size_t size, const ElementT& value) {
-			if(node->height) {
-				Concat* cat = static_cast<Concat*>(node);
-				Node* tnode;
-				if(cat->right->height < cat->left->height) {
-					tnode = appendElement(cat->right, size - cat->weight, value);
-					cat->right = tnode;
-					return node;
-				}
-				Concat* scat = static_cast<Concat*>(cat->right);
-				tnode = appendElement(scat->right, size - cat->weight - scat->weight, value);
-				return growRightFixup(cat, tnode);
-			}
-			else if(size < static_cast<Leaf*>(node)->size) {
-				new(static_cast<Leaf*>(node)->getElements() + size) ElementT(value);
-				return node;
-			}
-			else {
-				size_t count = static_cast<size_t>(1u) + SPARE_SIZE;
-				util::Delete<Leaf> leaf(new(count) Leaf(count));
-				new(leaf->getElements()) ElementT(value);
-				DestroyElements destroyValue(leaf->getElements(), static_cast<size_t>(1u));
-				Concat* result = new Concat(node, *leaf, size);
-				destroyValue.elements = NULL;
-				leaf.set();
-				return result;
-			}
-		}
-
-		static Node* prependElement(Node* node, size_t size, const ElementT& value) {
-			if(node->height) {
-				Concat* cat = static_cast<Concat*>(node);
-				Node* tnode;
-				if(cat->left->height < cat->right->height) {
-					tnode = prependElement(cat->left, cat->weight, value);
-					cat->left = tnode;
-					return node;
-				}
-				Concat* scat = static_cast<Concat*>(cat->left);
-				tnode = prependElement(scat->left, scat->weight, value);
-				return growLeftFixup(tnode, scat->weight + static_cast<size_t>(1u), cat);
-			}
-			else if(size < static_cast<Leaf*>(node)->size && size <= MOVE_LIMIT) {
-				Leaf* leaf = static_cast<Leaf*>(node);
-				size_t newSize = leaf->size + static_cast<size_t>(1u);
-				size_t altSize = size + static_cast<size_t>(1u) + SPARE_SIZE;
-				if(altSize > newSize)
-					newSize = altSize;
-				DeleteLeafNode<Leaf, Leaf> newLeaf(new(newSize) Leaf(newSize));
-				const ElementT* src = leaf->getElements();
-				ElementT* dest = newLeaf->getElements();
-				new(dest) ElementT(value);
-				++newLeaf.count;
-				size_t index;
-				for(index = static_cast<size_t>(0u); index < size; ++index) {
-					new(dest + index + static_cast<size_t>(1u)) ElementT(src[index]);
-					++newLeaf.count;
-				}
-				leaf->destroy(size);
-				delete leaf;
-				return newLeaf.set();
-			}
-			else {
-				size_t count = static_cast<size_t>(1u) + SPARE_SIZE;
-				DeleteLeafNode<Leaf, Leaf> leaf(new(count) Leaf(count));
-				new(leaf->getElements()) ElementT(value);
-				++leaf.count;
-				Concat* cat = new Concat(*leaf, node, static_cast<size_t>(1u));
-				leaf.set();
-				return cat;
 			}
 		}
 
@@ -944,6 +889,8 @@ namespace algorithm {
 				// we only need one concatenation...
 				if(!offset) {
 					// need back piece
+					if(!count)
+						return concatNodes(replacement, replacementSize, leaf, size, NULL);
 					size_t newSize = leaf->size - count;
 					size_t altSize = size - count + SPARE_SIZE;
 					if(altSize > newSize)
@@ -1006,31 +953,51 @@ namespace algorithm {
 				 * +--------+   +---------+
 				 */
 				Node* tnode;
-				if(!offset && count == cat->weight) {
+				if(!offset && count >= cat->weight) {
 					// splice removes left child
 					if(!replacement) {
 						// return right subtree
-						tnode = cat->right;
+						if(count == cat->weight)
+							tnode = cat->right;
+						else
+							tnode = spliceNodes(cat->right, size - cat->weight,
+									static_cast<size_t>(0u), count - cat->weight, replacement, replacementSize);
 						cat->left->destroy(cat->weight);
 						delete cat->left;
 						delete cat;
 						return tnode;
 					}
 					// replace left subtree
-					return concatNodes(replacement, replacementSize, cat->right, size - cat->weight, cat);
+					if(count == cat->weight)
+						return concatNodes(replacement, replacementSize, cat->right, size - cat->weight, cat);
+					else {
+						tnode = spliceNodes(cat->right, size - cat->weight,
+								static_cast<size_t>(0u), count - cat->weight, NULL, static_cast<size_t>(0u));
+						return concatNodes(replacement, replacementSize, tnode, size - count, cat);
+					}
 				}
-				if(offset == cat->weight && offset + count == size) {
+				if(offset <= cat->weight && offset + count == size) {
 					// splice removes right child
 					if(!replacement) {
 						// return left subtree
-						tnode = cat->left;
+						if(offset == cat->weight)
+							tnode = cat->left;
+						else
+							tnode = spliceNodes(cat->left, cat->weight, offset, cat->weight - offset,
+									replacement, replacementSize);
 						cat->right->destroy(size - cat->weight);
 						delete cat->right;
 						delete cat;
 						return tnode;
 					}
 					// replace right subtree
-					return concatNodes(cat->left, cat->weight, replacement, replacementSize, cat);
+					if(offset == cat->weight)
+						return concatNodes(cat->left, cat->weight, replacement, replacementSize, cat);
+					else {
+						tnode = spliceNodes(cat->left, cat->weight, offset, cat->weight - offset,
+								NULL, static_cast<size_t>(0u));
+						return concatNodes(tnode, offset, replacement, replacementSize, cat);
+					}
 				}
 				if(offset + count <= cat->weight) {
 					// splice is completely in left child
@@ -1045,8 +1012,39 @@ namespace algorithm {
 					return concatNodes(cat->left, cat->weight,
 							tnode, size - cat->weight - count + replacementSize, cat);
 				}
-				//TODO
-				return NULL;
+				/* This is the tricky case: Part of the splice
+				 * is in the left and part is in the right child,
+				 * but neither is covered completely. We
+				 * therefore need to call spliceNodes() twice:
+				 *     +-------+-------+
+				 *     | left  | right |
+				 *     +-------+-------+
+				 *         <------->
+				 *      intended splice
+				 *         <--> <-->
+				 *     performed splices
+				 * Since a successful splice cannot be rolled
+				 * back, we're doomed if the second splice
+				 * fails; we will have irreversibly modified
+				 * half of the tree and cannot modify the
+				 * other half accordingly.
+				 *
+				 * What saves us is the fact that spliceNodes()
+				 * CANNOT FAIL if the splice covers a suffix
+				 * of the subject tree and there is no
+				 * replacement. If we arrange for the second
+				 * splice to be like that, the modification
+				 * will be atomic, as desired: Either the
+				 * first splice fails and nothing is changed
+				 * or the first splice succeeds, in which
+				 * case the second splice WILL succeed as
+				 * well and the overall splice thus succeeds.
+				 */
+				Node* newRight = spliceNodes(cat->right, size - cat->weight,
+						static_cast<size_t>(0u), offset + count - cat->weight, replacement, replacementSize);
+				Node* newLeft = spliceNodes(cat->left, cat->weight, offset, cat->weight - offset,
+						NULL, static_cast<size_t>(0u));
+				return concatNodes(newLeft, offset, newRight, size - offset - count + replacementSize, cat);
 			}
 		}
 
@@ -1134,9 +1132,30 @@ namespace algorithm {
 			leaf.set();
 		}
 
+		template<typename IteratorT>
+		void insert(size_t index, IteratorT begin, IteratorT end) {
+			if(index > cursize)
+				throw error::IndexOutOfBoundsError("List index out of bounds", index);
+			if(begin == end)
+				return;
+			size_t count = static_cast<size_t>(end - begin);
+			DeleteLeafNode<Leaf, Leaf> leaf(new(count) Leaf(count));
+			ElementT* dest = leaf->getElements();
+			for(; begin != end; ++begin) {
+				new(dest) ElementT(*begin);
+				++leaf.count;
+			}
+			if(root)
+				root = spliceNodes(root, cursize, index, static_cast<size_t>(0u), *leaf, count);
+			else
+				root = *leaf;
+			cursize += count;
+			leaf.set();
+		}
+
 		void append(const ElementT& value) {
 			if(root)
-				root = appendElement(root, cursize, value);
+				root = insertElement(root, cursize, cursize, value);
 			else {
 				size_t count = static_cast<size_t>(1u) + SPARE_SIZE;
 				util::Delete<Leaf> leaf(new(count) Leaf(count));
@@ -1148,7 +1167,7 @@ namespace algorithm {
 
 		void prepend(const ElementT& value) {
 			if(root)
-				root = prependElement(root, cursize, value);
+				root = insertElement(root, cursize, static_cast<size_t>(0u), value);
 			else {
 				size_t count = static_cast<size_t>(1u) + SPARE_SIZE;
 				util::Delete<Leaf> leaf(new(count) Leaf(count));
@@ -1161,6 +1180,20 @@ namespace algorithm {
 		Rope& operator+=(const ElementT& value) {
 			append(value);
 			return *this;
+		}
+
+		void insert(size_t index, const ElementT& value) {
+			if(index > cursize)
+				throw error::IndexOutOfBoundsError("List index out of bounds", index);
+			if(root)
+				root = insertElement(root, cursize, index, value);
+			else {
+				size_t count = static_cast<size_t>(1u) + SPARE_SIZE;
+				util::Delete<Leaf> leaf(new(count) Leaf(count));
+				new(leaf->getElements()) ElementT(value);
+				root = leaf.set();
+			}
+			++cursize;
 		}
 
 		void clear() {
