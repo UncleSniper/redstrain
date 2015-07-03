@@ -6,6 +6,7 @@
 #include <redstrain/util/WithAlign.hpp>
 #include <redstrain/error/IndexOutOfBoundsError.hpp>
 
+#include "allocators.hpp"
 #include "destructors.hpp"
 
 namespace redengine {
@@ -32,7 +33,8 @@ namespace algorithm {
 	template<
 		typename ElementT,
 		void (*Destructor)(ElementT&) = explicitDestructor<ElementT>,
-		typename RopeTraitsT = DefaultRopeTraits<ElementT>
+		typename RopeTraitsT = DefaultRopeTraits<ElementT>,
+		void* (*Allocator)(size_t) = standardAlloc
 	>
 	class Rope {
 
@@ -157,7 +159,7 @@ namespace algorithm {
 			}
 
 			static void* operator new(size_t allocSize, size_t nodeSize) {
-				return ::operator new(allocSize - sizeof(AlignElement) + nodeSize * sizeof(ElementT));
+				return Allocator(allocSize - sizeof(AlignElement) + nodeSize * sizeof(ElementT));
 			}
 
 		};
@@ -193,6 +195,10 @@ namespace algorithm {
 				else
 					right->destroy(length - weight, static_cast<size_t>(0u), static_cast<size_t>(0u));
 				delete right;
+			}
+
+			static void* operator new(size_t size) {
+				return Allocator(size);
 			}
 
 		};
@@ -248,6 +254,10 @@ namespace algorithm {
 
 				PathLink(Node* node, size_t size, size_t offset, PathLink* parent)
 						: node(node), size(size), offset(offset), parent(parent) {}
+
+				static void* operator new(size_t size) {
+					return Allocator(size);
+				}
 
 			};
 
