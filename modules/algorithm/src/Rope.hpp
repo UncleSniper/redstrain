@@ -43,13 +43,15 @@ namespace algorithm {
 				if(!this->object)
 					return;
 				if(!this->object->height)
-					static_cast<LeafT*>(this->object)->destroyElements(count);
+					static_cast<LeafT*>(this->object)->destroyElements(count,
+							static_cast<size_t>(0u), static_cast<size_t>(0u));
 				delete this->object;
 			}
 
 			using util::Pointer<SubjectT>::operator=;
 
 			inline SubjectT* operator=(const DeleteLeafNode& pointer) {
+				count = pointer.count;
 				return this->object = pointer.object;
 			}
 
@@ -63,7 +65,7 @@ namespace algorithm {
 			virtual ~Node() {}
 
 			virtual Node* clone(size_t) const = 0;
-			virtual void destroy(size_t) = 0;
+			virtual void destroy(size_t, size_t, size_t) = 0;
 
 		};
 
@@ -78,10 +80,15 @@ namespace algorithm {
 				return reinterpret_cast<ElementT*>(&elements);
 			}
 
-			void destroyElements(size_t length) {
+			void destroyElements(size_t length, size_t finalBegin, size_t finalEnd) {
 				ElementT* eptr = reinterpret_cast<ElementT*>(&elements);
-				for(; length; ++eptr, --length)
-					Destructor(*eptr);
+				size_t index;
+				for(index = static_cast<size_t>(0u); index < length; ++index) {
+					if(index >= finalBegin && index < finalEnd)
+						Destructor(eptr[index]);
+					else
+						eptr[index].~ElementT();
+				}
 			}
 
 			virtual Node* clone(size_t length) const {
@@ -95,8 +102,8 @@ namespace algorithm {
 				return newLeaf.set();
 			}
 
-			virtual void destroy(size_t length) {
-				destroyElements(length);
+			virtual void destroy(size_t length, size_t finalBegin, size_t finalEnd) {
+				destroyElements(length, finalBegin, finalEnd);
 			}
 
 			static void* operator new(size_t allocSize, size_t nodeSize) {
@@ -128,10 +135,13 @@ namespace algorithm {
 				return cat;
 			}
 
-			virtual void destroy(size_t length) {
-				left->destroy(weight);
+			virtual void destroy(size_t length, size_t finalBegin, size_t finalEnd) {
+				left->destroy(weight, finalBegin, finalEnd);
 				delete left;
-				right->destroy(length - weight);
+				if(finalBegin >= weight)
+					right->destroy(length - weight, finalBegin - weight, finalEnd - weight);
+				else
+					right->destroy(length - weight, static_cast<size_t>(0u), static_cast<size_t>(0u));
 				delete right;
 			}
 
@@ -686,7 +696,7 @@ namespace algorithm {
 					emergencyCat->fixHeight();
 					return ecat.set();
 				}
-				right->destroy(rightSize);
+				right->destroy(rightSize, static_cast<size_t>(0u), static_cast<size_t>(0u));
 				delete right;
 				destroyCopied.elements = NULL;
 				return left;
@@ -834,7 +844,7 @@ namespace algorithm {
 					++newLeaf.count;
 					for(u = index; u < size; ++u, ++newLeaf.count)
 						new(dest++) ElementT(src[u]);
-					leaf->destroy(size);
+					leaf->destroy(size, static_cast<size_t>(0u), static_cast<size_t>(0u));
 					delete leaf;
 					return newLeaf.set();
 				}
@@ -868,7 +878,7 @@ namespace algorithm {
 						new(dest + (index - count)) ElementT(src[index]);
 						++newLeaf.count;
 					}
-					leaf->destroy(size);
+					leaf->destroy(size, offset, offset + count);
 					delete leaf;
 					return newLeaf.set();
 				}
@@ -890,7 +900,7 @@ namespace algorithm {
 						++newLeaf.count;
 					}
 					Node* cat = concatNodes(replacement, replacementSize, *newLeaf, size - count, NULL);
-					leaf->destroy(size);
+					leaf->destroy(size, static_cast<size_t>(0), count);
 					delete leaf;
 					newLeaf.set();
 					return cat;
@@ -918,8 +928,12 @@ namespace algorithm {
 				}
 				util::Delete<Concat> emergencyCat1(new Concat(leaf, replacement, offset));
 				util::Delete<Concat> emergencyCat2(new Concat(leaf, replacement, offset));
-				for(index = offset; index < size; ++index)
-					src[index].~ElementT();
+				for(index = offset; index < size; ++index) {
+					if(index < offset + count)
+						Destructor(src[index]);
+					else
+						src[index].~ElementT();
+				}
 				Node* innerCat = concatNodes(leaf, offset, replacement, replacementSize, *emergencyCat1);
 				emergencyCat1.set();
 				Node* outerCat = concatNodes(innerCat, offset + replacementSize,
@@ -949,7 +963,7 @@ namespace algorithm {
 						else
 							tnode = spliceNodes(cat->right, size - cat->weight,
 									static_cast<size_t>(0u), count - cat->weight, replacement, replacementSize);
-						cat->left->destroy(cat->weight);
+						cat->left->destroy(cat->weight, static_cast<size_t>(0u), cat->weight);
 						delete cat->left;
 						delete cat;
 						return tnode;
@@ -972,7 +986,7 @@ namespace algorithm {
 						else
 							tnode = spliceNodes(cat->left, cat->weight, offset, cat->weight - offset,
 									replacement, replacementSize);
-						cat->right->destroy(size - cat->weight);
+						cat->right->destroy(size - cat->weight, static_cast<size_t>(0u), size);
 						delete cat->right;
 						delete cat;
 						return tnode;
@@ -1064,7 +1078,7 @@ namespace algorithm {
 
 		~Rope() {
 			if(root) {
-				root->destroy(cursize);
+				root->destroy(cursize, static_cast<size_t>(0u), cursize);
 				delete root;
 			}
 		}
@@ -1162,7 +1176,7 @@ namespace algorithm {
 		void clear() {
 			if(!root)
 				return;
-			root->destroy(cursize);
+			root->destroy(cursize, static_cast<size_t>(0u), cursize);
 			delete root;
 			root = NULL;
 			cursize = static_cast<size_t>(0u);
@@ -1204,7 +1218,7 @@ namespace algorithm {
 			DeleteLeafNode<Leaf, Leaf> leaf(newSingletonLeaf(value));
 			++leaf.count;
 			if(count == cursize) {
-				root->destroy(cursize);
+				root->destroy(cursize, static_cast<size_t>(0u), cursize);
 				delete root;
 				root = *leaf;
 			}
@@ -1229,7 +1243,7 @@ namespace algorithm {
 			leaf.count = iteratorCount;
 			if(indexCount == cursize) {
 				if(root) {
-					root->destroy(cursize);
+					root->destroy(cursize, static_cast<size_t>(0u), cursize);
 					delete root;
 				}
 				root = *leaf;
