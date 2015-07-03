@@ -237,6 +237,170 @@ namespace algorithm {
 
 		};
 
+		class IteratorBase {
+
+		  protected:
+			struct PathLink {
+
+				Node* node;
+				size_t size, offset;
+				PathLink* parent;
+
+				PathLink(Node* node, size_t size, size_t offset, PathLink* parent)
+						: node(node), size(size), offset(offset), parent(parent) {}
+
+			};
+
+		  protected:
+			static void destroyPath(PathLink* path) {
+				while(path) {
+					PathLink* next = path->parent;
+					delete path;
+					path = next;
+				}
+			}
+
+		  protected:
+			struct DeletePath {
+
+				PathLink* path;
+
+				DeletePath(PathLink* path = NULL) : path(path) {}
+				DeletePath(const DeletePath& dp) : path(dp.path) {}
+
+				~DeletePath() {
+					if(path)
+						destroyPath(path);
+				}
+
+			};
+
+		  protected:
+			static void clonePath(PathLink* path) {
+				DeletePath destroy;
+				if(path->parent)
+					destroy.path = clonePath(path->parent);
+				PathLink* newPath = new PathLink(path->cat, path->size, path->offset, destroy.path);
+				destroy.path = NULL;
+				return newPath;
+			}
+
+		  protected:
+			const Rope& rope;
+			size_t offset;
+			PathLink *path;
+
+		  protected:
+			IteratorBase(const Rope& rope, size_t offset, PathLink* path)
+					: rope(rope), offset(offset), path(path) {}
+
+			ElementT* deref() const {
+				if(offset >= rope.cursize)
+					throw error::IndexOutOfBoundsError("List index out of bounds", offset);
+				return static_cast<Node*>(path->node)->getElements() + path->offset;
+			}
+
+			void forward(size_t delta) {
+				size_t target = offset + delta;
+				if(target > rope.cursize)
+					throw error::IndexOutOfBoundsError("List index out of bounds", target);
+				if(target == rope.cursize) {
+					if(path) {
+						destroyPath(path);
+						path = NULL;
+					}
+					offset = target;
+					return;
+				}
+				if(path->offset + delta < path->size) {
+					path->offset += delta;
+					offset = target;
+					return;
+				}
+				size_t scanOffset = offset + (path->size - path->offset);
+				PathLink* top = path->parent;
+				/* TODO.
+				 */
+			}
+
+		  public:
+			IteratorBase(const Rope& rope, size_t offset) : rope(rope), offset(offset), path(NULL) {
+				if(offset < rope.cursize) {
+					Node *node = rope.root, *next;
+					DeletePath destroy;
+					size_t index = offset, size = rope.cursize;
+					while(node->height) {
+						Concat* cat = static_cast<Concat*>(node);
+						size_t coff, nextSize;
+						if(index < cat->weight) {
+							next = cat->left;
+							coff = static_cast<size_t>(0u);
+							nextSize = cat->weight;
+						}
+						else {
+							next = cat->right;
+							index -= cat->weight;
+							coff = static_cast<size_t>(1u);
+							nextSize = size - cat->weight;
+						}
+						destroy.path = path = new PathLink(node, size, coff, path);
+						node = next;
+						size = nextSize;
+					}
+					path = new PathLink(node, size, index, path);
+					destroy.path = NULL;
+				}
+				else
+					offset = rope.cursize;
+			}
+
+			IteratorBase(const IteratorBase& iterator)
+					: rope(iterator.rope), offset(iterator.offset),
+					path(iterator.path ? clonePath(iterator.path) : NULL) {}
+
+			~IteratorBase() {
+				if(path)
+					destroyPath(path);
+			}
+
+			inline const Rope& getRope() const {
+				return rope;
+			}
+
+			inline size_t index() const {
+				return offset;
+			}
+
+		};
+
+	  public:
+		class ConstIterator : public IteratorBase {
+
+		  private:
+			ConstIterator(const Rope& rope, size_t offset, PathLink* path) : IteratorBase(rope, offset, path) {}
+
+		  public:
+			ConstIterator(const Rope& rope, size_t offset) : IteratorBase(rope, offset) {}
+			ConstIterator(const ConstIterator& iterator) : IteratorBase(iterator) {}
+
+			const ElementT& operator*() const {
+				return *this->deref();
+			}
+
+			ConstIterator& operator++() {
+				this->forward(static_cast<size_t>(1u));
+				return *this;
+			}
+
+			ConstIterator operator++(int) {
+				DeletePath oldPath(path ? clonePath(path) : NULL);
+				this->forward(static_cast<size_t>(1u));
+				oldPath.path = NULL;
+				return ConstIterator(this->rope, this->offset - static_cast<size_t>(1u), *oldPath);
+			}
+
+		};
+
 	  private:
 		static Leaf* newSingletonLeaf(const ElementT& value) {
 			size_t size = static_cast<size_t>(1u) + SPARE_SIZE;
