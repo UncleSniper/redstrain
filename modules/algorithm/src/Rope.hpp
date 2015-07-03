@@ -13,16 +13,37 @@ namespace algorithm {
 
 	template<
 		typename ElementT,
+		size_t SpareBytes = static_cast<size_t>(128u),
+		size_t CombineBytes = static_cast<size_t>(64u)
+	>
+	class DefaultRopeTraits {
+
+	  private:
+		static const size_t _SPARE_SIZE = SpareBytes / sizeof(ElementT);
+		static const size_t _COMBINE_LIMIT = CombineBytes / sizeof(ElementT);
+
+	  public:
+		static const size_t COMBINE_LIMIT = _COMBINE_LIMIT ? _COMBINE_LIMIT : static_cast<size_t>(1u);
+		static const size_t MOVE_LIMIT = COMBINE_LIMIT * static_cast<size_t>(2u) / static_cast<size_t>(3u);
+		static const size_t SPARE_SIZE = _SPARE_SIZE ? _SPARE_SIZE : static_cast<size_t>(1u);
+
+	};
+
+	template<
+		typename ElementT,
 		void (*Destructor)(ElementT&) = explicitDestructor<ElementT>,
-		size_t DefaultLeafSize = static_cast<size_t>(0u)
+		typename RopeTraitsT = DefaultRopeTraits<ElementT>
 	>
 	class Rope {
 
-	  private:
-		static const size_t COMBINE_LIMIT = static_cast<size_t>(32u);
-		static const size_t MOVE_LIMIT = COMBINE_LIMIT * static_cast<size_t>(2u) / static_cast<size_t>(3u);
-		static const size_t _SPARE_SIZE = static_cast<size_t>(128u) / sizeof(ElementT);
-		static const size_t SPARE_SIZE = _SPARE_SIZE ? _SPARE_SIZE : static_cast<size_t>(1u);
+	  public:
+		typedef ElementT Element;
+		typedef RopeTraitsT RopeTraits;
+
+	  public:
+		static const size_t COMBINE_LIMIT = RopeTraitsT::COMBINE_LIMIT;
+		static const size_t MOVE_LIMIT = RopeTraitsT::MOVE_LIMIT;
+		static const size_t SPARE_SIZE = RopeTraitsT::SPARE_SIZE;
 
 	  private:
 		typedef typename util::WithAlign<util::AlignOf<ElementT>::ALIGNMENT>::Primitive AlignElement;
