@@ -285,12 +285,30 @@ namespace algorithm {
 
 			};
 
+		  private:
+			struct ClearIterator {
+
+				IteratorBase& iterator;
+				PathLink** stack;
+
+				ClearIterator(IteratorBase& iterator, PathLink** stack) : iterator(iterator), stack(stack) {}
+
+				~ClearIterator() {
+					if(stack) {
+						destroyPath(*stack);
+						iterator.offset = iterator.rope.cursize;
+						iterator.path = NULL;
+					}
+				}
+
+			};
+
 		  protected:
-			static void clonePath(PathLink* path) {
+			static PathLink* clonePath(PathLink* path) {
 				DeletePath destroy;
 				if(path->parent)
 					destroy.path = clonePath(path->parent);
-				PathLink* newPath = new PathLink(path->cat, path->size, path->offset, destroy.path);
+				PathLink* newPath = new PathLink(path->node, path->size, path->offset, destroy.path);
 				destroy.path = NULL;
 				return newPath;
 			}
@@ -304,10 +322,18 @@ namespace algorithm {
 			IteratorBase(const Rope& rope, size_t offset, PathLink* path)
 					: rope(rope), offset(offset), path(path) {}
 
+			IteratorBase(const Rope& rope, size_t offset, PathLink* path, size_t delta, bool moveForward)
+					: rope(rope), offset(offset), path(path) {
+				if(moveForward)
+					forward(delta);
+				else
+					backward(delta);
+			}
+
 			ElementT* deref() const {
 				if(offset >= rope.cursize)
 					throw error::IndexOutOfBoundsError("List index out of bounds", offset);
-				return static_cast<Node*>(path->node)->getElements() + path->offset;
+				return static_cast<Leaf*>(path->node)->getElements() + path->offset;
 			}
 
 			void forward(size_t delta) {
@@ -327,10 +353,113 @@ namespace algorithm {
 					offset = target;
 					return;
 				}
+				// 'scanOffset' points after the end of the
+				// interval we just ascended from
 				size_t scanOffset = offset + (path->size - path->offset);
-				PathLink* top = path->parent;
-				/* TODO.
-				 */
+				util::Delete<PathLink> deleteLeafLink(path);
+				PathLink *top = path->parent, *next;
+				ClearIterator clearOnError(*this, &top);
+				Concat* tcat;
+				while(scanOffset < target) {
+					tcat = static_cast<Concat*>(top->node);
+					if(!top->offset && target < scanOffset + top->size - tcat->weight) {
+						// need to descend into right child
+						break;
+					}
+					if(!top->offset)
+						scanOffset += top->size - tcat->weight;
+					next = top->parent;
+					delete top;
+					top = next;
+				}
+				// might need to ascend further even if scanOffset == target,
+				// so we can right-descend towards an actual leaf
+				while(top->offset) {
+					next = top->parent;
+					delete top;
+					top = next;
+				}
+				// from here on out, 'scanOffset' points to
+				// the start of 'top'
+				scanOffset -= static_cast<Concat*>(top->node)->weight;
+				// now find the proper leaf
+				while(top->node->height) {
+					tcat = static_cast<Concat*>(top->node);
+					if(target - scanOffset < tcat->weight) {
+						// go left
+						next = new PathLink(tcat->left, tcat->weight, static_cast<size_t>(0u), top);
+					}
+					else {
+						// go right
+						next = new PathLink(tcat->right, top->size - tcat->weight, static_cast<size_t>(0u), top);
+						scanOffset += tcat->weight;
+						++top->offset;
+					}
+					top = next;
+				}
+				top->offset = target - scanOffset;
+				clearOnError.stack = NULL;
+				path = top;
+				offset = target;
+			}
+
+			void backward(size_t delta) {
+				if(delta > offset)
+					throw error::IndexOutOfBoundsError("List index out of bounds", delta);
+				size_t target = offset - delta;
+				if(path->offset >= delta) {
+					path->offset -= delta;
+					offset = target;
+					return;
+				}
+				// 'scanOffset' points to the start of
+				// the interval we just ascended from
+				size_t scanOffset = offset - path->offset;
+				util::Delete<PathLink> deleteLeafLink(path);
+				PathLink *top = path->parent, *next;
+				ClearIterator clearOnError(*this, &top);
+				Concat* tcat;
+				while(scanOffset > target) {
+					tcat = static_cast<Concat*>(top->node);
+					if(top->offset && target < scanOffset - tcat->weight) {
+						// need to descend into left child
+						break;
+					}
+					if(top->offset)
+						scanOffset -= tcat->weight;
+					next = top->parent;
+					delete top;
+					top = next;
+				}
+				// might need to ascend further even if scanOffset == target,
+				// so we can left-descend towards an actual leaf
+				while(!top->offset) {
+					next = top->parent;
+					delete top;
+					top = next;
+				}
+				// from here on out, 'scanOffset' points to
+				// the start of 'top'
+				scanOffset -= static_cast<Concat*>(top->node)->weight;
+				// now find the proper leaf
+				while(top->node->height) {
+					tcat = static_cast<Concat*>(top->node);
+					if(target - scanOffset < tcat->weight) {
+						// go left
+						next = new PathLink(tcat->left, tcat->weight, static_cast<size_t>(0u), top);
+					}
+					else {
+						// go right
+						next = new PathLink(tcat->right, top->size - tcat->weight, static_cast<size_t>(0u), top);
+						scanOffset += tcat->weight;
+						++top->offset;
+					}
+					top = next;
+				}
+				top->offset = target - scanOffset;
+				clearOnError.stack = NULL;
+				path = top;
+				offset = target;
 			}
 
 		  public:
@@ -389,6 +518,8 @@ namespace algorithm {
 		  private:
 			ConstIterator(const Rope& rope, size_t offset, typename IteratorBase::PathLink* path)
 					: IteratorBase(rope, offset, path) {}
+			ConstIterator(const Rope& rope, size_t offset, typename IteratorBase::PathLink* path,
+					size_t delta, bool moveForward) : IteratorBase(rope, offset, path, delta, moveForward) {}
 
 		  public:
 			ConstIterator(const Rope& rope, size_t offset) : IteratorBase(rope, offset) {}
@@ -399,15 +530,87 @@ namespace algorithm {
 			}
 
 			ConstIterator& operator++() {
-				this->forward(static_cast<size_t>(1u));
+				if(this->offset < this->rope.cursize)
+					this->forward(static_cast<size_t>(1u));
 				return *this;
 			}
 
 			ConstIterator operator++(int) {
-				typename IteratorBase::DeletePath oldPath(this->path ? clonePath(this->path) : NULL);
+				if(this->offset >= this->rope.cursize)
+					return *this;
+				typename IteratorBase::DeletePath oldPath(this->path ? IteratorBase::clonePath(this->path) : NULL);
 				this->forward(static_cast<size_t>(1u));
+				typename IteratorBase::PathLink* returnPath = oldPath.path;
 				oldPath.path = NULL;
-				return ConstIterator(this->rope, this->offset - static_cast<size_t>(1u), *oldPath);
+				return ConstIterator(this->rope, this->offset - static_cast<size_t>(1u), returnPath);
+			}
+
+			ConstIterator& operator--() {
+				this->backward(static_cast<size_t>(1u));
+				return *this;
+			}
+
+			ConstIterator operator--(int) {
+				typename IteratorBase::DeletePath oldPath(this->path ? IteratorBase::clonePath(this->path) : NULL);
+				this->backward(static_cast<size_t>(1u));
+				typename IteratorBase::PathLink* returnPath = oldPath.path;
+				oldPath.path = NULL;
+				return ConstIterator(this->rope, this->offset + static_cast<size_t>(1u), returnPath);
+			}
+
+			ConstIterator operator+(size_t delta) const {
+				if(this->offset >= this->rope.cursize)
+					return *this;
+				return ConstIterator(this->rope, this->offset + delta,
+						IteratorBase::clonePath(this->path), delta, true);
+			}
+
+			ConstIterator operator-(size_t delta) const {
+				if(this->offset >= this->rope.cursize)
+					return *this;
+				return ConstIterator(this->rope, this->offset - delta,
+						IteratorBase::clonePath(this->path), delta, false);
+			}
+
+			ConstIterator& operator+=(size_t delta) {
+				if(this->offset < this->rope.cursize)
+					this->forward(delta);
+				return *this;
+			}
+
+			ConstIterator& operator-=(size_t delta) {
+				this->backward(delta);
+				return *this;
+			}
+
+			bool operator==(const ConstIterator& iterator) const {
+				return &this->rope == &iterator.rope && this->offset == iterator.offset;
+			}
+
+			bool operator!=(const ConstIterator& iterator) const {
+				return &this->rope != &iterator.rope || this->offset != iterator.offset;
+			}
+
+			bool operator<(const ConstIterator& iterator) const {
+				return this->offset < iterator.offset;
+			}
+
+			bool operator<=(const ConstIterator& iterator) const {
+				return this->offset <= iterator.offset;
+			}
+
+			bool operator>(const ConstIterator& iterator) const {
+				return this->offset > iterator.offset;
+			}
+
+			bool operator>=(const ConstIterator& iterator) const {
+				return this->offset >= iterator.offset;
+			}
+
+			ptrdiff_t operator-(const ConstIterator& iterator) const {
+				return this->offset >= iterator.offset
+					? static_cast<ptrdiff_t>(this->offset - iterator.offset)
+					: -static_cast<ptrdiff_t>(iterator.offset - this->offset);
 			}
 
 		};
@@ -1588,6 +1791,10 @@ namespace algorithm {
 			}
 			destination.root = newTree;
 			destination.cursize = count;
+		}
+
+		ConstIterator cbegin() const {
+			return ConstIterator(*this, static_cast<size_t>(0u));
 		}
 
 	};
