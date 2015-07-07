@@ -324,10 +324,12 @@ namespace algorithm {
 
 			IteratorBase(const Rope* rope, size_t offset, PathLink* path, size_t delta, bool moveForward,
 					bool allowExcess) : rope(rope), offset(offset), path(path) {
+				DeletePath destroyPath(path);
 				if(moveForward)
 					forward(delta, allowExcess);
 				else
 					backward(delta, allowExcess);
+				destroyPath.path = NULL;
 			}
 
 			ElementT* deref() const {
@@ -624,14 +626,14 @@ namespace algorithm {
 			ConstIterator operator+(size_t delta) const {
 				if(!this->rope || this->offset >= this->rope->cursize)
 					return *this;
-				return ConstIterator(this->rope, this->offset + delta,
+				return ConstIterator(this->rope, this->offset,
 						IteratorBase::clonePath(this->path), delta, true, true);
 			}
 
 			ConstIterator operator-(size_t delta) const {
 				if(!this->rope || !this->rope->cursize)
 					return *this;
-				return ConstIterator(this->rope, this->offset - delta,
+				return ConstIterator(this->rope, this->offset,
 						IteratorBase::clonePath(this->path), delta, false, false);
 			}
 
@@ -641,9 +643,8 @@ namespace algorithm {
 			}
 
 			ConstIterator& operator-=(size_t delta) {
-				if(!delta)
-					return *this;
-				skipBackward(delta);
+				if(delta)
+					skipBackward(delta);
 				return *this;
 			}
 
@@ -745,13 +746,187 @@ namespace algorithm {
 			}
 
 			Iterator& operator-=(size_t delta) {
-				if(!delta)
-					return *this;
-				this->skipBackward(delta);
+				if(delta)
+					this->skipBackward(delta);
 				return *this;
 			}
 
 			using ConstIterator::operator-;
+
+		};
+
+		class ConstReverseIterator : public IteratorBase {
+
+		  protected:
+			ConstReverseIterator(const Rope* rope, size_t offset, typename IteratorBase::PathLink* path)
+					: IteratorBase(rope, offset, path) {}
+			ConstReverseIterator(const Rope* rope, size_t offset, typename IteratorBase::PathLink* path,
+					size_t delta, bool moveForward, bool allowExcess)
+					: IteratorBase(rope, offset, path, delta, moveForward, allowExcess) {}
+
+		  protected:
+			void preincrement() {
+				if(this->rope && this->offset < this->rope->cursize)
+					this->backward(static_cast<size_t>(1u), true);
+			}
+
+			typename IteratorBase::PathLink* postincrement() {
+				typename IteratorBase::DeletePath oldPath(this->path ? IteratorBase::clonePath(this->path) : NULL);
+				this->backward(static_cast<size_t>(1u), true);
+				typename IteratorBase::PathLink* returnPath = oldPath.path;
+				oldPath.path = NULL;
+				return returnPath;
+			}
+
+			void predecrement() {
+				if(this->rope && this->rope->cursize) {
+					if(this->offset >= this->rope->cursize)
+						this->buildStackFromOffset(static_cast<size_t>(0u));
+					else
+						this->forward(static_cast<size_t>(1u), false);
+				}
+			}
+
+			typename IteratorBase::PathLink* postdecrement() {
+				typename IteratorBase::DeletePath oldPath(this->path ? IteratorBase::clonePath(this->path) : NULL);
+				if(this->offset >= this->rope->cursize)
+					this->buildStackFromOffset(static_cast<size_t>(0u));
+				else
+					this->forward(static_cast<size_t>(1u), false);
+				typename IteratorBase::PathLink* returnPath = oldPath.path;
+				oldPath.path = NULL;
+				return returnPath;
+			}
+
+			void skipForward(size_t delta) {
+				if(delta && this->rope && this->offset < this->rope->cursize)
+					this->backward(delta, true);
+			}
+
+			void skipBackward(size_t delta) {
+				if(this->rope && this->rope->cursize) {
+					if(this->offset >= this->rope->cursize) {
+						if(delta > this->rope->cursize)
+							throw error::IndexOutOfBoundsError("List index out of bounds", delta);
+						this->buildStackFromOffset(delta - static_cast<size_t>(1u));
+					}
+					else
+						this->forward(delta, false);
+				}
+			}
+
+		  public:
+			ConstReverseIterator() : IteratorBase(NULL, static_cast<size_t>(0u)) {}
+			ConstReverseIterator(const Rope* rope, size_t offset) : IteratorBase(rope, offset) {}
+			ConstReverseIterator(const ConstReverseIterator& iterator) : IteratorBase(iterator) {}
+
+			const ElementT& operator*() const {
+				return *this->deref();
+			}
+
+			ConstReverseIterator& operator++() {
+				preincrement();
+				return *this;
+			}
+
+			ConstReverseIterator operator++(int) {
+				if(!this->rope || this->offset >= this->rope->cursize)
+					return *this;
+				size_t oldOffset = this->offset;
+				typename IteratorBase::PathLink* returnPath = postincrement();
+				return ConstReverseIterator(this->rope, oldOffset, returnPath);
+			}
+
+			ConstReverseIterator& operator--() {
+				predecrement();
+				return *this;
+			}
+
+			ConstReverseIterator operator--(int) {
+				if(!this->rope || !this->rope->cursize)
+					return *this;
+				typename IteratorBase::PathLink* returnPath = postdecrement();
+				return ConstReverseIterator(this->rope, this->offset + static_cast<size_t>(1u), returnPath);
+			}
+
+			ConstReverseIterator operator+(size_t delta) const {
+				if(!this->rope || this->offset >= this->rope->cursize)
+					return *this;
+				return ConstReverseIterator(this->rope, this->offset,
+						IteratorBase::clonePath(this->path), delta, false, true);
+			}
+
+			ConstReverseIterator operator-(size_t delta) const {
+				if(!this->rope || !this->rope->cursize)
+					return *this;
+				return ConstReverseIterator(this->rope, this->offset,
+						IteratorBase::clonePath(this->path), delta, true, false);
+			}
+
+			ConstReverseIterator& operator+=(size_t delta) {
+				skipForward(delta);
+				return *this;
+			}
+
+			ConstReverseIterator& operator-=(size_t delta) {
+				if(delta)
+					skipBackward(delta);
+				return *this;
+			}
+
+			bool operator==(const ConstReverseIterator& iterator) const {
+				return this->rope == iterator.rope && this->offset == iterator.offset;
+			}
+
+			bool operator!=(const ConstReverseIterator& iterator) const {
+				return this->rope != iterator.rope || this->offset != iterator.offset;
+			}
+
+			bool operator<(const ConstReverseIterator& iterator) const {
+				return this->offset < iterator.offset;
+			}
+
+			bool operator<=(const ConstReverseIterator& iterator) const {
+				return this->offset <= iterator.offset;
+			}
+
+			bool operator>(const ConstReverseIterator& iterator) const {
+				return this->offset > iterator.offset;
+			}
+
+			bool operator>=(const ConstReverseIterator& iterator) const {
+				return this->offset >= iterator.offset;
+			}
+
+			ptrdiff_t operator-(const ConstReverseIterator& iterator) const {
+				if(!this->rope || !iterator.rope)
+					return static_cast<ptrdiff_t>(0);
+				if(this->offset >= this->rope->cursize) {
+					if(iterator.offset >= this->rope->cursize)
+						return static_cast<ptrdiff_t>(0);
+					// | 1 | 0 | - |
+					// +---+---+---+
+					//           ^--- me
+					//   ^----------- them
+					return static_cast<ptrdiff_t>(iterator.offset + static_cast<size_t>(1u));
+				}
+				else {
+					if(iterator.offset >= this->rope->cursize) {
+						// | 1 | 0 | - |
+						// +---+---+---+
+						//           ^--- them
+						//   ^----------- me
+						return -static_cast<ptrdiff_t>(this->offset + static_cast<size_t>(1u));
+					}
+					return this->offset >= iterator.offset
+						? -static_cast<ptrdiff_t>(this->offset - iterator.offset)
+						: static_cast<ptrdiff_t>(iterator.offset - this->offset);
+				}
+			}
+
+			operator bool() const {
+				return this->rope && this->offset < this->rope->cursize;
+			}
 
 		};
 
@@ -1947,6 +2122,14 @@ namespace algorithm {
 
 		Iterator end() {
 			return Iterator(this, cursize);
+		}
+
+		ConstReverseIterator crbegin() const {
+			return ConstReverseIterator(this, static_cast<size_t>(0u));
+		}
+
+		ConstReverseIterator crend() const {
+			return ConstReverseIterator(this, cursize);
 		}
 
 	};
