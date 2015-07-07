@@ -650,6 +650,10 @@ namespace algorithm {
 					: -static_cast<ptrdiff_t>(iterator.offset - this->offset);
 			}
 
+			operator bool() const {
+				return this->rope && this->offset < this->rope->cursize;
+			}
+
 		};
 
 		class Iterator : public ConstIterator {
