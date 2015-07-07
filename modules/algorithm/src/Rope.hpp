@@ -2050,6 +2050,16 @@ namespace algorithm {
 			leaf.set();
 		}
 
+		template<typename IteratorT>
+		void insert(const ConstIterator& index, IteratorT begin, IteratorT end) {
+			insert<IteratorT>(index.index(), begin, end);
+		}
+
+		template<typename IteratorT>
+		void insert(const ConstReverseIterator& index, IteratorT begin, IteratorT end) {
+			insert<IteratorT>(index.index(), begin, end);
+		}
+
 		void append(const ElementT& value) {
 			if(root)
 				root = insertElement(root, cursize, cursize, value);
@@ -2081,6 +2091,14 @@ namespace algorithm {
 			++cursize;
 		}
 
+		void insert(const ConstIterator& index, const ElementT& value) {
+			insert(index.index(), value);
+		}
+
+		void insert(const ConstReverseIterator& index, const ElementT& value) {
+			insert(index.index(), value);
+		}
+
 		void clear() {
 			if(!root)
 				return;
@@ -2100,6 +2118,14 @@ namespace algorithm {
 			}
 		}
 
+		void erase(const ConstIterator& index) {
+			erase(index.index());
+		}
+
+		void erase(const ConstReverseIterator& index) {
+			erase(index.index());
+		}
+
 		void erase(size_t begin, size_t end) {
 			checkIndices(begin, end);
 			size_t count = end - begin;
@@ -2111,6 +2137,16 @@ namespace algorithm {
 				root = spliceNodes(root, cursize, begin, count, NULL, static_cast<size_t>(0u));
 				cursize -= count;
 			}
+		}
+
+		void erase(const ConstIterator& begin, const ConstIterator& end) {
+			erase(begin.index(), end.index());
+		}
+
+		void erase(const ConstReverseIterator& begin, ConstReverseIterator& end) {
+			size_t eidx = end.index();
+			erase(eidx >= cursize ? static_cast<size_t>(0u) : eidx + static_cast<size_t>(1u),
+					begin.index() + static_cast<size_t>(1u));
 		}
 
 		void splice(size_t begin, size_t end, const ElementT& value) {
@@ -2127,6 +2163,16 @@ namespace algorithm {
 				root = spliceNodes(root, cursize, begin, count, *leaf, static_cast<size_t>(1u));
 			cursize = cursize - count + static_cast<size_t>(1u);
 			leaf.set();
+		}
+
+		void splice(const ConstIterator& begin, const ConstIterator& end, const ElementT& value) {
+			splice(begin.index(), end.index(), value);
+		}
+
+		void splice(const ConstReverseIterator& begin, const ConstReverseIterator& end, const ElementT& value) {
+			size_t eidx = end.index();
+			splice(eidx >= cursize ? static_cast<size_t>(0u) : eidx + static_cast<size_t>(1u),
+					begin.index() + static_cast<size_t>(1u), value);
 		}
 
 		template<typename IteratorT>
@@ -2151,6 +2197,20 @@ namespace algorithm {
 			cursize = cursize - indexCount + iteratorCount;
 		}
 
+		template<typename IteratorT>
+		void splice(const ConstIterator& beginIndex, const ConstIterator& endIndex,
+				IteratorT beginIterator, IteratorT endIterator) {
+			splice<IteratorT>(beginIndex.index(), endIndex.index(), beginIterator, endIterator);
+		}
+
+		template<typename IteratorT>
+		void splice(const ConstReverseIterator& beginIndex, const ConstReverseIterator& endIndex,
+				IteratorT beginIterator, IteratorT endIterator) {
+			size_t eidx = endIndex.index();
+			splice<IteratorT>(eidx >= cursize ? static_cast<size_t>(0u) : eidx + static_cast<size_t>(1u),
+					beginIndex.index() + static_cast<size_t>(1u), beginIterator, endIterator);
+		}
+
 		void subseq(size_t begin, size_t end, util::Appender<ElementT>& destination) const {
 			checkIndices(begin, end);
 			if(end > begin)
@@ -2158,10 +2218,33 @@ namespace algorithm {
 			destination.doneAppending();
 		}
 
+		void subseq(const ConstIterator& begin, const ConstIterator& end,
+				util::Appender<ElementT>& destination) const {
+			subseq(begin.index(), end.index(), destination);
+		}
+
+		void subseq(const ConstReverseIterator& begin, const ConstReverseIterator& end,
+				util::Appender<ElementT>& destination) const {
+			size_t eidx = end.index();
+			subseq(eidx >= cursize ? static_cast<size_t>(0u) : eidx + static_cast<size_t>(1u),
+					begin.index() + static_cast<size_t>(1u), destination);
+		}
+
 		void subseq(size_t begin, size_t end, ElementT* destination) const {
 			DestroyElements destroy(destination);
 			ElementArrayAppender sink(destination, destroy);
 			subseq(begin, end, sink);
+		}
+
+		void subseq(const ConstIterator& begin, const ConstIterator& end, ElementT* destination) const {
+			subseq(begin.index(), end.index(), destination);
+		}
+
+		void subseq(const ConstReverseIterator& begin, const ConstReverseIterator& end,
+				ElementT* destination) const {
+			size_t eidx = end.index();
+			subseq(eidx >= cursize ? static_cast<size_t>(0u) : eidx + static_cast<size_t>(1u),
+					begin.index() + static_cast<size_t>(1u), destination);
 		}
 
 		void subseq(size_t begin, size_t end, Rope& destination) const {
@@ -2178,6 +2261,16 @@ namespace algorithm {
 			}
 			destination.root = newTree;
 			destination.cursize = count;
+		}
+
+		void subseq(const ConstIterator& begin, const ConstIterator& end, Rope& destination) const {
+			subseq(begin.index(), end.index(), destination);
+		}
+
+		void subseq(const ConstReverseIterator& begin, const ConstReverseIterator& end, Rope& destination) const {
+			size_t eidx = end.index();
+			subseq(eidx >= cursize ? static_cast<size_t>(0u) : eidx + static_cast<size_t>(1u),
+					begin.index() + static_cast<size_t>(1u), destination);
 		}
 
 		ConstIterator cbegin() const {
