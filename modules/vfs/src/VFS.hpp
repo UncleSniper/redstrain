@@ -231,9 +231,9 @@ namespace vfs {
 		io::OutputStream<char>* getOutputStream(const std::string&);
 		io::OutputStream<char>* getOutputStream(const text::String16&);
 		io::OutputStream<char>* getOutputStream(const Pathname&);
-		io::BidirectionalStream<char>* getStream(const std::string&);
-		io::BidirectionalStream<char>* getStream(const text::String16&);
-		io::BidirectionalStream<char>* getStream(const Pathname&);
+		io::BidirectionalStream<char>* getStream(const std::string&, bool);
+		io::BidirectionalStream<char>* getStream(const text::String16&, bool);
+		io::BidirectionalStream<char>* getStream(const Pathname&, bool);
 
 		void removeRecursively(const std::string&);
 		void removeRecursively(const text::String16&);
@@ -270,7 +270,7 @@ namespace vfs {
 		virtual void mknod(PathIterator, PathIterator, Stat::Type, int, Stat::DeviceID) = 0;
 		virtual io::InputStream<char>* getInputStream(PathIterator, PathIterator) = 0;
 		virtual io::OutputStream<char>* getOutputStream(PathIterator, PathIterator) = 0;
-		virtual io::BidirectionalStream<char>* getStream(PathIterator, PathIterator) = 0;
+		virtual io::BidirectionalStream<char>* getStream(PathIterator, PathIterator, bool) = 0;
 
 		static void deconstructPathname(const text::String16&, Pathname&);
 		static text::String16 constructPathname(const Pathname&, bool);

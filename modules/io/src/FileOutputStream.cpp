@@ -9,8 +9,9 @@ namespace io {
 	FileOutputStream::FileOutputStream(const FileOutputStream& stream)
 			: Stream(stream), FileBase(stream), OutputStream<char>(stream) {}
 
-	FileOutputStream::FileOutputStream(const string& path, File::Direction dir, bool create)
-			: FileBase(path, dir == File::INPUT ? File::RANDOM_ACCESS : dir, create) {}
+	FileOutputStream::FileOutputStream(const string& path, File::Direction dir, bool create,
+			File::TruncateMode truncate)
+			: FileBase(path, dir == File::INPUT ? File::RANDOM_ACCESS : dir, create, truncate) {}
 
 	FileOutputStream::FileOutputStream(const File& file) : FileBase(file) {}
 

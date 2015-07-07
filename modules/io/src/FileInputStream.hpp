@@ -15,7 +15,8 @@ namespace io {
 		virtual size_t readBlock(char*, size_t);
 
 	  public:
-		FileInputStream(const std::string&, platform::File::Direction = platform::File::INPUT, bool = false);
+		FileInputStream(const std::string&, platform::File::Direction = platform::File::INPUT, bool = false,
+				platform::File::TruncateMode = platform::File::TRUNCATE_IF_WRONLY);
 		FileInputStream(const platform::File&);
 		FileInputStream(platform::File::Handle, platform::File::Direction = platform::File::INPUT);
 

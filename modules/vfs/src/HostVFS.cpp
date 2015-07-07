@@ -29,6 +29,7 @@ using redengine::platform::Filesystem;
 using redengine::io::BidirectionalStream;
 using redengine::text::DefaultCodecFactory;
 typedef redengine::platform::Stat PlatformStat;
+typedef redengine::platform::File PlatformFile;
 
 namespace redengine {
 namespace vfs {
@@ -226,8 +227,9 @@ namespace vfs {
 		return new FileOutputStream(toHostPath(pathBegin, pathEnd));
 	}
 
-	BidirectionalStream<char>* HostVFS::getStream(PathIterator pathBegin, PathIterator pathEnd) {
-		return new FileStream(toHostPath(pathBegin, pathEnd));
+	BidirectionalStream<char>* HostVFS::getStream(PathIterator pathBegin, PathIterator pathEnd, bool truncate) {
+		return new FileStream(toHostPath(pathBegin, pathEnd), true,
+				truncate ? PlatformFile::ALWAYS_TRUNCATE : PlatformFile::NO_TRUNCATE);
 	}
 
 	#undef toHostPath
@@ -321,7 +323,7 @@ namespace vfs {
 		//TODO
 	}
 
-	BidirectionalStream<char>* HostVFS::getStream(PathIterator pathBegin, PathIterator pathEnd) {
+	BidirectionalStream<char>* HostVFS::getStream(PathIterator pathBegin, PathIterator pathEnd, bool truncate) {
 		//TODO
 	}
 

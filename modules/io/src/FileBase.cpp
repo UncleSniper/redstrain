@@ -13,9 +13,9 @@ namespace io {
 
 	FileBase::FileBase(const FileBase& stream) : Stream(stream), file(stream.file), closeOnDestroy(false) {}
 
-	FileBase::FileBase(const string& path, File::Direction direction, bool create)
+	FileBase::FileBase(const string& path, File::Direction direction, bool create, File::TruncateMode truncate)
 			: file(File::INVALID_HANDLE, direction) {
-		file.open(path, direction, create);
+		file.open(path, direction, create, truncate);
 	}
 
 	FileBase::FileBase(const File& file) : file(file), closeOnDestroy(true) {}

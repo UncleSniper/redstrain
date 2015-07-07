@@ -10,10 +10,10 @@ namespace io {
 			: Stream(stream), FileBase(stream), InputStream<char>(stream), FileInputStream(stream),
 			OutputStream<char>(stream), FileOutputStream(stream), BidirectionalStream<char>(stream) {}
 
-	FileStream::FileStream(const string& path, bool create)
-			: FileBase(path, File::RANDOM_ACCESS, create),
-			FileInputStream(path, File::RANDOM_ACCESS, create),
-			FileOutputStream(path, File::RANDOM_ACCESS, create) {}
+	FileStream::FileStream(const string& path, bool create, File::TruncateMode truncate)
+			: FileBase(path, File::RANDOM_ACCESS, create, truncate),
+			FileInputStream(path, File::RANDOM_ACCESS, create, truncate),
+			FileOutputStream(path, File::RANDOM_ACCESS, create, truncate) {}
 
 	FileStream::FileStream(const File& file) : FileBase(file), FileInputStream(file), FileOutputStream(file) {}
 

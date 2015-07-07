@@ -15,7 +15,8 @@ namespace io {
 		virtual void writeBlock(const char*, size_t);
 
 	  public:
-		FileOutputStream(const std::string&, platform::File::Direction = platform::File::OUTPUT, bool = true);
+		FileOutputStream(const std::string&, platform::File::Direction = platform::File::OUTPUT, bool = true,
+				platform::File::TruncateMode = platform::File::TRUNCATE_IF_WRONLY);
 		FileOutputStream(const platform::File&);
 		FileOutputStream(const platform::File::Handle handle, platform::File::Direction = platform::File::OUTPUT);
 

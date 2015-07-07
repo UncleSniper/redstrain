@@ -18,7 +18,7 @@ namespace io {
 		FileBase(const FileBase&);
 
 	  public:
-		FileBase(const std::string&, platform::File::Direction, bool);
+		FileBase(const std::string&, platform::File::Direction, bool, platform::File::TruncateMode);
 		FileBase(const platform::File&);
 		FileBase(platform::File::Handle, platform::File::Direction);
 		virtual ~FileBase();

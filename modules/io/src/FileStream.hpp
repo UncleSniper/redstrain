@@ -15,7 +15,8 @@ namespace io {
 		FileStream(const FileStream&);
 
 	  public:
-		FileStream(const std::string&, bool = true);
+		FileStream(const std::string&, bool = true,
+				platform::File::TruncateMode = platform::File::TRUNCATE_IF_WRONLY);
 		FileStream(const platform::File&);
 		FileStream(platform::File::Handle);
 

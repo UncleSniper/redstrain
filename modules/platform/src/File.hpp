@@ -43,6 +43,15 @@ namespace platform {
 			OFFSET_FROM_HERE
 		};
 
+		enum TruncateMode {
+			NO_TRUNCATE         = 00,
+			TRUNCATE_IF_WRONLY  = 01,
+			TRUNCATE_IF_RDWR    = 02,
+			TRUNCATE_IF_WRITING = 03,
+			TRUNCATE_IF_RDONLY  = 04,
+			ALWAYS_TRUNCATE     = 07
+		};
+
 	  public:
 #if REDSTRAIN_PLATFORM_OS == REDSTRAIN_PLATFORM_OS_UNIX
 		static const Handle INVALID_HANDLE = -1;
@@ -57,7 +66,7 @@ namespace platform {
 		Direction dir;
 
 	  public:
-		File(const std::string&, Direction, bool = false);
+		File(const std::string&, Direction, bool = false, TruncateMode = TRUNCATE_IF_WRONLY);
 		File(Handle, Direction);
 		File(const File&);
 
@@ -70,7 +79,7 @@ namespace platform {
 		void close();
 		void seek(off_t, SeekWhence);
 		size_t tell() const;
-		void open(const std::string&, Direction, bool = false);
+		void open(const std::string&, Direction, bool = false, TruncateMode = TRUNCATE_IF_WRONLY);
 
 		void _uncheckedClose();
 

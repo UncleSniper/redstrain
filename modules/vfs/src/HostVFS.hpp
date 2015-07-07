@@ -62,7 +62,7 @@ namespace vfs {
 		virtual void mknod(PathIterator, PathIterator, Stat::Type, int, Stat::DeviceID);
 		virtual io::InputStream<char>* getInputStream(PathIterator, PathIterator);
 		virtual io::OutputStream<char>* getOutputStream(PathIterator, PathIterator);
-		virtual io::BidirectionalStream<char>* getStream(PathIterator, PathIterator);
+		virtual io::BidirectionalStream<char>* getStream(PathIterator, PathIterator, bool);
 
 	};
 

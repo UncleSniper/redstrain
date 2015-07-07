@@ -495,20 +495,20 @@ namespace vfs {
 		return getOutputStream(path.begin(), path.end());
 	}
 
-	BidirectionalStream<char>* VFS::getStream(const string& path) {
+	BidirectionalStream<char>* VFS::getStream(const string& path, bool truncate) {
 		Pathname pl;
 		deconstructPathname(path, pl);
-		return getStream(pl.begin(), pl.end());
+		return getStream(pl.begin(), pl.end(), truncate);
 	}
 
-	BidirectionalStream<char>* VFS::getStream(const String16& path) {
+	BidirectionalStream<char>* VFS::getStream(const String16& path, bool truncate) {
 		Pathname pl;
 		VFS::deconstructPathname(path, pl);
-		return getStream(pl.begin(), pl.end());
+		return getStream(pl.begin(), pl.end(), truncate);
 	}
 
-	BidirectionalStream<char>* VFS::getStream(const Pathname& path) {
-		return getStream(path.begin(), path.end());
+	BidirectionalStream<char>* VFS::getStream(const Pathname& path, bool truncate) {
+		return getStream(path.begin(), path.end(), truncate);
 	}
 
 	void VFS::removeRecursively(const string& path) {

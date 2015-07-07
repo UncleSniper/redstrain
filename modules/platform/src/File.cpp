@@ -26,11 +26,11 @@ namespace platform {
 
 #if REDSTRAIN_PLATFORM_OS == REDSTRAIN_PLATFORM_OS_UNIX
 
-	File::File(const string& path, Direction dir, bool create) : handle(INVALID_HANDLE) {
-		open(path, dir, create);
+	File::File(const string& path, Direction dir, bool create, TruncateMode truncate) : handle(INVALID_HANDLE) {
+		open(path, dir, create, truncate);
 	}
 
-	void File::open(const string& path, Direction dir, bool create) {
+	void File::open(const string& path, Direction dir, bool create, TruncateMode truncate) {
 		if(handle != INVALID_HANDLE)
 			close();
 		this->dir = dir;
@@ -38,14 +38,18 @@ namespace platform {
 		switch(dir) {
 			case INPUT:
 				flags = O_RDONLY;
+				if(truncate & TRUNCATE_IF_RDONLY)
+					flags |= O_TRUNC;
 				break;
 			case OUTPUT:
 				flags = O_WRONLY;
-				if(create)
+				if(truncate & TRUNCATE_IF_WRONLY)
 					flags |= O_TRUNC;
 				break;
 			default:
 				flags = O_RDWR;
+				if(truncate & TRUNCATE_IF_RDWR)
+					flags |= O_TRUNC;
 				break;
 		}
 		if(create)
@@ -117,11 +121,18 @@ namespace platform {
 
 	const File::Handle File::INVALID_HANDLE = INVALID_HANDLE_VALUE;
 
-	File::File(const string& path, Direction dir, bool create) : handle(INVALID_HANDLE) {
-		open(path, dir, create);
+	File::File(const string& path, Direction dir, bool create, TruncateMode truncate) : handle(INVALID_HANDLE) {
+		open(path, dir, create, truncate);
 	}
 
-	void File::open(const string& path, Direction dir, bool create) {
+	static DWORD getOpenDisposition(bool create, TruncateMode truncate, TruncateMode tmask) {
+		if(create)
+			return truncate & tmask ? CREATE_ALWAYS : OPEN_ALWAYS;
+		else
+			return truncate & tmask ? TRUNCATE_EXISTING : OPEN_EXISTING;
+	}
+
+	void File::open(const string& path, Direction dir, bool create, TruncateMode truncate) {
 		if(handle != INVALID_HANDLE)
 			close();
 		this->dir = dir;
@@ -129,15 +140,15 @@ namespace platform {
 		switch(dir) {
 			case INPUT:
 				access = GENERIC_READ;
-				disposition = create ? OPEN_ALWAYS : OPEN_EXISTING;
+				disposition = getOpenDisposition(create, truncate, TRUNCATE_IF_RDONLY);
 				break;
 			case OUTPUT:
 				access = GENERIC_WRITE;
-				disposition = create ? CREATE_ALWAYS : OPEN_EXISTING;
+				disposition = getOpenDisposition(create, truncate, TRUNCATE_IF_WRONLY);
 				break;
 			default:
 				access = GENERIC_READ | GENERIC_WRITE;
-				disposition = create ? OPEN_ALWAYS : OPEN_EXISTING;
+				disposition = getOpenDisposition(create, truncate, TRUNCATE_IF_RDWR);
 				break;
 		}
 		handle = CreateFile(path.c_str(), access, static_cast<DWORD>(0u), NULL, disposition,
