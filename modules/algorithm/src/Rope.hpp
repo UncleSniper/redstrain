@@ -322,12 +322,12 @@ namespace algorithm {
 			IteratorBase(const Rope* rope, size_t offset, PathLink* path)
 					: rope(rope), offset(offset), path(path) {}
 
-			IteratorBase(const Rope* rope, size_t offset, PathLink* path, size_t delta, bool moveForward)
-					: rope(rope), offset(offset), path(path) {
+			IteratorBase(const Rope* rope, size_t offset, PathLink* path, size_t delta, bool moveForward,
+					bool allowExcess) : rope(rope), offset(offset), path(path) {
 				if(moveForward)
-					forward(delta);
+					forward(delta, allowExcess);
 				else
-					backward(delta);
+					backward(delta, allowExcess);
 			}
 
 			ElementT* deref() const {
@@ -336,11 +336,36 @@ namespace algorithm {
 				return static_cast<Leaf*>(path->node)->getElements() + path->offset;
 			}
 
-			void forward(size_t delta) {
+			void buildStackFromOffset(size_t newOffset) {
+				Node *node = rope->root, *next;
+				DeletePath destroy;
+				size_t index = newOffset, size = rope->cursize;
+				while(node->height) {
+					Concat* cat = static_cast<Concat*>(node);
+					size_t coff, nextSize;
+					if(index < cat->weight) {
+						next = cat->left;
+						coff = static_cast<size_t>(0u);
+						nextSize = cat->weight;
+					}
+					else {
+						next = cat->right;
+						index -= cat->weight;
+						coff = static_cast<size_t>(1u);
+						nextSize = size - cat->weight;
+					}
+					destroy.path = path = new PathLink(node, size, coff, path);
+					node = next;
+					size = nextSize;
+				}
+				path = new PathLink(node, size, index, path);
+				destroy.path = NULL;
+				offset = newOffset;
+			}
+
+			void forward(size_t delta, bool allowExcess) {
 				size_t target = offset + delta;
-				if(target > rope->cursize)
-					throw error::IndexOutOfBoundsError("List index out of bounds", target);
-				if(target == rope->cursize) {
+				if(allowExcess && target == rope->cursize) {
 					if(path) {
 						destroyPath(path);
 						path = NULL;
@@ -348,6 +373,8 @@ namespace algorithm {
 					offset = target;
 					return;
 				}
+				if(target >= rope->cursize)
+					throw error::IndexOutOfBoundsError("List index out of bounds", target);
 				if(path->offset + delta < path->size) {
 					path->offset += delta;
 					offset = target;
@@ -403,10 +430,18 @@ namespace algorithm {
 				offset = target;
 			}
 
-			void backward(size_t delta) {
+			void backward(size_t delta, bool allowExcess) {
+				if(allowExcess && delta == offset + static_cast<size_t>(1u)) {
+					if(path) {
+						destroyPath(path);
+						path = NULL;
+					}
+					offset = rope->cursize;
+					return;
+				}
+				size_t target = offset - delta;
 				if(delta > offset)
 					throw error::IndexOutOfBoundsError("List index out of bounds", delta);
-				size_t target = offset - delta;
 				if(path->offset >= delta) {
 					path->offset -= delta;
 					offset = target;
@@ -466,31 +501,8 @@ namespace algorithm {
 			IteratorBase(const Rope* rope, size_t offset) : rope(rope), offset(offset), path(NULL) {
 				if(!rope)
 					offset = static_cast<size_t>(0u);
-				else if(offset < rope->cursize) {
-					Node *node = rope->root, *next;
-					DeletePath destroy;
-					size_t index = offset, size = rope->cursize;
-					while(node->height) {
-						Concat* cat = static_cast<Concat*>(node);
-						size_t coff, nextSize;
-						if(index < cat->weight) {
-							next = cat->left;
-							coff = static_cast<size_t>(0u);
-							nextSize = cat->weight;
-						}
-						else {
-							next = cat->right;
-							index -= cat->weight;
-							coff = static_cast<size_t>(1u);
-							nextSize = size - cat->weight;
-						}
-						destroy.path = path = new PathLink(node, size, coff, path);
-						node = next;
-						size = nextSize;
-					}
-					path = new PathLink(node, size, index, path);
-					destroy.path = NULL;
-				}
+				else if(offset < rope->cursize)
+					buildStackFromOffset(offset);
 				else
 					offset = rope->cursize;
 			}
@@ -522,7 +534,8 @@ namespace algorithm {
 			ConstIterator(const Rope* rope, size_t offset, typename IteratorBase::PathLink* path)
 					: IteratorBase(rope, offset, path) {}
 			ConstIterator(const Rope* rope, size_t offset, typename IteratorBase::PathLink* path,
-					size_t delta, bool moveForward) : IteratorBase(rope, offset, path, delta, moveForward) {}
+					size_t delta, bool moveForward, bool allowExcess)
+					: IteratorBase(rope, offset, path, delta, moveForward, allowExcess) {}
 
 		  public:
 			ConstIterator() : IteratorBase(NULL, static_cast<size_t>(0u)) {}
@@ -535,7 +548,7 @@ namespace algorithm {
 
 			ConstIterator& operator++() {
 				if(this->rope && this->offset < this->rope->cursize)
-					this->forward(static_cast<size_t>(1u));
+					this->forward(static_cast<size_t>(1u), true);
 				return *this;
 			}
 
@@ -543,15 +556,19 @@ namespace algorithm {
 				if(!this->rope || this->offset >= this->rope->cursize)
 					return *this;
 				typename IteratorBase::DeletePath oldPath(this->path ? IteratorBase::clonePath(this->path) : NULL);
-				this->forward(static_cast<size_t>(1u));
+				this->forward(static_cast<size_t>(1u), true);
 				typename IteratorBase::PathLink* returnPath = oldPath.path;
 				oldPath.path = NULL;
 				return ConstIterator(this->rope, this->offset - static_cast<size_t>(1u), returnPath);
 			}
 
 			ConstIterator& operator--() {
-				if(this->rope && this->rope->cursize)
-					this->backward(static_cast<size_t>(1u));
+				if(this->rope && this->rope->cursize) {
+					if(this->offset >= this->rope->cursize)
+						this->buildStackFromOffset(this->rope->cursize - static_cast<size_t>(1u));
+					else
+						this->backward(static_cast<size_t>(1u), false);
+				}
 				return *this;
 			}
 
@@ -559,7 +576,10 @@ namespace algorithm {
 				if(!this->rope || !this->rope->cursize)
 					return *this;
 				typename IteratorBase::DeletePath oldPath(this->path ? IteratorBase::clonePath(this->path) : NULL);
-				this->backward(static_cast<size_t>(1u));
+				if(this->offset >= this->rope->cursize)
+					this->buildStackFromOffset(this->rope->cursize - static_cast<size_t>(1u));
+				else
+					this->backward(static_cast<size_t>(1u), false);
 				typename IteratorBase::PathLink* returnPath = oldPath.path;
 				oldPath.path = NULL;
 				return ConstIterator(this->rope, this->offset + static_cast<size_t>(1u), returnPath);
@@ -569,25 +589,34 @@ namespace algorithm {
 				if(!this->rope || this->offset >= this->rope->cursize)
 					return *this;
 				return ConstIterator(this->rope, this->offset + delta,
-						IteratorBase::clonePath(this->path), delta, true);
+						IteratorBase::clonePath(this->path), delta, true, true);
 			}
 
 			ConstIterator operator-(size_t delta) const {
 				if(!this->rope || !this->rope->cursize)
 					return *this;
 				return ConstIterator(this->rope, this->offset - delta,
-						IteratorBase::clonePath(this->path), delta, false);
+						IteratorBase::clonePath(this->path), delta, false, false);
 			}
 
 			ConstIterator& operator+=(size_t delta) {
-				if(this->rope && this->offset < this->rope->cursize)
-					this->forward(delta);
+				if(delta && this->rope && this->offset < this->rope->cursize)
+					this->forward(delta, true);
 				return *this;
 			}
 
 			ConstIterator& operator-=(size_t delta) {
-				if(this->rope && this->rope->cursize)
-					this->backward(delta);
+				if(!delta)
+					return *this;
+				if(this->rope && this->rope->cursize) {
+					if(this->offset >= this->rope->cursize) {
+						if(delta > this->rope->cursize)
+							throw error::IndexOutOfBoundsError("List index out of bounds", delta);
+						this->buildStackFromOffset(this->rope->cursize - delta);
+					}
+					else
+						this->backward(delta, false);
+				}
 				return *this;
 			}
 
