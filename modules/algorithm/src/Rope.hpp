@@ -930,6 +930,78 @@ namespace algorithm {
 
 		};
 
+		class ReverseIterator : public ConstReverseIterator {
+
+		  private:
+			ReverseIterator(const Rope* rope, size_t offset, typename IteratorBase::PathLink* path)
+					: ConstReverseIterator(rope, offset, path) {}
+			ReverseIterator(const Rope* rope, size_t offset, typename IteratorBase::PathLink* path,
+					size_t delta, bool moveForward, bool allowExcess)
+					: ConstReverseIterator(rope, offset, path, delta, moveForward, allowExcess) {}
+
+		  public:
+			ReverseIterator() {}
+			ReverseIterator(const Rope* rope, size_t offset) : ConstReverseIterator(rope, offset) {}
+			ReverseIterator(const ReverseIterator& iterator) : ConstReverseIterator(iterator) {}
+
+			ElementT& operator*() const {
+				return *this->deref();
+			}
+
+			ReverseIterator& operator++() {
+				this->preincrement();
+				return *this;
+			}
+
+			ReverseIterator operator++(int) {
+				if(!this->rope || this->offset >= this->rope->cursize)
+					return *this;
+				size_t oldOffset = this->offset;
+				typename IteratorBase::PathLink* returnPath = this->postincrement();
+				return ReverseIterator(this->rope, oldOffset, returnPath);
+			}
+
+			ReverseIterator& operator--() {
+				this->predecrement();
+				return *this;
+			}
+
+			ReverseIterator operator--(int) {
+				if(!this->rope || !this->rope->cursize)
+					return *this;
+				typename IteratorBase::PathLink* returnPath = this->postdecrement();
+				return ReverseIterator(this->rope, this->offset + static_cast<size_t>(1u), returnPath);
+			}
+
+			ReverseIterator operator+(size_t delta) const {
+				if(!this->rope || this->offset >= this->rope->cursize)
+					return *this;
+				return ReverseIterator(this->rope, this->offset,
+						IteratorBase::clonePath(this->path), delta, false, true);
+			}
+
+			ReverseIterator operator-(size_t delta) const {
+				if(!this->rope || !this->rope->cursize)
+					return *this;
+				return ReverseIterator(this->rope, this->offset,
+						IteratorBase::clonePath(this->path), delta, true, false);
+			}
+
+			ReverseIterator& operator+=(size_t delta) {
+				this->skipForward(delta);
+				return *this;
+			}
+
+			ReverseIterator& operator-=(size_t delta) {
+				if(delta)
+					this->skipBackward(delta);
+				return *this;
+			}
+
+			using ConstReverseIterator::operator-;
+
+		};
+
 	  private:
 		static Leaf* newSingletonLeaf(const ElementT& value) {
 			size_t size = static_cast<size_t>(1u) + SPARE_SIZE;
@@ -2125,11 +2197,19 @@ namespace algorithm {
 		}
 
 		ConstReverseIterator crbegin() const {
-			return ConstReverseIterator(this, static_cast<size_t>(0u));
+			return ConstReverseIterator(this, cursize ? cursize - static_cast<size_t>(1u) : cursize);
 		}
 
 		ConstReverseIterator crend() const {
 			return ConstReverseIterator(this, cursize);
+		}
+
+		ReverseIterator rbegin() {
+			return ReverseIterator(this, cursize ? cursize - static_cast<size_t>(1u) : cursize);
+		}
+
+		ReverseIterator rend() {
+			return ReverseIterator(this, cursize);
 		}
 
 	};
