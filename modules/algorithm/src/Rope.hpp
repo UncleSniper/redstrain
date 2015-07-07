@@ -296,7 +296,7 @@ namespace algorithm {
 				~ClearIterator() {
 					if(stack) {
 						destroyPath(*stack);
-						iterator.offset = iterator.rope.cursize;
+						iterator.offset = iterator.rope->cursize;
 						iterator.path = NULL;
 					}
 				}
@@ -314,15 +314,15 @@ namespace algorithm {
 			}
 
 		  protected:
-			const Rope& rope;
+			const Rope* rope;
 			size_t offset;
 			PathLink *path;
 
 		  protected:
-			IteratorBase(const Rope& rope, size_t offset, PathLink* path)
+			IteratorBase(const Rope* rope, size_t offset, PathLink* path)
 					: rope(rope), offset(offset), path(path) {}
 
-			IteratorBase(const Rope& rope, size_t offset, PathLink* path, size_t delta, bool moveForward)
+			IteratorBase(const Rope* rope, size_t offset, PathLink* path, size_t delta, bool moveForward)
 					: rope(rope), offset(offset), path(path) {
 				if(moveForward)
 					forward(delta);
@@ -331,16 +331,16 @@ namespace algorithm {
 			}
 
 			ElementT* deref() const {
-				if(offset >= rope.cursize)
+				if(!rope || offset >= rope->cursize)
 					throw error::IndexOutOfBoundsError("List index out of bounds", offset);
 				return static_cast<Leaf*>(path->node)->getElements() + path->offset;
 			}
 
 			void forward(size_t delta) {
 				size_t target = offset + delta;
-				if(target > rope.cursize)
+				if(target > rope->cursize)
 					throw error::IndexOutOfBoundsError("List index out of bounds", target);
-				if(target == rope.cursize) {
+				if(target == rope->cursize) {
 					if(path) {
 						destroyPath(path);
 						path = NULL;
@@ -462,12 +462,14 @@ namespace algorithm {
 				offset = target;
 			}
 
-		  public:
-			IteratorBase(const Rope& rope, size_t offset) : rope(rope), offset(offset), path(NULL) {
-				if(offset < rope.cursize) {
-					Node *node = rope.root, *next;
+		  protected:
+			IteratorBase(const Rope* rope, size_t offset) : rope(rope), offset(offset), path(NULL) {
+				if(!rope)
+					offset = static_cast<size_t>(0u);
+				else if(offset < rope->cursize) {
+					Node *node = rope->root, *next;
 					DeletePath destroy;
-					size_t index = offset, size = rope.cursize;
+					size_t index = offset, size = rope->cursize;
 					while(node->height) {
 						Concat* cat = static_cast<Concat*>(node);
 						size_t coff, nextSize;
@@ -490,19 +492,20 @@ namespace algorithm {
 					destroy.path = NULL;
 				}
 				else
-					offset = rope.cursize;
+					offset = rope->cursize;
 			}
 
 			IteratorBase(const IteratorBase& iterator)
 					: rope(iterator.rope), offset(iterator.offset),
 					path(iterator.path ? clonePath(iterator.path) : NULL) {}
 
+		  public:
 			~IteratorBase() {
 				if(path)
 					destroyPath(path);
 			}
 
-			inline const Rope& getRope() const {
+			inline const Rope* getRope() const {
 				return rope;
 			}
 
@@ -516,13 +519,14 @@ namespace algorithm {
 		class ConstIterator : public IteratorBase {
 
 		  private:
-			ConstIterator(const Rope& rope, size_t offset, typename IteratorBase::PathLink* path)
+			ConstIterator(const Rope* rope, size_t offset, typename IteratorBase::PathLink* path)
 					: IteratorBase(rope, offset, path) {}
-			ConstIterator(const Rope& rope, size_t offset, typename IteratorBase::PathLink* path,
+			ConstIterator(const Rope* rope, size_t offset, typename IteratorBase::PathLink* path,
 					size_t delta, bool moveForward) : IteratorBase(rope, offset, path, delta, moveForward) {}
 
 		  public:
-			ConstIterator(const Rope& rope, size_t offset) : IteratorBase(rope, offset) {}
+			ConstIterator() : IteratorBase(NULL, static_cast<size_t>(0u)) {}
+			ConstIterator(const Rope* rope, size_t offset) : IteratorBase(rope, offset) {}
 			ConstIterator(const ConstIterator& iterator) : IteratorBase(iterator) {}
 
 			const ElementT& operator*() const {
@@ -530,13 +534,13 @@ namespace algorithm {
 			}
 
 			ConstIterator& operator++() {
-				if(this->offset < this->rope.cursize)
+				if(this->rope && this->offset < this->rope->cursize)
 					this->forward(static_cast<size_t>(1u));
 				return *this;
 			}
 
 			ConstIterator operator++(int) {
-				if(this->offset >= this->rope.cursize)
+				if(!this->rope || this->offset >= this->rope->cursize)
 					return *this;
 				typename IteratorBase::DeletePath oldPath(this->path ? IteratorBase::clonePath(this->path) : NULL);
 				this->forward(static_cast<size_t>(1u));
@@ -546,11 +550,14 @@ namespace algorithm {
 			}
 
 			ConstIterator& operator--() {
-				this->backward(static_cast<size_t>(1u));
+				if(this->rope && this->rope->cursize)
+					this->backward(static_cast<size_t>(1u));
 				return *this;
 			}
 
 			ConstIterator operator--(int) {
+				if(!this->rope || !this->rope->cursize)
+					return *this;
 				typename IteratorBase::DeletePath oldPath(this->path ? IteratorBase::clonePath(this->path) : NULL);
 				this->backward(static_cast<size_t>(1u));
 				typename IteratorBase::PathLink* returnPath = oldPath.path;
@@ -559,36 +566,37 @@ namespace algorithm {
 			}
 
 			ConstIterator operator+(size_t delta) const {
-				if(this->offset >= this->rope.cursize)
+				if(!this->rope || this->offset >= this->rope->cursize)
 					return *this;
 				return ConstIterator(this->rope, this->offset + delta,
 						IteratorBase::clonePath(this->path), delta, true);
 			}
 
 			ConstIterator operator-(size_t delta) const {
-				if(this->offset >= this->rope.cursize)
+				if(!this->rope || !this->rope->cursize)
 					return *this;
 				return ConstIterator(this->rope, this->offset - delta,
 						IteratorBase::clonePath(this->path), delta, false);
 			}
 
 			ConstIterator& operator+=(size_t delta) {
-				if(this->offset < this->rope.cursize)
+				if(this->rope && this->offset < this->rope->cursize)
 					this->forward(delta);
 				return *this;
 			}
 
 			ConstIterator& operator-=(size_t delta) {
-				this->backward(delta);
+				if(this->rope && this->rope->cursize)
+					this->backward(delta);
 				return *this;
 			}
 
 			bool operator==(const ConstIterator& iterator) const {
-				return &this->rope == &iterator.rope && this->offset == iterator.offset;
+				return this->rope == iterator.rope && this->offset == iterator.offset;
 			}
 
 			bool operator!=(const ConstIterator& iterator) const {
-				return &this->rope != &iterator.rope || this->offset != iterator.offset;
+				return this->rope != iterator.rope || this->offset != iterator.offset;
 			}
 
 			bool operator<(const ConstIterator& iterator) const {
@@ -1794,7 +1802,7 @@ namespace algorithm {
 		}
 
 		ConstIterator cbegin() const {
-			return ConstIterator(*this, static_cast<size_t>(0u));
+			return ConstIterator(this, static_cast<size_t>(0u));
 		}
 
 	};
