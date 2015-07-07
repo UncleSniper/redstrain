@@ -25,7 +25,7 @@ namespace platform {
 	}
 
 	SimpleMutexPool::~SimpleMutexPool() {
-		delete mutexes;
+		delete[] mutexes;
 	}
 
 	static const size_t ALIGN_EXP = IntegerLog<size_t, static_cast<size_t>(2u), MaxAlign::MAX_ALIGNMENT>::EXPONENT;
