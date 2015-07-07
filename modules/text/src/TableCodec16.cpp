@@ -1,4 +1,8 @@
+#include <redstrain/platform/ObjectLocker.hpp>
+
 #include "TableCodec16.hpp"
+
+using redengine::platform::ObjectLocker;
 
 namespace redengine {
 namespace text {
@@ -11,8 +15,10 @@ namespace text {
 			size_t& outcount) {
 		if(outsize < insize)
 			insize = outsize;
+		ObjectLocker<CodeTable<Char16> > locker(table.supportsConcurrentLookup() ? NULL : &table);
 		for(outcount = static_cast<size_t>(0u); outcount < insize; ++outcount)
 			output[outcount] = table.encodeCharacter(input[outcount]);
+		locker.release();
 		return insize;
 	}
 
@@ -20,8 +26,10 @@ namespace text {
 			size_t& outcount) {
 		if(outsize < insize)
 			insize = outsize;
+		ObjectLocker<CodeTable<Char16> > locker(table.supportsConcurrentLookup() ? NULL : &table);
 		for(outcount = static_cast<size_t>(0u); outcount < insize; ++outcount)
 			output[outcount] = table.decodeCharacter(input[outcount]);
+		locker.release();
 		return insize;
 	}
 
