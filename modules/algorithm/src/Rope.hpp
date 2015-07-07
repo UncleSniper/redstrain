@@ -537,6 +537,57 @@ namespace algorithm {
 					size_t delta, bool moveForward, bool allowExcess)
 					: IteratorBase(rope, offset, path, delta, moveForward, allowExcess) {}
 
+		  protected:
+			void preincrement() {
+				if(this->rope && this->offset < this->rope->cursize)
+					this->forward(static_cast<size_t>(1u), true);
+			}
+
+			typename IteratorBase::PathLink* postincrement() {
+				typename IteratorBase::DeletePath oldPath(this->path ? IteratorBase::clonePath(this->path) : NULL);
+				this->forward(static_cast<size_t>(1u), true);
+				typename IteratorBase::PathLink* returnPath = oldPath.path;
+				oldPath.path = NULL;
+				return returnPath;
+			}
+
+			void predecrement() {
+				if(this->rope && this->rope->cursize) {
+					if(this->offset >= this->rope->cursize)
+						this->buildStackFromOffset(this->rope->cursize - static_cast<size_t>(1u));
+					else
+						this->backward(static_cast<size_t>(1u), false);
+				}
+			}
+
+			typename IteratorBase::PathLink* postdecrement() {
+				typename IteratorBase::DeletePath oldPath(this->path ? IteratorBase::clonePath(this->path) : NULL);
+				if(this->offset >= this->rope->cursize)
+					this->buildStackFromOffset(this->rope->cursize - static_cast<size_t>(1u));
+				else
+					this->backward(static_cast<size_t>(1u), false);
+				typename IteratorBase::PathLink* returnPath = oldPath.path;
+				oldPath.path = NULL;
+				return returnPath;
+			}
+
+			void skipForward(size_t delta) {
+				if(delta && this->rope && this->offset < this->rope->cursize)
+					this->forward(delta, true);
+			}
+
+			void skipBackward(size_t delta) {
+				if(this->rope && this->rope->cursize) {
+					if(this->offset >= this->rope->cursize) {
+						if(delta > this->rope->cursize)
+							throw error::IndexOutOfBoundsError("List index out of bounds", delta);
+						this->buildStackFromOffset(this->rope->cursize - delta);
+					}
+					else
+						this->backward(delta, false);
+				}
+			}
+
 		  public:
 			ConstIterator() : IteratorBase(NULL, static_cast<size_t>(0u)) {}
 			ConstIterator(const Rope* rope, size_t offset) : IteratorBase(rope, offset) {}
@@ -547,41 +598,26 @@ namespace algorithm {
 			}
 
 			ConstIterator& operator++() {
-				if(this->rope && this->offset < this->rope->cursize)
-					this->forward(static_cast<size_t>(1u), true);
+				preincrement();
 				return *this;
 			}
 
 			ConstIterator operator++(int) {
 				if(!this->rope || this->offset >= this->rope->cursize)
 					return *this;
-				typename IteratorBase::DeletePath oldPath(this->path ? IteratorBase::clonePath(this->path) : NULL);
-				this->forward(static_cast<size_t>(1u), true);
-				typename IteratorBase::PathLink* returnPath = oldPath.path;
-				oldPath.path = NULL;
+				typename IteratorBase::PathLink* returnPath = postincrement();
 				return ConstIterator(this->rope, this->offset - static_cast<size_t>(1u), returnPath);
 			}
 
 			ConstIterator& operator--() {
-				if(this->rope && this->rope->cursize) {
-					if(this->offset >= this->rope->cursize)
-						this->buildStackFromOffset(this->rope->cursize - static_cast<size_t>(1u));
-					else
-						this->backward(static_cast<size_t>(1u), false);
-				}
+				predecrement();
 				return *this;
 			}
 
 			ConstIterator operator--(int) {
 				if(!this->rope || !this->rope->cursize)
 					return *this;
-				typename IteratorBase::DeletePath oldPath(this->path ? IteratorBase::clonePath(this->path) : NULL);
-				if(this->offset >= this->rope->cursize)
-					this->buildStackFromOffset(this->rope->cursize - static_cast<size_t>(1u));
-				else
-					this->backward(static_cast<size_t>(1u), false);
-				typename IteratorBase::PathLink* returnPath = oldPath.path;
-				oldPath.path = NULL;
+				typename IteratorBase::PathLink* returnPath = postdecrement();
 				return ConstIterator(this->rope, this->offset + static_cast<size_t>(1u), returnPath);
 			}
 
@@ -600,23 +636,14 @@ namespace algorithm {
 			}
 
 			ConstIterator& operator+=(size_t delta) {
-				if(delta && this->rope && this->offset < this->rope->cursize)
-					this->forward(delta, true);
+				skipForward(delta);
 				return *this;
 			}
 
 			ConstIterator& operator-=(size_t delta) {
 				if(!delta)
 					return *this;
-				if(this->rope && this->rope->cursize) {
-					if(this->offset >= this->rope->cursize) {
-						if(delta > this->rope->cursize)
-							throw error::IndexOutOfBoundsError("List index out of bounds", delta);
-						this->buildStackFromOffset(this->rope->cursize - delta);
-					}
-					else
-						this->backward(delta, false);
-				}
+				skipBackward(delta);
 				return *this;
 			}
 
@@ -675,41 +702,26 @@ namespace algorithm {
 			}
 
 			Iterator& operator++() {
-				if(this->rope && this->offset < this->rope->cursize)
-					this->forward(static_cast<size_t>(1u), true);
+				this->preincrement();
 				return *this;
 			}
 
 			Iterator operator++(int) {
 				if(!this->rope || this->offset >= this->rope->cursize)
 					return *this;
-				typename IteratorBase::DeletePath oldPath(this->path ? IteratorBase::clonePath(this->path) : NULL);
-				this->forward(static_cast<size_t>(1u), true);
-				typename IteratorBase::PathLink* returnPath = oldPath.path;
-				oldPath.path = NULL;
+				typename IteratorBase::PathLink* returnPath = this->postincrement();
 				return Iterator(this->rope, this->offset - static_cast<size_t>(1u), returnPath);
 			}
 
 			Iterator& operator--() {
-				if(this->rope && this->rope->cursize) {
-					if(this->offset >= this->rope->cursize)
-						this->buildStackFromOffset(this->rope->cursize - static_cast<size_t>(1u));
-					else
-						this->backward(static_cast<size_t>(1u), false);
-				}
+				this->predecrement();
 				return *this;
 			}
 
 			Iterator operator--(int) {
 				if(!this->rope || !this->rope->cursize)
 					return *this;
-				typename IteratorBase::DeletePath oldPath(this->path ? IteratorBase::clonePath(this->path) : NULL);
-				if(this->offset >= this->rope->cursize)
-					this->buildStackFromOffset(this->rope->cursize - static_cast<size_t>(1u));
-				else
-					this->backward(static_cast<size_t>(1u), false);
-				typename IteratorBase::PathLink* returnPath = oldPath.path;
-				oldPath.path = NULL;
+				typename IteratorBase::PathLink* returnPath = this->postdecrement();
 				return Iterator(this->rope, this->offset + static_cast<size_t>(1u), returnPath);
 			}
 
@@ -728,23 +740,14 @@ namespace algorithm {
 			}
 
 			Iterator& operator+=(size_t delta) {
-				if(delta && this->rope && this->offset < this->rope->cursize)
-					this->forward(delta, true);
+				this->skipForward(delta);
 				return *this;
 			}
 
 			Iterator& operator-=(size_t delta) {
 				if(!delta)
 					return *this;
-				if(this->rope && this->rope->cursize) {
-					if(this->offset >= this->rope->cursize) {
-						if(delta > this->rope->cursize)
-							throw error::IndexOutOfBoundsError("List index out of bounds", delta);
-						this->buildStackFromOffset(this->rope->cursize - delta);
-					}
-					else
-						this->backward(delta, false);
-				}
+				this->skipBackward(delta);
 				return *this;
 			}
 
