@@ -530,7 +530,7 @@ namespace algorithm {
 	  public:
 		class ConstIterator : public IteratorBase {
 
-		  private:
+		  protected:
 			ConstIterator(const Rope* rope, size_t offset, typename IteratorBase::PathLink* path)
 					: IteratorBase(rope, offset, path) {}
 			ConstIterator(const Rope* rope, size_t offset, typename IteratorBase::PathLink* path,
@@ -649,6 +649,102 @@ namespace algorithm {
 					? static_cast<ptrdiff_t>(this->offset - iterator.offset)
 					: -static_cast<ptrdiff_t>(iterator.offset - this->offset);
 			}
+
+		};
+
+		class Iterator : public ConstIterator {
+
+		  private:
+			Iterator(const Rope* rope, size_t offset, typename IteratorBase::PathLink* path)
+					: ConstIterator(rope, offset, path) {}
+			Iterator(const Rope* rope, size_t offset, typename IteratorBase::PathLink* path,
+					size_t delta, bool moveForward, bool allowExcess)
+					: ConstIterator(rope, offset, path, delta, moveForward, allowExcess) {}
+
+		  public:
+			Iterator() {}
+			Iterator(const Rope* rope, size_t offset) : ConstIterator(rope, offset) {}
+			Iterator(const Iterator& iterator) : ConstIterator(iterator) {}
+
+			ElementT& operator*() const {
+				return *this->deref();
+			}
+
+			Iterator& operator++() {
+				if(this->rope && this->offset < this->rope->cursize)
+					this->forward(static_cast<size_t>(1u), true);
+				return *this;
+			}
+
+			Iterator operator++(int) {
+				if(!this->rope || this->offset >= this->rope->cursize)
+					return *this;
+				typename IteratorBase::DeletePath oldPath(this->path ? IteratorBase::clonePath(this->path) : NULL);
+				this->forward(static_cast<size_t>(1u), true);
+				typename IteratorBase::PathLink* returnPath = oldPath.path;
+				oldPath.path = NULL;
+				return Iterator(this->rope, this->offset - static_cast<size_t>(1u), returnPath);
+			}
+
+			Iterator& operator--() {
+				if(this->rope && this->rope->cursize) {
+					if(this->offset >= this->rope->cursize)
+						this->buildStackFromOffset(this->rope->cursize - static_cast<size_t>(1u));
+					else
+						this->backward(static_cast<size_t>(1u), false);
+				}
+				return *this;
+			}
+
+			Iterator operator--(int) {
+				if(!this->rope || !this->rope->cursize)
+					return *this;
+				typename IteratorBase::DeletePath oldPath(this->path ? IteratorBase::clonePath(this->path) : NULL);
+				if(this->offset >= this->rope->cursize)
+					this->buildStackFromOffset(this->rope->cursize - static_cast<size_t>(1u));
+				else
+					this->backward(static_cast<size_t>(1u), false);
+				typename IteratorBase::PathLink* returnPath = oldPath.path;
+				oldPath.path = NULL;
+				return Iterator(this->rope, this->offset + static_cast<size_t>(1u), returnPath);
+			}
+
+			Iterator operator+(size_t delta) const {
+				if(!this->rope || this->offset >= this->rope->cursize)
+					return *this;
+				return Iterator(this->rope, this->offset + delta,
+						IteratorBase::clonePath(this->path), delta, true, true);
+			}
+
+			Iterator operator-(size_t delta) const {
+				if(!this->rope || !this->rope->cursize)
+					return *this;
+				return Iterator(this->rope, this->offset - delta,
+						IteratorBase::clonePath(this->path), delta, false, false);
+			}
+
+			Iterator& operator+=(size_t delta) {
+				if(delta && this->rope && this->offset < this->rope->cursize)
+					this->forward(delta, true);
+				return *this;
+			}
+
+			Iterator& operator-=(size_t delta) {
+				if(!delta)
+					return *this;
+				if(this->rope && this->rope->cursize) {
+					if(this->offset >= this->rope->cursize) {
+						if(delta > this->rope->cursize)
+							throw error::IndexOutOfBoundsError("List index out of bounds", delta);
+						this->buildStackFromOffset(this->rope->cursize - delta);
+					}
+					else
+						this->backward(delta, false);
+				}
+				return *this;
+			}
+
+			using ConstIterator::operator-;
 
 		};
 
@@ -1832,6 +1928,18 @@ namespace algorithm {
 
 		ConstIterator cbegin() const {
 			return ConstIterator(this, static_cast<size_t>(0u));
+		}
+
+		ConstIterator cend() const {
+			return ConstIterator(this, cursize);
+		}
+
+		Iterator begin() {
+			return Iterator(this, static_cast<size_t>(0u));
+		}
+
+		Iterator end() {
+			return Iterator(this, cursize);
 		}
 
 	};
