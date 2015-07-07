@@ -53,6 +53,14 @@ namespace platform {
 		void signal();
 		void broadcast();
 
+		inline Mutex& getMutex() {
+			return mutex;
+		}
+
+		inline const Mutex& getMutex() const {
+			return mutex;
+		}
+
 		inline bool isDestroyed() {
 			return destroyed;
 		}
