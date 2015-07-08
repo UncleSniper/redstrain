@@ -182,6 +182,9 @@ namespace vfs {
 		text::CodecFactory<text::Encoder16>* encoderFactory;
 		text::CodecFactory<text::Decoder16>* decoderFactory;
 
+	  private:
+		static void pushPathSegment(Pathname&, const text::String16&);
+
 	  protected:
 		VFS(const VFS&);
 

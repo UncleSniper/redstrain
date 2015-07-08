@@ -135,13 +135,22 @@ namespace vfs {
 					if(!pos)
 						parts.clear();
 					if(pos > old)
-						parts.push_back(whole.substr(old, pos - old));
+						VFS::pushPathSegment(parts, whole.substr(old, pos - old));
 					old = pos + static_cast<String16::size_type>(1u);
 					break;
 			}
 		}
 		if(pos > old)
-			parts.push_back(whole.substr(old));
+			pushPathSegment(parts, whole.substr(old));
+	}
+
+	void VFS::pushPathSegment(Pathname& parts, const String16& segment) {
+		if(segment == VFS::SELF_LINK)
+			return;
+		if(!parts.empty() && segment == VFS::PARENT_LINK)
+			parts.pop_back();
+		else
+			parts.push_back(segment);
 	}
 
 	string VFS::constructBytePathname(const Pathname& path, bool absolute) const {
