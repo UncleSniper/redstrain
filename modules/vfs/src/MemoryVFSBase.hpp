@@ -16,18 +16,26 @@ namespace vfs {
 		class REDSTRAIN_VFS_API MemoryFile : private util::ReferenceCounted {
 
 		  private:
-			MemoryVFSBase* fs;
+			MemoryVFSBase& fs;
 			Stat::UserID owner;
 			Stat::GroupID group;
 			int permissions;
 			time_t atime, mtime, ctime;
 
+		  protected:
+			void requireOwner() const;
+			void requirePermissions(int);
+
 		  public:
-			MemoryFile(MemoryVFSBase*);
+			MemoryFile(MemoryVFSBase&, int);
 			MemoryFile(const MemoryFile&);
 			virtual ~MemoryFile();
 
-			inline MemoryVFSBase* getMemoryVFSBase() const {
+			inline MemoryVFSBase& getMemoryVFSBase() {
+				return fs;
+			}
+
+			inline const MemoryVFSBase& getMemoryVFSBase() const {
 				return fs;
 			}
 
@@ -83,32 +91,39 @@ namespace vfs {
 			void unref();
 
 			virtual Stat::Type getFileType() const = 0;
-			virtual void stat(Stat&, bool) = 0;
+			virtual void stat(Stat&) = 0;
 			virtual void chmod(int);
-			virtual void chown(Stat::UserID, bool);
-			virtual void chgrp(Stat::GroupID, bool);
+			virtual void chown(Stat::UserID);
+			virtual void chgrp(Stat::GroupID);
 			virtual void utime();
 			virtual void utime(time_t, time_t);
 			virtual bool access(int);
 			virtual void rmdir();
 			virtual void readlink(text::String16&);
-			virtual void truncate(size_t);
-			virtual io::InputStream<char>* getInputStream();
-			virtual io::OutputStream<char>* getOutputStream();
-			virtual io::BidirectionalStream<char>* getStream(bool);
+			virtual void truncate(size_t) = 0;
+			virtual io::InputStream<char>* getInputStream() = 0;
+			virtual io::OutputStream<char>* getOutputStream() = 0;
+			virtual io::BidirectionalStream<char>* getStream(bool) = 0;
 
 		};
 
 		class REDSTRAIN_VFS_API MemoryDirectory : public MemoryFile {
 
 		  public:
-			MemoryDirectory(MemoryVFSBase*);
+			MemoryDirectory(MemoryVFSBase&, int);
 			MemoryDirectory(const MemoryDirectory&);
 
+			void removeEntry(const text::String16&);
+
 			virtual Stat::Type getFileType() const;
+			virtual void truncate(size_t);
+			virtual io::InputStream<char>* getInputStream();
+			virtual io::OutputStream<char>* getOutputStream();
+			virtual io::BidirectionalStream<char>* getStream(bool);
 			virtual void readdir(util::Appender<text::String16>&) = 0;
+			virtual void copydir(MemoryDirectory&) const = 0;
 			virtual MemoryFile* getEntry(const text::String16&) = 0;
-			virtual void putEntry(const text::String16&) = 0;
+			virtual void putEntry(const text::String16&, MemoryFile*) = 0;
 
 		};
 
@@ -116,27 +131,46 @@ namespace vfs {
 
 		  private:
 			typedef std::map<text::String16, MemoryFile*> EntryMap;
+			typedef EntryMap::iterator EntryIterator;
+			typedef EntryMap::const_iterator ConstEntryIterator;
 
 		  private:
 			EntryMap entries;
 
 		  public:
-			SimpleMemoryDirectory(MemoryVFSBase*);
+			SimpleMemoryDirectory(MemoryVFSBase&, int);
 			SimpleMemoryDirectory(const SimpleMemoryDirectory&);
 			virtual ~SimpleMemoryDirectory();
 
+			virtual void stat(Stat&);
 			virtual void readdir(util::Appender<text::String16>&);
 			virtual MemoryFile* getEntry(const text::String16&);
-			virtual void putEntry(const text::String16&);
+			virtual void putEntry(const text::String16&, MemoryFile*);
 
+		};
+
+	  public:
+		enum BaseFlags {
+			BFL_HEED_OWNER          = 01,
+			BFL_HEED_GROUP          = 02,
+			BFL_ENFORCE_PERMISSIONS = 04
 		};
 
 	  private:
 		MemoryDirectory* root;
 		platform::MutexPool* mutexPool;
+		Stat::UserID currentUser;
+		Stat::GroupID currentGroup;
+		int flags;
+
+	  protected:
+		MemoryFile* resolvePath(PathIterator&, PathIterator) const;
+		MemoryFile* requireFile(PathIterator, PathIterator) const;
+		MemoryFile* requireParentDirectory(PathIterator, PathIterator) const;
+		MemoryFile* snapSymbolicLinks(PathIterator, PathIterator, MemoryFile*) const;
 
 	  public:
-		MemoryVFSBase();
+		MemoryVFSBase(MemoryDirectory*, int);
 		MemoryVFSBase(const MemoryVFSBase&);
 		virtual ~MemoryVFSBase();
 
@@ -150,7 +184,43 @@ namespace vfs {
 
 		platform::MutexPool& getEffectiveMutexPool() const;
 
-		virtual MemoryDirectory* createDirectory() = 0;
+		inline Stat::UserID getCurrentUser() const {
+			return currentUser;
+		}
+
+		inline void setCurrentUser(Stat::UserID user) {
+			currentUser = user;
+		}
+
+		inline Stat::GroupID getCurrentGroup() const {
+			return currentGroup;
+		}
+
+		inline void setCurrentGroup(Stat::GroupID group) {
+			currentGroup = group;
+		}
+
+		inline int getBaseFlags() const {
+			return flags;
+		}
+
+		inline void setBaseFlags(int flags) {
+			this->flags = flags;
+		}
+
+		inline bool hasBaseFlag(int mask) {
+			return (flags & mask) == mask;
+		}
+
+		inline void setBaseFlag(int mask) {
+			flags |= mask;
+		}
+
+		inline void unsetBaseFlag(int mask) {
+			flags &= ~mask;
+		}
+
+		virtual MemoryDirectory* createDirectory(int) = 0;
 
 		virtual void stat(PathIterator, PathIterator, Stat&, bool);
 		virtual void chmod(PathIterator, PathIterator, int);

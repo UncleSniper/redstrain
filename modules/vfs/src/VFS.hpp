@@ -174,6 +174,10 @@ namespace vfs {
 
 		};
 
+	  public:
+		static const text::String16 SELF_LINK;
+		static const text::String16 PARENT_LINK;
+
 	  private:
 		text::CodecFactory<text::Encoder16>* encoderFactory;
 		text::CodecFactory<text::Decoder16>* decoderFactory;

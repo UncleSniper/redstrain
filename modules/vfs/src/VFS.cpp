@@ -35,6 +35,14 @@ using redengine::text::DefaultCodecFactory;
 namespace redengine {
 namespace vfs {
 
+	static const Char16 parentLinkChars[] = {
+		static_cast<Char16>('.'),
+		static_cast<Char16>('.')
+	};
+
+	const String16 VFS::SELF_LINK(parentLinkChars + 1);
+	const String16 VFS::PARENT_LINK(parentLinkChars);
+
 	VFS::FSInfo::FSInfo() : type(UNKNOWNFS), totalBlocks(static_cast<size_t>(0u)),
 			freeBlocks(static_cast<size_t>(0u)), totalINodes(static_cast<size_t>(0u)),
 			freeINodes(static_cast<size_t>(0u)), nameLength(static_cast<size_t>(0u)) {}

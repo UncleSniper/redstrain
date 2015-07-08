@@ -92,6 +92,30 @@ namespace util {
 			return this->object = pointer.object;
 		}
 
+		/**
+		 * Replace wrapped pointer value. That is, set the #object member
+		 * to the value of @c newObject. The reference count is moved,
+		 * meaning @c ref() is called on @c newObject if non-<tt>NULL</tt>
+		 * and @c unref() is called on #object if non-<tt>NULL</tt>.
+		 * The #object attribute is only modified after both of these
+		 * reference count updates.
+		 *
+		 * If @c newObject and #object point to the same object, this
+		 * function has no effect; the reference count is not modified
+		 * at all in this case.
+		 *
+		 * @param newObject pointer value to set this smart pointer to
+		 */
+		void move(SubjectT* newObject = NULL) {
+			if(newObject == object)
+				return;
+			if(newObject)
+				newObject->ref();
+			if(object)
+				object->unref();
+			object = newObject;
+		}
+
 	};
 
 }}

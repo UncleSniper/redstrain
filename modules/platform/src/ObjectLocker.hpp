@@ -50,6 +50,14 @@ namespace platform {
 			object = NULL;
 		}
 
+		void move(const SubjectT* newObject) {
+			if(newObject == object)
+				return;
+			pool.lockObject<SubjectT>(newObject);
+			pool.unlockObject<SubjectT>(object);
+			object = newObject;
+		}
+
 	};
 
 	template<typename SubjectT>
