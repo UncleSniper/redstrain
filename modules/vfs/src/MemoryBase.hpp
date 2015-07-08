@@ -10,13 +10,13 @@
 namespace redengine {
 namespace vfs {
 
-	class REDSTRAIN_VFS_API MemoryVFSBase : public VFS {
+	class REDSTRAIN_VFS_API MemoryBase : public VFS {
 
 	  public:
 		class REDSTRAIN_VFS_API MemoryFile : private util::ReferenceCounted {
 
 		  private:
-			MemoryVFSBase& fs;
+			MemoryBase& fs;
 			Stat::UserID owner;
 			Stat::GroupID group;
 			int permissions;
@@ -27,15 +27,15 @@ namespace vfs {
 			void requirePermissions(int);
 
 		  public:
-			MemoryFile(MemoryVFSBase&, int);
+			MemoryFile(MemoryBase&, int);
 			MemoryFile(const MemoryFile&);
 			virtual ~MemoryFile();
 
-			inline MemoryVFSBase& getMemoryVFSBase() {
+			inline MemoryBase& getMemoryVFSBase() {
 				return fs;
 			}
 
-			inline const MemoryVFSBase& getMemoryVFSBase() const {
+			inline const MemoryBase& getMemoryVFSBase() const {
 				return fs;
 			}
 
@@ -110,7 +110,7 @@ namespace vfs {
 		class REDSTRAIN_VFS_API MemoryDirectory : public MemoryFile {
 
 		  public:
-			MemoryDirectory(MemoryVFSBase&, int);
+			MemoryDirectory(MemoryBase&, int);
 			MemoryDirectory(const MemoryDirectory&);
 
 			void removeEntry(const text::String16&);
@@ -138,7 +138,7 @@ namespace vfs {
 			EntryMap entries;
 
 		  public:
-			SimpleMemoryDirectory(MemoryVFSBase&, int);
+			SimpleMemoryDirectory(MemoryBase&, int);
 			SimpleMemoryDirectory(const SimpleMemoryDirectory&);
 			virtual ~SimpleMemoryDirectory();
 
@@ -170,9 +170,9 @@ namespace vfs {
 		MemoryFile* snapSymbolicLinks(PathIterator, PathIterator, MemoryFile*) const;
 
 	  public:
-		MemoryVFSBase(MemoryDirectory*, int);
-		MemoryVFSBase(const MemoryVFSBase&);
-		virtual ~MemoryVFSBase();
+		MemoryBase(MemoryDirectory*, int);
+		MemoryBase(const MemoryBase&);
+		virtual ~MemoryBase();
 
 		inline platform::MutexPool* getMutexPool() const {
 			return mutexPool;
