@@ -107,13 +107,13 @@ namespace util {
 		 * @param newObject pointer value to set this smart pointer to
 		 */
 		void move(SubjectT* newObject = NULL) {
-			if(newObject == object)
+			if(newObject == this->object)
 				return;
 			if(newObject)
 				newObject->ref();
-			if(object)
-				object->unref();
-			object = newObject;
+			if(this->object)
+				this->object->unref();
+			this->object = newObject;
 		}
 
 	};
