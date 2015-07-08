@@ -9,7 +9,7 @@ namespace vfs {
 	class REDSTRAIN_VFS_API NoSuchFileError : public VFSIOError {
 
 	  private:
-		const std::string& path;
+		const std::string path;
 
 	  public:
 		NoSuchFileError(const std::string& = "");
