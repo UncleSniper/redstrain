@@ -176,12 +176,12 @@ namespace vfs {
 		result = decodeHostPathname(result8);
 	}
 
-	struct EncodingAppender : Appender<string> {
+	struct HostEncodingAppender : Appender<string> {
 
 		HostVFS& fs;
 		Appender<String16>& sink;
 
-		EncodingAppender(HostVFS& fs, Appender<String16>& sink) : fs(fs), sink(sink) {}
+		HostEncodingAppender(HostVFS& fs, Appender<String16>& sink) : fs(fs), sink(sink) {}
 
 		virtual void append(const string& child) {
 			sink.append(fs.decodeHostPathname(child));
@@ -194,7 +194,7 @@ namespace vfs {
 	};
 
 	void HostVFS::readdir(PathIterator pathBegin, PathIterator pathEnd, Appender<String16>& sink) {
-		EncodingAppender proxy(*this, sink);
+		HostEncodingAppender proxy(*this, sink);
 		Filesystem::readdir(toHostPath(pathBegin, pathEnd), proxy);
 	}
 

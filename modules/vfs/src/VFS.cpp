@@ -10,6 +10,7 @@
 
 #include "VFS.hpp"
 #include "Unlinker.hpp"
+#include "GenericVFile.hpp"
 
 using std::string;
 using redengine::util::Ref;
@@ -50,6 +51,17 @@ namespace vfs {
 		freeINodes = info.freeINodes;
 		nameLength = info.nameLength;
 		return *this;
+	}
+
+	VFS::EncodingAppender::EncodingAppender(Appender<string>& sink, VFS& encoder)
+			: sink(sink), encoder(encoder) {}
+
+	void VFS::EncodingAppender::append(const String16& element) {
+		sink.append(encoder.encodePathname(element));
+	}
+
+	void VFS::EncodingAppender::doneAppending() {
+		sink.doneAppending();
 	}
 
 	VFS::VFS() : encoderFactory(NULL), decoderFactory(NULL) {}
@@ -381,23 +393,6 @@ namespace vfs {
 		readlink(path.begin(), path.end(), result);
 	}
 
-	struct EncodingAppender : Appender<String16> {
-
-		Appender<string>& sink;
-		VFS& encoder;
-
-		EncodingAppender(Appender<string>& sink, VFS& encoder) : sink(sink), encoder(encoder) {}
-
-		virtual void append(const String16& element) {
-			sink.append(encoder.encodePathname(element));
-		}
-
-		virtual void doneAppending() {
-			sink.doneAppending();
-		}
-
-	};
-
 	void VFS::readdir(const string& path, Appender<string>& sink) {
 		Pathname pl;
 		deconstructPathname(path, pl);
@@ -509,6 +504,26 @@ namespace vfs {
 
 	BidirectionalStream<char>* VFS::getStream(const Pathname& path, bool truncate) {
 		return getStream(path.begin(), path.end(), truncate);
+	}
+
+	VFile* VFS::getFileReference(const string& path) {
+		Pathname pl;
+		deconstructPathname(path, pl);
+		return getFileReference(pl.begin(), pl.end());
+	}
+
+	VFile* VFS::getFileReference(const String16& path) {
+		Pathname pl;
+		VFS::deconstructPathname(path, pl);
+		return getFileReference(pl.begin(), pl.end());
+	}
+
+	VFile* VFS::getFileReference(const Pathname& path) {
+		return getFileReference(path.begin(), path.end());
+	}
+
+	VFile* VFS::getFileReference(PathIterator pathBegin, PathIterator pathEnd) {
+		return new GenericVFile(*this, pathBegin, pathEnd);
 	}
 
 	void VFS::removeRecursively(const string& path) {

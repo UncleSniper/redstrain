@@ -13,6 +13,8 @@
 namespace redengine {
 namespace vfs {
 
+	class VFile;
+
 	class REDSTRAIN_VFS_API VFS {
 
 	  public:
@@ -142,6 +144,36 @@ namespace vfs {
 
 		};
 
+		class EncodingAppender : public util::Appender<text::String16> {
+
+		  private:
+			util::Appender<std::string>& sink;
+			VFS& encoder;
+
+		  public:
+			EncodingAppender(util::Appender<std::string>&, VFS&);
+
+			inline util::Appender<std::string>& getSink() {
+				return sink;
+			}
+
+			inline const util::Appender<std::string>& getSink() const {
+				return sink;
+			}
+
+			inline VFS& getEncoder() {
+				return encoder;
+			}
+
+			inline const VFS& getEncoder() const {
+				return encoder;
+			}
+
+			virtual void append(const text::String16&);
+			virtual void doneAppending();
+
+		};
+
 	  private:
 		text::CodecFactory<text::Encoder16>* encoderFactory;
 		text::CodecFactory<text::Decoder16>* decoderFactory;
@@ -234,6 +266,9 @@ namespace vfs {
 		io::BidirectionalStream<char>* getStream(const std::string&, bool);
 		io::BidirectionalStream<char>* getStream(const text::String16&, bool);
 		io::BidirectionalStream<char>* getStream(const Pathname&, bool);
+		VFile* getFileReference(const std::string&);
+		VFile* getFileReference(const text::String16&);
+		VFile* getFileReference(const Pathname&);
 
 		void removeRecursively(const std::string&);
 		void removeRecursively(const text::String16&);
@@ -271,6 +306,7 @@ namespace vfs {
 		virtual io::InputStream<char>* getInputStream(PathIterator, PathIterator) = 0;
 		virtual io::OutputStream<char>* getOutputStream(PathIterator, PathIterator) = 0;
 		virtual io::BidirectionalStream<char>* getStream(PathIterator, PathIterator, bool) = 0;
+		virtual VFile* getFileReference(PathIterator, PathIterator);
 
 		static void deconstructPathname(const text::String16&, Pathname&);
 		static text::String16 constructPathname(const Pathname&, bool);
