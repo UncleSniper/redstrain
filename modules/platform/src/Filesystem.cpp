@@ -92,6 +92,7 @@ namespace platform {
 		info.setOwner(native.st_uid);
 		info.setGroup(native.st_gid);
 		info.setDevice(native.st_dev);
+		info.setSpecialSpecifier(native.st_rdev);
 		info.setPermissions(native.st_mode & 0777);
 		info.setSize(static_cast<size_t>(native.st_size));
 		info.setAccessTimestamp(native.st_atime);
@@ -732,6 +733,7 @@ namespace platform {
 		getMountPointForFilename(path, mountPoint);
 		getVolumeIDForMountPoint(mountPoint, volumeID);
 		info.setDevice(volumeID);
+		info.setSpecialSpecifier(Stat::NO_DEVICE);
 		// get permissions
 		WORD w;
 		int seenAllowed = 0, seenDenied;

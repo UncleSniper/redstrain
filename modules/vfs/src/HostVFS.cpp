@@ -112,6 +112,7 @@ namespace vfs {
 		info.setOwner(mapper.mapHostUserToVirtual(pinfo.getOwner()));
 		info.setGroup(mapper.mapHostGroupToVirtual(pinfo.getGroup()));
 		info.setDevice(mapper.mapHostDeviceToVirtual(pinfo.getDevice()));
+		info.setSpecialSpecifier(mapper.mapHostDeviceToVirtual(pinfo.getSpecialSpecifier()));
 		info.setPermissions(pinfo.getPermissions());
 		info.setSize(pinfo.getSize());
 		info.setAccessTimestamp(pinfo.getAccessTimestamp());

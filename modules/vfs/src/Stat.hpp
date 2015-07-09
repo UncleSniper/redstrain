@@ -61,7 +61,7 @@ namespace vfs {
 		Type type;
 		UserID owner;
 		GroupID group;
-		DeviceID device;
+		DeviceID device, special;
 		int permissions;
 		size_t size;
 		time_t atime, mtime, ctime;
@@ -100,6 +100,14 @@ namespace vfs {
 
 		inline void setDevice(DeviceID newDevice) {
 			device = newDevice;
+		}
+
+		inline DeviceID getSpecialSpecifier() const {
+			return special;
+		}
+
+		inline void setSpecialSpecifier(DeviceID newSpecial) {
+			special = newSpecial;
 		}
 
 		inline int getPermissions() const {

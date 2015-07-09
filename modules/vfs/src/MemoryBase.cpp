@@ -340,6 +340,7 @@ namespace vfs {
 		info.setOwner(file->getOwner());
 		info.setGroup(file->getGroup());
 		info.setDevice(Stat::NO_DEVICE);
+		info.setSpecialSpecifier(Stat::NO_DEVICE);
 		info.setPermissions(file->getPermissions());
 		info.setSize(static_cast<size_t>(0u));
 		info.setAccessTimestamp(file->getAccessTimestamp());

@@ -653,7 +653,7 @@ namespace vfs {
 				case Stat::LOCAL_SOCKET:
 					clearMoveDestination();
 					destinationFS.mknod(destinationStack.begin(), destinationStack.end(), info.getType(),
-							info.getPermissions(), info.getDevice());
+							info.getPermissions(), info.getSpecialSpecifier());
 					break;
 				case Stat::SYMBOLIC_LINK:
 					{
