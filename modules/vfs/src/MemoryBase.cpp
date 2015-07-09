@@ -1,6 +1,7 @@
 #include <ctime>
 #include <redstrain/util/Ref.hpp>
 #include <redstrain/text/Transcode.hpp>
+#include <redstrain/util/IntegerBounds.hpp>
 #include <redstrain/platform/ObjectLocker.hpp>
 #include <redstrain/error/ProgrammingError.hpp>
 
@@ -22,6 +23,7 @@ using redengine::util::Appender;
 using redengine::text::Transcode;
 using redengine::io::InputStream;
 using redengine::io::OutputStream;
+using redengine::util::IntegerBounds;
 using redengine::platform::ObjectLocker;
 using redengine::io::BidirectionalStream;
 using redengine::error::ProgrammingError;
@@ -333,7 +335,7 @@ namespace vfs {
 	void MemoryBase::stat(PathIterator pathBegin, PathIterator pathEnd, Stat& info, bool ofLink) {
 		Ref<MemoryFile> file(requireFile(pathBegin, pathEnd));
 		if(!ofLink)
-			file = MemoryBase::snapSymbolicLinks(pathBegin, pathEnd, file.set(), false);
+			file = snapSymbolicLinks(pathBegin, pathEnd, file.set(), false);
 		info.setType(file->getFileType());
 		info.setOwner(file->getOwner());
 		info.setGroup(file->getGroup());
@@ -356,7 +358,7 @@ namespace vfs {
 	void MemoryBase::chown(PathIterator pathBegin, PathIterator pathEnd, Stat::UserID owner, bool ofLink) {
 		Ref<MemoryFile> file(requireFile(pathBegin, pathEnd));
 		if(!ofLink)
-			file = MemoryBase::snapSymbolicLinks(pathBegin, pathEnd, file.set(), false);
+			file = snapSymbolicLinks(pathBegin, pathEnd, file.set(), false);
 		file->chown(owner);
 		file.move();
 	}
@@ -364,7 +366,7 @@ namespace vfs {
 	void MemoryBase::chgrp(PathIterator pathBegin, PathIterator pathEnd, Stat::GroupID group, bool ofLink) {
 		Ref<MemoryFile> file(requireFile(pathBegin, pathEnd));
 		if(!ofLink)
-			file = MemoryBase::snapSymbolicLinks(pathBegin, pathEnd, file.set(), false);
+			file = snapSymbolicLinks(pathBegin, pathEnd, file.set(), false);
 		file->chgrp(group);
 		file.move();
 	}
@@ -421,7 +423,7 @@ namespace vfs {
 
 	void MemoryBase::utime(PathIterator pathBegin, PathIterator pathEnd) {
 		Ref<MemoryFile> file(requireFile(pathBegin, pathEnd));
-		file = MemoryBase::snapSymbolicLinks(pathBegin, pathEnd, file.set(), false);
+		file = snapSymbolicLinks(pathBegin, pathEnd, file.set(), false);
 		file->utime();
 		file.move();
 	}
@@ -429,7 +431,7 @@ namespace vfs {
 	void MemoryBase::utime(PathIterator pathBegin, PathIterator pathEnd,
 			time_t accessTimestamp, time_t modificationTimestamp) {
 		Ref<MemoryFile> file(requireFile(pathBegin, pathEnd));
-		file = MemoryBase::snapSymbolicLinks(pathBegin, pathEnd, file.set(), false);
+		file = snapSymbolicLinks(pathBegin, pathEnd, file.set(), false);
 		file->utime(accessTimestamp, modificationTimestamp);
 		file.move();
 	}
@@ -437,10 +439,10 @@ namespace vfs {
 	bool MemoryBase::access(PathIterator pathBegin, PathIterator pathEnd, int permissions) {
 		if(permissions == VFS::FILE_EXISTS) {
 			PathIterator center(pathBegin);
-			MemoryFile* file = MemoryBase::resolvePath(center, pathEnd);
+			MemoryFile* file = resolvePath(center, pathEnd);
 			if(!file)
 				return false;
-			file = MemoryBase::snapSymbolicLinks(pathBegin, pathEnd, file, true);
+			file = snapSymbolicLinks(pathBegin, pathEnd, file, true);
 			if(!file)
 				return false;
 			file->unref();
@@ -448,8 +450,8 @@ namespace vfs {
 		}
 		else {
 			try {
-				Ref<MemoryFile> file(MemoryBase::requireFile(pathBegin, pathEnd));
-				file = MemoryBase::snapSymbolicLinks(pathBegin, pathEnd, file.set(), false);
+				Ref<MemoryFile> file(requireFile(pathBegin, pathEnd));
+				file = snapSymbolicLinks(pathBegin, pathEnd, file.set(), false);
 				bool allowed = file->access(permissions);
 				file.move();
 				return allowed;
@@ -574,11 +576,41 @@ namespace vfs {
 		lock.release();
 	}
 
+	void MemoryBase::readlink(PathIterator pathBegin, PathIterator pathEnd, String16& result) {
+		Ref<MemoryFile> file(requireFile(pathBegin, pathEnd));
+		file->readlink(result);
+		file.move();
+	}
+
+	void MemoryBase::readdir(PathIterator pathBegin, PathIterator pathEnd, Appender<String16>& sink) {
+		Ref<MemoryFile> file(requireFile(pathBegin, pathEnd));
+		file = snapSymbolicLinks(pathBegin, pathEnd, file.set(), false);
+		file.move();
+		if(file->getFileType() != Stat::DIRECTORY) {
+			file.move();
+			throw NotADirectoryError(Transcode::bmpToUTF8(VFS::constructPathname(pathBegin, pathEnd, true)));
+		}
+		static_cast<MemoryDirectory*>(*file)->readdir(sink);
+		file.move();
+	}
+
+	void MemoryBase::truncate(PathIterator pathBegin, PathIterator pathEnd, size_t size) {
+		Ref<MemoryFile> file(requireFile(pathBegin, pathEnd));
+		file->truncate(size);
+		file.move();
+	}
+
+	void MemoryBase::statfs(PathIterator pathBegin, PathIterator pathEnd, FSInfo& info) {
+		requireFile(pathBegin, pathEnd)->unref();
+		info.setType(RED_MEMORYFS);
+		info.setTotalBlockCount(static_cast<size_t>(0u));
+		info.setFreeBlockCount(static_cast<size_t>(0u));
+		info.setTotalINodeCount(static_cast<size_t>(0u));
+		info.setFreeINodeCount(static_cast<size_t>(0u));
+		info.setMaximumFilenameLength(IntegerBounds<size_t>::MAX);
+	}
+
 	/*
-	void MemoryBase::readlink(PathIterator, PathIterator, String16&);
-	void MemoryBase::readdir(PathIterator, PathIterator, Appender<String16>&);
-	void MemoryBase::truncate(PathIterator, PathIterator, size_t);
-	void MemoryBase::statfs(PathIterator, PathIterator, FSInfo&);
 	void MemoryBase::mknod(PathIterator, PathIterator, Stat::Type, int, Stat::DeviceID);
 	InputStream<char>* MemoryBase::getInputStream(PathIterator, PathIterator);
 	OutputStream<char>* MemoryBase::getOutputStream(PathIterator, PathIterator);

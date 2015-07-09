@@ -79,7 +79,8 @@ namespace vfs {
 			VXFS,
 			XENIX,
 			XFS,
-			XIAFS
+			XIAFS,
+			RED_MEMORYFS
 		};
 
 		class FSInfo {
