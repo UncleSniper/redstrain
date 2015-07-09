@@ -98,7 +98,6 @@ namespace vfs {
 			virtual void utime();
 			virtual void utime(time_t, time_t);
 			virtual bool access(int);
-			virtual void rmdir();
 			virtual void readlink(text::String16&);
 			virtual void truncate(size_t) = 0;
 			virtual io::InputStream<char>* getInputStream() = 0;
@@ -166,8 +165,8 @@ namespace vfs {
 	  protected:
 		MemoryFile* resolvePath(PathIterator&, PathIterator) const;
 		MemoryFile* requireFile(PathIterator, PathIterator) const;
-		MemoryFile* requireParentDirectory(PathIterator, PathIterator) const;
-		MemoryFile* snapSymbolicLinks(PathIterator, PathIterator, MemoryFile*) const;
+		MemoryDirectory* requireParentDirectory(PathIterator, PathIterator, text::String16*) const;
+		MemoryFile* snapSymbolicLinks(PathIterator, PathIterator, MemoryFile*, bool) const;
 
 	  public:
 		MemoryBase(MemoryDirectory*, int);

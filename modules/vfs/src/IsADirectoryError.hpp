@@ -8,9 +8,16 @@ namespace vfs {
 
 	class REDSTRAIN_VFS_API IsADirectoryError : public VFSIOError {
 
+	  private:
+		const std::string path;
+
 	  public:
-		IsADirectoryError();
+		IsADirectoryError(const std::string& = "");
 		IsADirectoryError(const IsADirectoryError&);
+
+		inline const std::string& getPath() const {
+			return path;
+		}
 
 		REDSTRAIN_DECLARE_ERROR(IsADirectoryError)
 
