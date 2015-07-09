@@ -8,9 +8,16 @@ namespace vfs {
 
 	class REDSTRAIN_VFS_API AccessDeniedError : public VFSIOError {
 
+	  private:
+		const std::string path;
+
 	  public:
-		AccessDeniedError();
+		AccessDeniedError(const std::string& = "");
 		AccessDeniedError(const AccessDeniedError&);
+
+		inline const std::string& getPath() const {
+			return path;
+		}
 
 		REDSTRAIN_DECLARE_ERROR(AccessDeniedError)
 

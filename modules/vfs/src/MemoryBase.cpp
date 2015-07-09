@@ -11,6 +11,10 @@
 #include "NotADirectoryError.hpp"
 #include "NotASymbolicLinkError.hpp"
 #include "FileAlreadyExistsError.hpp"
+#include "DirectoryNotEmptyError.hpp"
+#include "TooManySymbolicLinksError.hpp"
+#include "AttemptedDirectoryLoopError.hpp"
+#include "tweaks.hpp"
 
 using redengine::util::Ref;
 using redengine::text::String16;
@@ -184,6 +188,13 @@ namespace vfs {
 		locker.release();
 	}
 
+	bool MemoryBase::SimpleMemoryDirectory::isEmptyDirectory() const {
+		ObjectLocker<MemoryFile> locker(getMemoryVFSBase().getEffectiveMutexPool(), this);
+		bool empty = entries.empty();
+		locker.release();
+		return empty;
+	}
+
 	MemoryBase::MemoryBase(MemoryDirectory* root, int flags) : root(root), mutexPool(NULL),
 			currentUser(Stat::NO_USER), currentGroup(Stat::NO_GROUP), flags(flags) {
 		root->ref();
@@ -199,14 +210,22 @@ namespace vfs {
 		root->unref();
 	}
 
-	MemoryBase::MemoryFile* MemoryBase::resolvePath(PathIterator& begin, PathIterator end) const {
-		//TODO: snap symlinks on-the-fly
-		//TODO: check permissions
+	MemoryBase::MemoryFile* MemoryBase::resolvePath(PathIterator& begin, PathIterator end,
+			unsigned symlinkDepth, TreePath* trace) const {
 		PathIterator oldBegin(begin);
+		Pathname actualPath;
 		Ref<MemoryFile> file(root, true);
 		for(; begin != end; ++begin) {
-			if(file->getFileType() != Stat::DIRECTORY)
+			file = snapSymbolicLinks(actualPath.begin(), actualPath.end(), file.set(), false,
+					&actualPath, symlinkDepth, trace);
+			if(file->getFileType() != Stat::DIRECTORY) {
+				file.move();
 				throw NotADirectoryError(Transcode::bmpToUTF8(VFS::constructPathname(oldBegin, begin, true)));
+			}
+			if(!file->access(MemoryBase::DIRECTORY_SEARCH_PERMISSIONS)) {
+				file.move();
+				throw AccessDeniedError(Transcode::bmpToUTF8(VFS::constructPathname(oldBegin, begin, true)));
+			}
 			MemoryFile* child = static_cast<MemoryDirectory*>(*file)->getEntry(*begin);
 			if(!child) {
 				file.move();
@@ -214,28 +233,41 @@ namespace vfs {
 			}
 			file->unref();
 			file = child;
+			actualPath.push_back(*begin);
+			if(trace)
+				trace->pushFile(*child);
 		}
 		return file.set();
 	}
 
-	MemoryBase::MemoryFile* MemoryBase::requireFile(PathIterator pathBegin, PathIterator pathEnd) const {
+	MemoryBase::MemoryFile* MemoryBase::requireFile(PathIterator pathBegin, PathIterator pathEnd,
+			unsigned symlinkDepth, TreePath* trace) const {
 		PathIterator center(pathBegin);
-		MemoryFile* file = resolvePath(center, pathEnd);
+		MemoryFile* file = resolvePath(center, pathEnd, symlinkDepth, trace);
 		if(file)
 			return file;
 		throw NoSuchFileError(Transcode::bmpToUTF8(VFS::constructPathname(pathBegin, ++center, true)));
 	}
 
 	MemoryBase::MemoryDirectory* MemoryBase::requireParentDirectory(PathIterator pathBegin,
-			PathIterator pathEnd, String16* basename) const {
-		//TODO: snap symlinks on-the-fly
-		//TODO: check permissions
+			PathIterator pathEnd, String16* basename, unsigned symlinkDepth, TreePath* trace) const {
 		PathIterator oldBegin(pathBegin), nextSegment;
+		Pathname actualPath;
 		Ref<MemoryFile> file(root, true);
+		if(trace)
+			trace->pushFile(*root);
 		for(; pathBegin != pathEnd; pathBegin = nextSegment) {
 			nextSegment = pathBegin;
-			if(file->getFileType() != Stat::DIRECTORY)
+			file = snapSymbolicLinks(actualPath.begin(), actualPath.end(), file.set(),
+					false, &actualPath, symlinkDepth, trace);
+			if(file->getFileType() != Stat::DIRECTORY) {
+				file.move();
 				throw NotADirectoryError(Transcode::bmpToUTF8(VFS::constructPathname(oldBegin, pathBegin, true)));
+			}
+			if(!file->access(MemoryBase::DIRECTORY_SEARCH_PERMISSIONS)) {
+				file.move();
+				throw AccessDeniedError(Transcode::bmpToUTF8(VFS::constructPathname(oldBegin, pathEnd, true)));
+			}
 			MemoryDirectory* dir = static_cast<MemoryDirectory*>(*file);
 			if(++nextSegment == pathEnd) {
 				if(basename)
@@ -250,6 +282,9 @@ namespace vfs {
 			}
 			file->unref();
 			file = child;
+			actualPath.push_back(*pathBegin);
+			if(trace)
+				trace->pushFile(*child);
 		}
 		if(basename)
 			basename->clear();
@@ -257,34 +292,41 @@ namespace vfs {
 	}
 
 	MemoryBase::MemoryFile* MemoryBase::snapSymbolicLinks(PathIterator pathBegin, PathIterator pathEnd,
-			MemoryFile* file, bool mayBeMissing) const {
-		//TODO: check permissions
-		//TODO: limit symlink depth
+			MemoryFile* file, bool mayBeMissing, Pathname* newPath, unsigned symlinkDepth, TreePath* trace) const {
 		Ref<MemoryFile> current(file);
 		Pathname stack;
 		stack.insert(stack.begin(), pathBegin, pathEnd);
 		while(current->getFileType() == Stat::SYMBOLIC_LINK) {
+			if(++symlinkDepth > REDSTRAIN_VFS_MAX_SYMLINK_DEPTH) {
+				current.move();
+				throw TooManySymbolicLinksError(Transcode::bmpToUTF8(VFS::constructPathname(stack.begin(),
+						stack.end(), true)));
+			}
 			String16 refpath;
 			current->readlink(refpath);
-			VFS::deconstructPathname(refpath, stack);
 			if(stack.empty())
 				stack.push_back(VFS::PARENT_LINK);
 			else
 				stack.pop_back();
+			VFS::deconstructPathname(refpath, stack);
+			if(trace)
+				trace->clear();
 			MemoryFile* child;
 			if(mayBeMissing) {
 				PathIterator center(stack.begin());
-				child = resolvePath(center, stack.end());
+				child = resolvePath(center, stack.end(), symlinkDepth, trace);
 				if(!child) {
 					current.move();
 					return NULL;
 				}
 			}
 			else
-				child = requireFile(stack.begin(), stack.end());
+				child = requireFile(stack.begin(), stack.end(), symlinkDepth, trace);
 			current.move();
 			current = child;
 		}
+		if(newPath)
+			*newPath = stack;
 		return current.set();
 	}
 
@@ -330,6 +372,10 @@ namespace vfs {
 	void MemoryBase::link(PathIterator oldPathBegin, PathIterator oldPathEnd,
 			PathIterator newPathBegin, PathIterator newPathEnd) {
 		Ref<MemoryFile> source(requireFile(oldPathBegin, oldPathEnd));
+		if(source->getFileType() == Stat::DIRECTORY) {
+			source.move();
+			throw IsADirectoryError(Transcode::bmpToUTF8(VFS::constructPathname(oldPathBegin, oldPathEnd, true)));
+		}
 		String16 basename;
 		Ref<MemoryDirectory> destination(requireParentDirectory(newPathBegin, newPathEnd, &basename));
 		ObjectLocker<MemoryFile> locker(getEffectiveMutexPool(), *destination);
@@ -401,29 +447,116 @@ namespace vfs {
 			return true;
 		}
 		else {
-			//TODO: catch intermediate permission issues
-			Ref<MemoryFile> file(MemoryBase::requireFile(pathBegin, pathEnd));
-			file = MemoryBase::snapSymbolicLinks(pathBegin, pathEnd, file.set(), false);
-			bool allowed = file->access(permissions);
-			file.move();
-			return allowed;
+			try {
+				Ref<MemoryFile> file(MemoryBase::requireFile(pathBegin, pathEnd));
+				file = MemoryBase::snapSymbolicLinks(pathBegin, pathEnd, file.set(), false);
+				bool allowed = file->access(permissions);
+				file.move();
+				return allowed;
+			}
+			catch(const AccessDeniedError&) {
+				return false;
+			}
 		}
 	}
 
 	void MemoryBase::sync() {}
 
-	/*
 	void MemoryBase::rename(PathIterator oldPathBegin, PathIterator oldPathEnd,
-			PathIterator newPathBegin, PathIterator, newPathEnd) {
+			PathIterator newPathBegin, PathIterator newPathEnd) {
 		String16 srcbase, destbase;
 		Ref<MemoryDirectory> srcdir(requireParentDirectory(oldPathBegin, newPathBegin, &srcbase));
-		//TODO
+		ObjectLocker<MemoryFile> srclock(getEffectiveMutexPool(), *srcdir);
+		Ref<MemoryFile> srcfile(srcdir->getEntry(srcbase));
+		if(!*srcfile) {
+			srcdir.move();
+			srclock.release();
+			throw NoSuchFileError(Transcode::bmpToUTF8(VFS::constructPathname(oldPathBegin, oldPathEnd, true)));
+		}
+		TreePath desttrace;
+		Ref<MemoryDirectory> destdir(requireParentDirectory(newPathBegin, newPathEnd, &destbase, 0u, &desttrace));
+		ObjectLocker<MemoryFile> destlock(getEffectiveMutexPool(), *destdir);
+		bool loop = desttrace.contains(**srcfile);
+		desttrace.clear();
+		if(loop) {
+			destdir.move();
+			srcfile.move();
+			srcdir.move();
+			srclock.release();
+			destlock.release();
+			throw AttemptedDirectoryLoopError(Transcode::bmpToUTF8(VFS::constructPathname(oldPathBegin,
+					oldPathEnd, true)));
+		}
+		MemoryFile* destfile = destdir->getEntry(destbase);
+		if(destfile) {
+			destfile->unref();
+			destdir.move();
+			srcfile.move();
+			srcdir.move();
+			srclock.release();
+			destlock.release();
+			throw FileAlreadyExistsError(Transcode::bmpToUTF8(VFS::constructPathname(newPathBegin,
+					newPathEnd, true)));
+		}
+		destdir->putEntry(destbase, *srcfile);
+		destlock.release();
+		srcdir->removeEntry(srcbase);
+		srclock.release();
+		destdir.move();
+		srcfile.move();
+		srcdir.move();
 	}
-	*/
+
+	void MemoryBase::mkdir(PathIterator pathBegin, PathIterator pathEnd, int permissions) {
+		String16 basename;
+		Ref<MemoryDirectory> parent(requireParentDirectory(pathBegin, pathEnd, &basename));
+		ObjectLocker<MemoryFile> lock(getEffectiveMutexPool(), *parent);
+		MemoryFile* child = parent->getEntry(basename);
+		if(child) {
+			child->unref();
+			parent.move();
+			lock.release();
+			throw FileAlreadyExistsError(Transcode::bmpToUTF8(VFS::constructPathname(pathBegin, pathEnd, true)));
+		}
+		Ref<MemoryDirectory> newdir(createDirectory(permissions));
+		parent->putEntry(basename, *newdir);
+		newdir.move();
+		parent.move();
+		lock.release();
+	}
+
+	void MemoryBase::rmdir(PathIterator pathBegin, PathIterator pathEnd) {
+		String16 basename;
+		Ref<MemoryDirectory> parent(requireParentDirectory(pathBegin, pathEnd, &basename));
+		if(basename.empty()) {
+			if(!root->isEmptyDirectory())
+				throw DirectoryNotEmptyError("/");
+			parent.move();
+			return;
+		}
+		ObjectLocker<MemoryFile> locker(getEffectiveMutexPool(), *parent);
+		Ref<MemoryFile> child(parent->getEntry(basename));
+		if(!*child)
+			throw NoSuchFileError(Transcode::bmpToUTF8(VFS::constructPathname(pathBegin, pathEnd, true)));
+		if(child->getFileType() != Stat::DIRECTORY) {
+			locker.release();
+			child.move();
+			parent.move();
+			throw NotADirectoryError(Transcode::bmpToUTF8(VFS::constructPathname(pathBegin, pathEnd, true)));
+		}
+		if(!static_cast<MemoryDirectory*>(*child)->isEmptyDirectory()) {
+			locker.release();
+			child.move();
+			parent.move();
+			throw DirectoryNotEmptyError(Transcode::bmpToUTF8(VFS::constructPathname(pathBegin, pathEnd, true)));
+		}
+		parent->removeEntry(basename);
+		locker.release();
+		parent.move();
+		child.move();
+	}
 
 	/*
-	void MemoryBase::mkdir(PathIterator, PathIterator, int);
-	void MemoryBase::rmdir(PathIterator, PathIterator);
 	void MemoryBase::symlink(PathIterator, PathIterator, const String16&);
 	void MemoryBase::readlink(PathIterator, PathIterator, String16&);
 	void MemoryBase::readdir(PathIterator, PathIterator, Appender<String16>&);

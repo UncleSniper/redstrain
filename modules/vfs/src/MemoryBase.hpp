@@ -123,6 +123,7 @@ namespace vfs {
 			virtual void copydir(MemoryDirectory&) const = 0;
 			virtual MemoryFile* getEntry(const text::String16&) = 0;
 			virtual void putEntry(const text::String16&, MemoryFile*) = 0;
+			virtual bool isEmptyDirectory() const = 0;
 
 		};
 
@@ -145,6 +146,23 @@ namespace vfs {
 			virtual void readdir(util::Appender<text::String16>&);
 			virtual MemoryFile* getEntry(const text::String16&);
 			virtual void putEntry(const text::String16&, MemoryFile*);
+			virtual bool isEmptyDirectory() const;
+
+		};
+
+		class TreePath {
+
+		  private:
+			std::list<MemoryFile*> stack;
+
+		  public:
+			TreePath();
+			TreePath(const TreePath&);
+			~TreePath();
+
+			void pushFile(MemoryFile&);
+			void clear();
+			bool contains(MemoryFile&) const;
 
 		};
 
@@ -155,6 +173,9 @@ namespace vfs {
 			BFL_ENFORCE_PERMISSIONS = 04
 		};
 
+	  public:
+		static const int DIRECTORY_SEARCH_PERMISSIONS = VFS::CAN_EXECUTE;
+
 	  private:
 		MemoryDirectory* root;
 		platform::MutexPool* mutexPool;
@@ -163,15 +184,21 @@ namespace vfs {
 		int flags;
 
 	  protected:
-		MemoryFile* resolvePath(PathIterator&, PathIterator) const;
-		MemoryFile* requireFile(PathIterator, PathIterator) const;
-		MemoryDirectory* requireParentDirectory(PathIterator, PathIterator, text::String16*) const;
-		MemoryFile* snapSymbolicLinks(PathIterator, PathIterator, MemoryFile*, bool) const;
+		MemoryFile* resolvePath(PathIterator&, PathIterator, unsigned = 0u, TreePath* = NULL) const;
+		MemoryFile* requireFile(PathIterator, PathIterator, unsigned = 0u, TreePath* = NULL) const;
+		MemoryDirectory* requireParentDirectory(PathIterator, PathIterator,
+				text::String16* = NULL, unsigned = 0u, TreePath* = NULL) const;
+		MemoryFile* snapSymbolicLinks(PathIterator, PathIterator, MemoryFile*, bool,
+				Pathname* = NULL, unsigned = 0u, TreePath* = NULL) const;
 
 	  public:
 		MemoryBase(MemoryDirectory*, int);
 		MemoryBase(const MemoryBase&);
 		virtual ~MemoryBase();
+
+		inline MemoryDirectory* getRoot() const {
+			return root;
+		}
 
 		inline platform::MutexPool* getMutexPool() const {
 			return mutexPool;
@@ -220,6 +247,7 @@ namespace vfs {
 		}
 
 		virtual MemoryDirectory* createDirectory(int) = 0;
+		virtual MemoryFile* createSymlink(const text::String16&) = 0;
 
 		virtual void stat(PathIterator, PathIterator, Stat&, bool);
 		virtual void chmod(PathIterator, PathIterator, int);
