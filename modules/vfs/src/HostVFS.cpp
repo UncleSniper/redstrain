@@ -166,8 +166,8 @@ namespace vfs {
 		Filesystem::rmdir(toHostPath(pathBegin, pathEnd));
 	}
 
-	void HostVFS::symlink(PathIterator oldPathBegin, PathIterator oldPathEnd, const String16& newPath) {
-		Filesystem::symlink(toHostPath(oldPathBegin, oldPathEnd), encodeHostPathname(newPath));
+	void HostVFS::symlink(const String16& oldPath, PathIterator newPathBegin, PathIterator newPathEnd) {
+		Filesystem::symlink(encodeHostPathname(oldPath), toHostPath(newPathBegin, newPathEnd));
 	}
 
 	void HostVFS::readlink(PathIterator pathBegin, PathIterator pathEnd, String16& result) {

@@ -262,7 +262,7 @@ namespace vfs {
 		virtual void rename(PathIterator, PathIterator, PathIterator, PathIterator);
 		virtual void mkdir(PathIterator, PathIterator, int);
 		virtual void rmdir(PathIterator, PathIterator);
-		virtual void symlink(PathIterator, PathIterator, const text::String16&);
+		virtual void symlink(const text::String16&, PathIterator, PathIterator);
 		virtual void readlink(PathIterator, PathIterator, text::String16&);
 		virtual void readdir(PathIterator, PathIterator, util::Appender<text::String16>&);
 		virtual void truncate(PathIterator, PathIterator, size_t);

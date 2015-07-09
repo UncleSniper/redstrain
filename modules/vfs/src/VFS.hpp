@@ -248,7 +248,7 @@ namespace vfs {
 		void rmdir(const Pathname&);
 		void symlink(const std::string&, const std::string&);
 		void symlink(const text::String16&, const text::String16&);
-		void symlink(const Pathname&, const text::String16&);
+		void symlink(const text::String16&, const Pathname&);
 		void readlink(const std::string&, std::string&);
 		void readlink(const text::String16&, text::String16&);
 		void readlink(const Pathname&, text::String16&);
@@ -304,7 +304,7 @@ namespace vfs {
 		virtual void rename(PathIterator, PathIterator, PathIterator, PathIterator) = 0;
 		virtual void mkdir(PathIterator, PathIterator, int) = 0;
 		virtual void rmdir(PathIterator, PathIterator) = 0;
-		virtual void symlink(PathIterator, PathIterator, const text::String16&) = 0;
+		virtual void symlink(const text::String16&, PathIterator, PathIterator) = 0;
 		virtual void readlink(PathIterator, PathIterator, text::String16&) = 0;
 		virtual void readdir(PathIterator, PathIterator, util::Appender<text::String16>&) = 0;
 		virtual void truncate(PathIterator, PathIterator, size_t) = 0;

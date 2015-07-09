@@ -377,19 +377,19 @@ namespace vfs {
 	}
 
 	void VFS::symlink(const string& oldPath, const string& newPath) {
-		Pathname oldpl;
-		deconstructPathname(oldPath, oldpl);
-		symlink(oldpl.begin(), oldpl.end(), decodePathname(newPath));
+		Pathname newpl;
+		deconstructPathname(newPath, newpl);
+		symlink(decodePathname(oldPath), newpl.begin(), newpl.end());
 	}
 
 	void VFS::symlink(const String16& oldPath, const String16& newPath) {
-		Pathname oldpl;
-		VFS::deconstructPathname(oldPath, oldpl);
-		symlink(oldpl.begin(), oldpl.end(), newPath);
+		Pathname newpl;
+		VFS::deconstructPathname(newPath, newpl);
+		symlink(oldPath, newpl.begin(), newpl.end());
 	}
 
-	void VFS::symlink(const Pathname& oldPath, const String16& newPath) {
-		symlink(oldPath.begin(), oldPath.end(), newPath);
+	void VFS::symlink(const String16& oldPath, const Pathname& newPath) {
+		symlink(oldPath, newPath.begin(), newPath.end());
 	}
 
 	void VFS::readlink(const string& path, string& result) {
@@ -660,7 +660,7 @@ namespace vfs {
 						String16 linkdest;
 						sourceFS.readlink(sourceStack.begin(), sourceStack.end(), linkdest);
 						clearMoveDestination();
-						destinationFS.symlink(destinationStack.begin(), destinationStack.end(), linkdest);
+						destinationFS.symlink(linkdest, destinationStack.begin(), destinationStack.end());
 					}
 					break;
 				default:

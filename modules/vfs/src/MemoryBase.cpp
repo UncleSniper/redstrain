@@ -556,8 +556,25 @@ namespace vfs {
 		child.move();
 	}
 
+	void MemoryBase::symlink(const String16& target, PathIterator pathBegin, PathIterator pathEnd) {
+		String16 basename;
+		Ref<MemoryDirectory> parent(requireParentDirectory(pathBegin, pathEnd, &basename));
+		ObjectLocker<MemoryFile> lock(getEffectiveMutexPool(), *parent);
+		MemoryFile* child = parent->getEntry(basename);
+		if(child) {
+			child->unref();
+			parent.move();
+			lock.release();
+			throw FileAlreadyExistsError(Transcode::bmpToUTF8(VFS::constructPathname(pathBegin, pathEnd, true)));
+		}
+		Ref<MemoryFile> newlink(createSymlink(target));
+		parent->putEntry(basename, *newlink);
+		newlink.move();
+		parent.move();
+		lock.release();
+	}
+
 	/*
-	void MemoryBase::symlink(PathIterator, PathIterator, const String16&);
 	void MemoryBase::readlink(PathIterator, PathIterator, String16&);
 	void MemoryBase::readdir(PathIterator, PathIterator, Appender<String16>&);
 	void MemoryBase::truncate(PathIterator, PathIterator, size_t);
