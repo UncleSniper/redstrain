@@ -13,10 +13,13 @@
 #include "NotASymbolicLinkError.hpp"
 #include "FileAlreadyExistsError.hpp"
 #include "DirectoryNotEmptyError.hpp"
+#include "UnsupportedFileTypeError.hpp"
 #include "TooManySymbolicLinksError.hpp"
 #include "AttemptedDirectoryLoopError.hpp"
+#include "UnsupportedDeviceFileOperationError.hpp"
 #include "tweaks.hpp"
 
+using std::list;
 using redengine::util::Ref;
 using redengine::text::String16;
 using redengine::util::Appender;
@@ -30,6 +33,8 @@ using redengine::error::ProgrammingError;
 
 namespace redengine {
 namespace vfs {
+
+	// ======== MemoryFile ========
 
 	MemoryBase::MemoryFile::MemoryFile(MemoryBase& fs, int permissions)
 			: fs(fs), owner(fs.getCurrentUser()), group(fs.getCurrentGroup()), permissions(permissions) {
@@ -111,6 +116,8 @@ namespace vfs {
 		throw NotASymbolicLinkError();
 	}
 
+	// ======== MemoryDirectory ========
+
 	MemoryBase::MemoryDirectory::MemoryDirectory(MemoryBase& fs, int permissions)
 			: MemoryFile(fs, permissions) {}
 
@@ -140,6 +147,8 @@ namespace vfs {
 		throw IsADirectoryError();
 	}
 
+	// ======== SimpleMemoryDirectory ========
+
 	MemoryBase::SimpleMemoryDirectory::SimpleMemoryDirectory(MemoryBase& fs, int permissions)
 			: MemoryDirectory(fs, permissions) {}
 
@@ -165,7 +174,16 @@ namespace vfs {
 		ConstEntryIterator begin(entries.begin()), end(entries.end());
 		for(; begin != end; ++begin)
 			sink.append(begin->first);
+		locker.release();
 		sink.doneAppending();
+	}
+
+	void MemoryBase::SimpleMemoryDirectory::copydir(MemoryDirectory& sink) const {
+		ObjectLocker<MemoryFile> locker(getMemoryVFSBase().getEffectiveMutexPool(), this);
+		ConstEntryIterator begin(entries.begin()), end(entries.end());
+		for(; begin != end; ++begin)
+			sink.putEntry(begin->first, begin->second);
+		locker.release();
 	}
 
 	MemoryBase::MemoryFile* MemoryBase::SimpleMemoryDirectory::getEntry(const String16& name) {
@@ -196,6 +214,147 @@ namespace vfs {
 		locker.release();
 		return empty;
 	}
+
+	// ======== SimpleMemorySymlink ========
+
+	MemoryBase::SimpleMemorySymlink::SimpleMemorySymlink(MemoryBase& fs, int permissions, const String16& target)
+			: MemoryFile(fs, permissions), target(target) {}
+
+	MemoryBase::SimpleMemorySymlink::SimpleMemorySymlink(const SimpleMemorySymlink& link)
+			: MemoryFile(link), target(link.target) {}
+
+	Stat::Type MemoryBase::SimpleMemorySymlink::getFileType() const {
+		return Stat::SYMBOLIC_LINK;
+	}
+
+	void MemoryBase::SimpleMemorySymlink::stat(Stat&) {}
+
+	void MemoryBase::SimpleMemorySymlink::readlink(String16& result) {
+		result = target;
+	}
+
+	void MemoryBase::SimpleMemorySymlink::truncate(size_t) {
+		throw ProgrammingError("MemoryBase should not attempt to call MemoryFile::truncate() on a symlink");
+	}
+
+	InputStream<char>* MemoryBase::SimpleMemorySymlink::getInputStream() {
+		throw ProgrammingError("MemoryBase should not attempt to call MemoryFile::getInputStream() on a symlink");
+	}
+
+	OutputStream<char>* MemoryBase::SimpleMemorySymlink::getOutputStream() {
+		throw ProgrammingError("MemoryBase should not attempt to call MemoryFile::getOutputStream() on a symlink");
+	}
+
+	BidirectionalStream<char>* MemoryBase::SimpleMemorySymlink::getStream(bool) {
+		throw ProgrammingError("MemoryBase should not attempt to call MemoryFile::getStream() on a symlink");
+	}
+
+	// ======== SimpleMemoryDeviceFile ========
+
+	MemoryBase::SimpleMemoryDeviceFile::SimpleMemoryDeviceFile(MemoryBase& fs, int permissions,
+			bool block, Stat::DeviceID device) : MemoryFile(fs, permissions), block(block), device(device) {}
+
+	MemoryBase::SimpleMemoryDeviceFile::SimpleMemoryDeviceFile(const SimpleMemoryDeviceFile& file)
+			: MemoryFile(file), block(file.block), device(file.device) {}
+
+	Stat::Type MemoryBase::SimpleMemoryDeviceFile::getFileType() const {
+		return block ? Stat::BLOCK_DEVICE : Stat::CHARACTER_DEVICE;
+	}
+
+	void MemoryBase::SimpleMemoryDeviceFile::stat(Stat& info) {
+		info.setSpecialSpecifier(device);
+	}
+
+	void MemoryBase::SimpleMemoryDeviceFile::truncate(size_t size) {
+		getMemoryVFSBase().truncateDevice(block, device, size);
+	}
+
+	InputStream<char>* MemoryBase::SimpleMemoryDeviceFile::getInputStream() {
+		return getMemoryVFSBase().getDeviceInputStream(block, device);
+	}
+
+	OutputStream<char>* MemoryBase::SimpleMemoryDeviceFile::getOutputStream() {
+		return getMemoryVFSBase().getDeviceOutputStream(block, device);
+	}
+
+	BidirectionalStream<char>* MemoryBase::SimpleMemoryDeviceFile::getStream(bool truncate) {
+		return getMemoryVFSBase().getDeviceStream(block, device, truncate);
+	}
+
+	// ======== TreePath ========
+
+	struct UnrefPartialTreePath {
+
+		list<MemoryBase::MemoryFile*>* stack;
+		size_t count;
+
+		UnrefPartialTreePath(list<MemoryBase::MemoryFile*>* stack) : stack(stack), count(static_cast<size_t>(0u)) {}
+		UnrefPartialTreePath(const UnrefPartialTreePath& pointer) : stack(pointer.stack), count(pointer.count) {}
+
+		~UnrefPartialTreePath() {
+			if(!stack)
+				return;
+			list<MemoryBase::MemoryFile*>::const_iterator it(stack->begin());
+			for(; count; --count, ++it)
+				(*it)->unref();
+		}
+
+	};
+
+	struct PopTreePath {
+
+		list<MemoryBase::MemoryFile*>* stack;
+
+		PopTreePath(list<MemoryBase::MemoryFile*>* stack) : stack(stack) {}
+		PopTreePath(const PopTreePath& pointer) : stack(pointer.stack) {}
+
+		~PopTreePath() {
+			if(stack)
+				stack->pop_back();
+		}
+
+	};
+
+	MemoryBase::TreePath::TreePath() {}
+
+	MemoryBase::TreePath::TreePath(const TreePath& path) {
+		list<MemoryFile*>::const_iterator begin(path.stack.begin()), end(path.stack.end());
+		UnrefPartialTreePath unref(&stack);
+		for(; begin != end; ++begin) {
+			pushFile(**begin);
+			++unref.count;
+		}
+		unref.stack = NULL;
+	}
+
+	MemoryBase::TreePath::~TreePath() {
+		clear();
+	}
+
+	void MemoryBase::TreePath::pushFile(MemoryFile& file) {
+		stack.push_back(&file);
+		PopTreePath pop(&stack);
+		file.ref();
+		pop.stack = NULL;
+	}
+
+	void MemoryBase::TreePath::clear() {
+		list<MemoryFile*>::const_iterator begin(stack.begin()), end(stack.end());
+		for(; begin != end; ++begin)
+			(*begin)->unref();
+		stack.clear();
+	}
+
+	bool MemoryBase::TreePath::contains(MemoryFile& file) const {
+		list<MemoryFile*>::const_iterator begin(stack.begin()), end(stack.end());
+		for(; begin != end; ++begin) {
+			if(*begin == &file)
+				return true;
+		}
+		return false;
+	}
+
+	// ======== MemoryBase ========
 
 	MemoryBase::MemoryBase(MemoryDirectory* root, int flags) : root(root), mutexPool(NULL),
 			currentUser(Stat::NO_USER), currentGroup(Stat::NO_GROUP), flags(flags) {
@@ -330,6 +489,37 @@ namespace vfs {
 		if(newPath)
 			*newPath = stack;
 		return current.set();
+	}
+
+	MemoryBase::MemoryDirectory* MemoryBase::createDirectory(int permissions) {
+		return new SimpleMemoryDirectory(*this, permissions);
+	}
+
+	MemoryBase::MemoryFile* MemoryBase::createSymlink(const String16& target) {
+		return new SimpleMemorySymlink(*this, 0777, target);
+	}
+
+	MemoryBase::MemoryFile* MemoryBase::createDeviceFile(int permissions, bool block, Stat::DeviceID device) {
+		return new SimpleMemoryDeviceFile(*this, permissions, block, device);
+	}
+
+	void MemoryBase::truncateDevice(bool block, Stat::DeviceID device, size_t) {
+		throw UnsupportedDeviceFileOperationError(block, device, UnsupportedDeviceFileOperationError::TRUNCATE);
+	}
+
+	InputStream<char>* MemoryBase::getDeviceInputStream(bool block, Stat::DeviceID device) {
+		throw UnsupportedDeviceFileOperationError(block, device,
+				UnsupportedDeviceFileOperationError::OPEN_FOR_READING);
+	}
+
+	OutputStream<char>* MemoryBase::getDeviceOutputStream(bool block, Stat::DeviceID device) {
+		throw UnsupportedDeviceFileOperationError(block, device,
+				UnsupportedDeviceFileOperationError::OPEN_FOR_WRITING);
+	}
+
+	BidirectionalStream<char>* MemoryBase::getDeviceStream(bool block, Stat::DeviceID device, bool) {
+		throw UnsupportedDeviceFileOperationError(block, device,
+				UnsupportedDeviceFileOperationError::OPEN_FOR_RANDOM_ACCESS);
 	}
 
 	void MemoryBase::stat(PathIterator pathBegin, PathIterator pathEnd, Stat& info, bool ofLink) {
@@ -611,8 +801,39 @@ namespace vfs {
 		info.setMaximumFilenameLength(IntegerBounds<size_t>::MAX);
 	}
 
-	/*
-	void MemoryBase::mknod(PathIterator, PathIterator, Stat::Type, int, Stat::DeviceID);
+	void MemoryBase::mknod(PathIterator pathBegin, PathIterator pathEnd, Stat::Type type, int permissions,
+			Stat::DeviceID device) {
+		String16 basename;
+		Ref<MemoryDirectory> parent(requireParentDirectory(pathBegin, pathEnd, &basename));
+		ObjectLocker<MemoryFile> lock(getEffectiveMutexPool(), *parent);
+		MemoryFile* child = parent->getEntry(basename);
+		if(child) {
+			child->unref();
+			parent.move();
+			lock.release();
+			throw FileAlreadyExistsError(Transcode::bmpToUTF8(VFS::constructPathname(pathBegin, pathEnd, true)));
+		}
+		Ref<MemoryFile> newchild;
+		switch(type) {
+			case Stat::REGULAR_FILE:
+				newchild = createRegularFile(permissions);
+				break;
+			case Stat::CHARACTER_DEVICE:
+				newchild = createDeviceFile(permissions, false, device);
+				break;
+			case Stat::BLOCK_DEVICE:
+				newchild = createDeviceFile(permissions, true, device);
+				break;
+			default:
+				throw UnsupportedFileTypeError(type);
+		}
+		parent->putEntry(basename, *newchild);
+		newchild.move();
+		parent.move();
+		lock.release();
+	}
+
+	/*TODO
 	InputStream<char>* MemoryBase::getInputStream(PathIterator, PathIterator);
 	OutputStream<char>* MemoryBase::getOutputStream(PathIterator, PathIterator);
 	BidirectionalStream<char>* MemoryBase::getStream(PathIterator, PathIterator, bool);

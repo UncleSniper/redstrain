@@ -144,13 +144,52 @@ namespace vfs {
 
 			virtual void stat(Stat&);
 			virtual void readdir(util::Appender<text::String16>&);
+			virtual void copydir(MemoryDirectory&) const;
 			virtual MemoryFile* getEntry(const text::String16&);
 			virtual void putEntry(const text::String16&, MemoryFile*);
 			virtual bool isEmptyDirectory() const;
 
 		};
 
-		class TreePath {
+		class REDSTRAIN_VFS_API SimpleMemorySymlink : public MemoryFile {
+
+		  private:
+			text::String16 target;
+
+		  public:
+			SimpleMemorySymlink(MemoryBase&, int, const text::String16&);
+			SimpleMemorySymlink(const SimpleMemorySymlink&);
+
+			virtual Stat::Type getFileType() const;
+			virtual void stat(Stat&);
+			virtual void readlink(text::String16&);
+			virtual void truncate(size_t);
+			virtual io::InputStream<char>* getInputStream();
+			virtual io::OutputStream<char>* getOutputStream();
+			virtual io::BidirectionalStream<char>* getStream(bool);
+
+		};
+
+		class REDSTRAIN_VFS_API SimpleMemoryDeviceFile : public MemoryFile {
+
+		  private:
+			bool block;
+			Stat::DeviceID device;
+
+		  public:
+			SimpleMemoryDeviceFile(MemoryBase&, int, bool, Stat::DeviceID);
+			SimpleMemoryDeviceFile(const SimpleMemoryDeviceFile&);
+
+			virtual Stat::Type getFileType() const;
+			virtual void stat(Stat&);
+			virtual void truncate(size_t);
+			virtual io::InputStream<char>* getInputStream();
+			virtual io::OutputStream<char>* getOutputStream();
+			virtual io::BidirectionalStream<char>* getStream(bool);
+
+		};
+
+		class REDSTRAIN_VFS_API TreePath {
 
 		  private:
 			std::list<MemoryFile*> stack;
@@ -246,8 +285,15 @@ namespace vfs {
 			flags &= ~mask;
 		}
 
-		virtual MemoryDirectory* createDirectory(int) = 0;
-		virtual MemoryFile* createSymlink(const text::String16&) = 0;
+		virtual MemoryDirectory* createDirectory(int);
+		virtual MemoryFile* createSymlink(const text::String16&);
+		virtual MemoryFile* createDeviceFile(int, bool, Stat::DeviceID);
+		virtual MemoryFile* createRegularFile(int) = 0;
+
+		virtual void truncateDevice(bool, Stat::DeviceID, size_t);
+		virtual io::InputStream<char>* getDeviceInputStream(bool, Stat::DeviceID);
+		virtual io::OutputStream<char>* getDeviceOutputStream(bool, Stat::DeviceID);
+		virtual io::BidirectionalStream<char>* getDeviceStream(bool, Stat::DeviceID, bool);
 
 		virtual void stat(PathIterator, PathIterator, Stat&, bool);
 		virtual void chmod(PathIterator, PathIterator, int);
