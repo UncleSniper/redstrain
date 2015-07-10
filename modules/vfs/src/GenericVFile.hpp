@@ -10,22 +10,23 @@ namespace vfs {
 
 	  private:
 		VFS::Pathname path;
+		bool ofLink;
 
 	  public:
-		GenericVFile(VFS&, const std::string&);
-		GenericVFile(VFS&, const text::String16&);
-		GenericVFile(VFS&, const VFS::Pathname&);
-		GenericVFile(VFS&, VFS::PathIterator, VFS::PathIterator);
+		GenericVFile(VFS&, const std::string&, bool);
+		GenericVFile(VFS&, const text::String16&, bool);
+		GenericVFile(VFS&, const VFS::Pathname&, bool);
+		GenericVFile(VFS&, VFS::PathIterator, VFS::PathIterator, bool);
 		GenericVFile(const GenericVFile&);
 
 		inline const VFS::Pathname getPath() const {
 			return path;
 		}
 
-		virtual void stat(Stat&, bool);
+		virtual void stat(Stat&);
 		virtual void chmod(int);
-		virtual void chown(Stat::UserID, bool);
-		virtual void chgrp(Stat::GroupID, bool);
+		virtual void chown(Stat::UserID);
+		virtual void chgrp(Stat::GroupID);
 		virtual void unlink();
 		virtual void utime();
 		virtual void utime(time_t, time_t);

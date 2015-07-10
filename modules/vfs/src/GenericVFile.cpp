@@ -10,23 +10,25 @@ using redengine::io::BidirectionalStream;
 namespace redengine {
 namespace vfs {
 
-	GenericVFile::GenericVFile(VFS& fs, const string& path) : VFile(fs) {
+	GenericVFile::GenericVFile(VFS& fs, const string& path, bool ofLink) : VFile(fs), ofLink(ofLink) {
 		fs.deconstructPathname(path, this->path);
 	}
 
-	GenericVFile::GenericVFile(VFS& fs, const String16& path) : VFile(fs) {
+	GenericVFile::GenericVFile(VFS& fs, const String16& path, bool ofLink) : VFile(fs), ofLink(ofLink) {
 		VFS::deconstructPathname(path, this->path);
 	}
 
-	GenericVFile::GenericVFile(VFS& fs, const VFS::Pathname& path) : VFile(fs), path(path) {}
+	GenericVFile::GenericVFile(VFS& fs, const VFS::Pathname& path, bool ofLink)
+			: VFile(fs), path(path), ofLink(ofLink) {}
 
-	GenericVFile::GenericVFile(VFS& fs, VFS::PathIterator pathBegin, VFS::PathIterator pathEnd) : VFile(fs) {
+	GenericVFile::GenericVFile(VFS& fs, VFS::PathIterator pathBegin, VFS::PathIterator pathEnd, bool ofLink)
+			: VFile(fs), ofLink(ofLink) {
 		path.insert(path.begin(), pathBegin, pathEnd);
 	}
 
-	GenericVFile::GenericVFile(const GenericVFile& file) : VFile(file), path(file.path) {}
+	GenericVFile::GenericVFile(const GenericVFile& file) : VFile(file), path(file.path), ofLink(file.ofLink) {}
 
-	void GenericVFile::stat(Stat& info, bool ofLink) {
+	void GenericVFile::stat(Stat& info) {
 		getVFS().stat(path.begin(), path.end(), info, ofLink);
 	}
 
@@ -34,11 +36,11 @@ namespace vfs {
 		getVFS().chmod(path.begin(), path.end(), permissions);
 	}
 
-	void GenericVFile::chown(Stat::UserID owner, bool ofLink) {
+	void GenericVFile::chown(Stat::UserID owner) {
 		getVFS().chown(path.begin(), path.end(), owner, ofLink);
 	}
 
-	void GenericVFile::chgrp(Stat::GroupID group, bool ofLink) {
+	void GenericVFile::chgrp(Stat::GroupID group) {
 		getVFS().chgrp(path.begin(), path.end(), group, ofLink);
 	}
 
@@ -60,6 +62,8 @@ namespace vfs {
 
 	void GenericVFile::rename(VFS::PathIterator newPathBegin, VFS::PathIterator newPathEnd) {
 		getVFS().rename(path.begin(), path.end(), newPathBegin, newPathEnd);
+		path.clear();
+		path.insert(path.begin(), newPathBegin, newPathEnd);
 	}
 
 	void GenericVFile::mkdir(int permissions) {

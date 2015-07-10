@@ -30,10 +30,10 @@ namespace vfs {
 		void readlink(std::string&);
 		void readdir(util::Appender<std::string>&);
 
-		virtual void stat(Stat&, bool) = 0;
+		virtual void stat(Stat&) = 0;
 		virtual void chmod(int) = 0;
-		virtual void chown(Stat::UserID, bool) = 0;
-		virtual void chgrp(Stat::GroupID, bool) = 0;
+		virtual void chown(Stat::UserID) = 0;
+		virtual void chgrp(Stat::GroupID) = 0;
 		virtual void unlink() = 0;
 		virtual void utime() = 0;
 		virtual void utime(time_t, time_t) = 0;

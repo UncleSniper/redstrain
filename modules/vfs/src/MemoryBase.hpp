@@ -2,10 +2,12 @@
 #define REDSTRAIN_MOD_VFS_MEMORYVFSBASE_HPP
 
 #include <map>
+#include <redstrain/util/Ref.hpp>
 #include <redstrain/platform/MutexPool.hpp>
 #include <redstrain/util/ReferenceCounted.hpp>
 
 #include "VFS.hpp"
+#include "VFile.hpp"
 
 namespace redengine {
 namespace vfs {
@@ -31,11 +33,11 @@ namespace vfs {
 			MemoryFile(const MemoryFile&);
 			virtual ~MemoryFile();
 
-			inline MemoryBase& getMemoryVFSBase() {
+			inline MemoryBase& getMemoryBase() {
 				return fs;
 			}
 
-			inline const MemoryBase& getMemoryVFSBase() const {
+			inline const MemoryBase& getMemoryBase() const {
 				return fs;
 			}
 
@@ -89,6 +91,8 @@ namespace vfs {
 
 			void ref();
 			void unref();
+
+			void genericStat(Stat&) const;
 
 			virtual Stat::Type getFileType() const = 0;
 			virtual void stat(Stat&) = 0;
@@ -205,6 +209,56 @@ namespace vfs {
 
 		};
 
+		class REDSTRAIN_VFS_API MemoryVFile : public VFile {
+
+		  private:
+			text::String16 basename;
+			Pathname fullpath;
+			util::Ref<MemoryDirectory> parent;
+			util::Ref<MemoryFile> child;
+
+		  public:
+			MemoryVFile(MemoryDirectory*, const text::String16&, MemoryFile*, const Pathname&);
+			MemoryVFile(const MemoryVFile&);
+
+			inline MemoryDirectory* getParentDirectory() const {
+				return *parent;
+			}
+
+			inline MemoryFile* getChildFile() const {
+				return *child;
+			}
+
+			inline const text::String16& getChildBasename() const {
+				return basename;
+			}
+
+			inline const Pathname& getFullPathname() const {
+				return fullpath;
+			}
+
+			virtual void stat(Stat&);
+			virtual void chmod(int);
+			virtual void chown(Stat::UserID);
+			virtual void chgrp(Stat::GroupID);
+			virtual void unlink();
+			virtual void utime();
+			virtual void utime(time_t, time_t);
+			virtual bool access(int);
+			virtual void rename(VFS::PathIterator, VFS::PathIterator);
+			virtual void mkdir(int);
+			virtual void rmdir();
+			virtual void readlink(text::String16&);
+			virtual void readdir(util::Appender<text::String16>&);
+			virtual void truncate(size_t);
+			virtual void statfs(FSInfo&);
+			virtual void mknod(Stat::Type, int, Stat::DeviceID);
+			virtual io::InputStream<char>* getInputStream();
+			virtual io::OutputStream<char>* getOutputStream();
+			virtual io::BidirectionalStream<char>* getStream(bool);
+
+		};
+
 	  public:
 		enum BaseFlags {
 			BFL_HEED_OWNER          = 01,
@@ -214,13 +268,14 @@ namespace vfs {
 
 	  public:
 		static const int DIRECTORY_SEARCH_PERMISSIONS = VFS::CAN_EXECUTE;
+		static const int DEFAULT_FILE_PERMISSIONS = 0644;
 
 	  private:
 		MemoryDirectory* root;
 		platform::MutexPool* mutexPool;
 		Stat::UserID currentUser;
 		Stat::GroupID currentGroup;
-		int flags;
+		int flags, defaultPermissions;
 
 	  protected:
 		MemoryFile* resolvePath(PathIterator&, PathIterator, unsigned = 0u, TreePath* = NULL) const;
@@ -229,6 +284,7 @@ namespace vfs {
 				text::String16* = NULL, unsigned = 0u, TreePath* = NULL) const;
 		MemoryFile* snapSymbolicLinks(PathIterator, PathIterator, MemoryFile*, bool,
 				Pathname* = NULL, unsigned = 0u, TreePath* = NULL) const;
+		void statfs(FSInfo&) const;
 
 	  public:
 		MemoryBase(MemoryDirectory*, int);
@@ -285,11 +341,20 @@ namespace vfs {
 			flags &= ~mask;
 		}
 
+		inline int getDefaultFilePermissions() const {
+			return defaultPermissions;
+		}
+
+		inline void setDefaultFilePermissions(int permissions) {
+			defaultPermissions = permissions;
+		}
+
 		virtual MemoryDirectory* createDirectory(int);
 		virtual MemoryFile* createSymlink(const text::String16&);
 		virtual MemoryFile* createDeviceFile(int, bool, Stat::DeviceID);
 		virtual MemoryFile* createRegularFile(int) = 0;
 
+		virtual size_t getDeviceSize(bool, Stat::DeviceID);
 		virtual void truncateDevice(bool, Stat::DeviceID, size_t);
 		virtual io::InputStream<char>* getDeviceInputStream(bool, Stat::DeviceID);
 		virtual io::OutputStream<char>* getDeviceOutputStream(bool, Stat::DeviceID);
@@ -317,7 +382,7 @@ namespace vfs {
 		virtual io::InputStream<char>* getInputStream(PathIterator, PathIterator);
 		virtual io::OutputStream<char>* getOutputStream(PathIterator, PathIterator);
 		virtual io::BidirectionalStream<char>* getStream(PathIterator, PathIterator, bool);
-		virtual VFile* getFileReference(PathIterator, PathIterator);
+		virtual VFile* getFileReference(PathIterator, PathIterator, bool);
 
 	};
 

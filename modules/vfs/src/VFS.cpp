@@ -523,24 +523,24 @@ namespace vfs {
 		return getStream(path.begin(), path.end(), truncate);
 	}
 
-	VFile* VFS::getFileReference(const string& path) {
+	VFile* VFS::getFileReference(const string& path, bool ofLink) {
 		Pathname pl;
 		deconstructPathname(path, pl);
-		return getFileReference(pl.begin(), pl.end());
+		return getFileReference(pl.begin(), pl.end(), ofLink);
 	}
 
-	VFile* VFS::getFileReference(const String16& path) {
+	VFile* VFS::getFileReference(const String16& path, bool ofLink) {
 		Pathname pl;
 		VFS::deconstructPathname(path, pl);
-		return getFileReference(pl.begin(), pl.end());
+		return getFileReference(pl.begin(), pl.end(), ofLink);
 	}
 
-	VFile* VFS::getFileReference(const Pathname& path) {
-		return getFileReference(path.begin(), path.end());
+	VFile* VFS::getFileReference(const Pathname& path, bool ofLink) {
+		return getFileReference(path.begin(), path.end(), ofLink);
 	}
 
-	VFile* VFS::getFileReference(PathIterator pathBegin, PathIterator pathEnd) {
-		return new GenericVFile(*this, pathBegin, pathEnd);
+	VFile* VFS::getFileReference(PathIterator pathBegin, PathIterator pathEnd, bool ofLink) {
+		return new GenericVFile(*this, pathBegin, pathEnd, ofLink);
 	}
 
 	void VFS::removeRecursively(const string& path) {
