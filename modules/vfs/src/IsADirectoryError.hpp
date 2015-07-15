@@ -1,6 +1,7 @@
 #ifndef REDSTRAIN_MOD_VFS_ISADIRECTORYERROR_HPP
 #define REDSTRAIN_MOD_VFS_ISADIRECTORYERROR_HPP
 
+#include "VFS.hpp"
 #include "VFSIOError.hpp"
 
 namespace redengine {
@@ -13,6 +14,8 @@ namespace vfs {
 
 	  public:
 		IsADirectoryError(const std::string& = "");
+		IsADirectoryError(const VFS::Pathname&);
+		IsADirectoryError(const VFS::PathIterator&, const VFS::PathIterator&);
 		IsADirectoryError(const IsADirectoryError&);
 
 		inline const std::string& getPath() const {

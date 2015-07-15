@@ -1,6 +1,7 @@
 #ifndef REDSTRAIN_MOD_VFS_TOOMANYSYMBOLICLINKSERROR_HPP
 #define REDSTRAIN_MOD_VFS_TOOMANYSYMBOLICLINKSERROR_HPP
 
+#include "VFS.hpp"
 #include "VFSIOError.hpp"
 
 namespace redengine {
@@ -13,6 +14,8 @@ namespace vfs {
 
 	  public:
 		TooManySymbolicLinksError(const std::string& = "");
+		TooManySymbolicLinksError(const VFS::Pathname&);
+		TooManySymbolicLinksError(const VFS::PathIterator&, const VFS::PathIterator&);
 		TooManySymbolicLinksError(const TooManySymbolicLinksError&);
 
 		inline const std::string& getPath() const {

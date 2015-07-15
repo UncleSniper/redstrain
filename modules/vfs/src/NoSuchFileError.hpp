@@ -1,6 +1,7 @@
 #ifndef REDSTRAIN_MOD_VFS_NOSUCHFILEERROR_HPP
 #define REDSTRAIN_MOD_VFS_NOSUCHFILEERROR_HPP
 
+#include "VFS.hpp"
 #include "VFSIOError.hpp"
 
 namespace redengine {
@@ -13,6 +14,8 @@ namespace vfs {
 
 	  public:
 		NoSuchFileError(const std::string& = "");
+		NoSuchFileError(const VFS::Pathname&);
+		NoSuchFileError(const VFS::PathIterator&, const VFS::PathIterator&);
 		NoSuchFileError(const NoSuchFileError&);
 
 		inline const std::string& getPath() const {

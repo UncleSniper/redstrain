@@ -1,6 +1,7 @@
 #ifndef REDSTRAIN_MOD_VFS_FILEALREADYEXISTSERROR_HPP
 #define REDSTRAIN_MOD_VFS_FILEALREADYEXISTSERROR_HPP
 
+#include "VFS.hpp"
 #include "VFSIOError.hpp"
 
 namespace redengine {
@@ -13,6 +14,8 @@ namespace vfs {
 
 	  public:
 		FileAlreadyExistsError(const std::string& = "");
+		FileAlreadyExistsError(const VFS::Pathname&);
+		FileAlreadyExistsError(const VFS::PathIterator&, const VFS::PathIterator&);
 		FileAlreadyExistsError(const FileAlreadyExistsError&);
 
 

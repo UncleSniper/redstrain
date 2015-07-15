@@ -1,6 +1,7 @@
 #ifndef REDSTRAIN_MOD_VFS_ACCESSDENIEDERROR_HPP
 #define REDSTRAIN_MOD_VFS_ACCESSDENIEDERROR_HPP
 
+#include "VFS.hpp"
 #include "VFSIOError.hpp"
 
 namespace redengine {
@@ -13,6 +14,8 @@ namespace vfs {
 
 	  public:
 		AccessDeniedError(const std::string& = "");
+		AccessDeniedError(const VFS::Pathname&);
+		AccessDeniedError(const VFS::PathIterator&, const VFS::PathIterator&);
 		AccessDeniedError(const AccessDeniedError&);
 
 		inline const std::string& getPath() const {
