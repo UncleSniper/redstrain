@@ -217,6 +217,9 @@ namespace vfs {
 			util::Ref<MemoryDirectory> parent;
 			util::Ref<MemoryFile> child;
 
+		  protected:
+			MemoryFile* getOrMakeForOpen();
+
 		  public:
 			MemoryVFile(MemoryDirectory*, const text::String16&, MemoryFile*, const Pathname&);
 			MemoryVFile(const MemoryVFile&);

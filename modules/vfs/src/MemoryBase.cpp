@@ -378,6 +378,48 @@ namespace vfs {
 	MemoryBase::MemoryVFile::MemoryVFile(const MemoryVFile& file) : VFile(file),
 			basename(file.basename), fullpath(file.fullpath), parent(file.parent), child(file.child) {}
 
+	MemoryBase::MemoryFile* MemoryBase::MemoryVFile::getOrMakeForOpen() {
+		if(basename.empty())
+			throw IsADirectoryError(Transcode::bmpToUTF8(VFS::constructPathname(fullpath, true)));
+		MemoryBase& mbase = parent->getMemoryBase();
+		ObjectLocker<MemoryVFile> sync(mbase.getEffectiveMutexPool(), this);
+		ObjectLocker<MemoryFile> locker(mbase.getEffectiveMutexPool(), *parent);
+		if(*child) {
+			Ref<MemoryFile> lchild;
+			Ref<MemoryDirectory> lparent;
+			Pathname newPath;
+			String16 newBasename;
+			for(;;) {
+				lchild = mbase.snapSymbolicLinks(fullpath.begin(), fullpath.end(), *child, true, &newPath);
+				lparent = mbase.requireParentDirectory(newPath.begin(), newPath.end(), &newBasename);
+				locker.move(*lparent);
+				lchild.move(lparent->getEntry(newBasename));
+				if(!*lchild) {
+					lchild = mbase.createRegularFile(mbase.defaultPermissions);
+					lparent->putEntry(newBasename, *lchild);
+					break;
+				}
+				else if(lchild->getFileType() != Stat::SYMBOLIC_LINK)
+					break;
+				lchild.move();
+				lparent.move();
+			}
+			locker.release();
+			lparent.move();
+			sync.release();
+			return lchild.set();
+		}
+		else {
+			Ref<MemoryFile> newchild(mbase.createRegularFile(mbase.defaultPermissions));
+			parent->putEntry(basename, *newchild);
+			child = newchild.set();
+			locker.release();
+			child->ref();
+			sync.release();
+			return *child;
+		}
+	}
+
 	void MemoryBase::MemoryVFile::stat(Stat& info) {
 		ObjectLocker<MemoryVFile> sync(parent->getMemoryBase().getEffectiveMutexPool(), this);
 		if(!*child) {
@@ -714,51 +756,18 @@ namespace vfs {
 	}
 
 	OutputStream<char>* MemoryBase::MemoryVFile::getOutputStream() {
-		if(basename.empty())
-			throw IsADirectoryError(Transcode::bmpToUTF8(VFS::constructPathname(fullpath, true)));
-		MemoryBase& mbase = parent->getMemoryBase();
-		ObjectLocker<MemoryVFile> sync(mbase.getEffectiveMutexPool(), this);
-		ObjectLocker<MemoryFile> locker(mbase.getEffectiveMutexPool(), *parent);
-		Delete<OutputStream<char> > stream;
-		if(*child) {
-			Ref<MemoryFile> lchild;
-			Ref<MemoryDirectory> lparent;
-			Pathname newPath;
-			String16 newBasename;
-			for(;;) {
-				lchild = mbase.snapSymbolicLinks(fullpath.begin(), fullpath.end(), *child, true, &newPath);
-				lparent = mbase.requireParentDirectory(newPath.begin(), newPath.end(), &newBasename);
-				locker.move(*lparent);
-				lchild.move(lparent->getEntry(newBasename));
-				if(!*lchild) {
-					lchild = mbase.createRegularFile(mbase.defaultPermissions);
-					lparent->putEntry(newBasename, *lchild);
-					break;
-				}
-				else if(lchild->getFileType() != Stat::SYMBOLIC_LINK)
-					break;
-				lchild.move();
-				lparent.move();
-			}
-			locker.release();
-			stream = lchild->getOutputStream();
-			lparent.move();
-			lchild.move();
-		}
-		else {
-			Ref<MemoryFile> newchild(mbase.createRegularFile(mbase.defaultPermissions));
-			parent->putEntry(basename, *newchild);
-			child = newchild.set();
-			locker.release();
-			stream = child->getOutputStream();
-		}
-		sync.release();
+		Ref<MemoryFile> target(getOrMakeForOpen());
+		Delete<OutputStream<char> > stream(target->getOutputStream());
+		target.move();
 		return stream.set();
 	}
 
-	/*TODO
-	BidirectionalStream<char>* MemoryBase::MemoryVFile::getStream(bool);
-	*/
+	BidirectionalStream<char>* MemoryBase::MemoryVFile::getStream(bool truncate) {
+		Ref<MemoryFile> target(getOrMakeForOpen());
+		Delete<BidirectionalStream<char> > stream(target->getStream(truncate));
+		target.move();
+		return stream.set();
+	}
 
 	// ======== MemoryBase ========
 
@@ -911,17 +920,22 @@ namespace vfs {
 		}
 		ObjectLocker<MemoryFile> locker(getEffectiveMutexPool(), *parent);
 		Ref<MemoryFile> child(parent->getEntry(basename));
-		if(!*child) {
+		if(*child) {
 			Pathname newPath;
-			child = snapSymbolicLinks(pathBegin, pathEnd, child.set(), true, &newPath);
-			if(!*child) {
+			MemoryFile* originalChild = child.set();
+			for(;;) {
+				child.move();
+				child = snapSymbolicLinks(pathBegin, pathEnd, originalChild, true, &newPath);
 				parent.move(requireParentDirectory(newPath.begin(), newPath.end(), &basename));
 				locker.move(*parent);
-				child = parent->getEntry(basename);
+				child.move(parent->getEntry(basename));
 				if(!*child) {
 					child = createRegularFile(defaultPermissions);
 					parent->putEntry(basename, *child);
+					break;
 				}
+				else if(child->getFileType() != Stat::SYMBOLIC_LINK)
+					break;
 			}
 		}
 		else {
