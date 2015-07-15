@@ -713,8 +713,50 @@ namespace vfs {
 		return stream.set();
 	}
 
+	OutputStream<char>* MemoryBase::MemoryVFile::getOutputStream() {
+		if(basename.empty())
+			throw IsADirectoryError(Transcode::bmpToUTF8(VFS::constructPathname(fullpath, true)));
+		MemoryBase& mbase = parent->getMemoryBase();
+		ObjectLocker<MemoryVFile> sync(mbase.getEffectiveMutexPool(), this);
+		ObjectLocker<MemoryFile> locker(mbase.getEffectiveMutexPool(), *parent);
+		Delete<OutputStream<char> > stream;
+		if(*child) {
+			Ref<MemoryFile> lchild;
+			Ref<MemoryDirectory> lparent;
+			Pathname newPath;
+			String16 newBasename;
+			for(;;) {
+				lchild = mbase.snapSymbolicLinks(fullpath.begin(), fullpath.end(), *child, true, &newPath);
+				lparent = mbase.requireParentDirectory(newPath.begin(), newPath.end(), &newBasename);
+				locker.move(*lparent);
+				lchild.move(lparent->getEntry(newBasename));
+				if(!*lchild) {
+					lchild = mbase.createRegularFile(mbase.defaultPermissions);
+					lparent->putEntry(newBasename, *lchild);
+					break;
+				}
+				else if(lchild->getFileType() != Stat::SYMBOLIC_LINK)
+					break;
+				lchild.move();
+				lparent.move();
+			}
+			locker.release();
+			stream = lchild->getOutputStream();
+			lparent.move();
+			lchild.move();
+		}
+		else {
+			Ref<MemoryFile> newchild(mbase.createRegularFile(mbase.defaultPermissions));
+			parent->putEntry(basename, *newchild);
+			child = newchild.set();
+			locker.release();
+			stream = child->getOutputStream();
+		}
+		sync.release();
+		return stream.set();
+	}
+
 	/*TODO
-	OutputStream<char>* MemoryBase::MemoryVFile::getOutputStream();
 	BidirectionalStream<char>* MemoryBase::MemoryVFile::getStream(bool);
 	*/
 
@@ -857,6 +899,38 @@ namespace vfs {
 		if(newPath)
 			*newPath = stack;
 		return current.set();
+	}
+
+	MemoryBase::MemoryFile* MemoryBase::getOrMakeForOpen(const PathIterator& pathBegin,
+			const PathIterator& pathEnd) {
+		String16 basename;
+		Ref<MemoryDirectory> parent(requireParentDirectory(pathBegin, pathEnd, &basename));
+		if(basename.empty()) {
+			parent.move();
+			throw IsADirectoryError(Transcode::bmpToUTF8(VFS::constructPathname(pathBegin, pathEnd, true)));
+		}
+		ObjectLocker<MemoryFile> locker(getEffectiveMutexPool(), *parent);
+		Ref<MemoryFile> child(parent->getEntry(basename));
+		if(!*child) {
+			Pathname newPath;
+			child = snapSymbolicLinks(pathBegin, pathEnd, child.set(), true, &newPath);
+			if(!*child) {
+				parent.move(requireParentDirectory(newPath.begin(), newPath.end(), &basename));
+				locker.move(*parent);
+				child = parent->getEntry(basename);
+				if(!*child) {
+					child = createRegularFile(defaultPermissions);
+					parent->putEntry(basename, *child);
+				}
+			}
+		}
+		else {
+			child = createRegularFile(defaultPermissions);
+			parent->putEntry(basename, *child);
+		}
+		parent.move();
+		locker.release();
+		return child.set();
 	}
 
 	MemoryBase::MemoryDirectory* MemoryBase::createDirectory(int permissions) {
@@ -1227,66 +1301,14 @@ namespace vfs {
 	}
 
 	OutputStream<char>* MemoryBase::getOutputStream(PathIterator pathBegin, PathIterator pathEnd) {
-		String16 basename;
-		Ref<MemoryDirectory> parent(requireParentDirectory(pathBegin, pathEnd, &basename));
-		if(basename.empty()) {
-			parent.move();
-			throw IsADirectoryError(Transcode::bmpToUTF8(VFS::constructPathname(pathBegin, pathEnd, true)));
-		}
-		ObjectLocker<MemoryFile> locker(getEffectiveMutexPool(), *parent);
-		Ref<MemoryFile> child(parent->getEntry(basename));
-		if(*child) {
-			Pathname newPath;
-			child = snapSymbolicLinks(pathBegin, pathEnd, child.set(), true, &newPath);
-			if(!*child) {
-				parent.move(requireParentDirectory(newPath.begin(), newPath.end(), &basename));
-				locker.move(*parent);
-				child = parent->getEntry(basename);
-				if(!*child) {
-					child = createRegularFile(defaultPermissions);
-					parent->putEntry(basename, *child);
-				}
-			}
-		}
-		else {
-			child = createRegularFile(defaultPermissions);
-			parent->putEntry(basename, *child);
-		}
-		parent.move();
-		locker.release();
+		Ref<MemoryFile> child(getOrMakeForOpen(pathBegin, pathEnd));
 		Delete<OutputStream<char> > stream(child->getOutputStream());
 		child.move();
 		return stream.set();
 	}
 
 	BidirectionalStream<char>* MemoryBase::getStream(PathIterator pathBegin, PathIterator pathEnd, bool truncate) {
-		String16 basename;
-		Ref<MemoryDirectory> parent(requireParentDirectory(pathBegin, pathEnd, &basename));
-		if(basename.empty()) {
-			parent.move();
-			throw IsADirectoryError(Transcode::bmpToUTF8(VFS::constructPathname(pathBegin, pathEnd, true)));
-		}
-		ObjectLocker<MemoryFile> locker(getEffectiveMutexPool(), *parent);
-		Ref<MemoryFile> child(parent->getEntry(basename));
-		if(!*child) {
-			Pathname newPath;
-			child = snapSymbolicLinks(pathBegin, pathEnd, child.set(), true, &newPath);
-			if(!*child) {
-				parent.move(requireParentDirectory(newPath.begin(), newPath.end(), &basename));
-				locker.move(*parent);
-				child = parent->getEntry(basename);
-				if(!*child) {
-					child = createRegularFile(defaultPermissions);
-					parent->putEntry(basename, *child);
-				}
-			}
-		}
-		else {
-			child = createRegularFile(defaultPermissions);
-			parent->putEntry(basename, *child);
-		}
-		parent.move();
-		locker.release();
+		Ref<MemoryFile> child(getOrMakeForOpen(pathBegin, pathEnd));
 		Delete<BidirectionalStream<char> > stream(child->getStream(truncate));
 		child.move();
 		return stream.set();

@@ -284,6 +284,7 @@ namespace vfs {
 				text::String16* = NULL, unsigned = 0u, TreePath* = NULL) const;
 		MemoryFile* snapSymbolicLinks(PathIterator, PathIterator, MemoryFile*, bool,
 				Pathname* = NULL, unsigned = 0u, TreePath* = NULL) const;
+		MemoryFile* getOrMakeForOpen(const PathIterator&, const PathIterator&);
 		void statfs(FSInfo&) const;
 
 	  public:
