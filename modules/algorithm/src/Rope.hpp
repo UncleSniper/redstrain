@@ -678,7 +678,7 @@ namespace algorithm {
 					: -static_cast<ptrdiff_t>(iterator.offset - this->offset);
 			}
 
-			operator bool() const {
+			bool valid() const {
 				return this->rope && this->offset < this->rope->cursize;
 			}
 
@@ -924,7 +924,7 @@ namespace algorithm {
 				}
 			}
 
-			operator bool() const {
+			bool valid() const {
 				return this->rope && this->offset < this->rope->cursize;
 			}
 
@@ -2194,6 +2194,7 @@ namespace algorithm {
 			}
 			else
 				root = spliceNodes(root, cursize, beginIndex, indexCount, *leaf, iteratorCount);
+			leaf.set();
 			cursize = cursize - indexCount + iteratorCount;
 		}
 
@@ -2303,6 +2304,142 @@ namespace algorithm {
 
 		ReverseIterator rend() {
 			return ReverseIterator(this, cursize);
+		}
+
+		template<typename IteratorT>
+		void bappend(IteratorT begin, IteratorT end, size_t batchSize = static_cast<size_t>(0u)) {
+			if(begin == end)
+				return;
+			if(!batchSize)
+				batchSize = SPARE_SIZE;
+			size_t count = static_cast<size_t>(end - begin);
+			while(count) {
+				size_t chunk = count;
+				if(chunk > batchSize)
+					chunk = batchSize;
+				DeleteLeafNode<Leaf, Leaf> leaf(newIteratedLeaf<IteratorT>(begin, begin + chunk, chunk));
+				leaf.count = chunk;
+				if(root)
+					root = concatNodes(root, cursize, *leaf, chunk, NULL);
+				else
+					root = *leaf;
+				cursize += chunk;
+				leaf.set();
+				count -= chunk;
+				begin += chunk;
+			}
+		}
+
+		template<typename IteratorT>
+		void bprepend(IteratorT begin, IteratorT end, size_t batchSize = static_cast<size_t>(0u)) {
+			if(begin == end)
+				return;
+			if(!batchSize)
+				batchSize = SPARE_SIZE;
+			size_t count = static_cast<size_t>(end - begin);
+			while(count) {
+				size_t chunk = count;
+				if(chunk > batchSize)
+					chunk = batchSize;
+				DeleteLeafNode<Leaf, Leaf> leaf(newIteratedLeaf<IteratorT>(begin, begin + chunk, chunk));
+				leaf.count = chunk;
+				if(root)
+					root = concatNodes(*leaf, chunk, root, cursize, NULL);
+				else
+					root = *leaf;
+				cursize += chunk;
+				leaf.set();
+				count -= chunk;
+				begin += chunk;
+			}
+		}
+
+		template<typename IteratorT>
+		void binsert(size_t index, IteratorT begin, IteratorT end, size_t batchSize = static_cast<size_t>(0u)) {
+			if(index > cursize)
+				throw error::IndexOutOfBoundsError("List index out of bounds", index);
+			if(begin == end)
+				return;
+			if(!batchSize)
+				batchSize = SPARE_SIZE;
+			size_t count = static_cast<size_t>(end - begin);
+			while(count) {
+				size_t chunk = count;
+				if(chunk > batchSize)
+					chunk = batchSize;
+				DeleteLeafNode<Leaf, Leaf> leaf(newIteratedLeaf<IteratorT>(begin, begin + chunk, chunk));
+				leaf.count = chunk;
+				if(root)
+					root = spliceNodes(root, cursize, index, static_cast<size_t>(0u), *leaf, chunk);
+				else
+					root = *leaf;
+				cursize += chunk;
+				leaf.set();
+				count -= chunk;
+				begin += chunk;
+				index += chunk;
+			}
+		}
+
+		template<typename IteratorT>
+		void binsert(const ConstIterator& index, IteratorT begin, IteratorT end,
+				size_t batchSize = static_cast<size_t>(0u)) {
+			binsert<IteratorT>(index.index(), begin, end, batchSize);
+		}
+
+		template<typename IteratorT>
+		void binsert(const ConstReverseIterator& index, IteratorT begin, IteratorT end,
+				size_t batchSize = static_cast<size_t>(0u)) {
+			binsert<IteratorT>(index.index(), begin, end, batchSize);
+		}
+
+		template<typename IteratorT>
+		void bsplice(size_t beginIndex, size_t endIndex, IteratorT beginIterator, IteratorT endIterator,
+				size_t batchSize = static_cast<size_t>(0u)) {
+			checkIndices(beginIndex, endIndex);
+			size_t indexCount = endIndex - beginIndex;
+			if(beginIterator == endIterator) {
+				if(indexCount)
+					splice<IteratorT>(beginIndex, endIndex, beginIterator, endIterator);
+				return;
+			}
+			size_t iteratorCount = static_cast<size_t>(endIterator - beginIterator);
+			while(iteratorCount) {
+				size_t chunk = iteratorCount;
+				if(chunk > batchSize)
+					chunk = batchSize;
+				DeleteLeafNode<Leaf, Leaf> leaf(newIteratedLeaf<IteratorT>(beginIterator, endIterator, chunk));
+				leaf.count = chunk;
+				if(indexCount == cursize) {
+					if(root) {
+						root->destroy(cursize, static_cast<size_t>(0u), cursize);
+						delete root;
+					}
+					root = *leaf;
+				}
+				else
+					root = spliceNodes(root, cursize, beginIndex, indexCount, *leaf, chunk);
+				cursize = cursize - indexCount + chunk;
+				leaf.set();
+				iteratorCount -= chunk;
+				beginIterator += chunk;
+				beginIndex += chunk;
+				indexCount = static_cast<size_t>(0u);
+			}
+		}
+
+		template<typename IteratorT>
+		void bsplice(const ConstIterator& beginIndex, const ConstIterator& endIndex,
+				IteratorT beginIterator, IteratorT endIterator, size_t batchSize = static_cast<size_t>(0u)) {
+			bsplice<IteratorT>(beginIndex.index(), endIndex.index(), beginIterator, endIterator, batchSize);
+		}
+
+		template<typename IteratorT>
+		void bsplice(const ConstReverseIterator& beginIndex, const ConstReverseIterator& endIndex,
+				IteratorT beginIterator, IteratorT endIterator, size_t batchSize = static_cast<size_t>(0u)) {
+			size_t eidx = endIndex.index();
+			bsplice<IteratorT>(eidx >= cursize ? static_cast<size_t>(0u) : eidx + static_cast<size_t>(1u),
+					beginIndex.index() + static_cast<size_t>(1u), beginIterator, endIterator, batchSize);
 		}
 
 	};
