@@ -271,6 +271,7 @@ namespace vfs {
 
 	  public:
 		static const int DIRECTORY_SEARCH_PERMISSIONS = VFS::CAN_EXECUTE;
+		static const int DIRECTORY_MODIFY_PERMISSIONS = VFS::CAN_WRITE;
 		static const int DEFAULT_FILE_PERMISSIONS = 0644;
 
 	  private:

@@ -395,6 +395,15 @@ namespace vfs {
 				locker.move(*lparent);
 				lchild.move(lparent->getEntry(newBasename));
 				if(!*lchild) {
+					if(!lparent->access(MemoryBase::DIRECTORY_MODIFY_PERMISSIONS)) {
+						lparent.move();
+						lchild.move();
+						locker.release();
+						sync.release();
+						if(!newPath.empty())
+							newPath.pop_back();
+						throw AccessDeniedError(Transcode::bmpToUTF8(VFS::constructPathname(newPath, true)));
+					}
 					lchild = mbase.createRegularFile(mbase.defaultPermissions);
 					lparent->putEntry(newBasename, *lchild);
 					break;
@@ -410,6 +419,15 @@ namespace vfs {
 			return lchild.set();
 		}
 		else {
+			if(!parent->access(MemoryBase::DIRECTORY_MODIFY_PERMISSIONS)) {
+				parent.move();
+				locker.release();
+				Pathname parentname(fullpath);
+				sync.release();
+				if(!parentname.empty())
+					parentname.pop_back();
+				throw AccessDeniedError(Transcode::bmpToUTF8(VFS::constructPathname(parentname, true)));
+			}
 			Ref<MemoryFile> newchild(mbase.createRegularFile(mbase.defaultPermissions));
 			parent->putEntry(basename, *newchild);
 			child = newchild.set();
@@ -487,6 +505,14 @@ namespace vfs {
 			sync.release();
 			throw IsADirectoryError(Transcode::bmpToUTF8(VFS::constructPathname(fullpath, true)));
 		}
+		if(!parent->access(MemoryBase::DIRECTORY_MODIFY_PERMISSIONS)) {
+			locker.release();
+			Pathname parentname(fullpath);
+			sync.release();
+			if(!parentname.empty())
+				parentname.pop_back();
+			throw AccessDeniedError(Transcode::bmpToUTF8(VFS::constructPathname(parentname, true)));
+		}
 		parent->removeEntry(basename);
 		child.move();
 		locker.release();
@@ -532,6 +558,13 @@ namespace vfs {
 	void MemoryBase::MemoryVFile::rename(PathIterator newPathBegin, PathIterator newPathEnd) {
 		MemoryBase& mbase = parent->getMemoryBase();
 		ObjectLocker<MemoryVFile> sync(mbase.getEffectiveMutexPool(), this);
+		if(!parent->access(MemoryBase::DIRECTORY_MODIFY_PERMISSIONS)) {
+			Pathname parentname(fullpath);
+			sync.release();
+			if(!parentname.empty())
+				parentname.pop_back();
+			throw AccessDeniedError(Transcode::bmpToUTF8(VFS::constructPathname(parentname, true)));
+		}
 		if(!*child) {
 			sync.release();
 			throw NoSuchFileError(Transcode::bmpToUTF8(VFS::constructPathname(fullpath, true)));
@@ -553,6 +586,16 @@ namespace vfs {
 		TreePath desttrace;
 		Ref<MemoryDirectory> destdir(mbase.requireParentDirectory(newPathBegin, newPathEnd,
 				&destbase, 0u, &desttrace));
+		if(!destdir->access(MemoryBase::DIRECTORY_MODIFY_PERMISSIONS)) {
+			destdir.move();
+			locker.release();
+			sync.release();
+			Pathname destdirname;
+			destdirname.insert(destdirname.begin(), newPathBegin, newPathEnd);
+			if(!destdirname.empty())
+				destdirname.pop_back();
+			throw AccessDeniedError(Transcode::bmpToUTF8(VFS::constructPathname(destdirname, true)));
+		}
 		ObjectLocker<MemoryFile> destlock(mbase.getEffectiveMutexPool(), *destdir);
 		bool loop = desttrace.contains(**child);
 		desttrace.clear();
@@ -600,6 +643,14 @@ namespace vfs {
 			sync.release();
 			throw FileAlreadyExistsError(Transcode::bmpToUTF8(VFS::constructPathname(fullpath, true)));
 		}
+		if(!parent->access(MemoryBase::DIRECTORY_MODIFY_PERMISSIONS)) {
+			locker.release();
+			Pathname parentname(fullpath);
+			sync.release();
+			if(!parentname.empty())
+				parentname.pop_back();
+			throw AccessDeniedError(Transcode::bmpToUTF8(VFS::constructPathname(parentname, true)));
+		}
 		Ref<MemoryDirectory> newdir(mbase.createDirectory(permissions));
 		parent->putEntry(basename, *newdir);
 		newdir.move();
@@ -639,6 +690,14 @@ namespace vfs {
 			locker.release();
 			sync.release();
 			throw NotADirectoryError(Transcode::bmpToUTF8(VFS::constructPathname(fullpath, true)));
+		}
+		if(!parent->access(MemoryBase::DIRECTORY_MODIFY_PERMISSIONS)) {
+			locker.release();
+			Pathname parentname(fullpath);
+			sync.release();
+			if(!parentname.empty())
+				parentname.pop_back();
+			throw AccessDeniedError(Transcode::bmpToUTF8(VFS::constructPathname(parentname, true)));
 		}
 		if(!static_cast<MemoryDirectory*>(*child)->isEmptyDirectory()) {
 			locker.release();
@@ -719,6 +778,14 @@ namespace vfs {
 			locker.release();
 			sync.release();
 			throw FileAlreadyExistsError(Transcode::bmpToUTF8(VFS::constructPathname(fullpath, true)));
+		}
+		if(!parent->access(MemoryBase::DIRECTORY_MODIFY_PERMISSIONS)) {
+			locker.release();
+			Pathname parentname(fullpath);
+			sync.release();
+			if(!parentname.empty())
+				parentname.pop_back();
+			throw AccessDeniedError(Transcode::bmpToUTF8(VFS::constructPathname(parentname, true)));
 		}
 		Ref<MemoryFile> newchild;
 		switch(type) {
@@ -930,6 +997,14 @@ namespace vfs {
 				locker.move(*parent);
 				child.move(parent->getEntry(basename));
 				if(!*child) {
+					if(!parent->access(MemoryBase::DIRECTORY_MODIFY_PERMISSIONS)) {
+						parent.move();
+						child.move();
+						locker.release();
+						if(!newPath.empty())
+							newPath.pop_back();
+						throw AccessDeniedError(Transcode::bmpToUTF8(VFS::constructPathname(newPath, true)));
+					}
 					child = createRegularFile(defaultPermissions);
 					parent->putEntry(basename, *child);
 					break;
@@ -939,6 +1014,15 @@ namespace vfs {
 			}
 		}
 		else {
+			if(!parent->access(MemoryBase::DIRECTORY_MODIFY_PERMISSIONS)) {
+				parent.move();
+				locker.release();
+				Pathname parentname;
+				parentname.insert(parentname.begin(), pathBegin, pathEnd);
+				if(!parentname.empty())
+					parentname.pop_back();
+				throw AccessDeniedError(Transcode::bmpToUTF8(VFS::constructPathname(parentname, true)));
+			}
 			child = createRegularFile(defaultPermissions);
 			parent->putEntry(basename, *child);
 		}
@@ -1034,6 +1118,16 @@ namespace vfs {
 			throw FileAlreadyExistsError(Transcode::bmpToUTF8(VFS::constructPathname(newPathBegin,
 					newPathEnd, true)));
 		}
+		if(!destination->access(MemoryBase::DIRECTORY_MODIFY_PERMISSIONS)) {
+			locker.release();
+			source.move();
+			destination.move();
+			Pathname parentname;
+			parentname.insert(parentname.begin(), newPathBegin, newPathEnd);
+			if(!parentname.empty())
+				parentname.pop_back();
+			throw AccessDeniedError(Transcode::bmpToUTF8(VFS::constructPathname(parentname, true)));
+		}
 		destination->putEntry(basename, *source);
 		locker.release();
 		source.move();
@@ -1056,6 +1150,16 @@ namespace vfs {
 			child.move();
 			parent.move();
 			throw IsADirectoryError(Transcode::bmpToUTF8(VFS::constructPathname(pathBegin, pathEnd, true)));
+		}
+		if(!parent->access(MemoryBase::DIRECTORY_MODIFY_PERMISSIONS)) {
+			locker.release();
+			child.move();
+			parent.move();
+			Pathname parentname;
+			parentname.insert(parentname.begin(), pathBegin, pathEnd);
+			if(!parentname.empty())
+				parentname.pop_back();
+			throw AccessDeniedError(Transcode::bmpToUTF8(VFS::constructPathname(parentname, true)));
 		}
 		parent->removeEntry(basename);
 		locker.release();
@@ -1124,6 +1228,15 @@ namespace vfs {
 			srclock.release();
 			throw NoSuchFileError(Transcode::bmpToUTF8(VFS::constructPathname(oldPathBegin, oldPathEnd, true)));
 		}
+		if(!srcdir->access(MemoryBase::DIRECTORY_MODIFY_PERMISSIONS)) {
+			srcdir.move();
+			srclock.release();
+			Pathname parentname;
+			parentname.insert(parentname.begin(), oldPathBegin, oldPathEnd);
+			if(!parentname.empty())
+				parentname.pop_back();
+			throw AccessDeniedError(Transcode::bmpToUTF8(VFS::constructPathname(parentname, true)));
+		}
 		TreePath desttrace;
 		Ref<MemoryDirectory> destdir(requireParentDirectory(newPathBegin, newPathEnd, &destbase, 0u, &desttrace));
 		ObjectLocker<MemoryFile> destlock(getEffectiveMutexPool(), *destdir);
@@ -1149,6 +1262,18 @@ namespace vfs {
 			throw FileAlreadyExistsError(Transcode::bmpToUTF8(VFS::constructPathname(newPathBegin,
 					newPathEnd, true)));
 		}
+		if(!destdir->access(MemoryBase::DIRECTORY_MODIFY_PERMISSIONS)) {
+			destdir.move();
+			srcfile.move();
+			srcdir.move();
+			srclock.release();
+			destlock.release();
+			Pathname parentname;
+			parentname.insert(parentname.begin(), newPathBegin, newPathEnd);
+			if(!parentname.empty())
+				parentname.pop_back();
+			throw AccessDeniedError(Transcode::bmpToUTF8(VFS::constructPathname(parentname, true)));
+		}
 		destdir->putEntry(destbase, *srcfile);
 		destlock.release();
 		srcdir->removeEntry(srcbase);
@@ -1172,6 +1297,15 @@ namespace vfs {
 			parent.move();
 			locker.release();
 			throw FileAlreadyExistsError(Transcode::bmpToUTF8(VFS::constructPathname(pathBegin, pathEnd, true)));
+		}
+		if(!parent->access(MemoryBase::DIRECTORY_MODIFY_PERMISSIONS)) {
+			parent.move();
+			locker.release();
+			Pathname parentname;
+			parentname.insert(parentname.begin(), pathBegin, pathEnd);
+			if(!parentname.empty())
+				parentname.pop_back();
+			throw AccessDeniedError(Transcode::bmpToUTF8(VFS::constructPathname(parentname, true)));
 		}
 		Ref<MemoryDirectory> newdir(createDirectory(permissions));
 		parent->putEntry(basename, *newdir);
@@ -1199,6 +1333,16 @@ namespace vfs {
 			parent.move();
 			throw NotADirectoryError(Transcode::bmpToUTF8(VFS::constructPathname(pathBegin, pathEnd, true)));
 		}
+		if(!parent->access(MemoryBase::DIRECTORY_MODIFY_PERMISSIONS)) {
+			locker.release();
+			child.move();
+			parent.move();
+			Pathname parentname;
+			parentname.insert(parentname.begin(), pathBegin, pathEnd);
+			if(!parentname.empty())
+				parentname.pop_back();
+			throw AccessDeniedError(Transcode::bmpToUTF8(VFS::constructPathname(parentname, true)));
+		}
 		if(!static_cast<MemoryDirectory*>(*child)->isEmptyDirectory()) {
 			locker.release();
 			child.move();
@@ -1225,6 +1369,15 @@ namespace vfs {
 			parent.move();
 			locker.release();
 			throw FileAlreadyExistsError(Transcode::bmpToUTF8(VFS::constructPathname(pathBegin, pathEnd, true)));
+		}
+		if(!parent->access(MemoryBase::DIRECTORY_MODIFY_PERMISSIONS)) {
+			parent.move();
+			locker.release();
+			Pathname parentname;
+			parentname.insert(parentname.begin(), pathBegin, pathEnd);
+			if(!parentname.empty())
+				parentname.pop_back();
+			throw AccessDeniedError(Transcode::bmpToUTF8(VFS::constructPathname(parentname, true)));
 		}
 		Ref<MemoryFile> newlink(createSymlink(target));
 		parent->putEntry(basename, *newlink);
@@ -1285,6 +1438,15 @@ namespace vfs {
 			parent.move();
 			locker.release();
 			throw FileAlreadyExistsError(Transcode::bmpToUTF8(VFS::constructPathname(pathBegin, pathEnd, true)));
+		}
+		if(!parent->access(MemoryBase::DIRECTORY_MODIFY_PERMISSIONS)) {
+			parent.move();
+			locker.release();
+			Pathname parentname;
+			parentname.insert(parentname.begin(), pathBegin, pathEnd);
+			if(!parentname.empty())
+				parentname.pop_back();
+			throw AccessDeniedError(Transcode::bmpToUTF8(VFS::constructPathname(parentname, true)));
 		}
 		Ref<MemoryFile> newchild;
 		switch(type) {
