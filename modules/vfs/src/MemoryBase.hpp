@@ -273,6 +273,7 @@ namespace vfs {
 		static const int DIRECTORY_SEARCH_PERMISSIONS = VFS::CAN_EXECUTE;
 		static const int DIRECTORY_MODIFY_PERMISSIONS = VFS::CAN_WRITE;
 		static const int DEFAULT_FILE_PERMISSIONS = 0644;
+		static const int DEFAULT_ROOT_PERMISSIONS = 0755;
 
 	  private:
 		MemoryDirectory* root;
@@ -282,6 +283,8 @@ namespace vfs {
 		int flags, defaultPermissions;
 
 	  protected:
+		MemoryBase(const MemoryBase&);
+
 		MemoryFile* resolvePath(PathIterator&, PathIterator, unsigned = 0u, TreePath* = NULL) const;
 		MemoryFile* requireFile(PathIterator, PathIterator, unsigned = 0u, TreePath* = NULL) const;
 		MemoryDirectory* requireParentDirectory(PathIterator, PathIterator,
@@ -293,7 +296,6 @@ namespace vfs {
 
 	  public:
 		MemoryBase(MemoryDirectory*, int);
-		MemoryBase(const MemoryBase&);
 		virtual ~MemoryBase();
 
 		inline MemoryDirectory* getRoot() const {

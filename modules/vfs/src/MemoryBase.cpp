@@ -866,7 +866,8 @@ namespace vfs {
 
 	// ======== MemoryBase ========
 
-	MemoryBase::MemoryBase(MemoryDirectory* root, int flags) : root(root), mutexPool(NULL),
+	MemoryBase::MemoryBase(MemoryDirectory* root, int flags) : root(root ? root
+			: new SimpleMemoryDirectory(*this, MemoryBase::DEFAULT_ROOT_PERMISSIONS)), mutexPool(NULL),
 			currentUser(Stat::NO_USER), currentGroup(Stat::NO_GROUP), flags(flags),
 			defaultPermissions(DEFAULT_FILE_PERMISSIONS) {
 		root->ref();
