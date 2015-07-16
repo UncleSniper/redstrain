@@ -40,15 +40,18 @@ namespace vfs {
 		class REDSTRAIN_VFS_API RopeBase : public virtual io::Stream {
 
 		  private:
+			bool closed;
+
+		  protected:
 			RopeMemoryFile& file;
 			size_t position;
-			bool closed;
 
 		  protected:
 			RopeBase(const RopeBase&);
 
 		  public:
-			RopeBase(RopeMemoryFile&, bool, bool);
+			RopeBase(RopeMemoryFile&, bool);
+			virtual ~RopeBase();
 
 			inline RopeMemoryFile& getFile() {
 				return file;
@@ -56,6 +59,10 @@ namespace vfs {
 
 			inline const RopeMemoryFile& getFile() const {
 				return file;
+			}
+
+			inline bool isClosed() const {
+				return closed;
 			}
 
 			virtual void close();
