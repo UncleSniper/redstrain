@@ -54,7 +54,7 @@ namespace vfs {
 		static const DeviceID NO_DEVICE = static_cast<DeviceID>(0u);
 
 	  public:
-		static const int DEFAULT_DIRECORY_PERMISSIONS
+		static const int DEFAULT_DIRECTORY_PERMISSIONS
 				= OWNER_MASK | GROUP_READ | GROUP_EXECUTE | OTHERS_READ | OTHERS_EXECUTE;
 
 	  private:

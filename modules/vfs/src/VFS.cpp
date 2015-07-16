@@ -731,13 +731,13 @@ namespace vfs {
 			if(info.getType() != Stat::DIRECTORY) {
 				destinationFS.unlink(destinationStack.begin(), destinationStack.end());
 				destinationFS.mkdir(destinationStack.begin(), destinationStack.end(),
-						Stat::DEFAULT_DIRECORY_PERMISSIONS);
+						Stat::DEFAULT_DIRECTORY_PERMISSIONS);
 				uncreate = destinationStack;
 			}
 		}
 		else {
 			destinationFS.mkdir(destinationStack.begin(), destinationStack.end(),
-					Stat::DEFAULT_DIRECORY_PERMISSIONS);
+					Stat::DEFAULT_DIRECTORY_PERMISSIONS);
 			uncreate = destinationStack;
 		}
 		sourceFS.readdir(sourceStack.begin(), sourceStack.end(), *this);

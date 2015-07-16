@@ -154,7 +154,7 @@ namespace platform {
 		static bool access(const std::string&, int);
 		static void sync();
 		static void rename(const std::string&, const std::string&);
-		static void mkdir(const std::string&, int = Stat::DEFAULT_DIRECORY_PERMISSIONS);
+		static void mkdir(const std::string&, int = Stat::DEFAULT_DIRECTORY_PERMISSIONS);
 		static void rmdir(const std::string&);
 		static void symlink(const std::string&, const std::string&);
 		static void readlink(const std::string&, std::string&);
