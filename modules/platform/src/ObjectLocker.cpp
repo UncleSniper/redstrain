@@ -5,8 +5,12 @@
 namespace redengine {
 namespace platform {
 
-	static SuspendingMutexPool dgmp;
+	static SuspendingMutexPool* dgmp = NULL;
 
-	REDSTRAIN_PLATFORM_API MutexPool& defaultGlobalMutexPool = dgmp;
+	REDSTRAIN_PLATFORM_API MutexPool& getDefaultGlobalMutexPool() {
+		if(!dgmp)
+			dgmp = new SuspendingMutexPool;
+		return *dgmp;
+	}
 
 }}
