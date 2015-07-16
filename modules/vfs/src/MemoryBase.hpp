@@ -264,9 +264,10 @@ namespace vfs {
 
 	  public:
 		enum BaseFlags {
-			BFL_HEED_OWNER          = 01,
-			BFL_HEED_GROUP          = 02,
-			BFL_ENFORCE_PERMISSIONS = 04
+			BFL_HEED_OWNER          = 001,
+			BFL_HEED_GROUP          = 002,
+			BFL_ENFORCE_PERMISSIONS = 004,
+			BFL_READONLY            = 010
 		};
 
 	  public:

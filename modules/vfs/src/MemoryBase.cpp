@@ -12,6 +12,7 @@
 #include "NotASymbolicLinkError.hpp"
 #include "FileAlreadyExistsError.hpp"
 #include "DirectoryNotEmptyError.hpp"
+#include "ReadOnlyFilesystemError.hpp"
 #include "UnsupportedFileTypeError.hpp"
 #include "TooManySymbolicLinksError.hpp"
 #include "AttemptedDirectoryLoopError.hpp"
@@ -379,6 +380,10 @@ namespace vfs {
 	MemoryBase::MemoryFile* MemoryBase::MemoryVFile::getOrMakeForOpen() {
 		MemoryBase& mbase = parent->getMemoryBase();
 		ObjectLocker<MemoryVFile> sync(mbase.getEffectiveMutexPool(), this);
+		if(parent->getMemoryBase().hasBaseFlag(MemoryBase::BFL_READONLY)) {
+			sync.release();
+			throw ReadOnlyFilesystemError();
+		}
 		if(basename.empty()) {
 			Pathname path(fullpath);
 			sync.release();
@@ -458,6 +463,10 @@ namespace vfs {
 			sync.release();
 			throw NoSuchFileError(path);
 		}
+		if(parent->getMemoryBase().hasBaseFlag(MemoryBase::BFL_READONLY)) {
+			sync.release();
+			throw ReadOnlyFilesystemError();
+		}
 		child->chmod(permissions);
 		sync.release();
 	}
@@ -468,6 +477,10 @@ namespace vfs {
 			Pathname path(fullpath);
 			sync.release();
 			throw NoSuchFileError(path);
+		}
+		if(parent->getMemoryBase().hasBaseFlag(MemoryBase::BFL_READONLY)) {
+			sync.release();
+			throw ReadOnlyFilesystemError();
 		}
 		child->chown(owner);
 		sync.release();
@@ -480,6 +493,10 @@ namespace vfs {
 			sync.release();
 			throw NoSuchFileError(path);
 		}
+		if(parent->getMemoryBase().hasBaseFlag(MemoryBase::BFL_READONLY)) {
+			sync.release();
+			throw ReadOnlyFilesystemError();
+		}
 		child->chgrp(group);
 		sync.release();
 	}
@@ -490,6 +507,10 @@ namespace vfs {
 			Pathname path(fullpath);
 			sync.release();
 			throw NoSuchFileError(path);
+		}
+		if(parent->getMemoryBase().hasBaseFlag(MemoryBase::BFL_READONLY)) {
+			sync.release();
+			throw ReadOnlyFilesystemError();
 		}
 		ObjectLocker<MemoryFile> locker(parent->getMemoryBase().getEffectiveMutexPool(), *parent);
 		if(!basename.empty()) {
@@ -535,6 +556,10 @@ namespace vfs {
 			sync.release();
 			throw NoSuchFileError(path);
 		}
+		if(parent->getMemoryBase().hasBaseFlag(MemoryBase::BFL_READONLY)) {
+			sync.release();
+			throw ReadOnlyFilesystemError();
+		}
 		child->utime();
 		sync.release();
 	}
@@ -545,6 +570,10 @@ namespace vfs {
 			Pathname path(fullpath);
 			sync.release();
 			throw NoSuchFileError(path);
+		}
+		if(parent->getMemoryBase().hasBaseFlag(MemoryBase::BFL_READONLY)) {
+			sync.release();
+			throw ReadOnlyFilesystemError();
 		}
 		child->utime(accessTimestamp, modificationTimestamp);
 		sync.release();
@@ -570,17 +599,21 @@ namespace vfs {
 	void MemoryBase::MemoryVFile::rename(PathIterator newPathBegin, PathIterator newPathEnd) {
 		MemoryBase& mbase = parent->getMemoryBase();
 		ObjectLocker<MemoryVFile> sync(mbase.getEffectiveMutexPool(), this);
+		if(!*child) {
+			Pathname path(fullpath);
+			sync.release();
+			throw NoSuchFileError(path);
+		}
+		if(parent->getMemoryBase().hasBaseFlag(MemoryBase::BFL_READONLY)) {
+			sync.release();
+			throw ReadOnlyFilesystemError();
+		}
 		if(!parent->access(MemoryBase::DIRECTORY_MODIFY_PERMISSIONS)) {
 			Pathname parentname(fullpath);
 			sync.release();
 			if(!parentname.empty())
 				parentname.pop_back();
 			throw AccessDeniedError(parentname);
-		}
-		if(!*child) {
-			Pathname path(fullpath);
-			sync.release();
-			throw NoSuchFileError(path);
 		}
 		ObjectLocker<MemoryFile> locker(parent->getMemoryBase().getEffectiveMutexPool(), *parent);
 		MemoryFile* curchild = parent->getEntry(basename);
@@ -659,6 +692,11 @@ namespace vfs {
 			sync.release();
 			throw FileAlreadyExistsError(path);
 		}
+		if(parent->getMemoryBase().hasBaseFlag(MemoryBase::BFL_READONLY)) {
+			locker.release();
+			sync.release();
+			throw ReadOnlyFilesystemError();
+		}
 		if(!parent->access(MemoryBase::DIRECTORY_MODIFY_PERMISSIONS)) {
 			locker.release();
 			Pathname parentname(fullpath);
@@ -678,6 +716,10 @@ namespace vfs {
 		MemoryBase& mbase = parent->getMemoryBase();
 		ObjectLocker<MemoryVFile> sync(mbase.getEffectiveMutexPool(), this);
 		if(basename.empty()) {
+			if(parent->getMemoryBase().hasBaseFlag(MemoryBase::BFL_READONLY)) {
+				sync.release();
+				throw ReadOnlyFilesystemError();
+			}
 			if(!parent->isEmptyDirectory()) {
 				sync.release();
 				throw DirectoryNotEmptyError("/");
@@ -689,6 +731,10 @@ namespace vfs {
 			Pathname path(fullpath);
 			sync.release();
 			throw NoSuchFileError(path);
+		}
+		if(parent->getMemoryBase().hasBaseFlag(MemoryBase::BFL_READONLY)) {
+			sync.release();
+			throw ReadOnlyFilesystemError();
 		}
 		ObjectLocker<MemoryFile> locker(mbase.getEffectiveMutexPool(), *parent);
 		MemoryFile* curchild = parent->getEntry(basename);
@@ -771,6 +817,10 @@ namespace vfs {
 			sync.release();
 			throw NoSuchFileError(path);
 		}
+		if(parent->getMemoryBase().hasBaseFlag(MemoryBase::BFL_READONLY)) {
+			sync.release();
+			throw ReadOnlyFilesystemError();
+		}
 		Ref<MemoryFile> lchild(*child, true);
 		lchild = mbase.snapSymbolicLinks(fullpath.begin(), fullpath.end(), *child, false);
 		lchild->truncate(size);
@@ -805,6 +855,11 @@ namespace vfs {
 			Pathname path(fullpath);
 			sync.release();
 			throw FileAlreadyExistsError(path);
+		}
+		if(parent->getMemoryBase().hasBaseFlag(MemoryBase::BFL_READONLY)) {
+			locker.release();
+			sync.release();
+			throw ReadOnlyFilesystemError();
 		}
 		if(!parent->access(MemoryBase::DIRECTORY_MODIFY_PERMISSIONS)) {
 			locker.release();
@@ -1007,6 +1062,8 @@ namespace vfs {
 
 	MemoryBase::MemoryFile* MemoryBase::getOrMakeForOpen(const PathIterator& pathBegin,
 			const PathIterator& pathEnd) {
+		if(flags & MemoryBase::BFL_READONLY)
+			throw ReadOnlyFilesystemError();
 		String16 basename;
 		Ref<MemoryDirectory> parent(requireParentDirectory(pathBegin, pathEnd, &basename));
 		if(basename.empty()) {
@@ -1105,6 +1162,10 @@ namespace vfs {
 
 	void MemoryBase::chmod(PathIterator pathBegin, PathIterator pathEnd, int permissions) {
 		Ref<MemoryFile> file(requireFile(pathBegin, pathEnd));
+		if(flags & MemoryBase::BFL_READONLY) {
+			file.move();
+			throw ReadOnlyFilesystemError();
+		}
 		file->chmod(permissions);
 		file.move();
 	}
@@ -1113,6 +1174,10 @@ namespace vfs {
 		Ref<MemoryFile> file(requireFile(pathBegin, pathEnd));
 		if(!ofLink)
 			file = snapSymbolicLinks(pathBegin, pathEnd, file.set(), false);
+		if(flags & MemoryBase::BFL_READONLY) {
+			file.move();
+			throw ReadOnlyFilesystemError();
+		}
 		file->chown(owner);
 		file.move();
 	}
@@ -1121,6 +1186,10 @@ namespace vfs {
 		Ref<MemoryFile> file(requireFile(pathBegin, pathEnd));
 		if(!ofLink)
 			file = snapSymbolicLinks(pathBegin, pathEnd, file.set(), false);
+		if(flags & MemoryBase::BFL_READONLY) {
+			file.move();
+			throw ReadOnlyFilesystemError();
+		}
 		file->chgrp(group);
 		file.move();
 	}
@@ -1131,6 +1200,10 @@ namespace vfs {
 		if(source->getFileType() == Stat::DIRECTORY) {
 			source.move();
 			throw IsADirectoryError(oldPathBegin, oldPathEnd);
+		}
+		if(flags & MemoryBase::BFL_READONLY) {
+			source.move();
+			throw ReadOnlyFilesystemError();
 		}
 		String16 basename;
 		Ref<MemoryDirectory> destination(requireParentDirectory(newPathBegin, newPathEnd, &basename));
@@ -1178,6 +1251,12 @@ namespace vfs {
 			parent.move();
 			throw IsADirectoryError(pathBegin, pathEnd);
 		}
+		if(flags & MemoryBase::BFL_READONLY) {
+			child.move();
+			parent.move();
+			locker.release();
+			throw ReadOnlyFilesystemError();
+		}
 		if(!parent->access(MemoryBase::DIRECTORY_MODIFY_PERMISSIONS)) {
 			locker.release();
 			child.move();
@@ -1197,6 +1276,10 @@ namespace vfs {
 	void MemoryBase::utime(PathIterator pathBegin, PathIterator pathEnd) {
 		Ref<MemoryFile> file(requireFile(pathBegin, pathEnd));
 		file = snapSymbolicLinks(pathBegin, pathEnd, file.set(), false);
+		if(flags & MemoryBase::BFL_READONLY) {
+			file.move();
+			throw ReadOnlyFilesystemError();
+		}
 		file->utime();
 		file.move();
 	}
@@ -1205,6 +1288,10 @@ namespace vfs {
 			time_t accessTimestamp, time_t modificationTimestamp) {
 		Ref<MemoryFile> file(requireFile(pathBegin, pathEnd));
 		file = snapSymbolicLinks(pathBegin, pathEnd, file.set(), false);
+		if(flags & MemoryBase::BFL_READONLY) {
+			file.move();
+			throw ReadOnlyFilesystemError();
+		}
 		file->utime(accessTimestamp, modificationTimestamp);
 		file.move();
 	}
@@ -1253,6 +1340,11 @@ namespace vfs {
 			srcdir.move();
 			srclock.release();
 			throw NoSuchFileError(oldPathBegin, oldPathEnd);
+		}
+		if(flags & MemoryBase::BFL_READONLY) {
+			srcdir.move();
+			srclock.release();
+			throw ReadOnlyFilesystemError();
 		}
 		if(!srcdir->access(MemoryBase::DIRECTORY_MODIFY_PERMISSIONS)) {
 			srcdir.move();
@@ -1322,6 +1414,11 @@ namespace vfs {
 			locker.release();
 			throw FileAlreadyExistsError(pathBegin, pathEnd);
 		}
+		if(flags & MemoryBase::BFL_READONLY) {
+			parent.move();
+			locker.release();
+			throw ReadOnlyFilesystemError();
+		}
 		if(!parent->access(MemoryBase::DIRECTORY_MODIFY_PERMISSIONS)) {
 			parent.move();
 			locker.release();
@@ -1343,6 +1440,8 @@ namespace vfs {
 		Ref<MemoryDirectory> parent(requireParentDirectory(pathBegin, pathEnd, &basename));
 		if(basename.empty()) {
 			parent.move();
+			if(flags & MemoryBase::BFL_READONLY)
+				throw ReadOnlyFilesystemError();
 			if(!root->isEmptyDirectory())
 				throw DirectoryNotEmptyError("/");
 			return;
@@ -1356,6 +1455,12 @@ namespace vfs {
 			child.move();
 			parent.move();
 			throw NotADirectoryError(pathBegin, pathEnd);
+		}
+		if(flags & MemoryBase::BFL_READONLY) {
+			locker.release();
+			child.move();
+			parent.move();
+			throw ReadOnlyFilesystemError();
 		}
 		if(!parent->access(MemoryBase::DIRECTORY_MODIFY_PERMISSIONS)) {
 			locker.release();
@@ -1384,6 +1489,8 @@ namespace vfs {
 		Ref<MemoryDirectory> parent(requireParentDirectory(pathBegin, pathEnd, &basename));
 		if(basename.empty()) {
 			parent.move();
+			if(flags & MemoryBase::BFL_READONLY)
+				throw ReadOnlyFilesystemError();
 			throw FileAlreadyExistsError(pathBegin, pathEnd);
 		}
 		ObjectLocker<MemoryFile> locker(getEffectiveMutexPool(), *parent);
@@ -1393,6 +1500,11 @@ namespace vfs {
 			parent.move();
 			locker.release();
 			throw FileAlreadyExistsError(pathBegin, pathEnd);
+		}
+		if(flags & MemoryBase::BFL_READONLY) {
+			parent.move();
+			locker.release();
+			throw ReadOnlyFilesystemError();
 		}
 		if(!parent->access(MemoryBase::DIRECTORY_MODIFY_PERMISSIONS)) {
 			parent.move();
@@ -1429,6 +1541,11 @@ namespace vfs {
 
 	void MemoryBase::truncate(PathIterator pathBegin, PathIterator pathEnd, size_t size) {
 		Ref<MemoryFile> file(requireFile(pathBegin, pathEnd));
+		file = snapSymbolicLinks(pathBegin, pathEnd, file.set(), false);
+		if(flags & MemoryBase::BFL_READONLY) {
+			file.move();
+			throw ReadOnlyFilesystemError();
+		}
 		file->truncate(size);
 		file.move();
 	}
@@ -1462,6 +1579,11 @@ namespace vfs {
 			parent.move();
 			locker.release();
 			throw FileAlreadyExistsError(pathBegin, pathEnd);
+		}
+		if(flags & MemoryBase::BFL_READONLY) {
+			parent.move();
+			locker.release();
+			throw ReadOnlyFilesystemError();
 		}
 		if(!parent->access(MemoryBase::DIRECTORY_MODIFY_PERMISSIONS)) {
 			parent.move();
