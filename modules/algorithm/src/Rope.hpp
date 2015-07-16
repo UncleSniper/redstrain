@@ -2442,6 +2442,41 @@ namespace algorithm {
 					beginIndex.index() + static_cast<size_t>(1u), beginIterator, endIterator, batchSize);
 		}
 
+		void assign(const Rope& rope) {
+			if(root) {
+				root->destroy(cursize, static_cast<size_t>(0u), cursize);
+				delete root;
+				root = NULL;
+				cursize = static_cast<size_t>(0u);
+			}
+			if(rope.root) {
+				root = rope.root->clone(rope.cursize);
+				cursize = rope.cursize;
+			}
+		}
+
+		void fill(const ElementT& value, size_t count, size_t batchSize = static_cast<size_t>(0u)) {
+			if(!batchSize)
+				batchSize = SPARE_SIZE;
+			while(count) {
+				size_t chunk = count;
+				if(chunk > batchSize)
+					chunk = batchSize;
+				size_t newSize = chunk + SPARE_SIZE;
+				DeleteLeafNode<Leaf, Leaf> leaf(new(newSize) Leaf(newSize));
+				ElementT* dest = leaf->getElements();
+				for(; leaf.count < chunk; ++leaf.count)
+					new(dest + leaf.count) ElementT(value);
+				if(root)
+					root = concatNodes(root, cursize, *leaf, chunk, NULL);
+				else
+					root = *leaf;
+				cursize += chunk;
+				leaf.set();
+				count -= chunk;
+			}
+		}
+
 	};
 
 }}
