@@ -112,9 +112,9 @@ namespace vfs {
 
 		virtual MemoryFile* createRegularFile(int);
 
-	  public:
 		static void addBlobEmitter(BlobEmitter*);
 		static void removeBlobEmitter(BlobEmitter*);
+		static BlobVFS& getDefaultBlobVFS();
 
 	};
 

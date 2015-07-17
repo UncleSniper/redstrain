@@ -1,5 +1,7 @@
+#include <redstrain/util/Delete.hpp>
 #include <redstrain/io/MemoryInputStream.hpp>
 #include <redstrain/platform/ObjectLocker.hpp>
+#include <redstrain/platform/SynchronizedSingleton.hpp>
 
 #include "BlobVFS.hpp"
 #include "NotADirectoryError.hpp"
@@ -8,12 +10,14 @@
 
 using std::string;
 using redengine::util::Ref;
+using redengine::util::Delete;
 using redengine::text::String16;
 using redengine::io::InputStream;
 using redengine::io::OutputStream;
 using redengine::io::MemoryInputStream;
 using redengine::platform::ObjectLocker;
 using redengine::io::BidirectionalStream;
+using redengine::platform::SynchronizedSingleton;
 
 namespace redengine {
 namespace vfs {
@@ -166,6 +170,27 @@ namespace vfs {
 			return;
 		BlobVFS::emitters.erase(it);
 		emitter->unref();
+	}
+
+	class BlobVFSSingleton : public SynchronizedSingleton<BlobVFS> {
+
+	  protected:
+		virtual BlobVFS* newInstance() {
+			Delete<BlobVFS> vfs(new BlobVFS);
+			vfs->putEmittedBlobs();
+			return vfs.set();
+		}
+
+	  public:
+		BlobVFSSingleton() {}
+		BlobVFSSingleton(const BlobVFSSingleton& singleton) : SynchronizedSingleton<BlobVFS>(singleton) {}
+
+	};
+
+	static BlobVFSSingleton defaultBlobVFS;
+
+	BlobVFS& BlobVFS::getDefaultBlobVFS() {
+		return defaultBlobVFS.get();
 	}
 
 }}
