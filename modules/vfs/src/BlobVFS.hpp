@@ -2,6 +2,8 @@
 #define REDSTRAIN_MOD_VFS_BLOBVFS_HPP
 
 #include <set>
+#include <string>
+#include <redstrain/util/ReferenceCounted.hpp>
 
 #include "MemoryBase.hpp"
 
@@ -38,11 +40,45 @@ namespace vfs {
 
 		};
 
-		typedef void (*BlobEmitter)(BlobVFS&);
+		class REDSTRAIN_VFS_API BlobEmitter : public util::ReferenceCounted {
+
+		  public:
+			BlobEmitter();
+			BlobEmitter(const BlobEmitter&);
+
+			virtual void emitBlobs(BlobVFS&) = 0;
+
+		};
+
+		class REDSTRAIN_VFS_API BlobInjector : public BlobEmitter {
+
+		  private:
+			const char *const data;
+			const size_t size;
+			const std::string path;
+
+		  public:
+			BlobInjector(const char*, size_t, const std::string&);
+			BlobInjector(const BlobInjector&);
+
+			inline const char* getData() const {
+				return data;
+			}
+
+			inline size_t getSize() const {
+				return size;
+			}
+
+			inline const std::string& getPath() const {
+				return path;
+			}
+
+			virtual void emitBlobs(BlobVFS&);
+
+		};
 
 	  private:
-		typedef std::set<BlobEmitter> BlobEmitters;
-		typedef BlobEmitters::const_iterator BlobEmitterIterator;
+		typedef std::set<BlobEmitter*> BlobEmitters;
 
 	  private:
 		static BlobEmitters emitters;
@@ -77,8 +113,8 @@ namespace vfs {
 		virtual MemoryFile* createRegularFile(int);
 
 	  public:
-		static void addBlobEmitter(BlobEmitter);
-		static void removeBlobEmitter(BlobEmitter);
+		static void addBlobEmitter(BlobEmitter*);
+		static void removeBlobEmitter(BlobEmitter*);
 
 	};
 

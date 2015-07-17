@@ -50,6 +50,26 @@ namespace vfs {
 		throw ReadOnlyFilesystemError();
 	}
 
+	// ======== BlobEmitter ========
+
+	BlobVFS::BlobEmitter::BlobEmitter() {}
+
+	BlobVFS::BlobEmitter::BlobEmitter(const BlobEmitter& emitter) : ReferenceCounted(emitter) {}
+
+	// ======== BlobInjector ========
+
+	BlobVFS::BlobInjector::BlobInjector(const char* data, size_t size, const string& path)
+			: data(data), size(size), path(path) {
+		BlobVFS::addBlobEmitter(this);
+	}
+
+	BlobVFS::BlobInjector::BlobInjector(const BlobInjector& injector)
+			: BlobEmitter(injector), data(injector.data), size(injector.size), path(injector.path) {}
+
+	void BlobVFS::BlobInjector::emitBlobs(BlobVFS& vfs) {
+		vfs.putBlob(path, data, size);
+	}
+
 	// ======== BlobVFS ========
 
 	BlobVFS::BlobEmitters BlobVFS::emitters;
@@ -122,21 +142,30 @@ namespace vfs {
 	}
 
 	void BlobVFS::putEmittedBlobs() {
-		BlobEmitterIterator begin(BlobVFS::emitters.begin()), end(BlobVFS::emitters.end());
+		BlobEmitters::const_iterator begin(BlobVFS::emitters.begin()), end(BlobVFS::emitters.end());
 		for(; begin != end; ++begin)
-			(*begin)(*this);
+			(*begin)->emitBlobs(*this);
 	}
 
 	MemoryBase::MemoryFile* BlobVFS::createRegularFile(int permissions) {
 		return new BlobMemoryFile(*this, permissions, NULL, static_cast<size_t>(0u));
 	}
 
-	void BlobVFS::addBlobEmitter(BlobEmitter emitter) {
-		BlobVFS::emitters.insert(emitter);
+	void BlobVFS::addBlobEmitter(BlobEmitter* emitter) {
+		if(!emitter)
+			return;
+		if(BlobVFS::emitters.insert(emitter).second)
+			emitter->ref();
 	}
 
-	void BlobVFS::removeBlobEmitter(BlobEmitter emitter) {
-		BlobVFS::emitters.erase(emitter);
+	void BlobVFS::removeBlobEmitter(BlobEmitter* emitter) {
+		if(!emitter)
+			return;
+		BlobEmitters::iterator it = BlobVFS::emitters.find(emitter);
+		if(it == BlobVFS::emitters.end())
+			return;
+		BlobVFS::emitters.erase(it);
+		emitter->unref();
 	}
 
 }}
