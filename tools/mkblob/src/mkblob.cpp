@@ -27,6 +27,8 @@ int main(int argc, char** argv) {
 	logic.addLongOption("help", &Options::usage);
 	logic.addLongOption("variable", &Options::setVariableName, OptionLogic::REQUIRED_ARGUMENT);
 	logic.addShortOption('n', &Options::setVariableName, OptionLogic::REQUIRED_ARGUMENT);
+	logic.addLongOption("export", &Options::setExportMacro, OptionLogic::REQUIRED_ARGUMENT);
+	logic.addShortOption('e', &Options::setExportMacro, OptionLogic::REQUIRED_ARGUMENT);
 	return runWithOptions(argv, argc, logic, &Options::addBareword, &Options::checkBarewords, run);
 }
 
@@ -43,6 +45,7 @@ int run(const string&, const Options& options) {
 	else
 		out = new FileOutputStream(outfile);
 	CPPArrayOutputStream gen(**out, options.getVariableName());
+	gen.setExportMacro(options.getExportMacro());
 	in->copyTo(gen);
 	gen.close();
 	in->close();

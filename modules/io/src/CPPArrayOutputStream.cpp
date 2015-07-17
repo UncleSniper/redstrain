@@ -80,12 +80,12 @@ namespace io {
 
 	// ======== SizeAppender ========
 
-	CPPArrayOutputStream::SizeAppender::SizeAppender(FormattedOutputStream<char>& output, size_t size)
-			: output(output), size(size), partCount(0u) {}
+	CPPArrayOutputStream::SizeAppender::SizeAppender(FormattedOutputStream<char>& output, size_t size,
+			const string& exportMacro) : output(output), size(size), partCount(0u), exportMacro(exportMacro) {}
 
 	CPPArrayOutputStream::SizeAppender::SizeAppender(const SizeAppender& appender)
 			: Appender(appender), output(appender.output), size(appender.size), lastPart(appender.lastPart),
-			partCount(appender.partCount) {}
+			partCount(appender.partCount), exportMacro(appender.exportMacro) {}
 
 	void CPPArrayOutputStream::SizeAppender::append(const string& part) {
 		if(part.empty())
@@ -98,7 +98,12 @@ namespace io {
 		if(lastPart.empty())
 			return;
 		output.endLine();
-		output.print("\textern const size_t " + (partCount <= 1u));
+		output.print("\textern " + (partCount <= 1u));
+		if(!exportMacro.empty()) {
+			output.print(exportMacro);
+			output.print(" ");
+		}
+		output.print("const size_t ");
 		output.print(lastPart);
 		output.print("_size = ");
 		output.print(StringUtils::toString(size));
@@ -124,6 +129,10 @@ namespace io {
 
 	const OutputStream<char>& CPPArrayOutputStream::getBackingOutputStream() const {
 		return formatted.getBackingOutputStream();
+	}
+
+	void CPPArrayOutputStream::setExportMacro(const string& macro) {
+		exportMacro = macro;
 	}
 
 	void CPPArrayOutputStream::writeBlock(const char* buffer, size_t count) {
@@ -166,7 +175,12 @@ namespace io {
 		BeginningAppender beginner(formatted);
 		StringUtils::split(variable, "::", beginner);
 		needsIndent = !beginner.isPristine();
-		formatted.print("\textern const char " + !needsIndent);
+		formatted.print("\textern " + !needsIndent);
+		if(!exportMacro.empty()) {
+			formatted.print(exportMacro);
+			formatted.print(" ");
+		}
+		formatted.print("const char ");
 		formatted.print(beginner.getVariableSimpleName());
 		formatted.println("[] = {");
 	}
@@ -175,7 +189,7 @@ namespace io {
 		if(state == FILLING) {
 			formatted.endLine();
 			formatted.println("\t};" + !needsIndent);
-			SizeAppender sizer(formatted, arraySize);
+			SizeAppender sizer(formatted, arraySize, exportMacro);
 			StringUtils::split(variable, "::", sizer);
 			EndingAppender ender(formatted);
 			StringUtils::split(variable, "::", ender);

@@ -25,12 +25,18 @@ void Options::usage() {
 		<< "    --variable NAME    name the generated constant NAME instead of the default" << endl
 		<< "                       of '" << CPPArrayOutputStream::DEFAULT_VARIABLE_NAME << '\'' << endl
 		<< "    -n NAME            same as --variable" << endl
+		<< "    --export NAME      prefix declarations/definitions with the export macro" << endl
+		<< "                       NAME (required by some compilers)" << endl
 		<< "    --help             print this helpful message and quit" << endl;
 	throw StopExecution(0);
 }
 
 void Options::setVariableName(const string& name) {
 	varname = name;
+}
+
+void Options::setExportMacro(const string& macro) {
+	expmacro = macro;
 }
 
 void Options::addBareword(const string& word) {

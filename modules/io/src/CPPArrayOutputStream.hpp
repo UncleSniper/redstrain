@@ -68,9 +68,10 @@ namespace io {
 			size_t size;
 			std::string lastPart;
 			unsigned partCount;
+			const std::string& exportMacro;
 
 		  public:
-			SizeAppender(FormattedOutputStream<char>&, size_t);
+			SizeAppender(FormattedOutputStream<char>&, size_t, const std::string&);
 			SizeAppender(const SizeAppender&);
 
 			virtual void append(const std::string&);
@@ -85,6 +86,7 @@ namespace io {
 		bool needsIndent;
 		unsigned columns;
 		size_t arraySize;
+		std::string exportMacro;
 
 	  public:
 		static const char *const DEFAULT_VARIABLE_NAME;
@@ -105,8 +107,13 @@ namespace io {
 			return variable;
 		}
 
+		inline const std::string& getExportMacro() const {
+			return exportMacro;
+		}
+
 		OutputStream<char>& getBackingOutputStream();
 		const OutputStream<char>& getBackingOutputStream() const;
+		void setExportMacro(const std::string&);
 		void endArray();
 
 		virtual void close();
