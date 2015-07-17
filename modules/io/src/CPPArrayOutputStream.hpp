@@ -61,12 +61,30 @@ namespace io {
 
 		};
 
+		class REDSTRAIN_IO_API SizeAppender : public util::Appender<std::string> {
+
+		  private:
+			FormattedOutputStream<char>& output;
+			size_t size;
+			std::string lastPart;
+			unsigned partCount;
+
+		  public:
+			SizeAppender(FormattedOutputStream<char>&, size_t);
+			SizeAppender(const SizeAppender&);
+
+			virtual void append(const std::string&);
+			virtual void doneAppending();
+
+		};
+
 	  private:
 		FormattedOutputStream<char> formatted;
 		std::string variable;
 		State state;
 		bool needsIndent;
 		unsigned columns;
+		size_t arraySize;
 
 	  public:
 		static const char *const DEFAULT_VARIABLE_NAME;

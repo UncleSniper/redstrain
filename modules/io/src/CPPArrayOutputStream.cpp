@@ -13,6 +13,8 @@ namespace io {
 
 	const char *const CPPArrayOutputStream::DEFAULT_VARIABLE_NAME = "data";
 
+	// ======== BeginningAppender ========
+
 	static const char *const HEX_DIGITS = "0123456789ABCDEF";
 
 	CPPArrayOutputStream::BeginningAppender::BeginningAppender(FormattedOutputStream<char>& output)
@@ -29,7 +31,11 @@ namespace io {
 	void CPPArrayOutputStream::BeginningAppender::append(const string& part) {
 		if(part.empty())
 			return;
-		if(!lastPart.empty()) {
+		if(lastPart.empty()) {
+			output.println("#include <cstddef>");
+			output.endLine();
+		}
+		else {
 			output.print("namespace ");
 			output.print(lastPart);
 			output.println(" {");
@@ -42,6 +48,8 @@ namespace io {
 		if(!pristine)
 			output.endLine();
 	}
+
+	// ======== EndingAppender ========
 
 	CPPArrayOutputStream::EndingAppender::EndingAppender(FormattedOutputStream<char>& output)
 			: output(output), state(PRISTINE) {}
@@ -70,16 +78,45 @@ namespace io {
 			output.endLine();
 	}
 
+	// ======== SizeAppender ========
+
+	CPPArrayOutputStream::SizeAppender::SizeAppender(FormattedOutputStream<char>& output, size_t size)
+			: output(output), size(size), partCount(0u) {}
+
+	CPPArrayOutputStream::SizeAppender::SizeAppender(const SizeAppender& appender)
+			: Appender(appender), output(appender.output), size(appender.size), lastPart(appender.lastPart),
+			partCount(appender.partCount) {}
+
+	void CPPArrayOutputStream::SizeAppender::append(const string& part) {
+		if(part.empty())
+			return;
+		lastPart = part;
+		++partCount;
+	}
+
+	void CPPArrayOutputStream::SizeAppender::doneAppending() {
+		if(lastPart.empty())
+			return;
+		output.endLine();
+		output.print("\textern const size_t " + (partCount <= 1u));
+		output.print(lastPart);
+		output.print("_size = ");
+		output.print(StringUtils::toString(size));
+		output.println(";");
+	}
+
+	// ======== CPPArrayOutputStream ========
+
 	CPPArrayOutputStream::CPPArrayOutputStream(OutputStream<char>& stream, const string& variable,
 			LineOriented::LinebreakPolicy linebreaks) : formatted(stream, linebreaks),
 			variable(variable.empty() ? DEFAULT_VARIABLE_NAME : variable), state(EMPTY), needsIndent(false),
-			columns(0u) {}
+			columns(0u), arraySize(static_cast<size_t>(0u)) {}
 
 	CPPArrayOutputStream::CPPArrayOutputStream(const CPPArrayOutputStream& stream)
 			: Stream(stream), OutputStream<char>(stream),
 			formatted(const_cast<OutputStream<char>&>(stream.formatted.getBackingOutputStream()),
 			stream.formatted.getLinebreakPolicy()), variable(stream.variable), state(stream.state),
-			needsIndent(stream.needsIndent), columns(stream.columns) {}
+			needsIndent(stream.needsIndent), columns(stream.columns), arraySize(stream.arraySize) {}
 
 	OutputStream<char>& CPPArrayOutputStream::getBackingOutputStream() {
 		return formatted.getBackingOutputStream();
@@ -122,13 +159,14 @@ namespace io {
 			formatted.write(block, sizeof(block) - static_cast<size_t>(1u));
 			++columns;
 		}
+		arraySize += count;
 	}
 
 	void CPPArrayOutputStream::beginArray() {
 		BeginningAppender beginner(formatted);
 		StringUtils::split(variable, "::", beginner);
 		needsIndent = !beginner.isPristine();
-		formatted.print("\tconst char " + !needsIndent);
+		formatted.print("\textern const char " + !needsIndent);
 		formatted.print(beginner.getVariableSimpleName());
 		formatted.println("[] = {");
 	}
@@ -137,6 +175,8 @@ namespace io {
 		if(state == FILLING) {
 			formatted.endLine();
 			formatted.println("\t};" + !needsIndent);
+			SizeAppender sizer(formatted, arraySize);
+			StringUtils::split(variable, "::", sizer);
 			EndingAppender ender(formatted);
 			StringUtils::split(variable, "::", ender);
 		}
