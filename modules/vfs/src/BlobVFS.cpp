@@ -1,12 +1,16 @@
 #include <redstrain/util/Delete.hpp>
+#include <redstrain/util/StringUtils.hpp>
 #include <redstrain/io/MemoryInputStream.hpp>
 #include <redstrain/platform/ObjectLocker.hpp>
+#include <redstrain/io/FormattedInputStream.hpp>
+#include <redstrain/io/FormattedOutputStream.hpp>
 #include <redstrain/platform/SynchronizedSingleton.hpp>
 
 #include "BlobVFS.hpp"
 #include "NotADirectoryError.hpp"
 #include "FileAlreadyExistsError.hpp"
 #include "ReadOnlyFilesystemError.hpp"
+#include "MissingInputSeparatorError.hpp"
 
 using std::string;
 using redengine::util::Ref;
@@ -14,9 +18,12 @@ using redengine::util::Delete;
 using redengine::text::String16;
 using redengine::io::InputStream;
 using redengine::io::OutputStream;
+using redengine::util::StringUtils;
 using redengine::io::MemoryInputStream;
 using redengine::platform::ObjectLocker;
 using redengine::io::BidirectionalStream;
+using redengine::io::FormattedInputStream;
+using redengine::io::FormattedOutputStream;
 using redengine::platform::SynchronizedSingleton;
 
 namespace redengine {
@@ -84,6 +91,43 @@ namespace vfs {
 
 	void BlobVFS::BlobLinker::emitBlobs(BlobVFS& vfs) {
 		vfs.aliasBlob(oldPath, newPath);
+	}
+
+	void BlobVFS::BlobLinker::generateLinkers(InputStream<char>& input, io::OutputStream<char>& output,
+			const string& pathPrefix, const string& fileSuffix) {
+		FormattedInputStream<char> fin(input);
+		FormattedOutputStream<char> fout(output);
+		fout.println("#include <redstrain/vfs/BlobVFS.hpp>");
+		fout.endLine();
+		string line, prefix(pathPrefix);
+		if(!prefix.empty()) {
+			if(prefix[prefix.length() - static_cast<string::size_type>(1u)] != '/')
+				prefix += '/';
+		}
+		unsigned lno = 0u, id = 0u;
+		while(fin.readLine(line)) {
+			++lno;
+			string::size_type pos = line.find('#');
+			if(pos != string::npos)
+				line.erase(pos);
+			line = StringUtils::trim(line);
+			if(line.empty())
+				continue;
+			pos = line.find('=');
+			if(pos == string::npos)
+				throw MissingInputSeparatorError("=", lno);
+			fout.print("static ::redengine::vfs::BlobVFS::BlobLinker alias");
+			fout.print(StringUtils::toString(id++));
+			fout.print("(\"");
+			fout.print(line.substr(pos + static_cast<string::size_type>(1u)));
+			fout.print(fileSuffix);
+			fout.print("\", \"");
+			fout.print(prefix);
+			fout.print(line.substr(static_cast<string::size_type>(0u), pos));
+			fout.print(fileSuffix);
+			fout.println("\");");
+			line.clear();
+		}
 	}
 
 	// ======== BlobVFS ========

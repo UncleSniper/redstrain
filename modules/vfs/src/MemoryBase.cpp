@@ -27,6 +27,7 @@ using redengine::util::Appender;
 using redengine::io::InputStream;
 using redengine::io::OutputStream;
 using redengine::util::IntegerBounds;
+using redengine::platform::MutexPool;
 using redengine::platform::ObjectLocker;
 using redengine::io::BidirectionalStream;
 using redengine::error::ProgrammingError;
@@ -937,6 +938,10 @@ namespace vfs {
 
 	MemoryBase::~MemoryBase() {
 		root->unref();
+	}
+
+	MutexPool& MemoryBase::getEffectiveMutexPool() const {
+		return mutexPool ? *mutexPool : MutexPool::getDefaultMutexPool();
 	}
 
 	MemoryBase::MemoryFile* MemoryBase::resolvePath(PathIterator& begin, PathIterator end,

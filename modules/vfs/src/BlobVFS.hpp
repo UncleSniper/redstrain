@@ -96,6 +96,9 @@ namespace vfs {
 
 			virtual void emitBlobs(BlobVFS&);
 
+			static void generateLinkers(io::InputStream<char>&, io::OutputStream<char>&,
+					const std::string& = "", const std::string& = "");
+
 		};
 
 	  private:

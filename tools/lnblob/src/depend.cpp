@@ -1,4 +1,5 @@
 #include <redstrain/io/modinfo.hpp>
+#include <redstrain/vfs/modinfo.hpp>
 #include <redstrain/util/modinfo.hpp>
 #include <redstrain/error/modinfo.hpp>
 #include <redstrain/redmond/modinfo.hpp>
@@ -15,5 +16,7 @@ REDSTRAIN_DEPEND_MODULE(Platform,
 		redlnblob, RedStrain/Platform, REDSTRAIN_MOD_PLATFORM, ::redengine::platform)
 REDSTRAIN_DEPEND_MODULE(IO,
 		redlnblob, RedStrain/IO, REDSTRAIN_MOD_IO, ::redengine::io)
+REDSTRAIN_DEPEND_MODULE(VFS,
+		redlnblob, RedStrain/VFS, REDSTRAIN_MOD_VFS, ::redengine::vfs)
 REDSTRAIN_DEPEND_MODULE(CommandLine,
 		redlnblob, RedStrain/CommandLine, REDSTRAIN_MOD_CMDLINE, ::redengine::cmdline)
