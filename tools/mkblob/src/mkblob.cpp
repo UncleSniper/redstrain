@@ -33,6 +33,8 @@ int main(int argc, char** argv) {
 	logic.addShortOption('i', &Options::setExtraInclude, OptionLogic::REQUIRED_ARGUMENT);
 	logic.addLongOption("header", &Options::setGenerateHeader);
 	logic.addShortOption('h', &Options::setGenerateHeader);
+	logic.addLongOption("blob", &Options::setBlobPath, OptionLogic::REQUIRED_ARGUMENT);
+	logic.addShortOption('b', &Options::setBlobPath, OptionLogic::REQUIRED_ARGUMENT);
 	return runWithOptions(argv, argc, logic, &Options::addBareword, &Options::checkBarewords, run);
 }
 
@@ -53,6 +55,7 @@ int run(const string&, const Options& options) {
 	CPPArrayOutputStream gen(**out, options.getVariableName());
 	gen.setExportMacro(options.getExportMacro());
 	gen.setExtraInclude(options.getExtraInclude());
+	gen.setBlobPath(options.getBlobPath());
 	if(options.shouldGenerateHeader())
 		gen.writeHeader();
 	else

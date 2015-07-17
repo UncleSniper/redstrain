@@ -79,6 +79,23 @@ namespace io {
 
 		};
 
+		class REDSTRAIN_IO_API BlobAppender : public util::Appender<std::string> {
+
+		  private:
+			FormattedOutputStream<char>& output;
+			const std::string& blobPath;
+			std::string lastPart;
+			unsigned partCount;
+
+		  public:
+			BlobAppender(FormattedOutputStream<char>&, const std::string&);
+			BlobAppender(const BlobAppender&);
+
+			virtual void append(const std::string&);
+			virtual void doneAppending();
+
+		};
+
 	  private:
 		FormattedOutputStream<char> formatted;
 		std::string variable;
@@ -86,14 +103,14 @@ namespace io {
 		bool needsIndent;
 		unsigned columns;
 		size_t arraySize;
-		std::string exportMacro, extraInclude;
+		std::string exportMacro, extraInclude, blobPath;
 
 	  public:
 		static const char *const DEFAULT_VARIABLE_NAME;
 
 	  private:
 		void beginArray();
-		void putIncludes();
+		void putIncludes(bool);
 
 	  protected:
 		CPPArrayOutputStream(const CPPArrayOutputStream&);
@@ -116,10 +133,15 @@ namespace io {
 			return extraInclude;
 		}
 
+		inline const std::string& getBlobPath() const {
+			return blobPath;
+		}
+
 		OutputStream<char>& getBackingOutputStream();
 		const OutputStream<char>& getBackingOutputStream() const;
 		void setExportMacro(const std::string&);
 		void setExtraInclude(const std::string&);
+		void setBlobPath(const std::string&);
 		void endArray();
 		void writeHeader();
 

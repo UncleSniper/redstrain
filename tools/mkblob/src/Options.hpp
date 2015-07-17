@@ -8,7 +8,7 @@ class Options {
   private:
 	unsigned barewordCount;
 	const std::string progname;
-	std::string infile, outfile, varname, expmacro, include;
+	std::string infile, outfile, varname, expmacro, include, blob;
 	bool header;
 
   private:
@@ -41,11 +41,16 @@ class Options {
 		return header;
 	}
 
+	inline const std::string& getBlobPath() const {
+		return blob;
+	}
+
 	void usage();
 	void setVariableName(const std::string&);
 	void setExportMacro(const std::string&);
 	void setExtraInclude(const std::string&);
 	void setGenerateHeader(bool);
+	void setBlobPath(const std::string&);
 	void addBareword(const std::string&);
 	void checkBarewords();
 

@@ -34,6 +34,8 @@ void Options::usage() {
 		<< "    --header           generate header instead of source" << endl
 		<< "                       (input file will not be read)" << endl
 		<< "    -h                 same as --header" << endl
+		<< "    --blob PATH        generate blob injector into file PATH in source" << endl
+		<< "    -b PATH            same as --blob" << endl
 		<< "    --help             print this helpful message and quit" << endl;
 	throw StopExecution(0);
 }
@@ -52,6 +54,10 @@ void Options::setExtraInclude(const string& include) {
 
 void Options::setGenerateHeader(bool header) {
 	this->header = header;
+}
+
+void Options::setBlobPath(const string& path) {
+	blob = path;
 }
 
 void Options::addBareword(const string& word) {

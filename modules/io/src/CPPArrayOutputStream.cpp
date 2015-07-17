@@ -106,6 +106,37 @@ namespace io {
 		output.println("ul);");
 	}
 
+	// ======== BlobAppender ========
+
+	CPPArrayOutputStream::BlobAppender::BlobAppender(FormattedOutputStream<char>& output, const string& blobPath)
+			: output(output), blobPath(blobPath), partCount(0u) {}
+
+	CPPArrayOutputStream::BlobAppender::BlobAppender(const BlobAppender& appender)
+			: Appender(appender), output(appender.output), blobPath(appender.blobPath),
+			lastPart(appender.lastPart), partCount(appender.partCount) {}
+
+	void CPPArrayOutputStream::BlobAppender::append(const string& part) {
+		if(part.empty())
+			return;
+		lastPart = part;
+		++partCount;
+	}
+
+	void CPPArrayOutputStream::BlobAppender::doneAppending() {
+		if(lastPart.empty() || blobPath.empty())
+			return;
+		output.endLine();
+		output.print("\tstatic ::redengine::vfs::BlobVFS::BlobInjector " + (partCount <= 1u));
+		output.print(lastPart);
+		output.print("_inject(");
+		output.print(lastPart);
+		output.print(", ");
+		output.print(lastPart);
+		output.print("_size, \"");
+		output.print(blobPath);
+		output.println("\");");
+	}
+
 	// ======== CPPArrayOutputStream ========
 
 	CPPArrayOutputStream::CPPArrayOutputStream(OutputStream<char>& stream, const string& variable,
@@ -133,6 +164,10 @@ namespace io {
 
 	void CPPArrayOutputStream::setExtraInclude(const string& include) {
 		extraInclude = include;
+	}
+
+	void CPPArrayOutputStream::setBlobPath(const string& path) {
+		blobPath = path;
 	}
 
 	void CPPArrayOutputStream::writeBlock(const char* buffer, size_t count) {
@@ -171,8 +206,10 @@ namespace io {
 		}
 	}
 
-	void CPPArrayOutputStream::putIncludes() {
+	void CPPArrayOutputStream::putIncludes(bool withBlob) {
 		formatted.println("#include <cstddef>");
+		if(withBlob && !blobPath.empty())
+			formatted.println("#include <redstrain/vfs/BlobVFS.hpp>");
 		if(!extraInclude.empty()) {
 			formatted.endLine();
 			formatted.print("#include \"");
@@ -183,7 +220,7 @@ namespace io {
 	}
 
 	void CPPArrayOutputStream::beginArray() {
-		putIncludes();
+		putIncludes(true);
 		BeginningAppender beginner(formatted);
 		StringUtils::split(variable, "::", beginner);
 		needsIndent = !beginner.isPristine();
@@ -203,6 +240,8 @@ namespace io {
 			formatted.println("\t};" + !needsIndent);
 			SizeAppender sizer(formatted, arraySize, exportMacro);
 			StringUtils::split(variable, "::", sizer);
+			BlobAppender blobber(formatted, blobPath);
+			StringUtils::split(variable, "::", blobber);
 			EndingAppender ender(formatted);
 			StringUtils::split(variable, "::", ender);
 		}
@@ -219,7 +258,7 @@ namespace io {
 	}
 
 	void CPPArrayOutputStream::writeHeader() {
-		putIncludes();
+		putIncludes(false);
 		BeginningAppender beginner(formatted);
 		StringUtils::split(variable, "::", beginner);
 		bool needsIndent = !beginner.isPristine();
