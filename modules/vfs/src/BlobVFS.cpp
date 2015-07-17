@@ -74,6 +74,18 @@ namespace vfs {
 		vfs.putBlob(path, data, size);
 	}
 
+	// ======== BlobLinker ========
+
+	BlobVFS::BlobLinker::BlobLinker(const string& oldPath, const string& newPath)
+			: oldPath(oldPath), newPath(newPath) {}
+
+	BlobVFS::BlobLinker::BlobLinker(const BlobLinker& linker)
+			: BlobEmitter(linker), oldPath(linker.oldPath), newPath(linker.newPath) {}
+
+	void BlobVFS::BlobLinker::emitBlobs(BlobVFS& vfs) {
+		vfs.aliasBlob(oldPath, newPath);
+	}
+
 	// ======== BlobVFS ========
 
 	BlobVFS::BlobEmitters BlobVFS::emitters;
@@ -141,6 +153,63 @@ namespace vfs {
 		blob = new BlobMemoryFile(*this, getDefaultFilePermissions(), data, size);
 		current->putEntry(basename, *blob);
 		blob.move();
+		current.move();
+		locker.release();
+	}
+
+	void BlobVFS::aliasBlob(const string& oldPath, const string& newPath) {
+		Pathname newpl;
+		deconstructPathname(newPath, newpl);
+		aliasBlob(decodePathname(oldPath), newpl);
+	}
+
+	void BlobVFS::aliasBlob(const String16& oldPath, const String16& newPath) {
+		Pathname newpl;
+		VFS::deconstructPathname(newPath, newpl);
+		aliasBlob(oldPath, newpl);
+	}
+
+	void BlobVFS::aliasBlob(const String16& target, const Pathname& path) {
+		if(path.empty())
+			throw FileAlreadyExistsError("/");
+		PathIterator begin(path.begin()), end(path.end());
+		Ref<MemoryDirectory> current(getRoot(), true);
+		String16 basename;
+		ObjectLocker<MemoryFile> locker(getEffectiveMutexPool(), NULL);
+		for(;;) {
+			basename = *begin;
+			if(++begin == end)
+				break;
+			locker.move(*current);
+			Ref<MemoryFile> child(current->getEntry(basename));
+			if(*child) {
+				if(child->getFileType() != Stat::DIRECTORY) {
+					child.move();
+					current.move();
+					locker.release();
+					throw NotADirectoryError(path.begin(), begin);
+				}
+				current = static_cast<MemoryDirectory*>(child.set());
+			}
+			else {
+				Ref<MemoryDirectory> newdir(createDirectory(defaultDirectoryPermissions));
+				current->putEntry(basename, *newdir);
+				current.move();
+				current = newdir.set();
+			}
+			locker.release();
+		}
+		locker.move(*current);
+		Ref<MemoryFile> link(current->getEntry(basename));
+		if(*link) {
+			link.move();
+			current.move();
+			locker.release();
+			throw FileAlreadyExistsError(path);
+		}
+		link = createSymlink(target);
+		current->putEntry(basename, *link);
+		link.move();
 		current.move();
 		locker.release();
 	}

@@ -77,6 +77,27 @@ namespace vfs {
 
 		};
 
+		class REDSTRAIN_VFS_API BlobLinker : public BlobEmitter {
+
+		  private:
+			const std::string oldPath, newPath;
+
+		  public:
+			BlobLinker(const std::string&, const std::string&);
+			BlobLinker(const BlobLinker&);
+
+			inline const std::string& getOldPath() const {
+				return oldPath;
+			}
+
+			inline const std::string& getNewPath() const {
+				return newPath;
+			}
+
+			virtual void emitBlobs(BlobVFS&);
+
+		};
+
 	  private:
 		typedef std::set<BlobEmitter*> BlobEmitters;
 
@@ -108,6 +129,9 @@ namespace vfs {
 		void putBlob(const std::string&, const char*, size_t);
 		void putBlob(const text::String16&, const char*, size_t);
 		void putBlob(const Pathname&, const char*, size_t);
+		void aliasBlob(const std::string&, const std::string&);
+		void aliasBlob(const text::String16&, const text::String16&);
+		void aliasBlob(const text::String16&, const Pathname&);
 		void putEmittedBlobs();
 
 		virtual MemoryFile* createRegularFile(int);
