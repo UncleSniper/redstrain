@@ -8,8 +8,6 @@
 namespace redengine {
 namespace platform {
 
-	REDSTRAIN_PLATFORM_API MutexPool& getDefaultGlobalMutexPool();
-
 	template<typename SubjectT>
 	class ObjectLocker {
 
@@ -21,7 +19,7 @@ namespace platform {
 		ObjectLocker(const ObjectLocker& locker) : pool(locker.pool), object(locker.object) {}
 
 	  public:
-		ObjectLocker(const SubjectT* object) : pool(getDefaultGlobalMutexPool()), object(object) {
+		ObjectLocker(const SubjectT* object) : pool(MutexPool::getDefaultMutexPool()), object(object) {
 			pool.lockObject<SubjectT>(object);
 		}
 
@@ -62,17 +60,17 @@ namespace platform {
 
 	template<typename SubjectT>
 	void lockAnyObject(const SubjectT* object) {
-		getDefaultGlobalMutexPool().lockObject(object);
+		MutexPool::getDefaultMutexPool().lockObject(object);
 	}
 
 	template<typename SubjectT>
 	void unlockAnyObject(const SubjectT* object) {
-		getDefaultGlobalMutexPool().unlockObject(object);
+		MutexPool::getDefaultMutexPool().unlockObject(object);
 	}
 
 	template<typename SubjectT>
 	void uncheckedUnlockAnyObject(const SubjectT* object) {
-		getDefaultGlobalMutexPool().uncheckedUnlockObject(object);
+		MutexPool::getDefaultMutexPool().uncheckedUnlockObject(object);
 	}
 
 }}

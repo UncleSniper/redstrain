@@ -36,6 +36,8 @@ namespace platform {
 				uncheckedUnlockObjectImpl(reinterpret_cast<const void*>(object));
 		}
 
+		static MutexPool& getDefaultMutexPool();
+
 	};
 
 }}

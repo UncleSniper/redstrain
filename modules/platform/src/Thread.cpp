@@ -1,4 +1,4 @@
-#include "ObjectLocker.hpp"
+#include "MutexPool.hpp"
 #include "ThreadOperationError.hpp"
 #include "IllegalThreadStateError.hpp"
 
@@ -45,7 +45,7 @@ namespace platform {
 	void Thread::startImpl(void* user, bool detached) {
 		if(state != PRISTINE)
 			throw IllegalThreadStateError(ThreadOperationError::START, state);
-		getDefaultGlobalMutexPool();
+		MutexPool::getDefaultMutexPool();
 		StartupInfo* info = new StartupInfo;
 		info->thread = this;
 		info->user = user;
