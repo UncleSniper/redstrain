@@ -93,6 +93,7 @@ namespace io {
 
 	  private:
 		void beginArray();
+		void putIncludes();
 
 	  protected:
 		CPPArrayOutputStream(const CPPArrayOutputStream&);
@@ -120,6 +121,7 @@ namespace io {
 		void setExportMacro(const std::string&);
 		void setExtraInclude(const std::string&);
 		void endArray();
+		void writeHeader();
 
 		virtual void close();
 		virtual size_t tell() const;

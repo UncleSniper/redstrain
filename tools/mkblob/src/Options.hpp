@@ -9,6 +9,7 @@ class Options {
 	unsigned barewordCount;
 	const std::string progname;
 	std::string infile, outfile, varname, expmacro, include;
+	bool header;
 
   private:
 	Options(const Options&);
@@ -36,10 +37,15 @@ class Options {
 		return include;
 	}
 
+	inline bool shouldGenerateHeader() const {
+		return header;
+	}
+
 	void usage();
 	void setVariableName(const std::string&);
 	void setExportMacro(const std::string&);
 	void setExtraInclude(const std::string&);
+	void setGenerateHeader(bool);
 	void addBareword(const std::string&);
 	void checkBarewords();
 

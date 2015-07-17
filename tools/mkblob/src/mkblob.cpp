@@ -31,16 +31,20 @@ int main(int argc, char** argv) {
 	logic.addShortOption('e', &Options::setExportMacro, OptionLogic::REQUIRED_ARGUMENT);
 	logic.addLongOption("include", &Options::setExtraInclude, OptionLogic::REQUIRED_ARGUMENT);
 	logic.addShortOption('i', &Options::setExtraInclude, OptionLogic::REQUIRED_ARGUMENT);
+	logic.addLongOption("header", &Options::setGenerateHeader);
+	logic.addShortOption('h', &Options::setGenerateHeader);
 	return runWithOptions(argv, argc, logic, &Options::addBareword, &Options::checkBarewords, run);
 }
 
 int run(const string&, const Options& options) {
 	string infile(options.getInputFile()), outfile(options.getOutputFile());
 	Delete<InputStream<char> > in;
-	if(infile == "-")
-		in = new FileInputStream(Console::getStandardHandle(Console::STANDARD_INPUT));
-	else
-		in = new FileInputStream(infile);
+	if(!options.shouldGenerateHeader()) {
+		if(infile == "-")
+			in = new FileInputStream(Console::getStandardHandle(Console::STANDARD_INPUT));
+		else
+			in = new FileInputStream(infile);
+	}
 	Delete<OutputStream<char> > out;
 	if(outfile == "-")
 		out = new FileOutputStream(Console::getStandardHandle(Console::STANDARD_OUTPUT));
@@ -49,8 +53,12 @@ int run(const string&, const Options& options) {
 	CPPArrayOutputStream gen(**out, options.getVariableName());
 	gen.setExportMacro(options.getExportMacro());
 	gen.setExtraInclude(options.getExtraInclude());
-	in->copyTo(gen);
+	if(options.shouldGenerateHeader())
+		gen.writeHeader();
+	else
+		in->copyTo(gen);
 	gen.close();
-	in->close();
+	if(*in)
+		in->close();
 	return 0;
 }

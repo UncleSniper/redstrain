@@ -101,9 +101,9 @@ namespace io {
 		}
 		output.print("const size_t ");
 		output.print(lastPart);
-		output.print("_size = ");
+		output.print("_size = static_cast<size_t>(");
 		output.print(StringUtils::toString(size));
-		output.println(";");
+		output.println("ul);");
 	}
 
 	// ======== CPPArrayOutputStream ========
@@ -167,18 +167,23 @@ namespace io {
 			block[4] = HEX_DIGITS[code % 16u];
 			formatted.write(block, sizeof(block) - static_cast<size_t>(1u));
 			++columns;
+			++arraySize;
 		}
-		arraySize += count;
 	}
 
-	void CPPArrayOutputStream::beginArray() {
+	void CPPArrayOutputStream::putIncludes() {
 		formatted.println("#include <cstddef>");
 		if(!extraInclude.empty()) {
+			formatted.endLine();
 			formatted.print("#include \"");
 			formatted.print(extraInclude);
 			formatted.println("\"");
 		}
 		formatted.endLine();
+	}
+
+	void CPPArrayOutputStream::beginArray() {
+		putIncludes();
 		BeginningAppender beginner(formatted);
 		StringUtils::split(variable, "::", beginner);
 		needsIndent = !beginner.isPristine();
@@ -211,6 +216,31 @@ namespace io {
 
 	size_t CPPArrayOutputStream::tell() const {
 		return formatted.tell();
+	}
+
+	void CPPArrayOutputStream::writeHeader() {
+		putIncludes();
+		BeginningAppender beginner(formatted);
+		StringUtils::split(variable, "::", beginner);
+		bool needsIndent = !beginner.isPristine();
+		formatted.print("\textern " + !needsIndent);
+		if(!exportMacro.empty()) {
+			formatted.print(exportMacro);
+			formatted.print(" ");
+		}
+		formatted.print("const char ");
+		formatted.print(beginner.getVariableSimpleName());
+		formatted.println("[];");
+		formatted.print("\textern " + !needsIndent);
+		if(!exportMacro.empty()) {
+			formatted.print(exportMacro);
+			formatted.print(" ");
+		}
+		formatted.print("const size_t ");
+		formatted.print(beginner.getVariableSimpleName());
+		formatted.println("_size;");
+		EndingAppender ender(formatted);
+		StringUtils::split(variable, "::", ender);
 	}
 
 }}

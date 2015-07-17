@@ -13,10 +13,11 @@ using redengine::io::CPPArrayOutputStream;
 using redengine::cmdline::UnexpectedBarewordError;
 
 Options::Options(const Options& options) : barewordCount(options.barewordCount), progname(options.progname),
-		infile(options.infile), outfile(options.outfile), varname(options.varname) {}
+		infile(options.infile), outfile(options.outfile), varname(options.varname), expmacro(options.expmacro),
+		include(options.include), header(options.header) {}
 
 Options::Options(const char* progname) : barewordCount(0u), progname(progname), infile("-"), outfile("-"),
-		varname(CPPArrayOutputStream::DEFAULT_VARIABLE_NAME) {}
+		varname(CPPArrayOutputStream::DEFAULT_VARIABLE_NAME), header(false) {}
 
 void Options::usage() {
 	cout
@@ -30,6 +31,9 @@ void Options::usage() {
 		<< "    -e NAME            same as --export" << endl
 		<< "    --include FILE     add #include directive for FILE" << endl
 		<< "    -i FILE            same as --include" << endl
+		<< "    --header           generate header instead of source" << endl
+		<< "                       (input file will not be read)" << endl
+		<< "    -h                 same as --header" << endl
 		<< "    --help             print this helpful message and quit" << endl;
 	throw StopExecution(0);
 }
@@ -44,6 +48,10 @@ void Options::setExportMacro(const string& macro) {
 
 void Options::setExtraInclude(const string& include) {
 	this->include = include;
+}
+
+void Options::setGenerateHeader(bool header) {
+	this->header = header;
 }
 
 void Options::addBareword(const string& word) {
