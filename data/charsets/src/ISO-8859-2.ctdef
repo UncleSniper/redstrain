@@ -1,0 +1,263 @@
+# 00..1F: undefined
+0000
+0001
+0002
+0003
+0004
+0005
+0006
+0007
+0008
+0009
+000A
+000B
+000C
+000D
+000E
+000F
+0010
+0011
+0012
+0013
+0014
+0015
+0016
+0017
+0018
+0019
+001A
+001B
+001C
+001D
+001E
+001F
+
+# basic block
+0020 # 20 -> space
+0021 # 21 -> exclamation mark
+0022 # 22 -> double quote
+0023 # 23 -> hash sign
+0024 # 24 -> dollar sign
+0025 # 25 -> percent sign
+0026 # 26 -> ampersand
+0027 # 27 -> apostrophe
+0028 # 28 -> left bracket
+0029 # 29 -> right bracket
+002A # 2A -> asterisk
+002B # 2B -> plus sign
+002C # 2C -> comma
+002D # 2D -> minus sign
+002E # 2E -> period
+002F # 2F -> forward slash
+0030 # 30 -> 0
+0031 # 31 -> 1
+0032 # 32 -> 2
+0033 # 33 -> 3
+0034 # 34 -> 4
+0035 # 35 -> 5
+0036 # 36 -> 6
+0037 # 37 -> 7
+0038 # 38 -> 8
+0039 # 39 -> 9
+003A # 3A -> colon
+003B # 3B -> semicolon
+003C # 3C -> less-than sign
+003D # 3D -> equals sign
+003E # 3E -> greater-than sign
+003F # 3F -> question mark
+0040 # 40 -> at sign
+0041 # 41 -> A
+0042 # 42 -> B
+0043 # 43 -> C
+0044 # 44 -> D
+0045 # 45 -> E
+0046 # 46 -> F
+0047 # 47 -> G
+0048 # 48 -> H
+0049 # 49 -> I
+004A # 4A -> J
+004B # 4B -> K
+004C # 4C -> L
+004D # 4D -> M
+004E # 4E -> N
+004F # 4F -> O
+0050 # 50 -> P
+0051 # 51 -> Q
+0052 # 52 -> R
+0053 # 53 -> S
+0054 # 54 -> T
+0055 # 55 -> U
+0056 # 56 -> V
+0057 # 57 -> W
+0058 # 58 -> X
+0059 # 59 -> Y
+005A # 5A -> Z
+005B # 5B -> left square bracket
+005C # 5C -> backslash
+005D # 5D -> right square bracket
+005E # 5E -> circumflex
+005F # 5F -> underscore
+0060 # 60 -> accent grave
+0061 # 61 -> a
+0062 # 62 -> b
+0063 # 63 -> c
+0064 # 64 -> d
+0065 # 65 -> e
+0066 # 66 -> f
+0067 # 67 -> g
+0068 # 68 -> h
+0069 # 69 -> i
+006A # 6A -> j
+006B # 6B -> k
+006C # 6C -> l
+006D # 6D -> m
+006E # 6E -> n
+006F # 6F -> o
+0070 # 70 -> p
+0071 # 71 -> q
+0072 # 72 -> r
+0073 # 73 -> s
+0074 # 74 -> t
+0075 # 75 -> u
+0076 # 76 -> v
+0077 # 77 -> w
+0078 # 78 -> x
+0079 # 79 -> y
+007A # 7A -> z
+007B # 7B -> left curly brace
+007C # 7C -> pipe sign
+007D # 7D -> right curly brace
+007E # 7E -> tilde
+
+# 7F..9F: undefined
+007F
+0080
+0081
+0082
+0083
+0084
+0085
+0086
+0087
+0088
+0089
+008A
+008B
+008C
+008D
+008E
+008F
+0090
+0091
+0092
+0093
+0094
+0095
+0096
+0097
+0098
+0099
+009A
+009B
+009C
+009D
+009E
+009F
+
+# extended block
+00A0 # A0 -> non-breaking space
+0104 # A1 -> A ogonek
+02D8 # A2 -> breve
+0141 # A3 -> L stroke
+00A4 # A4 -> currency sign
+013D # A5 -> L caron
+015A # A6 -> S acut
+00A7 # A7 -> section sign
+00A8 # A8 -> diaeresis
+0160 # A9 -> S caron
+015E # AA -> S cedilla
+0164 # AB -> T caron
+0179 # AC -> Z acut
+00AD # AD -> soft hyphen
+017D # AE -> Z caron
+017B # AF -> Z dot
+00B0 # B0 -> degree symbol
+0105 # B1 -> a ogonek
+02DB # B2 -> ogonek
+0142 # B3 -> l stroke
+00B4 # B4 -> accent acut
+013E # B5 -> l caron
+015B # B6 -> s acut
+02C7 # B7 -> caron
+00B8 # B8 -> cedilla
+0161 # B9 -> s caron
+015F # BA -> s cedilla
+0165 # BB -> t caron
+017A # BC -> z acut
+02DD # BD -> double accent acut
+017E # BE -> z caron
+017C # BF -> z dot
+0154 # C0 -> R acut
+00C1 # C1 -> A acut
+00C2 # C2 -> A circumflex
+0102 # C3 -> A breve
+00C4 # C4 -> A umlaut
+0139 # C5 -> L acut
+0106 # C6 -> C acut
+00C7 # C7 -> C cedilla
+010C # C8 -> C caron
+00C9 # C9 -> E acut
+0118 # CA -> E ogonek
+00CB # CB -> E umlaut
+011A # CC -> E caron
+00CD # CD -> I acut
+00CE # CE -> I circumflex
+010E # CF -> D caron
+0110 # D0 -> D stroke
+0143 # D1 -> N acut
+0147 # D2 -> N caron
+00D3 # D3 -> O acut
+00D4 # D4 -> O circumflex
+0150 # D5 -> O double acut
+00D6 # D6 -> O umlaut
+00D7 # D7 -> multiplication sign (cross)
+0158 # D8 -> R caron
+016E # D9 -> U ring
+00DA # DA -> U acut
+0170 # DB -> U double acut
+00DC # DC -> U umlaut
+00DD # DD -> Y acut
+0162 # DE -> T cedilla
+00DF # DF -> sz ligature
+0155 # E0 -> r acut
+00E1 # E1 -> a acut
+00E2 # E2 -> a circumflex
+0103 # E3 -> a breve
+00E4 # E4 -> a umlaut
+013A # E5 -> l acut
+0107 # E6 -> c acut
+00E7 # E7 -> c cedilla
+010D # E8 -> c caron
+00E9 # E9 -> e acut
+0119 # EA -> e ogonek
+00EB # EB -> e umlaut
+011B # EC -> e caron
+00ED # ED -> i acut
+00EE # EE -> i circumflex
+010F # EF -> d caron
+0111 # F0 -> d stroke
+0144 # F1 -> n acut
+0148 # F2 -> n caron
+00F3 # F3 -> o acut
+00F4 # F4 -> o circumflex
+0151 # F5 -> o double acut
+00F6 # F6 -> o umlaut
+00F7 # F7 -> division sign (obelus)
+0159 # F8 -> r caron
+016F # F9 -> u ring
+00FA # FA -> u acut
+0171 # FB -> u double acut
+00FC # FC -> u umlaut
+00FD # FD -> y acut
+0163 # FE -> t cedilla
+02D9 # FF -> dot diacritic
