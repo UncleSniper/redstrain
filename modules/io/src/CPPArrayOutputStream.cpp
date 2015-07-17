@@ -31,11 +31,7 @@ namespace io {
 	void CPPArrayOutputStream::BeginningAppender::append(const string& part) {
 		if(part.empty())
 			return;
-		if(lastPart.empty()) {
-			output.println("#include <cstddef>");
-			output.endLine();
-		}
-		else {
+		if(!lastPart.empty()) {
 			output.print("namespace ");
 			output.print(lastPart);
 			output.println(" {");
@@ -135,6 +131,10 @@ namespace io {
 		exportMacro = macro;
 	}
 
+	void CPPArrayOutputStream::setExtraInclude(const string& include) {
+		extraInclude = include;
+	}
+
 	void CPPArrayOutputStream::writeBlock(const char* buffer, size_t count) {
 		if(!count)
 			return;
@@ -172,6 +172,13 @@ namespace io {
 	}
 
 	void CPPArrayOutputStream::beginArray() {
+		formatted.println("#include <cstddef>");
+		if(!extraInclude.empty()) {
+			formatted.print("#include \"");
+			formatted.print(extraInclude);
+			formatted.println("\"");
+		}
+		formatted.endLine();
 		BeginningAppender beginner(formatted);
 		StringUtils::split(variable, "::", beginner);
 		needsIndent = !beginner.isPristine();

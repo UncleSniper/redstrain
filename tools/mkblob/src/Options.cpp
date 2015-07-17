@@ -27,6 +27,9 @@ void Options::usage() {
 		<< "    -n NAME            same as --variable" << endl
 		<< "    --export NAME      prefix declarations/definitions with the export macro" << endl
 		<< "                       NAME (required by some compilers)" << endl
+		<< "    -e NAME            same as --export" << endl
+		<< "    --include FILE     add #include directive for FILE" << endl
+		<< "    -i FILE            same as --include" << endl
 		<< "    --help             print this helpful message and quit" << endl;
 	throw StopExecution(0);
 }
@@ -37,6 +40,10 @@ void Options::setVariableName(const string& name) {
 
 void Options::setExportMacro(const string& macro) {
 	expmacro = macro;
+}
+
+void Options::setExtraInclude(const string& include) {
+	this->include = include;
 }
 
 void Options::addBareword(const string& word) {

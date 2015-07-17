@@ -86,7 +86,7 @@ namespace io {
 		bool needsIndent;
 		unsigned columns;
 		size_t arraySize;
-		std::string exportMacro;
+		std::string exportMacro, extraInclude;
 
 	  public:
 		static const char *const DEFAULT_VARIABLE_NAME;
@@ -111,9 +111,14 @@ namespace io {
 			return exportMacro;
 		}
 
+		inline const std::string& getExtraInclude() const {
+			return extraInclude;
+		}
+
 		OutputStream<char>& getBackingOutputStream();
 		const OutputStream<char>& getBackingOutputStream() const;
 		void setExportMacro(const std::string&);
+		void setExtraInclude(const std::string&);
 		void endArray();
 
 		virtual void close();

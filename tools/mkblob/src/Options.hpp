@@ -8,7 +8,7 @@ class Options {
   private:
 	unsigned barewordCount;
 	const std::string progname;
-	std::string infile, outfile, varname, expmacro;
+	std::string infile, outfile, varname, expmacro, include;
 
   private:
 	Options(const Options&);
@@ -32,9 +32,14 @@ class Options {
 		return expmacro;
 	}
 
+	inline const std::string& getExtraInclude() const {
+		return include;
+	}
+
 	void usage();
 	void setVariableName(const std::string&);
 	void setExportMacro(const std::string&);
+	void setExtraInclude(const std::string&);
 	void addBareword(const std::string&);
 	void checkBarewords();
 
