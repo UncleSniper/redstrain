@@ -1,9 +1,11 @@
 #include <cstddef>
 
+#include "Valve.hpp"
 #include "Action.hpp"
 #include "Trigger.hpp"
 #include "BuildContext.hpp"
 
+using std::set;
 using std::list;
 
 namespace redengine {
@@ -11,36 +13,23 @@ namespace build {
 
 	Trigger::Trigger() {}
 
-	struct ActionListUnref {
-
-		list<Action*>* actions;
-
-		ActionListUnref(list<Action*>* actions) : actions(actions) {}
-
-		~ActionListUnref() {
-			if(!actions)
-				return;
-			Trigger::ActionIterator begin(actions->begin()), end(actions->end());
-			for(; begin != end; ++begin)
-				(*begin)->unref();
-		}
-
-	};
-
-	Trigger::Trigger(const Trigger& trigger) : ReferenceCounted(trigger) {
-		ActionListUnref unref(&actions);
-		ActionIterator begin(trigger.actions.begin()), end(trigger.actions.end());
-		for(; begin != end; ++begin) {
-			actions.push_back(*begin);
-			(*begin)->ref();
-		}
-		unref.actions = NULL;
+	Trigger::Trigger(const Trigger& trigger)
+			: ReferenceCounted(trigger), actions(trigger.actions), valves(trigger.valves) {
+		ActionIterator abegin(actions.begin()), end(actions.end());
+		for(; abegin != end; ++abegin)
+			(*abegin)->ref();
+		ValveIterator vbegin(valves.begin()), vend(valves.end());
+		for(; vbegin != vend; ++vbegin)
+			(*vbegin)->ref();
 	}
 
 	Trigger::~Trigger() {
-		ActionIterator begin(actions.begin()), end(actions.end());
-		for(; begin != end; ++begin)
-			(*begin)->unref();
+		ActionIterator abegin(actions.begin()), aend(actions.end());
+		for(; abegin != aend; ++abegin)
+			(*abegin)->unref();
+		ValveIterator vbegin(valves.begin()), vend(valves.end());
+		for(; vbegin != vend; ++vbegin)
+			(*vbegin)->unref();
 	}
 
 	void Trigger::addAction(Action* action) {
@@ -76,8 +65,45 @@ namespace build {
 		end = actions.end();
 	}
 
+	void Trigger::addValve(Valve* valve) {
+		if(!valve)
+			return;
+		valves.insert(valve);
+		valve->ref();
+	}
+
+	bool Trigger::removeValve(Valve* valve) {
+		if(!valve)
+			return false;
+		if(!valves.erase(valve))
+			return false;
+		valve->unref();
+		return true;
+	}
+
+	void Trigger::clearValves() {
+		ValveIterator begin(valves.begin()), end(valves.end());
+		for(; begin != end; ++begin)
+			(*begin)->unref();
+		valves.clear();
+	}
+
+	void Trigger::getValves(ValveIterator& begin, ValveIterator& end) const {
+		begin = valves.begin();
+		end = valves.end();
+	}
+
+	bool Trigger::areValvesOpen() const {
+		ValveIterator begin(valves.begin()), end(valves.end());
+		for(; begin != end; ++begin) {
+			if(!(*begin)->isOpen())
+				return false;
+		}
+		return true;
+	}
+
 	void Trigger::spin(BuildContext& context) {
-		if(!isTriggered())
+		if(!areValvesOpen() || !isTriggered())
 			return;
 		ActionIterator begin(actions.begin()), end(actions.end());
 		for(; begin != end; ++begin)
@@ -85,7 +111,7 @@ namespace build {
 	}
 
 	void Trigger::predictSpin(BuildContext& context) {
-		if(!wouldTrigger())
+		if(!areValvesOpen() || !wouldTrigger())
 			return;
 		ActionIterator begin(actions.begin()), end(actions.end());
 		for(; begin != end; ++begin)

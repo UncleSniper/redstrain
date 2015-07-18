@@ -1,11 +1,13 @@
 #include <redstrain/util/Unref.hpp>
 
+#include "Valve.hpp"
 #include "Action.hpp"
 #include "Trigger.hpp"
 #include "BuildContext.hpp"
 
 using std::set;
 using std::deque;
+using std::string;
 using redengine::util::Unref;
 
 namespace redengine {
@@ -14,13 +16,17 @@ namespace build {
 	BuildContext::BuildContext() {}
 
 	BuildContext::BuildContext(const BuildContext& context)
-			: triggers(context.triggers), actionQueue(context.actionQueue), actionSet(context.actionSet) {
+			: triggers(context.triggers), actionQueue(context.actionQueue), actionSet(context.actionSet),
+			valves(context.valves) {
 		TriggerIterator tbegin(triggers.begin()), tend(triggers.end());
 		for(; tbegin != tend; ++tbegin)
 			(*tbegin)->ref();
 		ActionQueueIterator abegin(actionQueue.begin()), aend(actionQueue.end());
 		for(; abegin != aend; ++abegin)
 			(*abegin)->ref();
+		ConstValveIterator vbegin(valves.begin()), vend(valves.end());
+		for(; vbegin != vend; ++vbegin)
+			vbegin->second->ref();
 	}
 
 	BuildContext::~BuildContext() {
@@ -30,6 +36,9 @@ namespace build {
 		ActionQueueIterator abegin(actionQueue.begin()), aend(actionQueue.end());
 		for(; abegin != aend; ++abegin)
 			(*abegin)->unref();
+		ConstValveIterator vbegin(valves.begin()), vend(valves.end());
+		for(; vbegin != vend; ++vbegin)
+			vbegin->second->unref();
 	}
 
 	bool BuildContext::addTrigger(Trigger* trigger) {
@@ -63,6 +72,44 @@ namespace build {
 	void BuildContext::getTriggers(TriggerIterator& begin, TriggerIterator& end) const {
 		begin = triggers.begin();
 		end = triggers.end();
+	}
+
+	Valve* BuildContext::getValve(const string& name) const {
+		ConstValveIterator it = valves.find(name);
+		return it == valves.end() ? NULL : it->second;
+	}
+
+	void BuildContext::addValve(const string& name, Valve* valve) {
+		if(name.empty() || !valve)
+			return;
+		ConstValveIterator it = valves.find(name);
+		if(it != valves.end()) {
+			Valve* old = it->second;
+			valves[name] = valve;
+			valve->ref();
+			old->unref();
+		}
+		else {
+			valves[name] = valve;
+			valve->ref();
+		}
+	}
+
+	bool BuildContext::removeValve(const string& name) {
+		ValveIterator it = valves.find(name);
+		if(it == valves.end())
+			return false;
+		Valve* valve = it->second;
+		valves.erase(it);
+		valve->unref();
+		return true;
+	}
+
+	void BuildContext::clearValves() {
+		ConstValveIterator begin(valves.begin()), end(valves.end());
+		for(; begin != end; ++begin)
+			begin->second->unref();
+		valves.clear();
 	}
 
 	void BuildContext::spinTriggers() {

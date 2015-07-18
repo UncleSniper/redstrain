@@ -1,6 +1,7 @@
 #ifndef REDSTRAIN_MOD_BUILD_TRIGGER_HPP
 #define REDSTRAIN_MOD_BUILD_TRIGGER_HPP
 
+#include <set>
 #include <list>
 #include <redstrain/util/ReferenceCounted.hpp>
 
@@ -9,6 +10,7 @@
 namespace redengine {
 namespace build {
 
+	class Valve;
 	class Action;
 	class BuildContext;
 
@@ -16,12 +18,18 @@ namespace build {
 
 	  private:
 		typedef std::list<Action*> Actions;
+		typedef std::set<Valve*> Valves;
 
 	  public:
 		typedef Actions::const_iterator ActionIterator;
+		typedef Valves::const_iterator ValveIterator;
 
 	  private:
 		Actions actions;
+		Valves valves;
+
+	  private:
+		bool areValvesOpen() const;
 
 	  protected:
 		virtual bool isTriggered() = 0;
@@ -36,6 +44,11 @@ namespace build {
 		bool removeAction(Action*);
 		void clearActions();
 		void getActions(ActionIterator&, ActionIterator&) const;
+
+		void addValve(Valve*);
+		bool removeValve(Valve*);
+		void clearValves();
+		void getValves(ValveIterator&, ValveIterator&) const;
 
 		void spin(BuildContext&);
 		void predictSpin(BuildContext&);
