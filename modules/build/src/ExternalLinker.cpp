@@ -1,6 +1,7 @@
 #include "ExternalLinker.hpp"
 
 using std::string;
+using redengine::redmond::Architecture;
 
 namespace redengine {
 namespace build {
@@ -11,7 +12,18 @@ namespace build {
 			: Linkage(target, mode), ExternalInvocation(executable) {}
 
 	ExternalLinker::ExternalLinkage::ExternalLinkage(const ExternalLinkage& linkage)
-			: Invocation(linkage), Linkage(linkage), ExternalInvocation(linkage) {}
+			: Invocation(linkage), Linkage(linkage), ExternalInvocation(linkage),
+			libraryDirectories(linkage.libraryDirectories), libraries(linkage.libraries) {}
+
+	void ExternalLinker::ExternalLinkage::addLibraryDirectory(const string& directory) {
+		if(!directory.empty())
+			libraryDirectories.push_back(directory);
+	}
+
+	void ExternalLinker::ExternalLinkage::addLibrary(const string& library) {
+		if(!library.empty())
+			libraries.push_back(library);
+	}
 
 	// ======== ExternalLinker ========
 

@@ -1,15 +1,14 @@
 #ifndef REDSTRAIN_MOD_BUILD_ARCHITECTURE_HPP
 #define REDSTRAIN_MOD_BUILD_ARCHITECTURE_HPP
 
+#include <redstrain/redmond/constants.hpp>
+
 #include "api.hpp"
 
 namespace redengine {
 namespace build {
 
-	enum REDSTRAIN_BUILD_API Architecture {
-		ARCH_I686,
-		ARCH_X86_64
-	};
+	REDSTRAIN_BUILD_API bool requiresPositionIndependentCode(redmond::Architecture);
 
 }}
 

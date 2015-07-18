@@ -1,6 +1,7 @@
 #include "ExternalCompiler.hpp"
 
 using std::string;
+using redengine::redmond::Architecture;
 
 namespace redengine {
 namespace build {

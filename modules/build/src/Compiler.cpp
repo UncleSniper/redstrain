@@ -1,5 +1,7 @@
 #include "Compiler.hpp"
 
+using redengine::redmond::Architecture;
+
 namespace redengine {
 namespace build {
 

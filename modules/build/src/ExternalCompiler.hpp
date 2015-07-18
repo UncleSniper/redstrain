@@ -19,7 +19,7 @@ namespace build {
 		};
 
 	  public:
-		ExternalCompiler(const std::string&, Architecture);
+		ExternalCompiler(const std::string&, redmond::Architecture);
 		ExternalCompiler(const ExternalCompiler&);
 
 	};

@@ -6,16 +6,21 @@
 namespace redengine {
 namespace redmond {
 
-	enum OperatingSystem {
+	enum REDSTRAIN_REDMOND_API OperatingSystem {
 		OS_LINUX,
 		OS_WINDOWS,
 		OS_UNKNOWN
 	};
 
-	enum CompilerFlavor {
+	enum REDSTRAIN_REDMOND_API CompilerFlavor {
 		COMP_GCC,
 		COMP_MSVC,
 		COMP_UNKNOWN
+	};
+
+	enum REDSTRAIN_REDMOND_API Architecture {
+		ARCH_I686,
+		ARCH_X86_64
 	};
 
 	REDSTRAIN_REDMOND_API extern const OperatingSystem buildHostOS;

@@ -1,8 +1,9 @@
 #ifndef REDSTRAIN_MOD_BUILD_COMPILER_HPP
 #define REDSTRAIN_MOD_BUILD_COMPILER_HPP
 
+#include <redstrain/redmond/constants.hpp>
+
 #include "Compilation.hpp"
-#include "Architecture.hpp"
 #include "tweaks.hpp"
 
 namespace redengine {
@@ -11,19 +12,19 @@ namespace build {
 	class REDSTRAIN_BUILD_API Compiler {
 
 	  private:
-		Architecture architecture;
+		redmond::Architecture architecture;
 
 	  protected:
-		inline void setTargetArchitecture(Architecture architecture) {
+		inline void setTargetArchitecture(redmond::Architecture architecture) {
 			this->architecture = architecture;
 		}
 
 	  public:
-		Compiler(Architecture = REDSTRAIN_BUILD_DEFAULT_ARCH);
+		Compiler(redmond::Architecture = REDSTRAIN_BUILD_DEFAULT_ARCH);
 		Compiler(const Compiler&);
 		virtual ~Compiler();
 
-		inline Architecture getTargetArchitecture() {
+		inline redmond::Architecture getTargetArchitecture() {
 			return architecture;
 		}
 

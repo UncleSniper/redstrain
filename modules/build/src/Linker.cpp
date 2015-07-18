@@ -1,5 +1,7 @@
 #include "Linker.hpp"
 
+using redengine::redmond::Architecture;
+
 namespace redengine {
 namespace build {
 
