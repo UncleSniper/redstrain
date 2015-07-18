@@ -13,10 +13,19 @@ namespace build {
 	  private:
 		Architecture architecture;
 
+	  protected:
+		inline void setTargetArchitecture(Architecture architecture) {
+			this->architecture = architecture;
+		}
+
 	  public:
 		Compiler(Architecture = REDSTRAIN_BUILD_DEFAULT_ARCH);
 		Compiler(const Compiler&);
 		virtual ~Compiler();
+
+		inline Architecture getTargetArchitecture() {
+			return architecture;
+		}
 
 		virtual Compilation* newCompilation(const std::string&, Compilation::CompileMode) = 0;
 
