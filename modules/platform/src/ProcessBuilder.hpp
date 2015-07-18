@@ -44,6 +44,7 @@ namespace platform {
 		ProcessBuilder(const std::vector<std::string>&);
 		ProcessBuilder(const char *const*);
 		ProcessBuilder(const char *const*, size_t);
+		ProcessBuilder(const ProcessBuilder&);
 
 		void addArgument(const std::string&);
 		void addArguments(const std::list<std::string>&);

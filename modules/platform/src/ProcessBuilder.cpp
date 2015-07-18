@@ -51,6 +51,12 @@ namespace platform {
 		this->arguments.insert(this->arguments.end(), arguments, arguments + count);
 	}
 
+	ProcessBuilder::ProcessBuilder(const ProcessBuilder& builder) : arguments(builder.arguments),
+			targetEnv(builder.targetEnv), hasEnv(builder.hasEnv), stdinMode(builder.stdinMode),
+			stdoutMode(builder.stdoutMode), stderrMode(builder.stderrMode), stdinFile(builder.stdinFile),
+			stdoutFile(builder.stdoutFile), stderrFile(builder.stderrFile), joinedStreams(builder.joinedStreams),
+			workdir(builder.workdir) {}
+
 	void ProcessBuilder::addArgument(const string& argument) {
 		arguments.push_back(argument);
 	}
