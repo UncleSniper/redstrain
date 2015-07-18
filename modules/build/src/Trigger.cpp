@@ -85,7 +85,7 @@ namespace build {
 	}
 
 	void Trigger::predictSpin(BuildContext& context) {
-		if(!isTriggered())
+		if(!wouldTrigger())
 			return;
 		ActionIterator begin(actions.begin()), end(actions.end());
 		for(; begin != end; ++begin)
