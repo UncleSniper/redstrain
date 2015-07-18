@@ -2,7 +2,7 @@
 #include <redstrain/platform/Filesystem.hpp>
 
 #include "GCC.hpp"
-#include "Architecture.hpp"
+#include "platform.hpp"
 
 using std::list;
 using std::string;

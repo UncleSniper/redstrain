@@ -1,4 +1,4 @@
-#include "Architecture.hpp"
+#include "platform.hpp"
 
 using redengine::redmond::Architecture;
 using redengine::redmond::ARCH_I686;

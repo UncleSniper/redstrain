@@ -1,5 +1,5 @@
-#ifndef REDSTRAIN_MOD_BUILD_ARCHITECTURE_HPP
-#define REDSTRAIN_MOD_BUILD_ARCHITECTURE_HPP
+#ifndef REDSTRAIN_MOD_BUILD_PLATFORM_HPP
+#define REDSTRAIN_MOD_BUILD_PLATFORM_HPP
 
 #include <redstrain/redmond/constants.hpp>
 
@@ -12,4 +12,4 @@ namespace build {
 
 }}
 
-#endif /* REDSTRAIN_MOD_BUILD_ARCHITECTURE_HPP */
+#endif /* REDSTRAIN_MOD_BUILD_PLATFORM_HPP */
