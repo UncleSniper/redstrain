@@ -8,23 +8,17 @@ namespace build {
 	// ======== ExternalCompilation ========
 
 	ExternalCompiler::ExternalCompilation::ExternalCompilation(const string& executable,
-			const string& source, CompileMode mode) : Compilation(source, mode) {
-		command.addArgument(executable);
-	}
+			const string& source, CompileMode mode) : Compilation(source, mode), ExternalInvocation(executable) {}
 
 	ExternalCompiler::ExternalCompilation::ExternalCompilation(const ExternalCompilation& compilation)
-			: Compilation(compilation), command(compilation.command) {}
+			: Invocation(compilation), Compilation(compilation), ExternalInvocation(compilation) {}
 
 	// ======== ExternalCompiler ========
 
 	ExternalCompiler::ExternalCompiler(const string& executable, Architecture architecture)
-			: Compiler(architecture), executable(executable) {}
+			: ExternalTool(executable), Compiler(architecture) {}
 
 	ExternalCompiler::ExternalCompiler(const ExternalCompiler& compiler)
-			: Compiler(compiler), executable(compiler.executable) {}
-
-	void ExternalCompiler::setExecutable(const string& executable) {
-		this->executable = executable;
-	}
+			: ExternalTool(compiler), Compiler(compiler) {}
 
 }}

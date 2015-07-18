@@ -9,7 +9,7 @@
 namespace redengine {
 namespace build {
 
-	class REDSTRAIN_BUILD_API Linkage : public Invocation {
+	class REDSTRAIN_BUILD_API Linkage : public virtual Invocation {
 
 	  public:
 		enum REDSTRAIN_BUILD_API LinkMode {

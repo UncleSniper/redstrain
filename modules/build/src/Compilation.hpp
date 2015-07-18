@@ -8,7 +8,7 @@
 namespace redengine {
 namespace build {
 
-	class REDSTRAIN_BUILD_API Compilation : public Invocation {
+	class REDSTRAIN_BUILD_API Compilation : public virtual Invocation {
 
 	  public:
 		enum REDSTRAIN_BUILD_API CompileMode {
