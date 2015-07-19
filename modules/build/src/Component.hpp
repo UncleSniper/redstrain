@@ -6,14 +6,14 @@
 #include <string>
 #include <redstrain/util/ReferenceCounted.hpp>
 
-#include "api.hpp"
+#include "GenerationTrigger.hpp"
 
 namespace redengine {
 namespace build {
 
 	class Flavor;
 	class Language;
-	class BuildContext;
+	class FileArtifact;
 
 	class REDSTRAIN_BUILD_API Component : public util::ReferenceCounted {
 
@@ -34,6 +34,19 @@ namespace build {
 
 			virtual std::string getBuildDirectory(const Language&, const Flavor&) = 0;
 			virtual std::string getHeaderExposeDirectory(const Language&) = 0;
+
+		};
+
+		class REDSTRAIN_BUILD_API GenerationHolder {
+
+		  public:
+			GenerationHolder();
+			GenerationHolder(const GenerationHolder&);
+			virtual ~GenerationHolder();
+
+			virtual Trigger* getTrigger() = 0;
+			virtual void addSource(FileArtifact*) = 0;
+			virtual void getTargets(GenerationTrigger::ArtifactIterator&, GenerationTrigger::ArtifactIterator&) = 0;
 
 		};
 

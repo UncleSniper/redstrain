@@ -10,8 +10,6 @@
 namespace redengine {
 namespace build {
 
-	class GenerationTrigger;
-
 	class REDSTRAIN_BUILD_API Language {
 
 	  public:
@@ -36,13 +34,13 @@ namespace build {
 		virtual ArtifactType classifyFile(const std::string&) = 0;
 		virtual void getSupportedFlavors(Component::Type, util::Appender<Flavor>&) = 0;
 		virtual bool isOneToOne(const Flavor&) = 0;
-		virtual GenerationTrigger* getGenerationTrigger(const std::string&, const std::string&, const Flavor&,
-				const std::string&, const Flavor&) = 0;
+		virtual Component::GenerationHolder* getGenerationTrigger(const std::string&, const std::string&,
+				const Flavor&, const std::string&, const Flavor&) = 0;
 		virtual Flavor getGeneratedSourceFlavor(const Flavor&, const Flavor&, const std::string&) = 0;
 		virtual Flavor getGeneratedHeaderFlavor(const Flavor&, const Flavor&, const std::string&) = 0;
 		virtual Flavor getHeaderExposeTransformFlavor() = 0;
-		virtual GenerationTrigger* getHeaderExposeTrigger(const std::string&, const std::string&, const Flavor&,
-				const std::string&, const Flavor&) = 0;
+		virtual Component::GenerationHolder* getHeaderExposeTrigger(const std::string&, const std::string&,
+				const Flavor&, const std::string&, const Flavor&) = 0;
 
 	};
 

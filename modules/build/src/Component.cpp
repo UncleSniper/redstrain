@@ -5,9 +5,9 @@
 #include <redstrain/platform/Filesystem.hpp>
 
 #include "Flavor.hpp"
+#include "Trigger.hpp"
 #include "Language.hpp"
 #include "FileArtifact.hpp"
-#include "GenerationTrigger.hpp"
 
 using std::map;
 using std::list;
@@ -82,15 +82,15 @@ namespace build {
 
 	struct FlavorGraph {
 
-		GenerationTrigger* singleTrigger;
-		list<GenerationTrigger*> allTriggers;
+		Component::GenerationHolder* singleTrigger;
+		list<Component::GenerationHolder*> allTriggers;
 
 		FlavorGraph() : singleTrigger(NULL) {}
 
 		~FlavorGraph() {
 			if(singleTrigger)
 				delete singleTrigger;
-			list<GenerationTrigger*>::const_iterator begin(allTriggers.begin()), end(allTriggers.end());
+			list<Component::GenerationHolder*>::const_iterator begin(allTriggers.begin()), end(allTriggers.end());
 			for(; begin != end; ++begin)
 				delete *begin;
 		}
@@ -179,7 +179,7 @@ namespace build {
 			list<PathPair>::const_iterator sbegin(language.sources.begin()), send(language.sources.end());
 			bool isSingle = language.language.isOneToOne(flavor);
 			for(; sbegin != send; ++sbegin) {
-				GenerationTrigger* newTrigger = NULL;
+				Component::GenerationHolder* newTrigger = NULL;
 				if(isSingle) {
 					if(graph.singleTrigger) {
 						Delete<FileArtifact> file(new FileArtifact(sbegin->directory, sbegin->basename));
@@ -193,8 +193,8 @@ namespace build {
 					}
 				}
 				else {
-					Delete<GenerationTrigger> trigger(language.language.getGenerationTrigger(sbegin->directory,
-							sbegin->basename, sbegin->flavor, buildDirectory, flavor));
+					Delete<Component::GenerationHolder> trigger(language.language.getGenerationTrigger(
+							sbegin->directory, sbegin->basename, sbegin->flavor, buildDirectory, flavor));
 					graph.allTriggers.push_back(*trigger);
 					newTrigger = trigger.set();
 				}
@@ -280,7 +280,7 @@ namespace build {
 									hbegin->basename, hbegin->flavor, exposeDirectory, heflavor);
 					}
 					else {
-						Delete<GenerationTrigger> trigger(libegin->language.getHeaderExposeTrigger(hbegin->directory,
+						Delete<GenerationHolder> trigger(libegin->language.getHeaderExposeTrigger(hbegin->directory,
 								hbegin->basename, hbegin->flavor, exposeDirectory, heflavor));
 						graph.allTriggers.push_back(*trigger);
 						trigger.set();
