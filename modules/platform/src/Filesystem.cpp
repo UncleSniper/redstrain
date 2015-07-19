@@ -1116,4 +1116,34 @@ namespace platform {
 		}
 	}
 
+	struct RecursiveTraverser : public Appender<string> {
+
+		const string& baseDirectory;
+		Filesystem::TraversalSink& sink;
+
+		RecursiveTraverser(const string& baseDirectory, Filesystem::TraversalSink& sink)
+				: baseDirectory(baseDirectory), sink(sink) {}
+
+		virtual void append(const string& child) {
+			Filesystem::traverse(baseDirectory + Pathname::SEPARATOR + child, sink);
+		}
+
+	};
+
+	void Filesystem::traverse(const string& baseDirectory, TraversalSink& sink) {
+		Stat info;
+		stat(baseDirectory, info);
+		if(info.getType() == Stat::DIRECTORY) {
+			if(sink.enterDirectory(baseDirectory)) {
+				RecursiveTraverser handler(baseDirectory, sink);
+				readdir(baseDirectory, handler);
+				sink.leaveDirectory(baseDirectory, true);
+			}
+			else
+				sink.leaveDirectory(baseDirectory, false);
+		}
+		else
+			sink.visitFile(baseDirectory);
+	}
+
 }}

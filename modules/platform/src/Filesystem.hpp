@@ -19,7 +19,7 @@ namespace platform {
 			CAN_EXECUTE = 01
 		};
 
-		enum FSType {
+		enum REDSTRAIN_PLATFORM_API FSType {
 			UNKNOWNFS,
 			ADFS,
 			AFFS,
@@ -64,7 +64,7 @@ namespace platform {
 			XIAFS
 		};
 
-		class FSInfo {
+		class REDSTRAIN_PLATFORM_API FSInfo {
 
 		  private:
 			FSType type;
@@ -126,6 +126,19 @@ namespace platform {
 
 		};
 
+		class REDSTRAIN_PLATFORM_API TraversalSink {
+
+		  public:
+			TraversalSink();
+			TraversalSink(const TraversalSink&);
+			virtual ~TraversalSink();
+
+			virtual bool enterDirectory(const std::string&) = 0;
+			virtual void visitFile(const std::string&) = 0;
+			virtual void leaveDirectory(const std::string&, bool) = 0;
+
+		};
+
 	  public:
 #if REDSTRAIN_PLATFORM_OS == REDSTRAIN_PLATFORM_OS_UNIX
 		typedef int ErrorCode;
@@ -168,6 +181,7 @@ namespace platform {
 		static Stat::UserID getCurrentUser();
 		static Stat::GroupID getCurrentGroup();
 		static void removeRecursively(const std::string&);
+		static void traverse(const std::string&, TraversalSink&);
 
 	};
 
