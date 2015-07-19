@@ -63,18 +63,22 @@ namespace build {
 
 		};
 
+
 	  private:
 		typedef std::list<std::string> Paths;
 		typedef std::set<Language*> Languages;
 		typedef std::set<FileArtifact*> FileArtifacts;
 		typedef std::map<std::string, std::string> ExposeDirectories;
 		typedef std::set<Component*> Components;
+		typedef std::map<std::string, std::set<std::string> > ExternalDependencies;
+		typedef ExternalDependencies::const_iterator ExternalDependencyIterator;
 
 	  public:
 		typedef Paths::const_iterator PathIterator;
 		typedef Languages::const_iterator LanguageIterator;
 		typedef FileArtifacts::const_iterator FileArtifactIterator;
 		typedef Components::const_iterator ComponentIterator;
+		typedef std::set<std::string>::const_iterator DependencyIterator;
 
 	  private:
 		const Type type;
@@ -84,6 +88,7 @@ namespace build {
 		FileArtifacts preciousArtifacts;
 		ExposeDirectories exposeDirectories;
 		Components dependencies;
+		ExternalDependencies externalDependencies;
 
 	  public:
 		Component(Type, const std::string&, const std::string&);
@@ -115,7 +120,7 @@ namespace build {
 		void clearPreciousArtifacts();
 		void getPreciousArtifacts(FileArtifactIterator&, FileArtifactIterator&) const;
 
-		bool putHeaderExposeDirectory(const Language&, std::string&);
+		bool putHeaderExposeDirectory(const Language&, const std::string&);
 		bool removeHeaderExposeDirectory(const Language&);
 		std::string getHeaderExposeDirectory(const Language&) const;
 
@@ -123,6 +128,12 @@ namespace build {
 		bool removeDependency(Component*);
 		void clearDependencies();
 		void getDependencies(ComponentIterator&, ComponentIterator&) const;
+
+		bool addExternalDependency(const Language&, const std::string&);
+		bool removeExternalDependency(const Language&, const std::string&);
+		void clearExternalDependencies(const Language&);
+		void clearExternalDependencies();
+		void getExternalDependencies(const Language&, DependencyIterator&, DependencyIterator&) const;
 
 		void setupRules(BuildDirectoryMapper&, BuildContext&, ValveInjector* = NULL);
 

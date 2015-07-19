@@ -59,7 +59,8 @@ namespace build {
 			: ReferenceCounted(component), type(component.type), name(component.name),
 			baseDirectory(component.baseDirectory), sourceDirectories(component.sourceDirectories),
 			languages(component.languages), preciousArtifacts(component.preciousArtifacts),
-			exposeDirectories(component.exposeDirectories), dependencies(component.dependencies) {
+			exposeDirectories(component.exposeDirectories), dependencies(component.dependencies),
+			externalDependencies(component.externalDependencies) {
 		FileArtifactIterator pabegin(preciousArtifacts.begin()), paend(preciousArtifacts.end());
 		for(; pabegin != paend; ++pabegin)
 			(*pabegin)->ref();
@@ -134,7 +135,7 @@ namespace build {
 		end = preciousArtifacts.end();
 	}
 
-	bool Component::putHeaderExposeDirectory(const Language& language, string& directory) {
+	bool Component::putHeaderExposeDirectory(const Language& language, const string& directory) {
 		bool result = exposeDirectories.find(language.getName()) == exposeDirectories.end();
 		exposeDirectories[language.getName()] = directory;
 		return result;
@@ -175,6 +176,53 @@ namespace build {
 	void Component::getDependencies(ComponentIterator& begin, ComponentIterator& end) const {
 		begin = dependencies.begin();
 		end = dependencies.end();
+	}
+
+	bool Component::addExternalDependency(const Language& language, const string& library) {
+		const string& name = language.getName();
+		ExternalDependencies::iterator oit = externalDependencies.find(name);
+		set<string>* inner;
+		bool insouter = oit == externalDependencies.end();
+		if(insouter) {
+			externalDependencies[name] = set<string>();
+			inner = &externalDependencies[name];
+		}
+		else
+			inner = &oit->second;
+		if(!inner->insert(library).second)
+			return insouter;
+		return true;
+	}
+
+	bool Component::removeExternalDependency(const Language& language, const string& library) {
+		const string& name = language.getName();
+		ExternalDependencies::iterator oit = externalDependencies.find(name);
+		if(oit == externalDependencies.end())
+			return false;
+		return oit->second.erase(library);
+	}
+
+	void Component::clearExternalDependencies(const Language& language) {
+		ExternalDependencies::iterator oit = externalDependencies.find(language.getName());
+		if(oit != externalDependencies.end())
+			oit->second.clear();
+	}
+
+	void Component::clearExternalDependencies() {
+		externalDependencies.clear();
+	}
+
+	static set<string> emptyStringSet;
+
+	void Component::getExternalDependencies(const Language& language,
+			DependencyIterator& begin, DependencyIterator& end) const {
+		ExternalDependencyIterator oit = externalDependencies.find(language.getName());
+		if(oit == externalDependencies.end())
+			begin = end = emptyStringSet.end();
+		else {
+			begin = oit->second.begin();
+			end = oit->second.end();
+		}
 	}
 
 	struct PathPair {
