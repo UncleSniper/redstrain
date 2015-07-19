@@ -8,22 +8,16 @@
 namespace redengine {
 namespace build {
 
-	class REDSTRAIN_BUILD_API Valve : public util::ReferenceCounted {
+	class BuildContext;
 
-	  private:
-		bool open;
+	class REDSTRAIN_BUILD_API Valve : public util::ReferenceCounted {
 
 	  public:
 		Valve();
 		Valve(const Valve&);
+		virtual ~Valve();
 
-		inline bool isOpen() const {
-			return open;
-		}
-
-		inline void setOpen(bool open) {
-			this->open = open;
-		}
+		virtual bool isOpen(BuildContext&) = 0;
 
 	};
 

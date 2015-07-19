@@ -3,8 +3,10 @@
 namespace redengine {
 namespace build {
 
-	Valve::Valve() : open(false) {}
+	Valve::Valve() {}
 
-	Valve::Valve(const Valve& value) : ReferenceCounted(value), open(value.open) {}
+	Valve::Valve(const Valve& value) : ReferenceCounted(value) {}
+
+	Valve::~Valve() {}
 
 }}

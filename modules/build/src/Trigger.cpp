@@ -103,7 +103,7 @@ namespace build {
 	}
 
 	void Trigger::spin(BuildContext& context) {
-		if(!areValvesOpen() || !isTriggered())
+		if(!areValvesOpen() || !isTriggered(context))
 			return;
 		ActionIterator begin(actions.begin()), end(actions.end());
 		for(; begin != end; ++begin)
@@ -111,7 +111,7 @@ namespace build {
 	}
 
 	void Trigger::predictSpin(BuildContext& context) {
-		if(!areValvesOpen() || !wouldTrigger())
+		if(!areValvesOpen() || !wouldTrigger(context))
 			return;
 		ActionIterator begin(actions.begin()), end(actions.end());
 		for(; begin != end; ++begin)

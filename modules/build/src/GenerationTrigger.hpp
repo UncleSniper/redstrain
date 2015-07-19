@@ -22,8 +22,8 @@ namespace build {
 		bool triggered(const Artifact::Mood&) const;
 
 	  protected:
-		virtual bool isTriggered();
-		virtual bool wouldTrigger();
+		virtual bool isTriggered(BuildContext&);
+		virtual bool wouldTrigger(BuildContext&);
 
 	  public:
 		GenerationTrigger();

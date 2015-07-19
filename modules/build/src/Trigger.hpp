@@ -32,8 +32,8 @@ namespace build {
 		bool areValvesOpen() const;
 
 	  protected:
-		virtual bool isTriggered() = 0;
-		virtual bool wouldTrigger() = 0;
+		virtual bool isTriggered(BuildContext&) = 0;
+		virtual bool wouldTrigger(BuildContext&) = 0;
 
 	  public:
 		Trigger();

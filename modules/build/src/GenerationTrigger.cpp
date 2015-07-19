@@ -161,11 +161,11 @@ namespace build {
 		return missingTargets || newestSource > oldestTarget;
 	}
 
-	bool GenerationTrigger::isTriggered() {
+	bool GenerationTrigger::isTriggered(BuildContext&) {
 		return triggered(Artifact::DEFINITIVE_MOOD);
 	}
 
-	bool GenerationTrigger::wouldTrigger() {
+	bool GenerationTrigger::wouldTrigger(BuildContext&) {
 		return triggered(Artifact::PREDICTIVE_MOOD);
 	}
 

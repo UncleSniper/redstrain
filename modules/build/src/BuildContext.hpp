@@ -12,10 +12,10 @@
 namespace redengine {
 namespace build {
 
-	class Valve;
 	class Action;
 	class Trigger;
 	class BuildUI;
+	class StaticValve;
 
 	class REDSTRAIN_BUILD_API BuildContext {
 
@@ -25,7 +25,7 @@ namespace build {
 		typedef ActionQueue::const_iterator ActionQueueIterator;
 		typedef std::set<Action*> ActionSet;
 		typedef ActionSet::const_iterator ActionSetIterator;
-		typedef std::map<std::string, Valve*> Valves;
+		typedef std::map<std::string, StaticValve*> Valves;
 		typedef Valves::iterator ValveIterator;
 		typedef Valves::const_iterator ConstValveIterator;
 
@@ -60,8 +60,8 @@ namespace build {
 		void clearTriggers();
 		void getTriggers(TriggerIterator&, TriggerIterator&) const;
 
-		Valve* getValve(const std::string&) const;
-		void addValve(const std::string&, Valve*);
+		StaticValve* getValve(const std::string&) const;
+		void addValve(const std::string&, StaticValve*);
 		bool removeValve(const std::string&);
 		void clearValves();
 

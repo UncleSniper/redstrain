@@ -1,9 +1,9 @@
 #include <redstrain/util/Unref.hpp>
 
-#include "Valve.hpp"
 #include "Action.hpp"
 #include "Trigger.hpp"
 #include "BuildContext.hpp"
+#include "StaticValve.hpp"
 
 using std::set;
 using std::deque;
@@ -74,17 +74,17 @@ namespace build {
 		end = triggers.end();
 	}
 
-	Valve* BuildContext::getValve(const string& name) const {
+	StaticValve* BuildContext::getValve(const string& name) const {
 		ConstValveIterator it = valves.find(name);
 		return it == valves.end() ? NULL : it->second;
 	}
 
-	void BuildContext::addValve(const string& name, Valve* valve) {
+	void BuildContext::addValve(const string& name, StaticValve* valve) {
 		if(name.empty() || !valve)
 			return;
 		ConstValveIterator it = valves.find(name);
 		if(it != valves.end()) {
-			Valve* old = it->second;
+			StaticValve* old = it->second;
 			valves[name] = valve;
 			valve->ref();
 			old->unref();
@@ -99,7 +99,7 @@ namespace build {
 		ValveIterator it = valves.find(name);
 		if(it == valves.end())
 			return false;
-		Valve* valve = it->second;
+		StaticValve* valve = it->second;
 		valves.erase(it);
 		valve->unref();
 		return true;
