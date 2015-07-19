@@ -13,11 +13,11 @@ using redengine::util::Unref;
 namespace redengine {
 namespace build {
 
-	BuildContext::BuildContext() {}
+	BuildContext::BuildContext(BuildUI& ui) : ui(ui) {}
 
 	BuildContext::BuildContext(const BuildContext& context)
-			: triggers(context.triggers), actionQueue(context.actionQueue), actionSet(context.actionSet),
-			valves(context.valves) {
+			: ui(context.ui), triggers(context.triggers), actionQueue(context.actionQueue),
+			actionSet(context.actionSet), valves(context.valves) {
 		TriggerIterator tbegin(triggers.begin()), tend(triggers.end());
 		for(; tbegin != tend; ++tbegin)
 			(*tbegin)->ref();

@@ -15,6 +15,7 @@ namespace build {
 	class Valve;
 	class Action;
 	class Trigger;
+	class BuildUI;
 
 	class REDSTRAIN_BUILD_API BuildContext {
 
@@ -32,6 +33,7 @@ namespace build {
 		typedef Triggers::const_iterator TriggerIterator;
 
 	  private:
+		BuildUI& ui;
 		Triggers triggers;
 		ActionQueue actionQueue;
 		ActionSet actionSet;
@@ -41,8 +43,16 @@ namespace build {
 		BuildContext(const BuildContext&);
 
 	  public:
-		BuildContext();
+		BuildContext(BuildUI&);
 		~BuildContext();
+
+		inline BuildUI& getUI() {
+			return ui;
+		}
+
+		inline const BuildUI& getUI() const {
+			return ui;
+		}
 
 		bool addTrigger(Trigger*);
 		bool removeTrigger(Trigger*);
