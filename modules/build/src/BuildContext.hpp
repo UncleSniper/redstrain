@@ -15,6 +15,7 @@ namespace build {
 	class Action;
 	class Trigger;
 	class BuildUI;
+	class ValveGroup;
 	class StaticValve;
 
 	class REDSTRAIN_BUILD_API BuildContext {
@@ -28,9 +29,11 @@ namespace build {
 		typedef std::map<std::string, StaticValve*> Valves;
 		typedef Valves::iterator ValveIterator;
 		typedef Valves::const_iterator ConstValveIterator;
+		typedef std::set<ValveGroup*> Groups;
 
 	  public:
 		typedef Triggers::const_iterator TriggerIterator;
+		typedef Groups::const_iterator ValveGroupIterator;
 
 	  private:
 		BuildUI& ui;
@@ -39,6 +42,7 @@ namespace build {
 		ActionSet actionSet;
 		Valves valves;
 		ActionSet alreadyPerformed;
+		Groups groups;
 
 	  private:
 		BuildContext(const BuildContext&);
@@ -65,6 +69,12 @@ namespace build {
 		bool removeValve(const std::string&);
 		void clearValves();
 		StaticValve& getOrMakeValve(const std::string&);
+
+		bool addValveGroup(ValveGroup*);
+		bool removeValveGroup(ValveGroup*);
+		void clearValveGroups();
+		void getValveGroups(ValveGroupIterator&, ValveGroupIterator&) const;
+		void forceValveGroups();
 
 		bool wasActionPerformed(Action*) const;
 		void clearPerformedActions();

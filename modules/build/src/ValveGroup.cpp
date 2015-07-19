@@ -47,7 +47,7 @@ namespace build {
 			(*begin)->unref();
 	}
 
-	void ValveGroup::getMembers(ValveIterator& begin, ValveIterator& end) {
+	void ValveGroup::getMembers(ValveIterator& begin, ValveIterator& end) const {
 		begin = valves.begin();
 		end = valves.end();
 	}
@@ -74,7 +74,7 @@ namespace build {
 			(*begin)->unref();
 	}
 
-	void ValveGroup::getDefaults(StaticValveIterator& begin, StaticValveIterator& end) {
+	void ValveGroup::getDefaults(StaticValveIterator& begin, StaticValveIterator& end) const {
 		begin = defaults.begin();
 		end = defaults.end();
 	}

@@ -3,8 +3,9 @@
 
 #include "Action.hpp"
 #include "Trigger.hpp"
-#include "BuildContext.hpp"
+#include "ValveGroup.hpp"
 #include "StaticValve.hpp"
+#include "BuildContext.hpp"
 
 using std::set;
 using std::deque;
@@ -19,7 +20,8 @@ namespace build {
 
 	BuildContext::BuildContext(const BuildContext& context)
 			: ui(context.ui), triggers(context.triggers), actionQueue(context.actionQueue),
-			actionSet(context.actionSet), valves(context.valves), alreadyPerformed(context.alreadyPerformed) {
+			actionSet(context.actionSet), valves(context.valves), alreadyPerformed(context.alreadyPerformed),
+			groups(context.groups) {
 		TriggerIterator tbegin(triggers.begin()), tend(triggers.end());
 		for(; tbegin != tend; ++tbegin)
 			(*tbegin)->ref();
@@ -29,6 +31,9 @@ namespace build {
 		ConstValveIterator vbegin(valves.begin()), vend(valves.end());
 		for(; vbegin != vend; ++vbegin)
 			vbegin->second->ref();
+		ValveGroupIterator gbegin(groups.begin()), gend(groups.end());
+		for(; gbegin != gend; ++gbegin)
+			(*gbegin)->ref();
 	}
 
 	BuildContext::~BuildContext() {
@@ -41,6 +46,9 @@ namespace build {
 		ConstValveIterator vbegin(valves.begin()), vend(valves.end());
 		for(; vbegin != vend; ++vbegin)
 			vbegin->second->unref();
+		ValveGroupIterator gbegin(groups.begin()), gend(groups.end());
+		for(; gbegin != gend; ++gbegin)
+			(*gbegin)->unref();
 	}
 
 	bool BuildContext::addTrigger(Trigger* trigger) {
@@ -121,6 +129,40 @@ namespace build {
 		Delete<StaticValve> valve(new StaticValve);
 		valves[name] = *valve;
 		return *valve.set();
+	}
+
+	bool BuildContext::addValveGroup(ValveGroup* group) {
+		if(!group)
+			return false;
+		if(!groups.insert(group).second)
+			return false;
+		group->ref();
+		return true;
+	}
+
+	bool BuildContext::removeValveGroup(ValveGroup* group) {
+		if(!groups.erase(group))
+			return false;
+		group->unref();
+		return true;
+	}
+
+	void BuildContext::clearValveGroups() {
+		ValveGroupIterator gbegin(groups.begin()), gend(groups.end());
+		for(; gbegin != gend; ++gbegin)
+			(*gbegin)->unref();
+		groups.clear();
+	}
+
+	void BuildContext::getValveGroups(ValveGroupIterator& begin, ValveGroupIterator& end) const {
+		begin = groups.begin();
+		end = groups.end();
+	}
+
+	void BuildContext::forceValveGroups() {
+		ValveGroupIterator gbegin(groups.begin()), gend(groups.end());
+		for(; gbegin != gend; ++gbegin)
+			(*gbegin)->forceDefaults(*this);
 	}
 
 	bool BuildContext::wasActionPerformed(Action* action) const {

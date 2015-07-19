@@ -35,12 +35,12 @@ namespace build {
 		bool addMember(Valve*);
 		bool removeMember(Valve*);
 		void clearMembers();
-		void getMembers(ValveIterator&, ValveIterator&);
+		void getMembers(ValveIterator&, ValveIterator&) const;
 
 		bool addDefault(StaticValve*);
 		bool removeDefault(StaticValve*);
 		void clearDefaults();
-		void getDefaults(StaticValveIterator&, StaticValveIterator&);
+		void getDefaults(StaticValveIterator&, StaticValveIterator&) const;
 
 		bool forceDefaults(BuildContext&);
 
