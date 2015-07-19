@@ -4,12 +4,13 @@
 #include <string>
 #include <redstrain/util/Appender.hpp>
 
+#include "Flavor.hpp"
 #include "Component.hpp"
 
 namespace redengine {
 namespace build {
 
-	class Flavor;
+	class GenerationTrigger;
 
 	class REDSTRAIN_BUILD_API Language {
 
@@ -34,8 +35,14 @@ namespace build {
 
 		virtual ArtifactType classifyFile(const std::string&) = 0;
 		virtual void getSupportedFlavors(Component::Type, util::Appender<Flavor>&) = 0;
-		virtual std::string getArtifactNameForSource(Component::Type, const Flavor&, const std::string&) = 0;
-		virtual std::string getPrimaryArtifactName(Component::Type, const Flavor&, const std::string&) = 0;
+		virtual bool isOneToOne(const Flavor&) = 0;
+		virtual GenerationTrigger* getGenerationTrigger(const std::string&, const std::string&, const Flavor&,
+				const std::string&, const Flavor&) = 0;
+		virtual Flavor getGeneratedSourceFlavor(const Flavor&, const Flavor&, const std::string&) = 0;
+		virtual Flavor getGeneratedHeaderFlavor(const Flavor&, const Flavor&, const std::string&) = 0;
+		virtual Flavor getHeaderExposeTransformFlavor() = 0;
+		virtual GenerationTrigger* getHeaderExposeTrigger(const std::string&, const std::string&, const Flavor&,
+				const std::string&, const Flavor&) = 0;
 
 	};
 

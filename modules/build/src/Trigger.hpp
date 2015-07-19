@@ -29,7 +29,7 @@ namespace build {
 		Valves valves;
 
 	  private:
-		bool areValvesOpen() const;
+		bool areValvesOpen(BuildContext&) const;
 
 	  protected:
 		virtual bool isTriggered(BuildContext&) = 0;

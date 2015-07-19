@@ -9,4 +9,9 @@ namespace build {
 
 	Flavor::Flavor(const Flavor& flavor) : name(flavor.name) {}
 
+	Flavor& Flavor::operator=(const Flavor& flavor) {
+		name = flavor.name;
+		return *this;
+	}
+
 }}

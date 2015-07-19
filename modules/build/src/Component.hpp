@@ -33,31 +33,7 @@ namespace build {
 			virtual ~BuildDirectoryMapper();
 
 			virtual std::string getBuildDirectory(const Language&, const Flavor&) = 0;
-
-		};
-
-		class REDSTRAIN_BUILD_API PrimaryArtifactMapper {
-
-		  public:
-			PrimaryArtifactMapper();
-			PrimaryArtifactMapper(const PrimaryArtifactMapper&);
-			virtual ~PrimaryArtifactMapper();
-
-			virtual std::string getPrimaryArtifactName(const Component&, const Flavor&) = 0;
-
-		};
-
-		class REDSTRAIN_BUILD_API RuleSink {
-
-		  public:
-			RuleSink();
-			RuleSink(const RuleSink&);
-			virtual ~RuleSink();
-
-			virtual void setupSourceTransform(const Component&, const Language&, const Flavor&,
-					const std::string&, const std::string&) = 0;
-			virtual void setupPrimaryArtifact(const Component&, const Language&, const Flavor&,
-					const std::string&) = 0;
+			virtual std::string getHeaderExposeDirectory(const Language&) = 0;
 
 		};
 
@@ -97,7 +73,7 @@ namespace build {
 		bool addLanguage(Language*);
 		void clearLanguages();
 		void getLanguages(LanguageIterator&, LanguageIterator&) const;
-		void setupRules(BuildDirectoryMapper&, PrimaryArtifactMapper&, RuleSink&) const;
+		void setupRules(BuildDirectoryMapper&, BuildContext&) const;
 
 	};
 

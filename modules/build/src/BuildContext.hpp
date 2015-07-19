@@ -64,6 +64,7 @@ namespace build {
 		void addValve(const std::string&, StaticValve*);
 		bool removeValve(const std::string&);
 		void clearValves();
+		StaticValve& getOrMakeValve(const std::string&);
 
 		bool wasActionPerformed(Action*) const;
 		void clearPerformedActions();

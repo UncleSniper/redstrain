@@ -11,15 +11,22 @@ namespace build {
 	class REDSTRAIN_BUILD_API FileArtifact : public Artifact {
 
 	  private:
-		const std::string pathname;
+		const std::string directory, basename;
 
 	  public:
 		FileArtifact(const std::string&);
+		FileArtifact(const std::string&, const std::string&);
 		FileArtifact(const FileArtifact&);
 
-		inline const std::string& getPathname() const {
-			return pathname;
+		inline const std::string& getDirectory() const {
+			return directory;
 		}
+
+		inline const std::string& getBasename() const {
+			return basename;
+		}
+
+		std::string getPathname();
 
 		virtual bool isPresent();
 		virtual time_t getModificationTimestamp();

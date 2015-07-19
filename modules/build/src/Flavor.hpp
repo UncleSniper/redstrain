@@ -11,15 +11,17 @@ namespace build {
 	class REDSTRAIN_BUILD_API Flavor {
 
 	  private:
-		const std::string name;
+		std::string name;
 
 	  public:
 		Flavor(const std::string&);
 		Flavor(const Flavor&);
 
-		inline const std::string& getName() {
+		inline const std::string& getName() const {
 			return name;
 		}
+
+		Flavor& operator=(const Flavor&);
 
 	};
 

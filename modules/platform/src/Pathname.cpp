@@ -266,4 +266,14 @@ namespace platform {
 		return StringUtils::startsWith(haystack, n) && haystack.length() > n.length();
 	}
 
+	string Pathname::stripPrefix(const string& haystack, const string& needle) {
+		string n(needle);
+		if(!StringUtils::endsWith(n, Pathname::SEPARATOR))
+			n += Pathname::SEPARATOR;
+		string::size_type nlen = n.length();
+		if(StringUtils::startsWith(haystack, n) && haystack.length() > nlen)
+			return haystack.substr(nlen);
+		return haystack;
+	}
+
 }}

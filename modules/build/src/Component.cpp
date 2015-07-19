@@ -1,12 +1,18 @@
+#include <map>
+#include <redstrain/util/Delete.hpp>
 #include <redstrain/util/StringUtils.hpp>
 #include <redstrain/platform/Pathname.hpp>
 #include <redstrain/platform/Filesystem.hpp>
 
 #include "Flavor.hpp"
 #include "Language.hpp"
+#include "FileArtifact.hpp"
+#include "GenerationTrigger.hpp"
 
+using std::map;
 using std::list;
 using std::string;
+using redengine::util::Delete;
 using redengine::util::Appender;
 using redengine::util::StringUtils;
 using redengine::platform::Pathname;
@@ -22,22 +28,6 @@ namespace build {
 	Component::BuildDirectoryMapper::BuildDirectoryMapper(const BuildDirectoryMapper&) {}
 
 	Component::BuildDirectoryMapper::~BuildDirectoryMapper() {}
-
-	// ======== PrimaryArtifactMapper ========
-
-	Component::PrimaryArtifactMapper::PrimaryArtifactMapper() {}
-
-	Component::PrimaryArtifactMapper::PrimaryArtifactMapper(const PrimaryArtifactMapper&) {}
-
-	Component::PrimaryArtifactMapper::~PrimaryArtifactMapper() {}
-
-	// ======== RuleSink ========
-
-	Component::RuleSink::RuleSink() {}
-
-	Component::RuleSink::RuleSink(const RuleSink&) {}
-
-	Component::RuleSink::~RuleSink() {}
 
 	// ======== Component ========
 
@@ -77,23 +67,72 @@ namespace build {
 		end = languages.end();
 	}
 
+	struct PathPair {
+
+		const string directory, basename;
+		const Flavor flavor;
+
+		PathPair(const string& directory, const string& basename, const Flavor& flavor)
+				: directory(directory), basename(basename), flavor(flavor) {}
+
+		PathPair(const PathPair& pair)
+				: directory(pair.directory), basename(pair.basename), flavor(pair.flavor) {}
+
+	};
+
+	struct FlavorGraph {
+
+		GenerationTrigger* singleTrigger;
+		list<GenerationTrigger*> allTriggers;
+
+		FlavorGraph() : singleTrigger(NULL) {}
+
+		~FlavorGraph() {
+			if(singleTrigger)
+				delete singleTrigger;
+			list<GenerationTrigger*>::const_iterator begin(allTriggers.begin()), end(allTriggers.end());
+			for(; begin != end; ++begin)
+				delete *begin;
+		}
+
+	};
+
 	struct LanguageInfo {
 
 		Language& language;
-		list<string> sources, headers;
+		list<PathPair> sources, headers;
+		map<string, FlavorGraph*> graphs;
 
 		LanguageInfo(Language& language) : language(language) {}
 
 		LanguageInfo(const LanguageInfo& info)
-				: language(info.language), sources(info.sources), headers(info.headers) {}
+				: language(info.language), sources(info.sources), headers(info.headers), graphs(info.graphs) {}
+
+		~LanguageInfo() {
+			map<string, FlavorGraph*>::const_iterator begin(graphs.begin()), end(graphs.end());
+			for(; begin != end; ++begin)
+				delete begin->second;
+		}
+
+		FlavorGraph& getOrMakeFlavorGraph(const Flavor& flavor) {
+			const string& name = flavor.getName();
+			map<string, FlavorGraph*>::const_iterator it = graphs.find(name);
+			if(it != graphs.end())
+				return *it->second;
+			Delete<FlavorGraph> graph(new FlavorGraph);
+			graphs[name] = *graph;
+			return *graph.set();
+		}
 
 	};
 
 	struct SetupTraverser : public Filesystem::TraversalSink {
 
 		list<LanguageInfo>& languages;
+		const string& sourceDirectory;
 
-		SetupTraverser(list<LanguageInfo>& languages) : languages(languages) {}
+		SetupTraverser(list<LanguageInfo>& languages, const string& sourceDirectory)
+				: languages(languages), sourceDirectory(sourceDirectory) {}
 
 		virtual bool enterDirectory(const string&) {
 			return true;
@@ -106,10 +145,12 @@ namespace build {
 			for(; begin != end; ++begin) {
 				switch(begin->language.classifyFile(path)) {
 					case Language::AT_SOURCE:
-						begin->sources.push_back(path);
+						begin->sources.push_back(PathPair(sourceDirectory,
+								Pathname::stripPrefix(path, sourceDirectory), Flavor("shipped")));
 						break;
 					case Language::AT_HEADER:
-						begin->headers.push_back(path);
+						begin->headers.push_back(PathPair(sourceDirectory,
+								Pathname::stripPrefix(path, sourceDirectory), Flavor("shipped")));
 						break;
 					default:
 						break;
@@ -122,79 +163,132 @@ namespace build {
 	struct FlavorAppender : public Appender<Flavor> {
 
 		const Component& component;
-		const string& sourceDirectory;
-		Language& language;
-		const list<string>& sources;
+		LanguageInfo& language;
+		list<LanguageInfo>& languages;
 		Component::BuildDirectoryMapper& directoryMapper;
-		Component::PrimaryArtifactMapper& artifactMapper;
-		Component::RuleSink& ruleSink;
+		bool addedMoreSources;
 
-		FlavorAppender(const Component& component, const string& sourceDirectory, Language& language,
-				const list<string>& sources, Component::BuildDirectoryMapper& directoryMapper,
-				Component::PrimaryArtifactMapper& artifactMapper, Component::RuleSink& ruleSink)
-				: component(component), sourceDirectory(sourceDirectory), language(language), sources(sources),
-				directoryMapper(directoryMapper), artifactMapper(artifactMapper), ruleSink(ruleSink) {}
-
-		FlavorAppender(const FlavorAppender& appender) : Appender<Flavor>(appender),
-				component(appender.component), sourceDirectory(appender.sourceDirectory),
-				language(appender.language), sources(appender.sources), directoryMapper(appender.directoryMapper),
-				artifactMapper(appender.artifactMapper), ruleSink(appender.ruleSink) {}
+		FlavorAppender(const Component& component, LanguageInfo& language, list<LanguageInfo>& languages,
+				Component::BuildDirectoryMapper& directoryMapper) : component(component), language(language),
+				languages(languages), directoryMapper(directoryMapper), addedMoreSources(false) {}
 
 		virtual void append(const Flavor& flavor) {
 			string buildDirectory(Pathname::join(component.getBaseDirectory(),
-					directoryMapper.getBuildDirectory(language, flavor)));
-			string sdprefix(sourceDirectory);
-			string::size_type sdlength = sourceDirectory.length();
-			if(sdlength && sourceDirectory[sdlength - static_cast<string::size_type>(1u)] != '/') {
-				sdprefix += '/';
-				++sdlength;
-			}
-			list<string>::const_iterator sbegin(sources.begin()), send(sources.end());
+					directoryMapper.getBuildDirectory(language.language, flavor)));
+			FlavorGraph& graph = language.getOrMakeFlavorGraph(flavor);
+			list<PathPair>::const_iterator sbegin(language.sources.begin()), send(language.sources.end());
+			bool isSingle = language.language.isOneToOne(flavor);
 			for(; sbegin != send; ++sbegin) {
-				string srcbase;
-				if(StringUtils::startsWith(*sbegin, sdprefix) && sbegin->length() > sdlength)
-					srcbase = sbegin->substr(sdlength);
-				else
-					srcbase = *sbegin;
-				string binbase(Pathname::join(Pathname::dirname(srcbase),
-						language.getArtifactNameForSource(component.getType(), flavor,
-						Pathname::basename(srcbase))));
-				string binfile(Pathname::join(buildDirectory, binbase));
-				ruleSink.setupSourceTransform(component, language, flavor, *sbegin, binfile);
+				GenerationTrigger* newTrigger = NULL;
+				if(isSingle) {
+					if(graph.singleTrigger) {
+						Delete<FileArtifact> file(new FileArtifact(sbegin->directory, sbegin->basename));
+						graph.singleTrigger->addSource(*file);
+						file.set();
+					}
+					else {
+						newTrigger = language.language.getGenerationTrigger(sbegin->directory,
+								sbegin->basename, sbegin->flavor, buildDirectory, flavor);
+						graph.singleTrigger = newTrigger;
+					}
+				}
+				else {
+					Delete<GenerationTrigger> trigger(language.language.getGenerationTrigger(sbegin->directory,
+							sbegin->basename, sbegin->flavor, buildDirectory, flavor));
+					graph.allTriggers.push_back(*trigger);
+					newTrigger = trigger.set();
+				}
+				if(newTrigger) {
+					GenerationTrigger::ArtifactIterator tbegin, tend;
+					newTrigger->getTargets(tbegin, tend);
+					for(; tbegin != tend; ++tbegin) {
+						FileArtifact* file = dynamic_cast<FileArtifact*>(*tbegin);
+						if(!file)
+							continue;
+						list<LanguageInfo>::iterator lbegin(languages.begin()), lend(languages.end());
+						for(; lbegin != lend; ++lbegin) {
+							switch(lbegin->language.classifyFile(file->getPathname())) {
+								case Language::AT_SOURCE:
+									lbegin->sources.push_back(PathPair(file->getDirectory(), file->getBasename(),
+											language.language.getGeneratedSourceFlavor(sbegin->flavor, flavor,
+											file->getBasename())));
+									addedMoreSources = true;
+									break;
+								case Language::AT_HEADER:
+									lbegin->headers.push_back(PathPair(file->getDirectory(), file->getBasename(),
+											language.language.getGeneratedHeaderFlavor(sbegin->flavor, flavor,
+											file->getBasename())));
+									break;
+								default:
+									break;
+							}
+						}
+					}
+				}
 			}
-			string primary(Pathname::join(component.getBaseDirectory(),
-					language.getPrimaryArtifactName(component.getType(), flavor,
-					artifactMapper.getPrimaryArtifactName(component, flavor))));
-			ruleSink.setupPrimaryArtifact(component, language, flavor, primary);
 		}
 
 	};
 
-	void Component::setupRules(BuildDirectoryMapper& directoryMapper,
-			PrimaryArtifactMapper& artifactMapper, RuleSink& ruleSink) const {
+	void Component::setupRules(BuildDirectoryMapper& directoryMapper, BuildContext&) const {
+		list<LanguageInfo> langinfo;
+		LanguageIterator lbegin(languages.begin()), lend(languages.end());
+		for(; lbegin != lend; ++lbegin)
+			langinfo.push_back(LanguageInfo(**lbegin));
+		// discover shipped sources
 		PathIterator sdbegin(sourceDirectories.begin()), sdend(sourceDirectories.end());
 		for(; sdbegin != sdend; ++sdbegin) {
+			SetupTraverser handler(langinfo, *sdbegin);
 			string srcdir(Pathname::join(baseDirectory, *sdbegin));
-			if(!Filesystem::access(srcdir, Filesystem::FILE_EXISTS))
-				continue;
-			list<LanguageInfo> langinfo;
-			LanguageIterator lbegin(languages.begin()), lend(languages.end());
-			for(; lbegin != lend; ++lbegin)
-				langinfo.push_back(LanguageInfo(**lbegin));
-			SetupTraverser handler(langinfo);
-			Filesystem::traverse(srcdir, handler);
+			if(Filesystem::access(srcdir, Filesystem::FILE_EXISTS))
+				Filesystem::traverse(srcdir, handler);
+		}
+		// process sources
+		bool onceMoreWithFeeling;
+		do {
+			onceMoreWithFeeling = false;
 			list<LanguageInfo>::iterator libegin(langinfo.begin()), liend(langinfo.end());
 			for(; libegin != liend; ++libegin) {
 				if(!libegin->sources.empty()) {
-					FlavorAppender fhandler(*this, *sdbegin, libegin->language, libegin->sources, directoryMapper,
-							artifactMapper, ruleSink);
+					FlavorAppender fhandler(*this, *libegin, langinfo, directoryMapper);
 					libegin->language.getSupportedFlavors(type, fhandler);
+					libegin->sources.clear();
+					if(fhandler.addedMoreSources)
+						onceMoreWithFeeling = true;
 				}
-				if(!libegin->headers.empty()) {
-					//TODO
+			}
+		} while(onceMoreWithFeeling);
+		// process headers, including generated ones
+		list<LanguageInfo>::iterator libegin(langinfo.begin()), liend(langinfo.end());
+		for(; libegin != liend; ++libegin) {
+			if(!libegin->headers.empty()) {
+				Flavor heflavor = libegin->language.getHeaderExposeTransformFlavor();
+				FlavorGraph& graph = libegin->getOrMakeFlavorGraph(heflavor);
+				string exposeDirectory(Pathname::join(baseDirectory,
+						directoryMapper.getHeaderExposeDirectory(libegin->language)));
+				bool isSingle = libegin->language.isOneToOne(heflavor);
+				list<PathPair>::const_iterator hbegin(libegin->headers.begin()), hend(libegin->headers.end());
+				for(; hbegin != hend; ++hbegin) {
+					if(isSingle) {
+						if(graph.singleTrigger) {
+							Delete<FileArtifact> file(new FileArtifact(hbegin->directory, hbegin->basename));
+							graph.singleTrigger->addSource(*file);
+							file.set();
+						}
+						else
+							graph.singleTrigger = libegin->language.getHeaderExposeTrigger(hbegin->directory,
+									hbegin->basename, hbegin->flavor, exposeDirectory, heflavor);
+					}
+					else {
+						Delete<GenerationTrigger> trigger(libegin->language.getHeaderExposeTrigger(hbegin->directory,
+								hbegin->basename, hbegin->flavor, exposeDirectory, heflavor));
+						graph.allTriggers.push_back(*trigger);
+						trigger.set();
+					}
 				}
 			}
 		}
+		// TODO: commit to context
 	}
 
 }}

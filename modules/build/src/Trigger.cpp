@@ -93,17 +93,17 @@ namespace build {
 		end = valves.end();
 	}
 
-	bool Trigger::areValvesOpen() const {
+	bool Trigger::areValvesOpen(BuildContext& context) const {
 		ValveIterator begin(valves.begin()), end(valves.end());
 		for(; begin != end; ++begin) {
-			if(!(*begin)->isOpen())
+			if(!(*begin)->isOpen(context))
 				return false;
 		}
 		return true;
 	}
 
 	void Trigger::spin(BuildContext& context) {
-		if(!areValvesOpen() || !isTriggered(context))
+		if(!areValvesOpen(context) || !isTriggered(context))
 			return;
 		ActionIterator begin(actions.begin()), end(actions.end());
 		for(; begin != end; ++begin)
@@ -111,7 +111,7 @@ namespace build {
 	}
 
 	void Trigger::predictSpin(BuildContext& context) {
-		if(!areValvesOpen() || !wouldTrigger(context))
+		if(!areValvesOpen(context) || !wouldTrigger(context))
 			return;
 		ActionIterator begin(actions.begin()), end(actions.end());
 		for(; begin != end; ++begin)

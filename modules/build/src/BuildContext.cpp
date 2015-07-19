@@ -1,3 +1,4 @@
+#include <redstrain/util/Delete.hpp>
 #include <redstrain/util/Unref.hpp>
 
 #include "Action.hpp"
@@ -9,6 +10,7 @@ using std::set;
 using std::deque;
 using std::string;
 using redengine::util::Unref;
+using redengine::util::Delete;
 
 namespace redengine {
 namespace build {
@@ -110,6 +112,15 @@ namespace build {
 		for(; begin != end; ++begin)
 			begin->second->unref();
 		valves.clear();
+	}
+
+	StaticValve& BuildContext::getOrMakeValve(const string& name) {
+		ConstValveIterator it = valves.find(name);
+		if(it != valves.end())
+			return *it->second;
+		Delete<StaticValve> valve(new StaticValve);
+		valves[name] = *valve;
+		return *valve.set();
 	}
 
 	bool BuildContext::wasActionPerformed(Action* action) const {
