@@ -35,6 +35,7 @@ namespace platform {
 		static std::string getWorkingDirectory();
 		static std::string canonicalizeSeparators(const std::string&);
 		static std::string normalizeSeparators(const std::string&);
+		static bool startsWith(const std::string&, const std::string&);
 
 	};
 

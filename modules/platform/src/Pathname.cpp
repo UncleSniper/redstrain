@@ -259,4 +259,11 @@ namespace platform {
 #error Platform not supported
 #endif /* OS-specific implementations */
 
+	bool Pathname::startsWith(const string& haystack, const string& needle) {
+		string n(needle);
+		if(!StringUtils::endsWith(n, Pathname::SEPARATOR))
+			n += Pathname::SEPARATOR;
+		return StringUtils::startsWith(haystack, n) && haystack.length() > n.length();
+	}
+
 }}
