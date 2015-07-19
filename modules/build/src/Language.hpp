@@ -31,8 +31,8 @@ namespace build {
 			return name;
 		}
 
-		virtual Flavor getShippedSourceFlavor() = 0;
-		virtual Flavor getShippedHeaderFlavor() = 0;
+		virtual Flavor getShippedSourceFlavor();
+		virtual Flavor getShippedHeaderFlavor();
 		virtual ArtifactType classifyFile(const std::string&) = 0;
 		virtual void getSupportedFlavors(Component::Type, util::Appender<Flavor>&) = 0;
 		virtual bool isOneToOne(const Flavor&) = 0;
@@ -40,8 +40,8 @@ namespace build {
 				const Flavor&, const std::string&, const Flavor&, Component&) = 0;
 		virtual Flavor getGeneratedSourceFlavor(const Flavor&, const Flavor&, const std::string&) = 0;
 		virtual Flavor getGeneratedHeaderFlavor(const Flavor&, const Flavor&, const std::string&) = 0;
-		virtual Flavor getHeaderExposeTransformFlavor() = 0;
-		virtual Flavor getCleanFlavor() = 0;
+		virtual Flavor getHeaderExposeTransformFlavor();
+		virtual Flavor getCleanFlavor();
 		virtual Component::GenerationHolder* getHeaderExposeTrigger(const std::string&, const std::string&,
 				const Flavor&, const std::string&, const Flavor&) = 0;
 

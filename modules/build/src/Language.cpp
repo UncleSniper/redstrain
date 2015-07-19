@@ -19,6 +19,10 @@ namespace build {
 		return Flavor::SHIPPED;
 	}
 
+	Flavor Language::getHeaderExposeTransformFlavor() {
+		return Flavor::HEADER;
+	}
+
 	Flavor Language::getCleanFlavor() {
 		return Flavor::CLEAN;
 	}
