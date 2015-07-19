@@ -230,11 +230,13 @@ namespace build {
 				switch(begin->language.classifyFile(path)) {
 					case Language::AT_SOURCE:
 						begin->sources.push_back(PathPair(sourceDirectory,
-								Pathname::stripPrefix(path, sourceDirectory), Flavor("shipped")));
+								Pathname::stripPrefix(path, sourceDirectory),
+								begin->language.getShippedSourceFlavor()));
 						break;
 					case Language::AT_HEADER:
 						begin->headers.push_back(PathPair(sourceDirectory,
-								Pathname::stripPrefix(path, sourceDirectory), Flavor("shipped")));
+								Pathname::stripPrefix(path, sourceDirectory),
+								begin->language.getShippedHeaderFlavor()));
 						break;
 					default:
 						break;

@@ -11,4 +11,16 @@ namespace build {
 
 	Language::~Language() {}
 
+	Flavor Language::getShippedSourceFlavor() {
+		return Flavor::SHIPPED;
+	}
+
+	Flavor Language::getShippedHeaderFlavor() {
+		return Flavor::SHIPPED;
+	}
+
+	Flavor Language::getCleanFlavor() {
+		return Flavor::CLEAN;
+	}
+
 }}

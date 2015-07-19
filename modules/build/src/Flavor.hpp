@@ -23,6 +23,11 @@ namespace build {
 
 		Flavor& operator=(const Flavor&);
 
+		static const Flavor SHIPPED;
+		static const Flavor CLEAN;
+		static const Flavor STATIC;
+		static const Flavor DYNAMIC;
+
 	};
 
 }}

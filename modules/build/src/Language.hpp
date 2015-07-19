@@ -31,6 +31,8 @@ namespace build {
 			return name;
 		}
 
+		virtual Flavor getShippedSourceFlavor() = 0;
+		virtual Flavor getShippedHeaderFlavor() = 0;
 		virtual ArtifactType classifyFile(const std::string&) = 0;
 		virtual void getSupportedFlavors(Component::Type, util::Appender<Flavor>&) = 0;
 		virtual bool isOneToOne(const Flavor&) = 0;
