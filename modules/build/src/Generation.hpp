@@ -17,7 +17,7 @@ namespace build {
 
 	  public:
 		Generation() {}
-		Generation(const Generation&) {}
+		Generation(const Generation& generation) : ReferenceCounted(generation) {}
 		virtual ~Generation() {}
 
 		virtual void generate(const std::list<ArtifactT*>&, ArtifactT*, BuildContext&) = 0;
