@@ -57,7 +57,19 @@ namespace build {
 
 	Component::Component(const Component& component)
 			: ReferenceCounted(component), type(component.type), name(component.name),
-			baseDirectory(component.baseDirectory) {}
+			baseDirectory(component.baseDirectory), sourceDirectories(component.sourceDirectories),
+			languages(component.languages), preciousArtifacts(component.preciousArtifacts),
+			exposeDirectories(component.exposeDirectories) {
+		FileArtifactIterator pabegin(preciousArtifacts.begin()), paend(preciousArtifacts.end());
+		for(; pabegin != paend; ++pabegin)
+			(*pabegin)->ref();
+	}
+
+	Component::~Component() {
+		FileArtifactIterator pabegin(preciousArtifacts.begin()), paend(preciousArtifacts.end());
+		for(; pabegin != paend; ++pabegin)
+			(*pabegin)->unref();
+	}
 
 	void Component::addSourceDirectory(const string& directory) {
 		if(!directory.empty())
@@ -86,6 +98,49 @@ namespace build {
 	void Component::getLanguages(LanguageIterator& begin, LanguageIterator& end) const {
 		begin = languages.begin();
 		end = languages.end();
+	}
+
+	bool Component::addPreciousArtifact(FileArtifact* file) {
+		if(!file)
+			return false;
+		if(!preciousArtifacts.insert(file).second)
+			return false;
+		file->ref();
+		return true;
+	}
+
+	bool Component::removePreciousArtifact(FileArtifact* file) {
+		if(!preciousArtifacts.erase(file))
+			return false;
+		file->unref();
+		return true;
+	}
+
+	void Component::clearPreciousArtifacts() {
+		FileArtifactIterator pabegin(preciousArtifacts.begin()), paend(preciousArtifacts.end());
+		for(; pabegin != paend; ++pabegin)
+			(*pabegin)->unref();
+		preciousArtifacts.clear();
+	}
+
+	void Component::getPreciousArtifacts(FileArtifactIterator& begin, FileArtifactIterator& end) const {
+		begin = preciousArtifacts.begin();
+		end = preciousArtifacts.end();
+	}
+
+	bool Component::putHeaderExposeDirectory(const Language& language, string& directory) {
+		bool result = exposeDirectories.find(language.getName()) == exposeDirectories.end();
+		exposeDirectories[language.getName()] = directory;
+		return result;
+	}
+
+	bool Component::removeHeaderExposeDirectory(const Language& language) {
+		return exposeDirectories.erase(language.getName());
+	}
+
+	string Component::getHeaderExposeDirectory(const Language& language) const {
+		ExposeDirectories::const_iterator it = exposeDirectories.find(language.getName());
+		return it == exposeDirectories.end() ? "" : it->second;
 	}
 
 	struct PathPair {
@@ -191,14 +246,14 @@ namespace build {
 
 	struct FlavorAppender : public Appender<Flavor> {
 
-		const Component& component;
+		Component& component;
 		LanguageInfo& language;
 		list<LanguageInfo>& languages;
 		Component::BuildDirectoryMapper& directoryMapper;
 		bool addedMoreSources;
 		set<PathPair>& allBuildDirectories;
 
-		FlavorAppender(const Component& component, LanguageInfo& language, list<LanguageInfo>& languages,
+		FlavorAppender(Component& component, LanguageInfo& language, list<LanguageInfo>& languages,
 				Component::BuildDirectoryMapper& directoryMapper, set<PathPair>& allBuildDirectories)
 				: component(component), language(language), languages(languages), directoryMapper(directoryMapper),
 				addedMoreSources(false), allBuildDirectories(allBuildDirectories) {}
@@ -271,7 +326,7 @@ namespace build {
 	};
 
 	void Component::setupRules(BuildDirectoryMapper& directoryMapper, BuildContext& context,
-			ValveInjector* injector) const {
+			ValveInjector* injector) {
 		list<LanguageInfo> langinfo;
 		LanguageIterator lbegin(languages.begin()), lend(languages.end());
 		for(; lbegin != lend; ++lbegin)
@@ -308,6 +363,7 @@ namespace build {
 				FlavorGraph& graph = libegin->getOrMakeFlavorGraph(heflavor);
 				string edtail(directoryMapper.getHeaderExposeDirectory(libegin->language));
 				string exposeDirectory(Pathname::join(baseDirectory, edtail));
+				putHeaderExposeDirectory(libegin->language, exposeDirectory);
 				bool cleanArtifact = exposeDirectory == baseDirectory;
 				if(!cleanArtifact)
 					allBuildDirectories.insert(PathPair(baseDirectory, edtail, libegin->language.getCleanFlavor()));
