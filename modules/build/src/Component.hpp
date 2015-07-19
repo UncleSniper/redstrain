@@ -68,11 +68,13 @@ namespace build {
 		typedef std::set<Language*> Languages;
 		typedef std::set<FileArtifact*> FileArtifacts;
 		typedef std::map<std::string, std::string> ExposeDirectories;
+		typedef std::set<Component*> Components;
 
 	  public:
 		typedef Paths::const_iterator PathIterator;
 		typedef Languages::const_iterator LanguageIterator;
 		typedef FileArtifacts::const_iterator FileArtifactIterator;
+		typedef Components::const_iterator ComponentIterator;
 
 	  private:
 		const Type type;
@@ -81,6 +83,7 @@ namespace build {
 		Languages languages;
 		FileArtifacts preciousArtifacts;
 		ExposeDirectories exposeDirectories;
+		Components dependencies;
 
 	  public:
 		Component(Type, const std::string&, const std::string&);
@@ -115,6 +118,11 @@ namespace build {
 		bool putHeaderExposeDirectory(const Language&, std::string&);
 		bool removeHeaderExposeDirectory(const Language&);
 		std::string getHeaderExposeDirectory(const Language&) const;
+
+		bool addDependency(Component*);
+		bool removeDependency(Component*);
+		void clearDependencies();
+		void getDependencies(ComponentIterator&, ComponentIterator&) const;
 
 		void setupRules(BuildDirectoryMapper&, BuildContext&, ValveInjector* = NULL);
 

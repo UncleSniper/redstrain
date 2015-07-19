@@ -59,16 +59,22 @@ namespace build {
 			: ReferenceCounted(component), type(component.type), name(component.name),
 			baseDirectory(component.baseDirectory), sourceDirectories(component.sourceDirectories),
 			languages(component.languages), preciousArtifacts(component.preciousArtifacts),
-			exposeDirectories(component.exposeDirectories) {
+			exposeDirectories(component.exposeDirectories), dependencies(component.dependencies) {
 		FileArtifactIterator pabegin(preciousArtifacts.begin()), paend(preciousArtifacts.end());
 		for(; pabegin != paend; ++pabegin)
 			(*pabegin)->ref();
+		ComponentIterator depbegin(dependencies.begin()), depend(dependencies.end());
+		for(; depbegin != depend; ++depbegin)
+			(*depbegin)->ref();
 	}
 
 	Component::~Component() {
 		FileArtifactIterator pabegin(preciousArtifacts.begin()), paend(preciousArtifacts.end());
 		for(; pabegin != paend; ++pabegin)
 			(*pabegin)->unref();
+		ComponentIterator depbegin(dependencies.begin()), depend(dependencies.end());
+		for(; depbegin != depend; ++depbegin)
+			(*depbegin)->unref();
 	}
 
 	void Component::addSourceDirectory(const string& directory) {
@@ -141,6 +147,34 @@ namespace build {
 	string Component::getHeaderExposeDirectory(const Language& language) const {
 		ExposeDirectories::const_iterator it = exposeDirectories.find(language.getName());
 		return it == exposeDirectories.end() ? "" : it->second;
+	}
+
+	bool Component::addDependency(Component* component) {
+		if(!component)
+			return false;
+		if(!dependencies.insert(component).second)
+			return false;
+		component->ref();
+		return true;
+	}
+
+	bool Component::removeDependency(Component* component) {
+		if(!dependencies.erase(component))
+			return false;
+		component->unref();
+		return true;
+	}
+
+	void Component::clearDependencies() {
+		ComponentIterator depbegin(dependencies.begin()), depend(dependencies.end());
+		for(; depbegin != depend; ++depbegin)
+			(*depbegin)->unref();
+		dependencies.clear();
+	}
+
+	void Component::getDependencies(ComponentIterator& begin, ComponentIterator& end) const {
+		begin = dependencies.begin();
+		end = dependencies.end();
 	}
 
 	struct PathPair {
