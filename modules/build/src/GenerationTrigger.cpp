@@ -7,37 +7,15 @@ namespace build {
 
 	GenerationTrigger::GenerationTrigger() {}
 
-	struct ArtifactListUnref {
-
-		list<Artifact*>* artifacts;
-
-		ArtifactListUnref(list<Artifact*>* artifacts) : artifacts(artifacts) {}
-
-		~ArtifactListUnref() {
-			if(!artifacts)
-				return;
-			GenerationTrigger::ArtifactIterator begin(artifacts->begin()), end(artifacts->end());
-			for(; begin != end; ++begin)
-				(*begin)->unref();
-		}
-
-	};
-
-	GenerationTrigger::GenerationTrigger(const GenerationTrigger& trigger) : Trigger(trigger) {
-		ArtifactListUnref unrefSources(&sources);
-		ArtifactIterator begin(trigger.sources.begin()), end(trigger.sources.end());
-		for(; begin != end; ++begin) {
-			sources.push_back(*begin);
+	GenerationTrigger::GenerationTrigger(const GenerationTrigger& trigger)
+			: Trigger(trigger), sources(trigger.sources), targets(trigger.targets) {
+		ArtifactIterator begin(sources.begin()), end(sources.end());
+		for(; begin != end; ++begin)
 			(*begin)->ref();
-		}
-		ArtifactListUnref unrefTargets(&targets);
-		begin = trigger.targets.begin();
-		end = trigger.targets.end();
-		for(; begin != end; ++begin) {
-			targets.push_back(*begin);
+		begin = targets.begin();
+		end = targets.end();
+		for(; begin != end; ++begin)
 			(*begin)->ref();
-		}
-		unrefSources.artifacts = unrefTargets.artifacts = NULL;
 	}
 
 	GenerationTrigger::~GenerationTrigger() {

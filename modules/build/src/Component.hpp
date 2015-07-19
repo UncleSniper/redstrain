@@ -50,6 +50,18 @@ namespace build {
 
 		};
 
+		class REDSTRAIN_BUILD_API ValveInjector {
+
+		  public:
+			ValveInjector();
+			ValveInjector(const ValveInjector&);
+			virtual ~ValveInjector();
+
+			virtual void injectIntoTrigger(Trigger&, const Component&, const Language*,
+					const Flavor&, BuildContext&) = 0;
+
+		};
+
 	  private:
 		typedef std::list<std::string> Paths;
 		typedef std::set<Language*> Languages;
@@ -86,7 +98,7 @@ namespace build {
 		bool addLanguage(Language*);
 		void clearLanguages();
 		void getLanguages(LanguageIterator&, LanguageIterator&) const;
-		void setupRules(BuildDirectoryMapper&, BuildContext&) const;
+		void setupRules(BuildDirectoryMapper&, BuildContext&, ValveInjector* = NULL) const;
 
 	};
 

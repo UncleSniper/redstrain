@@ -1,17 +1,22 @@
 #include <map>
+#include <redstrain/util/Ref.hpp>
 #include <redstrain/util/Delete.hpp>
 #include <redstrain/util/StringUtils.hpp>
 #include <redstrain/platform/Pathname.hpp>
 #include <redstrain/platform/Filesystem.hpp>
 
 #include "Flavor.hpp"
-#include "Trigger.hpp"
 #include "Language.hpp"
 #include "FileArtifact.hpp"
+#include "BuildContext.hpp"
+#include "RemoveAction.hpp"
+#include "PresenceTrigger.hpp"
 
 using std::map;
+using std::set;
 using std::list;
 using std::string;
+using redengine::util::Ref;
 using redengine::util::Delete;
 using redengine::util::Appender;
 using redengine::util::StringUtils;
@@ -28,6 +33,22 @@ namespace build {
 	Component::BuildDirectoryMapper::BuildDirectoryMapper(const BuildDirectoryMapper&) {}
 
 	Component::BuildDirectoryMapper::~BuildDirectoryMapper() {}
+
+	// ======== GenerationHolder ========
+
+	Component::GenerationHolder::GenerationHolder() {}
+
+	Component::GenerationHolder::GenerationHolder(const GenerationHolder&) {}
+
+	Component::GenerationHolder::~GenerationHolder() {}
+
+	// ======== ValveInjector ========
+
+	Component::ValveInjector::ValveInjector() {}
+
+	Component::ValveInjector::ValveInjector(const ValveInjector&) {}
+
+	Component::ValveInjector::~ValveInjector() {}
 
 	// ======== Component ========
 
@@ -77,6 +98,14 @@ namespace build {
 
 		PathPair(const PathPair& pair)
 				: directory(pair.directory), basename(pair.basename), flavor(pair.flavor) {}
+
+		bool operator<(const PathPair& pair) const {
+			if(directory < pair.directory)
+				return true;
+			if(directory > pair.directory)
+				return false;
+			return basename < pair.basename;
+		}
 
 	};
 
@@ -167,14 +196,20 @@ namespace build {
 		list<LanguageInfo>& languages;
 		Component::BuildDirectoryMapper& directoryMapper;
 		bool addedMoreSources;
+		set<PathPair>& allBuildDirectories;
 
 		FlavorAppender(const Component& component, LanguageInfo& language, list<LanguageInfo>& languages,
-				Component::BuildDirectoryMapper& directoryMapper) : component(component), language(language),
-				languages(languages), directoryMapper(directoryMapper), addedMoreSources(false) {}
+				Component::BuildDirectoryMapper& directoryMapper, set<PathPair>& allBuildDirectories)
+				: component(component), language(language), languages(languages), directoryMapper(directoryMapper),
+				addedMoreSources(false), allBuildDirectories(allBuildDirectories) {}
 
 		virtual void append(const Flavor& flavor) {
-			string buildDirectory(Pathname::join(component.getBaseDirectory(),
-					directoryMapper.getBuildDirectory(language.language, flavor)));
+			const string& cbase = component.getBaseDirectory();
+			string ctail(directoryMapper.getBuildDirectory(language.language, flavor));
+			string buildDirectory(Pathname::join(cbase, ctail));
+			bool cleanArtifact = buildDirectory == cbase;
+			if(!cleanArtifact)
+				allBuildDirectories.insert(PathPair(cbase, ctail, language.language.getCleanFlavor()));
 			FlavorGraph& graph = language.getOrMakeFlavorGraph(flavor);
 			list<PathPair>::const_iterator sbegin(language.sources.begin()), send(language.sources.end());
 			bool isSingle = language.language.isOneToOne(flavor);
@@ -188,15 +223,17 @@ namespace build {
 					}
 					else {
 						newTrigger = language.language.getGenerationTrigger(sbegin->directory,
-								sbegin->basename, sbegin->flavor, buildDirectory, flavor);
+								sbegin->basename, sbegin->flavor, buildDirectory, flavor, component);
 						graph.singleTrigger = newTrigger;
 					}
 				}
 				else {
 					Delete<Component::GenerationHolder> trigger(language.language.getGenerationTrigger(
-							sbegin->directory, sbegin->basename, sbegin->flavor, buildDirectory, flavor));
-					graph.allTriggers.push_back(*trigger);
-					newTrigger = trigger.set();
+							sbegin->directory, sbegin->basename, sbegin->flavor, buildDirectory, flavor, component));
+					if(*trigger) {
+						graph.allTriggers.push_back(*trigger);
+						newTrigger = trigger.set();
+					}
 				}
 				if(newTrigger) {
 					GenerationTrigger::ArtifactIterator tbegin, tend;
@@ -205,6 +242,9 @@ namespace build {
 						FileArtifact* file = dynamic_cast<FileArtifact*>(*tbegin);
 						if(!file)
 							continue;
+						if(cleanArtifact)
+							allBuildDirectories.insert(PathPair(file->getDirectory(), file->getBasename(),
+									language.language.getCleanFlavor()));
 						list<LanguageInfo>::iterator lbegin(languages.begin()), lend(languages.end());
 						for(; lbegin != lend; ++lbegin) {
 							switch(lbegin->language.classifyFile(file->getPathname())) {
@@ -230,7 +270,8 @@ namespace build {
 
 	};
 
-	void Component::setupRules(BuildDirectoryMapper& directoryMapper, BuildContext&) const {
+	void Component::setupRules(BuildDirectoryMapper& directoryMapper, BuildContext& context,
+			ValveInjector* injector) const {
 		list<LanguageInfo> langinfo;
 		LanguageIterator lbegin(languages.begin()), lend(languages.end());
 		for(; lbegin != lend; ++lbegin)
@@ -244,13 +285,14 @@ namespace build {
 				Filesystem::traverse(srcdir, handler);
 		}
 		// process sources
+		set<PathPair> allBuildDirectories;
 		bool onceMoreWithFeeling;
 		do {
 			onceMoreWithFeeling = false;
 			list<LanguageInfo>::iterator libegin(langinfo.begin()), liend(langinfo.end());
 			for(; libegin != liend; ++libegin) {
 				if(!libegin->sources.empty()) {
-					FlavorAppender fhandler(*this, *libegin, langinfo, directoryMapper);
+					FlavorAppender fhandler(*this, *libegin, langinfo, directoryMapper, allBuildDirectories);
 					libegin->language.getSupportedFlavors(type, fhandler);
 					libegin->sources.clear();
 					if(fhandler.addedMoreSources)
@@ -264,31 +306,102 @@ namespace build {
 			if(!libegin->headers.empty()) {
 				Flavor heflavor = libegin->language.getHeaderExposeTransformFlavor();
 				FlavorGraph& graph = libegin->getOrMakeFlavorGraph(heflavor);
-				string exposeDirectory(Pathname::join(baseDirectory,
-						directoryMapper.getHeaderExposeDirectory(libegin->language)));
+				string edtail(directoryMapper.getHeaderExposeDirectory(libegin->language));
+				string exposeDirectory(Pathname::join(baseDirectory, edtail));
+				bool cleanArtifact = exposeDirectory == baseDirectory;
+				if(!cleanArtifact)
+					allBuildDirectories.insert(PathPair(baseDirectory, edtail, libegin->language.getCleanFlavor()));
 				bool isSingle = libegin->language.isOneToOne(heflavor);
 				list<PathPair>::const_iterator hbegin(libegin->headers.begin()), hend(libegin->headers.end());
 				for(; hbegin != hend; ++hbegin) {
+					GenerationHolder* newTrigger = NULL;
 					if(isSingle) {
 						if(graph.singleTrigger) {
 							Delete<FileArtifact> file(new FileArtifact(hbegin->directory, hbegin->basename));
 							graph.singleTrigger->addSource(*file);
 							file.set();
 						}
-						else
-							graph.singleTrigger = libegin->language.getHeaderExposeTrigger(hbegin->directory,
+						else {
+							newTrigger = libegin->language.getHeaderExposeTrigger(hbegin->directory,
 									hbegin->basename, hbegin->flavor, exposeDirectory, heflavor);
+							graph.singleTrigger = newTrigger;
+						}
 					}
 					else {
 						Delete<GenerationHolder> trigger(libegin->language.getHeaderExposeTrigger(hbegin->directory,
 								hbegin->basename, hbegin->flavor, exposeDirectory, heflavor));
 						graph.allTriggers.push_back(*trigger);
-						trigger.set();
+						newTrigger = trigger.set();
+					}
+					if(newTrigger && cleanArtifact) {
+						GenerationTrigger::ArtifactIterator tbegin, tend;
+						newTrigger->getTargets(tbegin, tend);
+						for(; tbegin != tend; ++tbegin) {
+							FileArtifact* file = dynamic_cast<FileArtifact*>(*tbegin);
+							if(file)
+								allBuildDirectories.insert(PathPair(file->getDirectory(), file->getBasename(),
+										libegin->language.getCleanFlavor()));
+						}
 					}
 				}
 			}
 		}
-		// TODO: commit to context
+		// inject valves
+		if(injector) {
+			libegin = langinfo.begin();
+			liend = langinfo.end();
+			for(; libegin != liend; ++libegin) {
+				map<string, FlavorGraph*>::const_iterator fgbegin(libegin->graphs.begin()),
+						fgend(libegin->graphs.end());
+				for(; fgbegin != fgend; ++fgbegin) {
+					if(fgbegin->second->singleTrigger)
+						injector->injectIntoTrigger(*fgbegin->second->singleTrigger->getTrigger(),
+								*this, &libegin->language, Flavor(fgbegin->first), context);
+					list<GenerationHolder*>::const_iterator ghbegin(fgbegin->second->allTriggers.begin()),
+							ghend(fgbegin->second->allTriggers.end());
+					for(; ghbegin != ghend; ++ghbegin)
+						injector->injectIntoTrigger(*(*ghbegin)->getTrigger(), *this, &libegin->language,
+								Flavor(fgbegin->first), context);
+				}
+			}
+		}
+		// commit to context
+		while(!langinfo.empty()) {
+			LanguageInfo& info = langinfo.front();
+			while(!info.graphs.empty()) {
+				map<string, FlavorGraph*>::iterator fgit(info.graphs.begin());
+				FlavorGraph& graph = *fgit->second;
+				if(graph.singleTrigger) {
+					context.addTrigger(graph.singleTrigger->getTrigger());
+					delete graph.singleTrigger;
+					graph.singleTrigger = NULL;
+					while(!graph.allTriggers.empty()) {
+						GenerationHolder* trigger = graph.allTriggers.front();
+						context.addTrigger(trigger->getTrigger());
+						delete trigger;
+						graph.allTriggers.pop_front();
+					}
+				}
+				delete fgit->second;
+				info.graphs.erase(fgit);
+			}
+			langinfo.pop_front();
+		}
+		// add clean actions
+		set<PathPair>::const_iterator bdbegin(allBuildDirectories.begin()), bdend(allBuildDirectories.end());
+		for(; bdbegin != bdend; ++bdbegin) {
+			Delete<PresenceTrigger> trigger(new PresenceTrigger(PresenceTrigger::ANY));
+			Ref<FileArtifact> file(new FileArtifact(bdbegin->directory, bdbegin->basename));
+			trigger->addArtifact(*file);
+			Delete<RemoveAction> remove(new RemoveAction);
+			remove->addArtifact(*file);
+			trigger->addAction(*remove);
+			remove.set();
+			if(injector)
+				injector->injectIntoTrigger(**trigger, *this, NULL, bdbegin->flavor, context);
+			context.addTrigger(*trigger);
+			trigger.set();
+		}
 	}
 
 }}
