@@ -17,7 +17,7 @@ namespace build {
 
 	BuildContext::BuildContext(const BuildContext& context)
 			: ui(context.ui), triggers(context.triggers), actionQueue(context.actionQueue),
-			actionSet(context.actionSet), valves(context.valves) {
+			actionSet(context.actionSet), valves(context.valves), alreadyPerformed(context.alreadyPerformed) {
 		TriggerIterator tbegin(triggers.begin()), tend(triggers.end());
 		for(; tbegin != tend; ++tbegin)
 			(*tbegin)->ref();
@@ -112,6 +112,14 @@ namespace build {
 		valves.clear();
 	}
 
+	bool BuildContext::wasActionPerformed(Action* action) const {
+		return alreadyPerformed.find(action) != alreadyPerformed.end();
+	}
+
+	void BuildContext::clearPerformedActions() {
+		alreadyPerformed.clear();
+	}
+
 	void BuildContext::spinTriggers() {
 		TriggerIterator begin(triggers.begin()), end(triggers.end());
 		for(; begin != end; ++begin)
@@ -176,6 +184,7 @@ namespace build {
 			Unref<Action> action(buffer.front());
 			buffer.pop_front();
 			action->perform(*this);
+			alreadyPerformed.insert(*action);
 		}
 		unrefQueue.actions = NULL;
 	}
@@ -188,6 +197,7 @@ namespace build {
 			Unref<Action> action(buffer.front());
 			buffer.pop_front();
 			action->wouldPerform(*this);
+			alreadyPerformed.insert(*action);
 		}
 		unrefQueue.actions = NULL;
 	}

@@ -38,6 +38,7 @@ namespace build {
 		ActionQueue actionQueue;
 		ActionSet actionSet;
 		Valves valves;
+		ActionSet alreadyPerformed;
 
 	  private:
 		BuildContext(const BuildContext&);
@@ -63,6 +64,9 @@ namespace build {
 		void addValve(const std::string&, Valve*);
 		bool removeValve(const std::string&);
 		void clearValves();
+
+		bool wasActionPerformed(Action*) const;
+		void clearPerformedActions();
 
 		void spinTriggers();
 		void predictTriggers();
