@@ -23,4 +23,7 @@ namespace redmond {
 #endif /* XAKE_COMPILER switch */
 	;
 
+	//TODO: support cross-compilation
+	extern const OperatingSystem buildTargetOS = buildHostOS;
+
 }}

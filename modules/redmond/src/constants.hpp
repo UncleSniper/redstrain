@@ -25,6 +25,7 @@ namespace redmond {
 
 	REDSTRAIN_REDMOND_API extern const OperatingSystem buildHostOS;
 	REDSTRAIN_REDMOND_API extern const CompilerFlavor buildCompiler;
+	REDSTRAIN_REDMOND_API extern const OperatingSystem buildTargetOS;
 
 }}
 

@@ -78,8 +78,20 @@ namespace boot {
 			RES__LAST
 		};
 
+		enum REDSTRAIN_BUILD_API Defaults {
+			DFL_DEFAULTS,
+			DFL_LINUX_DEFAULTS,
+			DFL_WINDOWS_DEFAULTS
+		};
+
 	  private:
 		text::Properties properties;
+
+	  private:
+		void putBuiltin(const char *const*);
+		void putDefaults();
+		void putLinuxDefaults();
+		void putWindowsDefaults();
 
 	  public:
 		Resources();
@@ -87,6 +99,9 @@ namespace boot {
 
 		bool hasProperty(ID) const;
 		std::string getProperty(ID) const;
+
+		void load(const std::string&);
+		void load(Defaults);
 
 		static const char* getResourceKey(ID);
 
