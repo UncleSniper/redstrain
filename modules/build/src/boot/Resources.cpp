@@ -77,7 +77,10 @@ namespace boot {
 		"make.installed.executable",
 		"skip.header.install",
 		"skip.library.install",
-		"skip.tool.install"
+		"skip.tool.install",
+		"component.name",
+		"component.guard",
+		"depend.modules"
 	};
 
 	Resources::Resources() {}

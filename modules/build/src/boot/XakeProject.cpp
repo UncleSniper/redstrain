@@ -4,6 +4,7 @@
 #include <redstrain/redmond/constants.hpp>
 
 #include "XakeProject.hpp"
+#include "XakeComponent.hpp"
 
 using std::string;
 using redengine::platform::Stat;
@@ -46,5 +47,29 @@ namespace boot {
 
 	XakeProject::XakeProject(const XakeProject& project)
 			: baseDirectory(project.baseDirectory), configuration(project.configuration) {}
+
+	XakeProject::~XakeProject() {
+		ConstComponentIterator begin(components.begin()), end(components.end());
+		for(; begin != end; ++begin)
+			delete begin->second;
+	}
+
+	XakeComponent* XakeProject::getComponent(Component* component) const {
+		ConstComponentIterator it = components.find(component);
+		return it == components.end() ? NULL : it->second;
+	}
+
+	bool XakeProject::addComponent(Component* abstractComponent, XakeComponent* backingComponent) {
+		if(!abstractComponent || !backingComponent)
+			return false;
+		ComponentIterator it = components.find(abstractComponent);
+		if(it == components.end()) {
+			components[abstractComponent] = backingComponent;
+			return true;
+		}
+		if(it->second == backingComponent)
+			return true;
+		return false;
+	}
 
 }}}
