@@ -470,8 +470,10 @@ namespace build {
 					else {
 						Delete<GenerationHolder> trigger(libegin->language.getHeaderExposeTrigger(hbegin->directory,
 								hbegin->basename, hbegin->flavor, exposeDirectory, heflavor));
-						graph.allTriggers.push_back(*trigger);
-						newTrigger = trigger.set();
+						if(*trigger) {
+							graph.allTriggers.push_back(*trigger);
+							newTrigger = trigger.set();
+						}
 					}
 					if(newTrigger && cleanArtifact) {
 						GenerationTrigger::ArtifactIterator tbegin, tend;
