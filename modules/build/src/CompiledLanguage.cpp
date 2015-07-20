@@ -24,11 +24,27 @@ namespace build {
 		return true;
 	}
 
-	Component::GenerationHolder* getGenerationTrigger(const string&, const string&,
-			const Flavor&, const string&, const Flavor&, Component&);
-	Flavor getGeneratedSourceFlavor(const Flavor&, const Flavor&, const string&);
-	Flavor getGeneratedHeaderFlavor(const Flavor&, const Flavor&, const string&);
-	Component::GenerationHolder* getHeaderExposeTrigger(const string&, const string&,
-			const Flavor&, const string&, const Flavor&);
+	/*
+	Component::GenerationHolder* getGenerationTrigger(const string& sourceDirectory, const string& sourceBasename,
+			const Flavor& sourceFlavor, const string& targetDirectory, const Flavor& transformFlavor,
+			Component& component) {
+		//TODO
+	}
+	*/
+
+	Flavor getGeneratedSourceFlavor(const Flavor&, const Flavor& transformFlavor, const string&) {
+		return transformFlavor;
+	}
+
+	Flavor getGeneratedHeaderFlavor(const Flavor&, const Flavor& transformFlavor, const string&) {
+		return transformFlavor;
+	}
+
+	/*
+	Component::GenerationHolder* getHeaderExposeTrigger(const string& sourceDirectory, const string& sourceBasename,
+			const Flavor&, const string& targetDirectory, const Flavor&) {
+		//TODO
+	}
+	*/
 
 }}
