@@ -54,12 +54,12 @@ namespace boot {
 			delete begin->second;
 	}
 
-	XakeComponent* XakeProject::getComponent(Component* component) const {
+	XakeComponent* XakeProject::getComponent(const Component* component) const {
 		ConstComponentIterator it = components.find(component);
 		return it == components.end() ? NULL : it->second;
 	}
 
-	bool XakeProject::addComponent(Component* abstractComponent, XakeComponent* backingComponent) {
+	bool XakeProject::addComponent(const Component* abstractComponent, XakeComponent* backingComponent) {
 		if(!abstractComponent || !backingComponent)
 			return false;
 		ComponentIterator it = components.find(abstractComponent);

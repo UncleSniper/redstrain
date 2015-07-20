@@ -15,7 +15,7 @@ namespace boot {
 	class REDSTRAIN_BUILD_API XakeProject {
 
 	  private:
-		typedef std::map<Component*, XakeComponent*> Components;
+		typedef std::map<const Component*, XakeComponent*> Components;
 		typedef Components::iterator ComponentIterator;
 		typedef Components::const_iterator ConstComponentIterator;
 
@@ -41,8 +41,8 @@ namespace boot {
 			return configuration;
 		}
 
-		XakeComponent* getComponent(Component*) const;
-		bool addComponent(Component*, XakeComponent*);
+		XakeComponent* getComponent(const Component*) const;
+		bool addComponent(const Component*, XakeComponent*);
 
 	};
 

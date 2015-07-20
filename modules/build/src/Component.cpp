@@ -344,7 +344,7 @@ namespace build {
 
 		virtual void append(const Flavor& flavor) {
 			const string& cbase = component.getBaseDirectory();
-			string ctail(directoryMapper.getBuildDirectory(language.language, flavor));
+			string ctail(directoryMapper.getBuildDirectory(component, language.language, flavor));
 			string buildDirectory(Pathname::join(cbase, ctail));
 			bool cleanArtifact = buildDirectory == cbase;
 			if(!cleanArtifact)
@@ -445,7 +445,7 @@ namespace build {
 			if(!libegin->headers.empty()) {
 				Flavor heflavor = libegin->language.getHeaderExposeTransformFlavor();
 				FlavorGraph& graph = libegin->getOrMakeFlavorGraph(heflavor);
-				string edtail(directoryMapper.getHeaderExposeDirectory(libegin->language));
+				string edtail(directoryMapper.getHeaderExposeDirectory(*this, libegin->language));
 				string exposeDirectory(Pathname::join(baseDirectory, edtail));
 				putHeaderExposeDirectory(libegin->language, exposeDirectory);
 				bool cleanArtifact = exposeDirectory == baseDirectory;
