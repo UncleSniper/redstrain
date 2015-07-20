@@ -17,18 +17,49 @@ namespace build {
 		typedef std::map<std::string, Component*> Components;
 		typedef Components::iterator ComponentIterator;
 
+	  public:
+		class REDSTRAIN_BUILD_API ComponentNameIterator {
+
+		  private:
+			Components::const_iterator iterator;
+
+		  public:
+			ComponentNameIterator();
+			ComponentNameIterator(const Components::const_iterator&);
+			ComponentNameIterator(const ComponentNameIterator&);
+
+			const std::string& operator*() const;
+			const std::string* operator->() const;
+			ComponentNameIterator& operator++();
+			ComponentNameIterator operator++(int);
+			bool operator==(const ComponentNameIterator&) const;
+			bool operator!=(const ComponentNameIterator&) const;
+			ComponentNameIterator& operator=(const ComponentNameIterator&);
+
+		};
+
 	  private:
+		const std::string name, baseDirectory;
 		Components components;
 
 	  public:
-		Project();
+		Project(const std::string&, const std::string&);
 		Project(const Project&);
 		~Project();
+
+		inline const std::string& getName() const {
+			return name;
+		}
+
+		inline const std::string& getBaseDirectory() const {
+			return baseDirectory;
+		}
 
 		bool addComponent(Component*);
 		bool removeComponent(Component*);
 		void clearComponents();
 		Component* getComponent(const std::string&) const;
+		void getComponents(ComponentNameIterator&, ComponentNameIterator&) const;
 
 	};
 
