@@ -41,6 +41,8 @@ namespace boot {
 			return configuration;
 		}
 
+		std::string getProjectName() const;
+
 		XakeComponent* getComponent(const Component*) const;
 		bool addComponent(const Component*, XakeComponent*);
 

@@ -54,6 +54,16 @@ namespace boot {
 			delete begin->second;
 	}
 
+	string XakeProject::getProjectName() const {
+		string name(configuration.getProperty(Resources::RES_PROJECT_NAME));
+		if(name.empty()) {
+			string bn(Pathname::basename(Pathname::tidy(baseDirectory)));
+			return bn == Pathname::THIS_DIRECTORY ? "" : bn;
+		}
+		else
+			return name;
+	}
+
 	XakeComponent* XakeProject::getComponent(const Component* component) const {
 		ConstComponentIterator it = components.find(component);
 		return it == components.end() ? NULL : it->second;

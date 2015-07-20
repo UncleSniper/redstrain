@@ -1,7 +1,10 @@
+#include <redstrain/platform/Pathname.hpp>
+
 #include "XakeProject.hpp"
 #include "XakeBuildDirectoryMapper.hpp"
 
 using std::string;
+using redengine::platform::Pathname;
 
 namespace redengine {
 namespace build {
@@ -15,15 +18,16 @@ namespace boot {
 			: BuildDirectoryMapper(mapper), project(mapper.project) {}
 
 	string XakeBuildDirectoryMapper::getBuildDirectory(const Component&, const Language&, const Flavor&) {
-		//TODO
+		//TODO: RES_BUILD_DIRECTORY + RES_STATIC_BUILD_DIRECTORY/RES_DYNAMIC_BUILD_DIRECTORY
 		return "";
 	}
 
-	string XakeBuildDirectoryMapper::getHeaderExposeDirectory(const Component&, const Language&) {
+	string XakeBuildDirectoryMapper::getHeaderExposeDirectory(const Component& component, const Language&) {
 		string directory(project.getProjectConfiguration().getProperty(Resources::RES_HEADER_EXPOSE_DIRECTORY));
 		if(directory.empty())
-			return XakeBuildDirectoryMapper::DEFAULT_HEADER_EXPOSE_DIRECTORY;
-		return directory;
+			directory = XakeBuildDirectoryMapper::DEFAULT_HEADER_EXPOSE_DIRECTORY;
+		directory = Pathname::join(directory, project.getProjectName());
+		return Pathname::join(directory, component.getName());
 	}
 
 }}}
