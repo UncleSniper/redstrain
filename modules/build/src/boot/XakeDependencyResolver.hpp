@@ -18,6 +18,10 @@ namespace boot {
 		XakeDependencyResolver(const XakeProject&);
 		XakeDependencyResolver(const XakeDependencyResolver&);
 
+		inline const XakeProject& getProject() const {
+			return project;
+		}
+
 		virtual void resolveDependencies(const Project&, Component&);
 
 	};
