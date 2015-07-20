@@ -45,6 +45,9 @@ namespace build {
 		virtual Component::GenerationHolder* getHeaderExposeTrigger(const std::string&, const std::string&,
 				const Flavor&, const std::string&, const Flavor&) = 0;
 
+		static ArtifactType classifyFileBySuffix(const std::string&, const char *const*, const char *const*);
+		static void sinkSupportedFlavors(const Flavor *const*, util::Appender<Flavor>&);
+
 	};
 
 }}
