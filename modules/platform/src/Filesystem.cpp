@@ -1146,4 +1146,15 @@ namespace platform {
 			sink.visitFile(baseDirectory);
 	}
 
+	static void mkdirrec(const string& directory) {
+		if(Filesystem::access(directory, Filesystem::FILE_EXISTS))
+			return;
+		mkdirrec(Pathname::dirname(directory, Pathname::LOGICAL));
+		Filesystem::mkdir(directory);
+	}
+
+	void Filesystem::mkdirRecursive(const string& directory) {
+		mkdirrec(Pathname::tidy(Pathname::join(Pathname::getWorkingDirectory(), directory)));
+	}
+
 }}

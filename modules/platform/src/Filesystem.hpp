@@ -182,6 +182,7 @@ namespace platform {
 		static Stat::GroupID getCurrentGroup();
 		static void removeRecursively(const std::string&);
 		static void traverse(const std::string&, TraversalSink&);
+		static void mkdirRecursive(const std::string&);
 
 	};
 
