@@ -6,6 +6,7 @@
 #include "FileCopyAction.hpp"
 #include "CompiledLanguage.hpp"
 #include "CompileGenerationAction.hpp"
+#include "EmptyCompilerConfiguration.hpp"
 
 using std::list;
 using std::string;
@@ -159,6 +160,10 @@ namespace build {
 		ExposeGenerationHolder* holder = new ExposeGenerationHolder(*trigger);
 		trigger.set();
 		return holder;
+	}
+
+	CompilerConfiguration& CompiledLanguage::getCompilerConfiguration(const Flavor&, const Component&) {
+		return EmptyCompilerConfiguration::instance;
 	}
 
 }}

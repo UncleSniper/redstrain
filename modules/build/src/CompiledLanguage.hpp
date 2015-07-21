@@ -54,7 +54,7 @@ namespace build {
 		Compiler& compiler;
 
 	  protected:
-		virtual CompilerConfiguration& getCompilerConfiguration(const Flavor&, const Component&) = 0;
+		virtual CompilerConfiguration& getCompilerConfiguration(const Flavor&, const Component&);
 
 	  public:
 		CompiledLanguage(const std::string&, Compiler&);
