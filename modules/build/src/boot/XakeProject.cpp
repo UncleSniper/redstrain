@@ -33,10 +33,27 @@ namespace boot {
 
 	XakeProject::XakeGCC::XakeGCC(const XakeGCC& gcc) : ExternalTool(gcc), GCC(gcc), project(gcc.project) {}
 
+	// ======== XakeCPPLanguage ========
+
+	XakeProject::XakeCPPLanguage::XakeCPPLanguage(XakeProject& project)
+			: CPPLanguage(*project.getCompiler()), project(project) {}
+
+	XakeProject::XakeCPPLanguage::XakeCPPLanguage(const XakeCPPLanguage& cpp)
+			: CPPLanguage(cpp), project(cpp.project) {}
+
+	CompilerConfiguration& XakeProject::XakeCPPLanguage::getCompilerConfiguration(const Flavor& transformFlavor,
+			const Component& component) {
+		XakeComponent* xcomponent = project.getComponent(&component);
+		if(xcomponent)
+			return *xcomponent;
+		else
+			return CPPLanguage::getCompilerConfiguration(transformFlavor, component);
+	}
+
 	// ======== XakeProject ========
 
 	XakeProject::XakeProject(const string& baseDirectory) : baseDirectory(baseDirectory),
-			compiler(NULL), linker(NULL) {
+			compiler(NULL), linker(NULL), cppLanguage(NULL) {
 		configuration.load(Resources::DFL_DEFAULTS);
 		switch(buildTargetOS) {
 			case OS_LINUX:
@@ -65,12 +82,16 @@ namespace boot {
 
 	XakeProject::XakeProject(const XakeProject& project)
 			: baseDirectory(project.baseDirectory), configuration(project.configuration),
-			compiler(NULL), linker(NULL) {}
+			compiler(NULL), linker(NULL), cppLanguage(NULL) {}
 
 	XakeProject::~XakeProject() {
 		ConstComponentIterator begin(components.begin()), end(components.end());
 		for(; begin != end; ++begin)
 			delete begin->second;
+		if(compiler)
+			delete compiler;
+		if(cppLanguage)
+			delete cppLanguage;
 	}
 
 	string XakeProject::getProjectName() const {
@@ -123,6 +144,7 @@ namespace boot {
 	}
 
 	void XakeProject::setupGCC() {
+		compilerName = "GCC";
 		string executable(configuration.getProperty(Resources::RES_COMPILER_BINARY));
 		if(executable.empty())
 			executable = XakeGCC::DEFAULT_EXECUTABLE;
@@ -135,6 +157,18 @@ namespace boot {
 		compiler = *gcc;
 		linker = *gcc;
 		gcc.set();
+	}
+
+	Language* XakeProject::getCPPLanguage() {
+		if(!cppLanguage)
+			cppLanguage = new XakeCPPLanguage(*this);
+		return cppLanguage;
+	}
+
+	const string& XakeProject::getCompilerName() {
+		if(!compiler)
+			setupCompiler();
+		return compilerName;
 	}
 
 }}}

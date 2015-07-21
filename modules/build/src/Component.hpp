@@ -89,6 +89,7 @@ namespace build {
 		ExposeDirectories exposeDirectories;
 		Components dependencies;
 		ExternalDependencies externalDependencies;
+		std::string buildName;
 
 	  public:
 		Component(Type, const std::string&, const std::string&);
@@ -106,6 +107,12 @@ namespace build {
 		inline const std::string& getBaseDirectory() const {
 			return baseDirectory;
 		}
+
+		inline const std::string& getInternalBuildName() const {
+			return buildName;
+		}
+
+		void setInternalBuildName(const std::string&);
 
 		void addSourceDirectory(const std::string&);
 		void clearSourceDirectories();

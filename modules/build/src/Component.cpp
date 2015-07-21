@@ -78,6 +78,10 @@ namespace build {
 			(*depbegin)->unref();
 	}
 
+	void Component::setInternalBuildName(const string& name) {
+		buildName = name;
+	}
+
 	void Component::addSourceDirectory(const string& directory) {
 		if(!directory.empty())
 			sourceDirectories.push_back(directory);

@@ -1,6 +1,7 @@
 #include <redstrain/platform/Stat.hpp>
 #include <redstrain/platform/Pathname.hpp>
 #include <redstrain/platform/Filesystem.hpp>
+#include <redstrain/redmond/constants.hpp>
 
 #include "XakeProject.hpp"
 #include "XakeComponent.hpp"
@@ -9,6 +10,9 @@ using std::string;
 using redengine::platform::Stat;
 using redengine::platform::Pathname;
 using redengine::platform::Filesystem;
+using redengine::redmond::buildTargetOS;
+using redengine::redmond::OS_LINUX;
+using redengine::redmond::OS_WINDOWS;
 
 namespace redengine {
 namespace build {
@@ -18,8 +22,8 @@ namespace boot {
 	const char *const XakeComponent::DEFAULT_COMMON_TOOLS_PROPERTIES_FILE = "tools.properties";
 	const char *const XakeComponent::DEFAULT_COMPONENT_PROPERTIES_FILE = "component.properties";
 
-	XakeComponent::XakeComponent(const XakeProject& project, const string& baseDirectory, Component::Type type)
-			: project(project), baseDirectory(baseDirectory), type(type) {
+	XakeComponent::XakeComponent(XakeProject& project, const string& baseDirectory, Component::Type type)
+			: project(project), baseDirectory(baseDirectory), type(type), component(NULL) {
 		Resources::ID typeres;
 		const char* typedefault;
 		switch(type) {
@@ -61,8 +65,36 @@ namespace boot {
 		}
 	}
 
-	XakeComponent::XakeComponent(const XakeComponent& component)
-			: project(component.project), baseDirectory(component.baseDirectory), type(component.type),
-			configuration(component.configuration) {}
+	XakeComponent::XakeComponent(const XakeComponent& component) : CompilerConfiguration(component),
+			project(component.project), baseDirectory(component.baseDirectory), type(component.type),
+			configuration(component.configuration), component(component.component) {}
+
+	void XakeComponent::applyConfiguration(Compilation& compilation) {
+		// internal API macro
+		if(component) {
+			const string& buildName = component->getInternalBuildName();
+			if(!buildName.empty())
+				compilation.defineMacro(buildName);
+		}
+		// XAKE_* macros
+		compilation.defineMacro("XAKE_OS_LINUX", "1");
+		compilation.defineMacro("XAKE_OS_WINDOWS", "2");
+		// Note: The host OS of the build we're performing is the
+		//       target OS of this process: This build of redbuild
+		//       was built for buildTargetOS and thus can only run
+		//       on that; making it *our* host.
+		switch(buildTargetOS) {
+			case OS_LINUX:
+				compilation.defineMacro("XAKE_HOST_OS", "XAKE_OS_LINUX");
+				break;
+			case OS_WINDOWS:
+				compilation.defineMacro("XAKE_HOST_OS", "XAKE_OS_WINDOWS");
+				break;
+			default:
+				break;
+		}
+		compilation.defineMacro("XAKE_COMPILER_GCC", "1");
+		compilation.defineMacro("XAKE_COMPILER", project.getCompilerName());
+	}
 
 }}}

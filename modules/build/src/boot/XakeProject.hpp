@@ -6,6 +6,7 @@
 #include "../GCC.hpp"
 #include "Resources.hpp"
 #include "../Component.hpp"
+#include "../CPPLanguage.hpp"
 
 namespace redengine {
 namespace build {
@@ -35,6 +36,24 @@ namespace boot {
 
 		};
 
+		class REDSTRAIN_BUILD_API XakeCPPLanguage : public CPPLanguage {
+
+		  private:
+			const XakeProject& project;
+
+		  protected:
+			virtual CompilerConfiguration& getCompilerConfiguration(const Flavor&, const Component&);
+
+		  public:
+			XakeCPPLanguage(XakeProject&);
+			XakeCPPLanguage(const XakeCPPLanguage&);
+
+			inline const XakeProject& getProject() const {
+				return project;
+			}
+
+		};
+
 	  private:
 		typedef std::map<const Component*, XakeComponent*> Components;
 		typedef Components::iterator ComponentIterator;
@@ -46,6 +65,8 @@ namespace boot {
 		Components components;
 		Compiler* compiler;
 		Linker* linker;
+		XakeCPPLanguage* cppLanguage;
+		std::string compilerName;
 
 	  private:
 		void setupCompiler();
@@ -75,6 +96,8 @@ namespace boot {
 
 		Compiler* getCompiler();
 		Linker* getLinker();
+		Language* getCPPLanguage();
+		const std::string& getCompilerName();
 
 	};
 
