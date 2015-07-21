@@ -66,6 +66,7 @@ namespace text {
 				}
 				if(root == usdo::util::IntegerBounds<uint32_t>::MAX)
 					throw UnrepresentableCharacterError(static_cast<Char16>(value));
+				seekToNode(root);
 				int8_t c;
 				proto.readInt8(c);
 				return c;
