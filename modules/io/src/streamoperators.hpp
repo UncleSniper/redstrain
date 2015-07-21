@@ -6,6 +6,7 @@
 #include <redstrain/util/IntegerBounds.hpp>
 
 #include "FormattedInputStream.hpp"
+#include "IndentingOutputStreamConfig.hpp"
 #include "NumberPrintingOutputStreamConfig.hpp"
 #include "ConfigurableFormattedOutputStream.hpp"
 
@@ -533,6 +534,39 @@ namespace io {
 			default:
 				printInteger<RecordT, unsigned long long, 10u>(stream, value,
 						config.getWidth(), config.getPadRecord());
+				break;
+		}
+		return stream;
+	}
+
+	// indentation for ConfigurableFormattedOutputStream
+
+	template<
+		typename RecordT,
+		typename LinebreakRecordsT,
+		template<StreamConfigSpecialization, typename> class ConfigTemplateT
+	>
+	ConfigurableFormattedOutputStream<RecordT, LinebreakRecordsT, ConfigTemplateT>&
+	operator<<(ConfigurableFormattedOutputStream<RecordT, LinebreakRecordsT, ConfigTemplateT>& stream,
+			IndentingOutputStreamAction action) {
+		IndentingOutputStreamConfig<RecordT>& config
+				= stream.template getConfiguration<IndentingOutputStreamConfig<RecordT> >();
+		switch(action) {
+			case shift:
+				config.shift();
+				break;
+			case unshift:
+				config.unshift();
+				break;
+			case indent:
+				{
+					const std::basic_string<RecordT>& tabulation = config.getTabulation();
+					unsigned level = config.getLevel();
+					for(; level; --level)
+						stream.print(tabulation);
+				}
+				break;
+			default:
 				break;
 		}
 		return stream;
