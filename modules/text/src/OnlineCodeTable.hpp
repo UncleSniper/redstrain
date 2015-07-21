@@ -2,10 +2,13 @@
 #define REDSTRAIN_MOD_TEXT_ONLINECODETABLE_HPP
 
 #include <redstrain/error/handler.hpp>
+#include <redstrain/util/IntegerBounds.hpp>
 #include <redstrain/protostr/ProtocolReader.hpp>
 
+#include "types.hpp"
 #include "CodeTable.hpp"
 #include "MappingLookupIOError.hpp"
+#include "UnrepresentableCharacterError.hpp"
 
 namespace redengine {
 namespace text {
@@ -50,8 +53,8 @@ namespace text {
 			try {
 				stream.close();
 			}
-			catch(const io::IOError& error) {
-				error::wrapError<io::IOError, MappingLookupIOError>(error);
+			catch(const error::IOError& error) {
+				error::wrapError<error::IOError, MappingLookupIOError>(error);
 			}
 		}
 
@@ -59,20 +62,18 @@ namespace text {
 			try {
 				unsigned remaining = static_cast<unsigned>(sizeof(CharT)) * 2u;
 				uint32_t root = static_cast<uint32_t>(0u);
-				for(; root != usdo::util::IntegerBounds<uint32_t>::MAX && remaining; --remaining) {
+				for(; root != util::IntegerBounds<uint32_t>::MAX && remaining; --remaining) {
 					seekToNode(root, static_cast<unsigned>((value >> ((remaining - 1u) * 4u))
 							& static_cast<CharT>(0x0Fu)));
-					proto.readUInt32(root);
+					root = proto.readUInt32();
 				}
-				if(root == usdo::util::IntegerBounds<uint32_t>::MAX)
+				if(root == util::IntegerBounds<uint32_t>::MAX)
 					throw UnrepresentableCharacterError(static_cast<Char16>(value));
 				seekToNode(root);
-				int8_t c;
-				proto.readInt8(c);
-				return c;
+				return static_cast<char>(proto.readInt8());
 			}
-			catch(const io::IOError& error) {
-				error::wrapError<io::IOError, MappingLookupIOError>(error);
+			catch(const error::IOError& error) {
+				error::wrapError<error::IOError, MappingLookupIOError>(error);
 				return '\0';
 			}
 		}
@@ -84,8 +85,8 @@ namespace text {
 				stream.seek(offset, io::Stream::OFFSET_FROM_START);
 				return protostr::readProtocolPrimitive<CharT>(proto);
 			}
-			catch(const io::IOError& error) {
-				error::wrapError<io::IOError, MappingLookupIOError>(error);
+			catch(const error::IOError& error) {
+				error::wrapError<error::IOError, MappingLookupIOError>(error);
 				return static_cast<CharT>(0u);
 			}
 		}
