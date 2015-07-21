@@ -41,7 +41,7 @@ namespace build {
 		class REDSTRAIN_BUILD_API GCCLinkage : public ExternalLinkage {
 
 		  public:
-			GCCLinkage(const std::string&, const std::string&, LinkMode);
+			GCCLinkage(const std::string&, redmond::Architecture, const std::string&, LinkMode);
 			GCCLinkage(const GCCLinkage&);
 
 			virtual void invoke();

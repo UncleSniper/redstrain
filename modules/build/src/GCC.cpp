@@ -13,6 +13,8 @@ using redengine::util::StringUtils;
 using redengine::platform::Pathname;
 using redengine::platform::Filesystem;
 using redengine::redmond::Architecture;
+using redengine::redmond::ARCH_I686;
+using redengine::redmond::ARCH_X86_64;
 
 namespace redengine {
 namespace build {
@@ -37,6 +39,16 @@ namespace build {
 	GCC::GCCCompilation::GCCCompilation(const string& executable, Architecture architecture,
 			const string& source, CompileMode mode) : ExternalCompilation(executable, source, mode) {
 		command.addArgument("-c");
+		switch(architecture) {
+			case ARCH_I686:
+				command.addArgument("-m32");
+				break;
+			case ARCH_X86_64:
+				command.addArgument("-m64");
+				break;
+			default:
+				break;
+		}
 		if(requiresPositionIndependentCode(architecture)) {
 			command.addArgument("-fPIC");
 			command.addArgument("-DPIC");
@@ -79,8 +91,8 @@ namespace build {
 
 	// ======== GCCLinkage ========
 
-	GCC::GCCLinkage::GCCLinkage(const string& executable, const string& target, LinkMode mode)
-			: ExternalLinkage(executable, target, mode) {
+	GCC::GCCLinkage::GCCLinkage(const string& executable, Architecture architecture,
+			const string& target, LinkMode mode) : ExternalLinkage(executable, target, mode) {
 		switch(mode) {
 			case STATIC_EXECUTABLE:
 				command.addArgument("-static");
@@ -95,6 +107,18 @@ namespace build {
 				break;
 			default:
 				break;
+		}
+		if(mode != STATIC_LIBRARY) {
+			switch(architecture) {
+				case ARCH_I686:
+					command.addArgument("-m32");
+					break;
+				case ARCH_X86_64:
+					command.addArgument("-m64");
+					break;
+				default:
+					break;
+			}
 		}
 	}
 
@@ -170,7 +194,8 @@ namespace build {
 	}
 
 	Linkage* GCC::newLinkage(const string& target, Linkage::LinkMode mode) {
-		return new GCCLinkage(mode == Linkage::STATIC_LIBRARY ? arExecutable : getExecutable(), target, mode);
+		return new GCCLinkage(mode == Linkage::STATIC_LIBRARY ? arExecutable : getExecutable(),
+				ExternalLinker::getTargetArchitecture(), target, mode);
 	}
 
 }}
