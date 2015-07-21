@@ -6,6 +6,7 @@
 
 #include "XakeProject.hpp"
 #include "XakeComponent.hpp"
+#include "../BuildContext.hpp"
 #include "../UnsupportedToolchainError.hpp"
 
 using std::string;
@@ -53,7 +54,8 @@ namespace boot {
 	// ======== XakeProject ========
 
 	XakeProject::XakeProject(const string& baseDirectory) : baseDirectory(baseDirectory),
-			compiler(NULL), linker(NULL), cppLanguage(NULL) {
+			compiler(NULL), linker(NULL), cppLanguage(NULL), cleanValve(NULL), buildValve(NULL), modulesValve(NULL),
+			toolsValve(NULL), staticValve(NULL), dynamicValve(NULL) {
 		configuration.load(Resources::DFL_DEFAULTS);
 		switch(buildTargetOS) {
 			case OS_LINUX:
@@ -82,7 +84,8 @@ namespace boot {
 
 	XakeProject::XakeProject(const XakeProject& project)
 			: baseDirectory(project.baseDirectory), configuration(project.configuration),
-			compiler(NULL), linker(NULL), cppLanguage(NULL) {}
+			compiler(NULL), linker(NULL), cppLanguage(NULL), cleanValve(NULL), buildValve(NULL), modulesValve(NULL),
+			toolsValve(NULL), staticValve(NULL), dynamicValve(NULL) {}
 
 	XakeProject::~XakeProject() {
 		ConstComponentIterator begin(components.begin()), end(components.end());
@@ -169,6 +172,42 @@ namespace boot {
 		if(!compiler)
 			setupCompiler();
 		return compilerName;
+	}
+
+	StaticValve* XakeProject::getCleanValve(BuildContext& context) {
+		if(!cleanValve)
+			cleanValve = &context.getOrMakeValve("clean");
+		return cleanValve;
+	}
+
+	StaticValve* XakeProject::getBuildValve(BuildContext& context) {
+		if(!buildValve)
+			buildValve = &context.getOrMakeValve("build");
+		return buildValve;
+	}
+
+	StaticValve* XakeProject::getModulesValve(BuildContext& context) {
+		if(!modulesValve)
+			modulesValve = &context.getOrMakeValve("modules");
+		return modulesValve;
+	}
+
+	StaticValve* XakeProject::getToolsValve(BuildContext& context) {
+		if(!toolsValve)
+			toolsValve = &context.getOrMakeValve("tools");
+		return toolsValve;
+	}
+
+	StaticValve* XakeProject::getStaticValve(BuildContext& context) {
+		if(!staticValve)
+			staticValve = &context.getOrMakeValve("static");
+		return staticValve;
+	}
+
+	StaticValve* XakeProject::getDynamicValve(BuildContext& context) {
+		if(!dynamicValve)
+			dynamicValve = &context.getOrMakeValve("dynamic");
+		return dynamicValve;
 	}
 
 }}}

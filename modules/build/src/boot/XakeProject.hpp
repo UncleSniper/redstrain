@@ -7,6 +7,7 @@
 #include "Resources.hpp"
 #include "../Component.hpp"
 #include "../CPPLanguage.hpp"
+#include "../StaticValve.hpp"
 
 namespace redengine {
 namespace build {
@@ -67,6 +68,7 @@ namespace boot {
 		Linker* linker;
 		XakeCPPLanguage* cppLanguage;
 		std::string compilerName;
+		StaticValve *cleanValve, *buildValve, *modulesValve, *toolsValve, *staticValve, *dynamicValve;
 
 	  private:
 		void setupCompiler();
@@ -98,6 +100,13 @@ namespace boot {
 		Linker* getLinker();
 		Language* getCPPLanguage();
 		const std::string& getCompilerName();
+
+		StaticValve* getCleanValve(BuildContext&);
+		StaticValve* getBuildValve(BuildContext&);
+		StaticValve* getModulesValve(BuildContext&);
+		StaticValve* getToolsValve(BuildContext&);
+		StaticValve* getStaticValve(BuildContext&);
+		StaticValve* getDynamicValve(BuildContext&);
 
 	};
 

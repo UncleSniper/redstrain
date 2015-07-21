@@ -12,18 +12,21 @@ namespace boot {
 	class REDSTRAIN_BUILD_API XakeValveInjector : public Component::ValveInjector {
 
 	  private:
-		const XakeProject& project;
+		XakeProject& project;
 
 	  public:
-		XakeValveInjector(const XakeProject&);
+		XakeValveInjector(XakeProject&);
 		XakeValveInjector(const XakeValveInjector&);
+
+		inline XakeProject& getProject() {
+			return project;
+		}
 
 		inline const XakeProject& getProject() const {
 			return project;
 		}
 
-		virtual void injectIntoTrigger(Trigger&, const Component&, const Language*,
-				const Flavor&, BuildContext&) = 0;
+		virtual void injectIntoTrigger(Trigger&, const Component&, Language*, const Flavor&, BuildContext&) = 0;
 
 	};
 

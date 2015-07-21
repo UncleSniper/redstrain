@@ -58,8 +58,7 @@ namespace build {
 			ValveInjector(const ValveInjector&);
 			virtual ~ValveInjector();
 
-			virtual void injectIntoTrigger(Trigger&, const Component&, const Language*,
-					const Flavor&, BuildContext&) = 0;
+			virtual void injectIntoTrigger(Trigger&, const Component&, Language*, const Flavor&, BuildContext&) = 0;
 
 		};
 
