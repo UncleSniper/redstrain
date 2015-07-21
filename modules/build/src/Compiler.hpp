@@ -29,6 +29,9 @@ namespace build {
 		}
 
 		virtual Compilation* newCompilation(const std::string&, Compilation::CompileMode) = 0;
+		virtual std::string getObjectFileNameForSource(const std::string&) = 0;
+
+		static redmond::Architecture parseArchitecture(const std::string&);
 
 	};
 

@@ -1,3 +1,5 @@
+#include <cstring>
+#include <redstrain/util/StringUtils.hpp>
 #include <redstrain/platform/Pathname.hpp>
 #include <redstrain/platform/Filesystem.hpp>
 
@@ -7,6 +9,7 @@
 using std::list;
 using std::string;
 using redengine::platform::Stat;
+using redengine::util::StringUtils;
 using redengine::platform::Pathname;
 using redengine::platform::Filesystem;
 using redengine::redmond::Architecture;
@@ -145,6 +148,25 @@ namespace build {
 
 	Compilation* GCC::newCompilation(const string& source, Compilation::CompileMode mode) {
 		return new GCCCompilation(getExecutable(), ExternalCompiler::getTargetArchitecture(), source, mode);
+	}
+
+	static const char *const SOURCE_SUFFIXES[] = {
+		".cpp",
+		".cxx",
+		NULL
+	};
+
+	string GCC::getObjectFileNameForSource(const string& source) {
+		const char *const* suffix = SOURCE_SUFFIXES;
+		for(; *suffix; ++suffix) {
+			if(StringUtils::endsWith(source, *suffix))
+				break;
+		}
+		if(*suffix)
+			return source.substr(static_cast<string::size_type>(0u),
+					source.length() - static_cast<string::size_type>(strlen(*suffix))) + ".o";
+		else
+			return source + ".o";
 	}
 
 	Linkage* GCC::newLinkage(const string& target, Linkage::LinkMode mode) {

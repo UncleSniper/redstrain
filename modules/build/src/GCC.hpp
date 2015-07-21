@@ -62,6 +62,7 @@ namespace build {
 		void setARExecutable(const std::string&);
 
 		virtual Compilation* newCompilation(const std::string&, Compilation::CompileMode);
+		virtual std::string getObjectFileNameForSource(const std::string&);
 		virtual Linkage* newLinkage(const std::string&, Linkage::LinkMode);
 
 	};

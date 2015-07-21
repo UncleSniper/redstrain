@@ -3,6 +3,7 @@
 
 #include <map>
 
+#include "../GCC.hpp"
 #include "Resources.hpp"
 #include "../Component.hpp"
 
@@ -14,6 +15,26 @@ namespace boot {
 
 	class REDSTRAIN_BUILD_API XakeProject {
 
+	  public:
+		class REDSTRAIN_BUILD_API XakeGCC : public GCC {
+
+		  public:
+			static const char *const DEFAULT_EXECUTABLE;
+			static const char *const DEFAULT_AR_EXECUTABLE;
+
+		  private:
+			const XakeProject& project;
+
+		  public:
+			XakeGCC(const XakeProject&, const std::string&, const std::string&, redmond::Architecture);
+			XakeGCC(const XakeGCC&);
+
+			inline const XakeProject& getProject() const {
+				return project;
+			}
+
+		};
+
 	  private:
 		typedef std::map<const Component*, XakeComponent*> Components;
 		typedef Components::iterator ComponentIterator;
@@ -23,6 +44,12 @@ namespace boot {
 		const std::string baseDirectory;
 		Resources configuration;
 		Components components;
+		Compiler* compiler;
+		Linker* linker;
+
+	  private:
+		void setupCompiler();
+		void setupGCC();
 
 	  public:
 		XakeProject(const std::string&);
@@ -45,6 +72,9 @@ namespace boot {
 
 		XakeComponent* getComponent(const Component*) const;
 		bool addComponent(const Component*, XakeComponent*);
+
+		Compiler* getCompiler();
+		Linker* getLinker();
 
 	};
 

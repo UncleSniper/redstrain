@@ -80,7 +80,8 @@ namespace boot {
 		"skip.tool.install",
 		"component.name",
 		"component.guard",
-		"depend.modules"
+		"depend.modules",
+		"target.architecture"
 	};
 
 	Resources::Resources() {}

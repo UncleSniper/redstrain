@@ -1,6 +1,8 @@
 #ifndef REDSTRAIN_MOD_BUILD_GENERATIONACTION_HPP
 #define REDSTRAIN_MOD_BUILD_GENERATIONACTION_HPP
 
+#include <cstddef>
+
 #include "Action.hpp"
 #include "Generation.hpp"
 
@@ -61,6 +63,14 @@ namespace build {
 			ArtifactIterator begin(sources.begin()), end(sources.end());
 			for(; begin != end; ++begin)
 				(*begin)->unref();
+		}
+
+		inline Generation<ArtifactT>& getGeneration() {
+			return generation;
+		}
+
+		inline const Generation<ArtifactT>& getGeneration() const {
+			return generation;
 		}
 
 		void addSource(ArtifactT* source) {

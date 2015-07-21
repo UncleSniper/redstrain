@@ -20,4 +20,8 @@ namespace build {
 		return *this;
 	}
 
+	bool Flavor::operator==(const Flavor& flavor) const {
+		return name == flavor.name;
+	}
+
 }}

@@ -1,3 +1,4 @@
+#include <redstrain/util/Delete.hpp>
 #include <redstrain/platform/Stat.hpp>
 #include <redstrain/platform/Pathname.hpp>
 #include <redstrain/platform/Filesystem.hpp>
@@ -5,11 +6,14 @@
 
 #include "XakeProject.hpp"
 #include "XakeComponent.hpp"
+#include "../UnsupportedToolchainError.hpp"
 
 using std::string;
+using redengine::util::Delete;
 using redengine::platform::Stat;
 using redengine::platform::Pathname;
 using redengine::platform::Filesystem;
+using redengine::redmond::Architecture;
 using redengine::redmond::OS_LINUX;
 using redengine::redmond::OS_WINDOWS;
 using redengine::redmond::buildTargetOS;
@@ -18,7 +22,21 @@ namespace redengine {
 namespace build {
 namespace boot {
 
-	XakeProject::XakeProject(const string& baseDirectory) : baseDirectory(baseDirectory) {
+	// ======== XakeGCC ========
+
+	const char *const XakeProject::XakeGCC::DEFAULT_EXECUTABLE = "g++";
+	const char *const XakeProject::XakeGCC::DEFAULT_AR_EXECUTABLE = "ar";
+
+	XakeProject::XakeGCC::XakeGCC(const XakeProject& project, const string& executable, const string& arExecutable,
+			Architecture architecture) : ExternalTool(executable), GCC(executable, arExecutable, architecture),
+			project(project) {}
+
+	XakeProject::XakeGCC::XakeGCC(const XakeGCC& gcc) : ExternalTool(gcc), GCC(gcc), project(gcc.project) {}
+
+	// ======== XakeProject ========
+
+	XakeProject::XakeProject(const string& baseDirectory) : baseDirectory(baseDirectory),
+			compiler(NULL), linker(NULL) {
 		configuration.load(Resources::DFL_DEFAULTS);
 		switch(buildTargetOS) {
 			case OS_LINUX:
@@ -46,7 +64,8 @@ namespace boot {
 	}
 
 	XakeProject::XakeProject(const XakeProject& project)
-			: baseDirectory(project.baseDirectory), configuration(project.configuration) {}
+			: baseDirectory(project.baseDirectory), configuration(project.configuration),
+			compiler(NULL), linker(NULL) {}
 
 	XakeProject::~XakeProject() {
 		ConstComponentIterator begin(components.begin()), end(components.end());
@@ -80,6 +99,42 @@ namespace boot {
 		if(it->second == backingComponent)
 			return true;
 		return false;
+	}
+
+	Compiler* XakeProject::getCompiler() {
+		if(!compiler)
+			setupCompiler();
+		return compiler;
+	}
+
+
+	Linker* XakeProject::getLinker() {
+		if(!linker)
+			setupCompiler();
+		return linker;
+	}
+
+	void XakeProject::setupCompiler() {
+		string flavor(configuration.getProperty(Resources::RES_COMPILER_FLAVOR));
+		if(flavor.empty() || flavor == "gcc")
+			setupGCC();
+		else
+			throw UnsupportedToolchainError(flavor);
+	}
+
+	void XakeProject::setupGCC() {
+		string executable(configuration.getProperty(Resources::RES_COMPILER_BINARY));
+		if(executable.empty())
+			executable = XakeGCC::DEFAULT_EXECUTABLE;
+		string arExecutable(configuration.getProperty(Resources::RES_STATIC_LINKER_BINARY));
+		if(arExecutable.empty())
+			arExecutable = XakeGCC::DEFAULT_AR_EXECUTABLE;
+		string arch(configuration.getProperty(Resources::RES_RSB_TARGET_ARCHITECTURE));
+		Architecture architecture = arch.empty() ? REDSTRAIN_BUILD_DEFAULT_ARCH : Compiler::parseArchitecture(arch);
+		Delete<XakeGCC> gcc(new XakeGCC(*this, executable, arExecutable, architecture));
+		compiler = *gcc;
+		linker = *gcc;
+		gcc.set();
 	}
 
 }}}
