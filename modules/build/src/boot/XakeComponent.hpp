@@ -29,6 +29,10 @@ namespace boot {
 		XakeComponent(XakeProject&, const std::string&, Component::Type);
 		XakeComponent(const XakeComponent&);
 
+		inline XakeProject& getProject() {
+			return project;
+		}
+
 		inline const XakeProject& getProject() const {
 			return project;
 		}
