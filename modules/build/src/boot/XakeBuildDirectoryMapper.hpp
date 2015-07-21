@@ -13,13 +13,20 @@ namespace boot {
 
 	  public:
 		static const char *const DEFAULT_HEADER_EXPOSE_DIRECTORY;
+		static const char *const DEFAULT_BUILD_DIRECTORY;
+		static const char *const DEFAULT_STATIC_BUILD_DIRECTORY;
+		static const char *const DEFAULT_DYNAMIC_BUILD_DIRECTORY;
 
 	  private:
-		const XakeProject& project;
+		XakeProject& project;
 
 	  public:
-		XakeBuildDirectoryMapper(const XakeProject&);
+		XakeBuildDirectoryMapper(XakeProject&);
 		XakeBuildDirectoryMapper(const XakeBuildDirectoryMapper&);
+
+		inline XakeProject& getProject() {
+			return project;
+		}
 
 		inline const XakeProject& getProject() const {
 			return project;
