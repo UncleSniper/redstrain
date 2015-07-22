@@ -29,6 +29,8 @@ using redengine::util::IntegerBits;
 namespace redengine {
 namespace platform {
 
+	// ======== FSInfo ========
+
 	Filesystem::FSInfo::FSInfo() : type(UNKNOWNFS), totalBlocks(static_cast<size_t>(0u)),
 			freeBlocks(static_cast<size_t>(0u)), totalINodes(static_cast<size_t>(0u)),
 			freeINodes(static_cast<size_t>(0u)), nameLength(static_cast<size_t>(0u)) {}
@@ -46,6 +48,16 @@ namespace platform {
 		nameLength = info.nameLength;
 		return *this;
 	}
+
+	// ======== TraversalSink ========
+
+	Filesystem::TraversalSink::TraversalSink() {}
+
+	Filesystem::TraversalSink::TraversalSink(const TraversalSink&) {}
+
+	Filesystem::TraversalSink::~TraversalSink() {}
+
+	// ======== Filesystem ========
 
 #if REDSTRAIN_PLATFORM_OS == REDSTRAIN_PLATFORM_OS_UNIX
 

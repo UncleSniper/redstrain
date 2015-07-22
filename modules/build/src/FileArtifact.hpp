@@ -26,7 +26,7 @@ namespace build {
 			return basename;
 		}
 
-		std::string getPathname();
+		std::string getPathname() const;
 
 		virtual bool isPresent();
 		virtual time_t getModificationTimestamp();

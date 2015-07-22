@@ -19,6 +19,10 @@ namespace build {
 	FileArtifact::FileArtifact(const FileArtifact& artifact)
 			: Artifact(artifact), directory(artifact.directory), basename(artifact.basename) {}
 
+	string FileArtifact::getPathname() const {
+		return Pathname::join(directory, basename);
+	}
+
 	bool FileArtifact::isPresent() {
 		return Filesystem::access(Pathname::join(directory, basename), Filesystem::FILE_EXISTS);
 	}

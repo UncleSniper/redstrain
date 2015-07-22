@@ -38,6 +38,22 @@ namespace build {
 
 	ProjectBuilder::ComponentFactory::~ComponentFactory() {}
 
+	// ======== DependencyResolver ========
+
+	ProjectBuilder::DependencyResolver::DependencyResolver() {}
+
+	ProjectBuilder::DependencyResolver::DependencyResolver(const DependencyResolver&) {}
+
+	ProjectBuilder::DependencyResolver::~DependencyResolver() {}
+
+	// ======== RuleBuilder ========
+
+	ProjectBuilder::RuleBuilder::RuleBuilder() {}
+
+	ProjectBuilder::RuleBuilder::RuleBuilder(const RuleBuilder&) {}
+
+	ProjectBuilder::RuleBuilder::~RuleBuilder() {}
+
 	// ======== ProjectBuilder ========
 
 	ProjectBuilder::ProjectBuilder(ProjectFactory& projectFactory, ComponentFinder& finder,
