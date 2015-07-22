@@ -1,8 +1,20 @@
+#ifdef TESTING_REDSTRAIN_BUILD_API
+#include <redstrain/io/streamoperators.hpp>
+#endif /* TESTING_REDSTRAIN_BUILD_API */
+
 #include "Action.hpp"
 #include "StratumValve.hpp"
 #include "BuildContext.hpp"
 
 using std::set;
+#ifdef TESTING_REDSTRAIN_BUILD_API
+using redengine::io::DefaultConfiguredOutputStream;
+using redengine::io::endln;
+using redengine::io::shift;
+using redengine::io::indent;
+using redengine::io::unshift;
+using redengine::io::operator<<;
+#endif /* TESTING_REDSTRAIN_BUILD_API */
 
 namespace redengine {
 namespace build {
@@ -59,5 +71,17 @@ namespace build {
 		}
 		return true;
 	}
+
+#ifdef TESTING_REDSTRAIN_BUILD_API
+	void StratumValve::dumpValve(DefaultConfiguredOutputStream<char>::Stream& stream) const {
+		stream << indent << "StratumValve " << this << " {" << endln << shift;
+		stream << indent << "actions = {" << endln << shift;
+		ActionIterator abegin(actions.begin()), aend(actions.end());
+		for(; abegin != aend; ++abegin)
+			(*abegin)->dumpAction(stream);
+		stream << unshift << indent << '}' << endln;
+		stream << unshift << indent << '}' << endln;
+	}
+#endif /* TESTING_REDSTRAIN_BUILD_API */
 
 }}

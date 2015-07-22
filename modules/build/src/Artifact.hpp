@@ -3,6 +3,9 @@
 
 #include <time.h>
 #include <redstrain/util/ReferenceCounted.hpp>
+#ifdef TESTING_REDSTRAIN_BUILD_API
+#include <redstrain/io/streamtypes.hpp>
+#endif /* TESTING_REDSTRAIN_BUILD_API */
 
 #include "api.hpp"
 
@@ -69,6 +72,10 @@ namespace build {
 		virtual bool isPresent() = 0;
 		virtual time_t getModificationTimestamp() = 0;
 		virtual void remove() = 0;
+
+#ifdef TESTING_REDSTRAIN_BUILD_API
+		virtual void dumpArtifact(io::DefaultConfiguredOutputStream<char>::Stream&) const = 0;
+#endif /* TESTING_REDSTRAIN_BUILD_API */
 
 	};
 

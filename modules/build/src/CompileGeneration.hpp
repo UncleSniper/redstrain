@@ -47,6 +47,10 @@ namespace build {
 
 		virtual void generate(const std::list<FileArtifact*>&, FileArtifact*, BuildContext&);
 
+#ifdef TESTING_REDSTRAIN_BUILD_API
+		virtual void dumpGeneration(io::DefaultConfiguredOutputStream<char>::Stream&) const;
+#endif /* TESTING_REDSTRAIN_BUILD_API */
+
 	};
 
 }}

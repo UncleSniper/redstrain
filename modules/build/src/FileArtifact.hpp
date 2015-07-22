@@ -32,6 +32,10 @@ namespace build {
 		virtual time_t getModificationTimestamp();
 		virtual void remove();
 
+#ifdef TESTING_REDSTRAIN_BUILD_API
+		virtual void dumpArtifact(io::DefaultConfiguredOutputStream<char>::Stream&) const;
+#endif /* TESTING_REDSTRAIN_BUILD_API */
+
 	};
 
 }}

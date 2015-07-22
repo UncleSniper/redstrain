@@ -1,5 +1,8 @@
 #include <redstrain/platform/Pathname.hpp>
 #include <redstrain/platform/Filesystem.hpp>
+#ifdef TESTING_REDSTRAIN_BUILD_API
+#include <redstrain/io/streamoperators.hpp>
+#endif /* TESTING_REDSTRAIN_BUILD_API */
 
 #include "FileArtifact.hpp"
 
@@ -7,6 +10,14 @@ using std::string;
 using redengine::platform::Stat;
 using redengine::platform::Pathname;
 using redengine::platform::Filesystem;
+#ifdef TESTING_REDSTRAIN_BUILD_API
+using redengine::io::DefaultConfiguredOutputStream;
+using redengine::io::endln;
+using redengine::io::shift;
+using redengine::io::indent;
+using redengine::io::unshift;
+using redengine::io::operator<<;
+#endif /* TESTING_REDSTRAIN_BUILD_API */
 
 namespace redengine {
 namespace build {
@@ -38,5 +49,14 @@ namespace build {
 		if(Filesystem::access(pathname, Filesystem::FILE_EXISTS))
 			Filesystem::removeRecursively(pathname);
 	}
+
+#ifdef TESTING_REDSTRAIN_BUILD_API
+	void FileArtifact::dumpArtifact(DefaultConfiguredOutputStream<char>::Stream& stream) const {
+		stream << indent << "FileArtifact " << this << " {" << endln << shift;
+		stream << indent << "directory = '" << directory << '\'' << endln;
+		stream << indent << "basename = '" << basename << '\'' << endln;
+		stream << unshift << indent << '}' << endln;
+	}
+#endif /* TESTING_REDSTRAIN_BUILD_API */
 
 }}

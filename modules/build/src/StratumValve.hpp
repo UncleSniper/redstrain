@@ -31,6 +31,10 @@ namespace build {
 
 		virtual bool isOpen(BuildContext&);
 
+#ifdef TESTING_REDSTRAIN_BUILD_API
+		virtual void dumpValve(io::DefaultConfiguredOutputStream<char>::Stream&) const;
+#endif /* TESTING_REDSTRAIN_BUILD_API */
+
 	};
 
 }}

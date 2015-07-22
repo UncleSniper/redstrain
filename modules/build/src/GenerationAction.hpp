@@ -2,6 +2,9 @@
 #define REDSTRAIN_MOD_BUILD_GENERATIONACTION_HPP
 
 #include <cstddef>
+#ifdef TESTING_REDSTRAIN_BUILD_API
+#include <redstrain/io/streamoperators.hpp>
+#endif /* TESTING_REDSTRAIN_BUILD_API */
 
 #include "Action.hpp"
 #include "Generation.hpp"
@@ -114,6 +117,39 @@ namespace build {
 			if(target)
 				target->wouldModify();
 		}
+
+		virtual void notifyUIWillPerform(BuildUI&) const {
+			//TODO
+		}
+
+		virtual void notifyUIWouldPerform(BuildUI&) const {
+			//TODO
+		}
+
+#ifdef TESTING_REDSTRAIN_BUILD_API
+		virtual void dumpAction(io::DefaultConfiguredOutputStream<char>::Stream& stream) const {
+			using redengine::io::endln;
+			using redengine::io::shift;
+			using redengine::io::indent;
+			using redengine::io::unshift;
+			using redengine::io::operator<<;
+			stream << indent << "GenerationAction " << this << " {" << endln << shift;
+			stream << indent << "generation ->" << endln << shift;
+			generation.dumpGeneration(stream);
+			stream << unshift;
+			stream << indent << "sources = {" << endln << shift;
+			ArtifactIterator sbegin(sources.begin()), send(sources.end());
+			for(; sbegin != send; ++sbegin)
+				(*sbegin)->dumpArtifact(stream);
+			stream << unshift << indent << '}' << endln;
+			if(target) {
+				stream << indent << "target ->" << endln << shift;
+				target->dumpArtifact(stream);
+				stream << unshift;
+			}
+			stream << unshift << indent << '}' << endln;
+		}
+#endif /* TESTING_REDSTRAIN_BUILD_API */
 
 	};
 

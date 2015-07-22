@@ -1,4 +1,7 @@
 #include <cstddef>
+#ifdef TESTING_REDSTRAIN_BUILD_API
+#include <redstrain/io/streamoperators.hpp>
+#endif /* TESTING_REDSTRAIN_BUILD_API */
 
 #include "Valve.hpp"
 #include "Action.hpp"
@@ -7,6 +10,14 @@
 
 using std::set;
 using std::list;
+#ifdef TESTING_REDSTRAIN_BUILD_API
+using redengine::io::DefaultConfiguredOutputStream;
+using redengine::io::endln;
+using redengine::io::shift;
+using redengine::io::indent;
+using redengine::io::unshift;
+using redengine::io::operator<<;
+#endif /* TESTING_REDSTRAIN_BUILD_API */
 
 namespace redengine {
 namespace build {
@@ -117,5 +128,22 @@ namespace build {
 		for(; begin != end; ++begin)
 			context.queueAction(*begin);
 	}
+
+#ifdef TESTING_REDSTRAIN_BUILD_API
+	void Trigger::dumpTriggerAspects(DefaultConfiguredOutputStream<char>::Stream& stream) const {
+		// actions
+		stream << indent << "actions = {" << endln << shift;
+		ActionIterator abegin(actions.begin()), aend(actions.end());
+		for(; abegin != aend; ++abegin)
+			(*abegin)->dumpAction(stream);
+		stream << unshift << indent << '}' << endln;
+		// valves
+		stream << indent << "valves = {" << endln << shift;
+		ValveIterator vbegin(valves.begin()), vend(valves.end());
+		for(; vbegin != vend; ++vbegin)
+			(*vbegin)->dumpValve(stream);
+		stream << unshift << indent << '}' << endln;
+	}
+#endif /* TESTING_REDSTRAIN_BUILD_API */
 
 }}

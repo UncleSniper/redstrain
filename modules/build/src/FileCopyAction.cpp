@@ -3,6 +3,9 @@
 #include <redstrain/io/FileInputStream.hpp>
 #include <redstrain/io/FileOutputStream.hpp>
 #include <redstrain/platform/Filesystem.hpp>
+#ifdef TESTING_REDSTRAIN_BUILD_API
+#include <redstrain/io/streamoperators.hpp>
+#endif /* TESTING_REDSTRAIN_BUILD_API */
 
 #include "FileArtifact.hpp"
 #include "FileCopyAction.hpp"
@@ -13,6 +16,14 @@ using redengine::io::StreamCloser;
 using redengine::io::FileInputStream;
 using redengine::io::FileOutputStream;
 using redengine::platform::Filesystem;
+#ifdef TESTING_REDSTRAIN_BUILD_API
+using redengine::io::DefaultConfiguredOutputStream;
+using redengine::io::endln;
+using redengine::io::shift;
+using redengine::io::indent;
+using redengine::io::unshift;
+using redengine::io::operator<<;
+#endif /* TESTING_REDSTRAIN_BUILD_API */
 
 namespace redengine {
 namespace build {
@@ -56,5 +67,27 @@ namespace build {
 		if(source.wouldBePresent())
 			destination.wouldModify();
 	}
+
+	void FileCopyAction::notifyUIWillPerform(BuildUI&) const {
+		//TODO
+	}
+
+	void FileCopyAction::notifyUIWouldPerform(BuildUI&) const {
+		//TODO
+	}
+
+#ifdef TESTING_REDSTRAIN_BUILD_API
+	void FileCopyAction::dumpAction(DefaultConfiguredOutputStream<char>::Stream& stream) const {
+		stream << indent << "FileCopyAction " << this << " {" << endln << shift;
+		stream << indent << "source ->" << endln << shift;
+		source.dumpArtifact(stream);
+		stream << unshift;
+		stream << indent << "destination ->" << endln << shift;
+		destination.dumpArtifact(stream);
+		stream << unshift;
+		stream << indent << "preservePermissions = " << (preservePermissions ? "true" : "false") << endln;
+		stream << unshift << indent << '}' << endln;
+	}
+#endif /* TESTING_REDSTRAIN_BUILD_API */
 
 }}
