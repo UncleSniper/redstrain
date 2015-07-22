@@ -1,7 +1,7 @@
 #ifndef REDSTRAIN_MOD_UTIL_INTEGERTYPEBYTRAITS_HPP
 #define REDSTRAIN_MOD_UTIL_INTEGERTYPEBYTRAITS_HPP
 
-#include <new>
+#include <cstddef>
 #include <stdint.h>
 
 namespace redengine {
