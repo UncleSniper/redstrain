@@ -32,7 +32,7 @@ namespace boot {
 			string name(StringUtils::trim(dependency));
 			if(name.empty())
 				return;
-			Component* dc = project.getComponent(name);
+			Component* dc = project.getComponent(Project::LIBRARY, name);
 			if(!dc)
 				throw UnresolvedComponentDependencyError(component.getName(), name);
 			component.addDependency(dc);

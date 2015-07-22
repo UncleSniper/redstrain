@@ -7,6 +7,30 @@ using std::string;
 namespace redengine {
 namespace build {
 
+	// ======== ComponentReference ========
+
+	Project::ComponentReference::ComponentReference(ComponentCategory category, const string& name)
+			: category(category), name(name) {}
+
+	Project::ComponentReference::ComponentReference(const ComponentReference& reference)
+			: category(reference.category), name(reference.name) {}
+
+	bool Project::ComponentReference::operator==(const ComponentReference& reference) const {
+		return category == reference.category && name == reference.name;
+	}
+
+	bool Project::ComponentReference::operator!=(const ComponentReference& reference) const {
+		return category != reference.category || name != reference.name;
+	}
+
+	bool Project::ComponentReference::operator<(const ComponentReference& reference) const {
+		if(category < reference.category)
+			return true;
+		if(category > reference.category)
+			return false;
+		return name < reference.name;
+	}
+
 	// ======== ComponentNameIterator ========
 
 	Project::ComponentNameIterator::ComponentNameIterator() {}
@@ -17,11 +41,11 @@ namespace build {
 	Project::ComponentNameIterator::ComponentNameIterator(const ComponentNameIterator& iterator)
 			: iterator(iterator.iterator) {}
 
-	const string& Project::ComponentNameIterator::operator*() const {
+	const Project::ComponentReference& Project::ComponentNameIterator::operator*() const {
 		return iterator->first;
 	}
 
-	const string* Project::ComponentNameIterator::operator->() const {
+	const Project::ComponentReference* Project::ComponentNameIterator::operator->() const {
 		return &iterator->first;
 	}
 
@@ -70,18 +94,19 @@ namespace build {
 	bool Project::addComponent(Component* component) {
 		if(!component)
 			return false;
-		const string& name = component->getName();
-		ComponentIterator it = components.find(name);
+		ComponentReference ref(component->getType() == Component::EXECUTABLE ? EXECUTABLE : LIBRARY,
+				component->getName());
+		ComponentIterator it = components.find(ref);
 		if(it != components.end()) {
 			Component* old = it->second;
 			if(old == component)
 				return false;
-			components[name] = component;
+			components[ref] = component;
 			component->ref();
 			old->unref();
 		}
 		else {
-			components[name] = component;
+			components[ref] = component;
 			component->ref();
 		}
 		return true;
@@ -90,8 +115,9 @@ namespace build {
 	bool Project::removeComponent(Component* component) {
 		if(!component)
 			return false;
-		const string& name = component->getName();
-		ComponentIterator it = components.find(name);
+		ComponentReference ref(component->getType() == Component::EXECUTABLE ? EXECUTABLE : LIBRARY,
+				component->getName());
+		ComponentIterator it = components.find(ref);
 		if(it == components.end() || it->second != component)
 			return false;
 		components.erase(it);
@@ -106,8 +132,13 @@ namespace build {
 		components.clear();
 	}
 
-	Component* Project::getComponent(const string& name) const {
-		map<string, Component*>::const_iterator it = components.find(name);
+	Component* Project::getComponent(ComponentCategory category, const string& name) const {
+		map<ComponentReference, Component*>::const_iterator it = components.find(ComponentReference(category, name));
+		return it == components.end() ? NULL : it->second;
+	}
+
+	Component* Project::getComponent(const ComponentReference& reference) const {
+		map<ComponentReference, Component*>::const_iterator it = components.find(reference);
 		return it == components.end() ? NULL : it->second;
 	}
 

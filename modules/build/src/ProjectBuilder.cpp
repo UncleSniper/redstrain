@@ -81,7 +81,8 @@ namespace build {
 		Unref<Component> component(componentFactory.newComponent(*project, baseDirectory, type));
 		if(!*component)
 			return;
-		if(project->getComponent(component->getName()))
+		if(project->getComponent(component->getType() == Component::EXECUTABLE
+				? Project::EXECUTABLE : Project::LIBRARY, component->getName()))
 			throw IllegalArgumentError("A component named '" + component->getName()
 					+ "' already exists in the project");
 		project->addComponent(*component);

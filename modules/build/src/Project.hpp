@@ -13,8 +13,38 @@ namespace build {
 
 	class REDSTRAIN_BUILD_API Project {
 
+	  public:
+		enum REDSTRAIN_BUILD_API ComponentCategory {
+			LIBRARY,
+			EXECUTABLE
+		};
+
+		class REDSTRAIN_BUILD_API ComponentReference {
+
+		  private:
+			const ComponentCategory category;
+			const std::string name;
+
+		  public:
+			ComponentReference(ComponentCategory, const std::string&);
+			ComponentReference(const ComponentReference&);
+
+			inline ComponentCategory getCategory() const {
+				return category;
+			}
+
+			inline const std::string& getName() const {
+				return name;
+			}
+
+			bool operator==(const ComponentReference&) const;
+			bool operator!=(const ComponentReference&) const;
+			bool operator<(const ComponentReference&) const;
+
+		};
+
 	  private:
-		typedef std::map<std::string, Component*> Components;
+		typedef std::map<ComponentReference, Component*> Components;
 		typedef Components::iterator ComponentIterator;
 
 	  public:
@@ -28,8 +58,8 @@ namespace build {
 			ComponentNameIterator(const Components::const_iterator&);
 			ComponentNameIterator(const ComponentNameIterator&);
 
-			const std::string& operator*() const;
-			const std::string* operator->() const;
+			const ComponentReference& operator*() const;
+			const ComponentReference* operator->() const;
 			ComponentNameIterator& operator++();
 			ComponentNameIterator operator++(int);
 			bool operator==(const ComponentNameIterator&) const;
@@ -58,7 +88,8 @@ namespace build {
 		bool addComponent(Component*);
 		bool removeComponent(Component*);
 		void clearComponents();
-		Component* getComponent(const std::string&) const;
+		Component* getComponent(ComponentCategory, const std::string&) const;
+		Component* getComponent(const ComponentReference&) const;
 		void getComponents(ComponentNameIterator&, ComponentNameIterator&) const;
 
 	};
