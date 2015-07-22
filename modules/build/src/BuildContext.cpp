@@ -3,6 +3,7 @@
 
 #include "Action.hpp"
 #include "Trigger.hpp"
+#include "BuildUI.hpp"
 #include "ValveGroup.hpp"
 #include "StaticValve.hpp"
 #include "BuildContext.hpp"
@@ -236,6 +237,7 @@ namespace build {
 		while(!buffer.empty()) {
 			Unref<Action> action(buffer.front());
 			buffer.pop_front();
+			ui.willPerformAction(**action);
 			action->perform(*this);
 			alreadyPerformed.insert(*action);
 		}
@@ -249,6 +251,7 @@ namespace build {
 		while(!buffer.empty()) {
 			Unref<Action> action(buffer.front());
 			buffer.pop_front();
+			ui.wouldPerformAction(**action);
 			action->wouldPerform(*this);
 			alreadyPerformed.insert(*action);
 		}

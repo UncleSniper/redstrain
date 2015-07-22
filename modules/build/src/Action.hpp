@@ -8,6 +8,7 @@
 namespace redengine {
 namespace build {
 
+	class BuildUI;
 	class BuildContext;
 
 	class REDSTRAIN_BUILD_API Action : public util::ReferenceCounted {
@@ -18,6 +19,8 @@ namespace build {
 
 		virtual void perform(BuildContext&) = 0;
 		virtual void wouldPerform(BuildContext&) = 0;
+		virtual void notifyUIWillPerform(BuildUI&) const = 0;
+		virtual void notifyUIWouldPerform(BuildUI&) const = 0;
 
 	};
 
