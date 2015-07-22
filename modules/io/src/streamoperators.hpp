@@ -4,6 +4,7 @@
 #include <redstrain/util/IntegerLog.hpp>
 #include <redstrain/util/IntegerBits.hpp>
 #include <redstrain/util/IntegerBounds.hpp>
+#include <redstrain/util/IntegerTypeByTraits.hpp>
 
 #include "FormattedInputStream.hpp"
 #include "IndentingOutputStreamConfig.hpp"
@@ -242,6 +243,13 @@ namespace io {
 		return stream;
 	}
 
+	template<typename RecordT, typename ObjectT>
+	OutputStream<RecordT>& operator<<(OutputStream<RecordT>& stream, const ObjectT* value) {
+		typedef typename util::IntegerTypeByTraits<sizeof(ObjectT*), false>::StandardType IntPointer;
+		printInteger<RecordT, IntPointer, 16u>(stream, reinterpret_cast<IntPointer>(value));
+		return stream;
+	}
+
 	// primitive integral output for FormattedOutputStream
 
 	template<typename RecordT, typename LinebreakRecordsT>
@@ -305,6 +313,16 @@ namespace io {
 	FormattedOutputStream<RecordT, LinebreakRecordsT>&
 	operator<<(FormattedOutputStream<RecordT, LinebreakRecordsT>& stream, unsigned long long value) {
 		printInteger<RecordT, unsigned long long, 10u>(stream, value);
+		return stream;
+	}
+
+	template<typename RecordT, typename LinebreakRecordsT, typename ObjectT>
+	FormattedOutputStream<RecordT, LinebreakRecordsT>&
+	operator<<(FormattedOutputStream<RecordT, LinebreakRecordsT>& stream, const ObjectT* value) {
+		stream.print(RecordT('0'));
+		stream.print(RecordT('x'));
+		typedef typename util::IntegerTypeByTraits<sizeof(ObjectT*), false>::StandardType IntPointer;
+		printInteger<RecordT, IntPointer, 16u>(stream, reinterpret_cast<IntPointer>(value));
 		return stream;
 	}
 
@@ -536,6 +554,22 @@ namespace io {
 						config.getWidth(), config.getPadRecord());
 				break;
 		}
+		return stream;
+	}
+
+	template<
+		typename RecordT,
+		typename LinebreakRecordsT,
+		template<StreamConfigSpecialization, typename> class ConfigT,
+		typename ObjectT
+	>
+	ConfigurableFormattedOutputStream<RecordT, LinebreakRecordsT, ConfigT>&
+	operator<<(ConfigurableFormattedOutputStream<RecordT, LinebreakRecordsT, ConfigT>& stream,
+			const ObjectT* value) {
+		stream.print(RecordT('0'));
+		stream.print(RecordT('x'));
+		typedef typename util::IntegerTypeByTraits<sizeof(ObjectT*), false>::StandardType IntPointer;
+		printInteger<RecordT, IntPointer, 16u>(stream, reinterpret_cast<IntPointer>(value));
 		return stream;
 	}
 
