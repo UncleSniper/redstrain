@@ -111,7 +111,7 @@ namespace boot {
 		StaticValve* getStaticValve(BuildContext&);
 		StaticValve* getDynamicValve(BuildContext&);
 		StaticValve* getComponentValve(BuildContext&, const std::string&);
-		void makeValveGroups();
+		void makeValveGroups(BuildContext&);
 
 	};
 

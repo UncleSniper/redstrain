@@ -1,3 +1,4 @@
+#include <redstrain/util/Unref.hpp>
 #include <redstrain/util/Delete.hpp>
 #include <redstrain/platform/Stat.hpp>
 #include <redstrain/platform/Pathname.hpp>
@@ -6,10 +7,12 @@
 
 #include "XakeProject.hpp"
 #include "XakeComponent.hpp"
+#include "../ValveGroup.hpp"
 #include "../BuildContext.hpp"
 #include "../UnsupportedToolchainError.hpp"
 
 using std::string;
+using redengine::util::Unref;
 using redengine::util::Delete;
 using redengine::platform::Stat;
 using redengine::platform::Pathname;
@@ -245,8 +248,44 @@ namespace boot {
 		return valve;
 	}
 
-	void XakeProject::makeValveGroups() {
-		//TODO
+	void XakeProject::makeValveGroups(BuildContext& context) {
+		Unref<ValveGroup> group;
+		StaticValve* dv;
+		// build/clean
+		group = new ValveGroup;
+		dv = getBuildValve(context);
+		group->addMember(getCleanValve(context));
+		group->addMember(dv);
+		group->addDefault(dv);
+		context.addValveGroup(*group);
+		group.set()->unref();
+		// modules/tools
+		group = new ValveGroup;
+		dv = getModulesValve(context);
+		group->addMember(dv);
+		group->addDefault(dv);
+		dv = getToolsValve(context);
+		group->addMember(dv);
+		group->addDefault(dv);
+		context.addValveGroup(*group);
+		group.set()->unref();
+		// static/dynamic
+		group = new ValveGroup;
+		dv = getDynamicValve(context);
+		group->addMember(getStaticValve(context));
+		group->addMember(dv);
+		group->addDefault(dv);
+		context.addValveGroup(*group);
+		group.set()->unref();
+		// components
+		group = new ValveGroup;
+		ValveIterator vbegin(valves.begin()), vend(valves.end());
+		for(; vbegin != vend; ++vbegin) {
+			group->addMember(vbegin->second);
+			group->addDefault(vbegin->second);
+		}
+		context.addValveGroup(*group);
+		group.set()->unref();
 	}
 
 }}}
