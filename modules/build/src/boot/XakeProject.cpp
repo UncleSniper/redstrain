@@ -88,13 +88,28 @@ namespace boot {
 			toolsValve(NULL), staticValve(NULL), dynamicValve(NULL) {}
 
 	XakeProject::~XakeProject() {
-		ConstComponentIterator begin(components.begin()), end(components.end());
-		for(; begin != end; ++begin)
-			delete begin->second;
+		ConstComponentIterator cbegin(components.begin()), cend(components.end());
+		for(; cbegin != cend; ++cbegin)
+			delete cbegin->second;
 		if(compiler)
 			delete compiler;
 		if(cppLanguage)
 			delete cppLanguage;
+		if(cleanValve)
+			cleanValve->unref();
+		if(buildValve)
+			buildValve->unref();
+		if(modulesValve)
+			modulesValve->unref();
+		if(toolsValve)
+			toolsValve->unref();
+		if(staticValve)
+			staticValve->unref();
+		if(dynamicValve)
+			dynamicValve->unref();
+		ValveIterator vbegin(valves.begin()), vend(valves.end());
+		for(; vbegin != vend; ++vbegin)
+			vbegin->second->unref();
 	}
 
 	string XakeProject::getProjectName() const {
@@ -181,33 +196,57 @@ namespace boot {
 	}
 
 	StaticValve* XakeProject::getBuildValve(BuildContext& context) {
-		if(!buildValve)
+		if(!buildValve) {
 			buildValve = &context.getOrMakeValve("build");
+			buildValve->ref();
+		}
 		return buildValve;
 	}
 
 	StaticValve* XakeProject::getModulesValve(BuildContext& context) {
-		if(!modulesValve)
+		if(!modulesValve) {
 			modulesValve = &context.getOrMakeValve("modules");
+			modulesValve->ref();
+		}
 		return modulesValve;
 	}
 
 	StaticValve* XakeProject::getToolsValve(BuildContext& context) {
-		if(!toolsValve)
+		if(!toolsValve) {
 			toolsValve = &context.getOrMakeValve("tools");
+			toolsValve->ref();
+		}
 		return toolsValve;
 	}
 
 	StaticValve* XakeProject::getStaticValve(BuildContext& context) {
-		if(!staticValve)
+		if(!staticValve) {
 			staticValve = &context.getOrMakeValve("static");
+			staticValve->ref();
+		}
 		return staticValve;
 	}
 
 	StaticValve* XakeProject::getDynamicValve(BuildContext& context) {
-		if(!dynamicValve)
+		if(!dynamicValve) {
 			dynamicValve = &context.getOrMakeValve("dynamic");
+			dynamicValve->ref();
+		}
 		return dynamicValve;
+	}
+
+	StaticValve* XakeProject::getComponentValve(BuildContext& context, const string& name) {
+		ValveIterator it = valves.find(name);
+		if(it != valves.end())
+			return it->second;
+		StaticValve* valve = &context.getOrMakeValve(name);
+		valves[name] = valve;
+		valve->ref();
+		return valve;
+	}
+
+	void XakeProject::makeValveGroups() {
+		//TODO
 	}
 
 }}}

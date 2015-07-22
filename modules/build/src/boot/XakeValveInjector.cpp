@@ -6,6 +6,7 @@
 #include "../BuildContext.hpp"
 #include "XakeValveInjector.hpp"
 
+using std::string;
 using redengine::util::Unref;
 
 namespace redengine {
@@ -36,8 +37,9 @@ namespace boot {
 			trigger.addValve(project.getStaticValve(context));
 		else if(flavor == Flavor::DYNAMIC)
 			trigger.addValve(project.getDynamicValve(context));
-		//TODO: component-specific
-		//TODO: XakeProject::makeValveGroups()
+		string cvname(component.getType() == Component::EXECUTABLE ? "exe:" : "lib:");
+		cvname.append(component.getName());
+		trigger.addValve(project.getComponentValve(context, cvname));
 	}
 
 }}}

@@ -59,6 +59,8 @@ namespace boot {
 		typedef std::map<const Component*, XakeComponent*> Components;
 		typedef Components::iterator ComponentIterator;
 		typedef Components::const_iterator ConstComponentIterator;
+		typedef std::map<std::string, StaticValve*> Valves;
+		typedef Valves::const_iterator ValveIterator;
 
 	  private:
 		const std::string baseDirectory;
@@ -69,6 +71,7 @@ namespace boot {
 		XakeCPPLanguage* cppLanguage;
 		std::string compilerName;
 		StaticValve *cleanValve, *buildValve, *modulesValve, *toolsValve, *staticValve, *dynamicValve;
+		Valves valves;
 
 	  private:
 		void setupCompiler();
@@ -107,6 +110,8 @@ namespace boot {
 		StaticValve* getToolsValve(BuildContext&);
 		StaticValve* getStaticValve(BuildContext&);
 		StaticValve* getDynamicValve(BuildContext&);
+		StaticValve* getComponentValve(BuildContext&, const std::string&);
+		void makeValveGroups();
 
 	};
 
