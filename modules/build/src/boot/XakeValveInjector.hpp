@@ -26,7 +26,7 @@ namespace boot {
 			return project;
 		}
 
-		virtual void injectIntoTrigger(Trigger&, const Component&, Language*, const Flavor&, BuildContext&) = 0;
+		virtual void injectIntoTrigger(Trigger&, const Component&, Language*, const Flavor&, BuildContext&);
 
 	};
 
