@@ -13,6 +13,9 @@
 #include <redstrain/build/boot/XakeBuildDirectoryMapper.hpp>
 #include <redstrain/cmdline/parseopt.hpp>
 
+#include <redstrain/io/FileOutputStream.hpp>
+#include <redstrain/io/streamtypes.hpp>
+
 #include "Options.hpp"
 
 using std::string;
