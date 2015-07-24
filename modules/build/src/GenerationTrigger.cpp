@@ -161,7 +161,7 @@ namespace build {
 
 #ifdef TESTING_REDSTRAIN_BUILD_API
 	void GenerationTrigger::dumpTrigger(DefaultConfiguredOutputStream<char>::Stream& stream) const {
-		stream << indent << "GenerationTrigger " << this << "{" << endln << shift;
+		stream << indent << "GenerationTrigger " << this << " {" << endln << shift;
 		stream << indent << "sources = {" << endln << shift;
 		ArtifactIterator abegin(sources.begin()), aend(sources.end());
 		for(; abegin != aend; ++abegin)
