@@ -20,8 +20,24 @@ namespace build {
 	class BuildUI;
 	class ValveGroup;
 	class StaticValve;
+	class FileArtifact;
 
 	class REDSTRAIN_BUILD_API BuildContext {
+
+	  private:
+		struct REDSTRAIN_BUILD_API PathPair {
+
+			const std::string directory;
+			const std::string basename;
+
+			PathPair(const std::string&, const std::string&);
+			PathPair(const PathPair&);
+
+			bool operator==(const PathPair&) const;
+			bool operator!=(const PathPair&) const;
+			bool operator<(const PathPair&) const;
+
+		};
 
 	  private:
 		typedef std::set<Trigger*> Triggers;
@@ -33,6 +49,8 @@ namespace build {
 		typedef Valves::iterator ValveIterator;
 		typedef Valves::const_iterator ConstValveIterator;
 		typedef std::set<ValveGroup*> Groups;
+		typedef std::map<PathPair, FileArtifact*> FileArtifacts;
+		typedef FileArtifacts::const_iterator FileArtifactIterator;
 
 	  public:
 		typedef Triggers::const_iterator TriggerIterator;
@@ -46,6 +64,7 @@ namespace build {
 		Valves valves;
 		ActionSet alreadyPerformed;
 		Groups groups;
+		FileArtifacts fileArtifacts;
 
 	  private:
 		BuildContext(const BuildContext&);
@@ -87,6 +106,8 @@ namespace build {
 		bool queueAction(Action*);
 		void performActions();
 		void predictActions();
+
+		FileArtifact* internFileArtifact(const std::string&, const std::string&);
 
 #ifdef TESTING_REDSTRAIN_BUILD_API
 		void dumpContext(io::DefaultConfiguredOutputStream<char>::Stream&) const;

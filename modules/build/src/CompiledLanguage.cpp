@@ -2,6 +2,7 @@
 #include <redstrain/util/Delete.hpp>
 
 #include "Compiler.hpp"
+#include "BuildContext.hpp"
 #include "FileArtifact.hpp"
 #include "FileCopyAction.hpp"
 #include "CompiledLanguage.hpp"
@@ -114,9 +115,9 @@ namespace build {
 		return true;
 	}
 
-	Component::GenerationHolder* CompiledLanguage::getGenerationTrigger(const string& sourceDirectory,
-			const string& sourceBasename, const Flavor&, const string& targetDirectory,
-			const Flavor& transformFlavor, Component& component) {
+	Component::GenerationHolder* CompiledLanguage::getGenerationTrigger(BuildContext& context,
+			const string& sourceDirectory, const string& sourceBasename, const Flavor&,
+			const string& targetDirectory, const Flavor& transformFlavor, Component& component) {
 		Compilation::CompileMode mode;
 		if(transformFlavor == Flavor::STATIC)
 			mode = component.getType() == Component::EXECUTABLE
@@ -127,14 +128,14 @@ namespace build {
 		else
 			return NULL;
 		string targetBasename(compiler.getObjectFileNameForSource(sourceBasename));
-		Unref<FileArtifact> srcfile(new FileArtifact(sourceDirectory, sourceBasename));
-		Unref<FileArtifact> trgfile(new FileArtifact(targetDirectory, targetBasename));
+		FileArtifact* srcfile = context.internFileArtifact(sourceDirectory, sourceBasename);
+		FileArtifact* trgfile = context.internFileArtifact(targetDirectory, targetBasename);
 		Delete<GenerationTrigger> trigger(new GenerationTrigger);
-		trigger->addSource(*srcfile);
-		trigger->addTarget(*trgfile);
-		Unref<CompileGenerationAction> action(new CompileGenerationAction(*trgfile, compiler, mode,
+		trigger->addSource(srcfile);
+		trigger->addTarget(trgfile);
+		Unref<CompileGenerationAction> action(new CompileGenerationAction(trgfile, compiler, mode,
 				getCompilerConfiguration(transformFlavor, component)));
-		action->addSource(*srcfile);
+		action->addSource(srcfile);
 		trigger->addAction(*action);
 		CompileGenerationHolder* holder = new CompileGenerationHolder(*trigger, *action);
 		trigger.set();
@@ -149,14 +150,15 @@ namespace build {
 		return transformFlavor;
 	}
 
-	Component::GenerationHolder* CompiledLanguage::getHeaderExposeTrigger(const string& sourceDirectory,
-			const string& sourceBasename, const Flavor&, const string& targetDirectory, const Flavor&) {
-		Unref<FileArtifact> srcfile(new FileArtifact(sourceDirectory, sourceBasename));
-		Unref<FileArtifact> destfile(new FileArtifact(targetDirectory, sourceBasename));
+	Component::GenerationHolder* CompiledLanguage::getHeaderExposeTrigger(BuildContext& context,
+			const string& sourceDirectory, const string& sourceBasename, const Flavor&,
+			const string& targetDirectory, const Flavor&) {
+		FileArtifact* srcfile = context.internFileArtifact(sourceDirectory, sourceBasename);
+		FileArtifact* destfile = context.internFileArtifact(targetDirectory, sourceBasename);
 		Delete<GenerationTrigger> trigger(new GenerationTrigger);
-		trigger->addSource(*srcfile);
-		trigger->addTarget(*destfile);
-		Unref<FileCopyAction> action(new FileCopyAction(**srcfile, **destfile));
+		trigger->addSource(srcfile);
+		trigger->addTarget(destfile);
+		Unref<FileCopyAction> action(new FileCopyAction(*srcfile, *destfile));
 		trigger->addAction(*action);
 		ExposeGenerationHolder* holder = new ExposeGenerationHolder(*trigger);
 		trigger.set();

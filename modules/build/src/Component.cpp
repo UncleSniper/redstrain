@@ -336,6 +336,7 @@ namespace build {
 
 	struct FlavorAppender : public Appender<Flavor> {
 
+		BuildContext& context;
 		Component& component;
 		LanguageInfo& language;
 		list<LanguageInfo>& languages;
@@ -343,10 +344,12 @@ namespace build {
 		bool addedMoreSources;
 		set<PathPair>& allBuildDirectories;
 
-		FlavorAppender(Component& component, LanguageInfo& language, list<LanguageInfo>& languages,
-				Component::BuildDirectoryMapper& directoryMapper, set<PathPair>& allBuildDirectories)
-				: component(component), language(language), languages(languages), directoryMapper(directoryMapper),
-				addedMoreSources(false), allBuildDirectories(allBuildDirectories) {}
+		FlavorAppender(BuildContext& context, Component& component, LanguageInfo& language,
+				list<LanguageInfo>& languages, Component::BuildDirectoryMapper& directoryMapper,
+				set<PathPair>& allBuildDirectories)
+				: context(context), component(component), language(language), languages(languages),
+				directoryMapper(directoryMapper), addedMoreSources(false),
+				allBuildDirectories(allBuildDirectories) {}
 
 		virtual void append(const Flavor& flavor) {
 			const string& cbase = component.getBaseDirectory();
@@ -363,19 +366,17 @@ namespace build {
 			for(; sbegin != send; ++sbegin) {
 				Component::GenerationHolder* newTrigger = NULL;
 				if(isSingle) {
-					if(graph.singleTrigger) {
-						Delete<FileArtifact> file(new FileArtifact(sbegin->directory, sbegin->basename));
-						graph.singleTrigger->addSource(*file);
-						file.set();
-					}
+					if(graph.singleTrigger)
+						graph.singleTrigger->addSource(context.internFileArtifact(sbegin->directory,
+								sbegin->basename));
 					else {
-						newTrigger = language.language.getGenerationTrigger(sbegin->directory,
+						newTrigger = language.language.getGenerationTrigger(context, sbegin->directory,
 								sbegin->basename, sbegin->flavor, fullBuildDirectory, flavor, component);
 						graph.singleTrigger = newTrigger;
 					}
 				}
 				else {
-					Delete<Component::GenerationHolder> trigger(language.language.getGenerationTrigger(
+					Delete<Component::GenerationHolder> trigger(language.language.getGenerationTrigger(context,
 							sbegin->directory, sbegin->basename, sbegin->flavor, fullBuildDirectory,
 							flavor, component));
 					if(*trigger) {
@@ -440,7 +441,8 @@ namespace build {
 			list<LanguageInfo>::iterator libegin(langinfo.begin()), liend(langinfo.end());
 			for(; libegin != liend; ++libegin) {
 				if(!libegin->sources.empty()) {
-					FlavorAppender fhandler(*this, *libegin, langinfo, directoryMapper, allBuildDirectories);
+					FlavorAppender fhandler(context, *this, *libegin, langinfo, directoryMapper,
+							allBuildDirectories);
 					libegin->language.getSupportedFlavors(type, fhandler);
 					libegin->sources.clear();
 					if(fhandler.addedMoreSources)
@@ -466,8 +468,8 @@ namespace build {
 				list<PathPair>::const_iterator hbegin(libegin->headers.begin()), hend(libegin->headers.end());
 				for(; hbegin != hend; ++hbegin) {
 					GenerationHolder* newTrigger = NULL;
-					Delete<GenerationHolder> trigger(libegin->language.getHeaderExposeTrigger(hbegin->directory,
-							hbegin->basename, hbegin->flavor, fullExposeDirectory, heflavor));
+					Delete<GenerationHolder> trigger(libegin->language.getHeaderExposeTrigger(context,
+							hbegin->directory, hbegin->basename, hbegin->flavor, fullExposeDirectory, heflavor));
 					if(*trigger) {
 						graph.allTriggers.push_back(*trigger);
 						newTrigger = trigger.set();
@@ -530,10 +532,10 @@ namespace build {
 		set<PathPair>::const_iterator bdbegin(allBuildDirectories.begin()), bdend(allBuildDirectories.end());
 		for(; bdbegin != bdend; ++bdbegin) {
 			Delete<PresenceTrigger> trigger(new PresenceTrigger(PresenceTrigger::ANY));
-			Ref<FileArtifact> file(new FileArtifact(bdbegin->directory, bdbegin->basename));
-			trigger->addArtifact(*file);
+			FileArtifact* file = context.internFileArtifact(bdbegin->directory, bdbegin->basename);
+			trigger->addArtifact(file);
 			Delete<RemoveAction> remove(new RemoveAction);
-			remove->addArtifact(*file);
+			remove->addArtifact(file);
 			trigger->addAction(*remove);
 			remove.set();
 			if(injector)

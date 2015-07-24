@@ -1,5 +1,5 @@
-#include <redstrain/util/Delete.hpp>
 #include <redstrain/util/Unref.hpp>
+#include <redstrain/util/Delete.hpp>
 #ifdef TESTING_REDSTRAIN_BUILD_API
 #include <redstrain/io/streamoperators.hpp>
 #endif /* TESTING_REDSTRAIN_BUILD_API */
@@ -10,6 +10,7 @@
 #include "ValveGroup.hpp"
 #include "StaticValve.hpp"
 #include "BuildContext.hpp"
+#include "FileArtifact.hpp"
 
 using std::set;
 using std::deque;
@@ -28,12 +29,38 @@ using redengine::io::operator<<;
 namespace redengine {
 namespace build {
 
+	// ======== PathPair ========
+
+	BuildContext::PathPair::PathPair(const string& directory, const string& basename)
+			: directory(directory), basename(basename) {}
+
+	BuildContext::PathPair::PathPair(const PathPair& pair)
+			: directory(pair.directory), basename(pair.basename) {}
+
+	bool BuildContext::PathPair::operator==(const PathPair& pair) const {
+		return directory == pair.directory && basename == pair.basename;
+	}
+
+	bool BuildContext::PathPair::operator!=(const PathPair& pair) const {
+		return directory != pair.directory || basename != pair.basename;
+	}
+
+	bool BuildContext::PathPair::operator<(const PathPair& pair) const {
+		if(directory < pair.directory)
+			return true;
+		if(directory > pair.directory)
+			return false;
+		return basename < pair.basename;
+	}
+
+	// ======== BuildContext ========
+
 	BuildContext::BuildContext(BuildUI& ui) : ui(ui) {}
 
 	BuildContext::BuildContext(const BuildContext& context)
 			: ui(context.ui), triggers(context.triggers), actionQueue(context.actionQueue),
 			actionSet(context.actionSet), valves(context.valves), alreadyPerformed(context.alreadyPerformed),
-			groups(context.groups) {
+			groups(context.groups), fileArtifacts(context.fileArtifacts) {
 		TriggerIterator tbegin(triggers.begin()), tend(triggers.end());
 		for(; tbegin != tend; ++tbegin)
 			(*tbegin)->ref();
@@ -46,6 +73,9 @@ namespace build {
 		ValveGroupIterator gbegin(groups.begin()), gend(groups.end());
 		for(; gbegin != gend; ++gbegin)
 			(*gbegin)->ref();
+		FileArtifactIterator fabegin(fileArtifacts.begin()), faend(fileArtifacts.end());
+		for(; fabegin != faend; ++fabegin)
+			fabegin->second->ref();
 	}
 
 	BuildContext::~BuildContext() {
@@ -61,6 +91,9 @@ namespace build {
 		ValveGroupIterator gbegin(groups.begin()), gend(groups.end());
 		for(; gbegin != gend; ++gbegin)
 			(*gbegin)->unref();
+		FileArtifactIterator fabegin(fileArtifacts.begin()), faend(fileArtifacts.end());
+		for(; fabegin != faend; ++fabegin)
+			fabegin->second->unref();
 	}
 
 	bool BuildContext::addTrigger(Trigger* trigger) {
@@ -267,6 +300,16 @@ namespace build {
 			alreadyPerformed.insert(*action);
 		}
 		unrefQueue.actions = NULL;
+	}
+
+	FileArtifact* BuildContext::internFileArtifact(const string& directory, const string& basename) {
+		PathPair pair(directory, basename);
+		FileArtifactIterator it = fileArtifacts.find(pair);
+		if(it != fileArtifacts.end())
+			return it->second;
+		Unref<FileArtifact> file(new FileArtifact(directory, basename));
+		fileArtifacts[pair] = *file;
+		return file.set();
 	}
 
 #ifdef TESTING_REDSTRAIN_BUILD_API
