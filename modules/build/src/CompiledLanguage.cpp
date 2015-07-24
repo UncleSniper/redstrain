@@ -134,6 +134,7 @@ namespace build {
 		trigger->addTarget(*trgfile);
 		Unref<CompileGenerationAction> action(new CompileGenerationAction(*trgfile, compiler, mode,
 				getCompilerConfiguration(transformFlavor, component)));
+		action->addSource(*srcfile);
 		trigger->addAction(*action);
 		CompileGenerationHolder* holder = new CompileGenerationHolder(*trigger, *action);
 		trigger.set();
