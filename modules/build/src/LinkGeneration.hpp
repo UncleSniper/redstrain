@@ -46,6 +46,8 @@ namespace build {
 		}
 
 		virtual void generate(const std::list<FileArtifact*>&, FileArtifact*, BuildContext&);
+		virtual void notifyUIWillGenerate(BuildUI&, const Action&, const std::list<FileArtifact*>&, FileArtifact*);
+		virtual void notifyUIWouldGenerate(BuildUI&, const Action&, const std::list<FileArtifact*>&, FileArtifact*);
 
 #ifdef TESTING_REDSTRAIN_BUILD_API
 		virtual void dumpGeneration(io::DefaultConfiguredOutputStream<char>::Stream&) const;

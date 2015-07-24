@@ -68,7 +68,7 @@ namespace build {
 		if(!source || !target)
 			return;
 		ui.wouldPerformAction(BuildUI::ActionDescriptor(action.getComponentType(), action.getComponentName(),
-				"compiling", source->getHumanReadableReference(false), target->getHumanReadableReference(true)));
+				"would compile", source->getHumanReadableReference(false), target->getHumanReadableReference(true)));
 	}
 
 #ifdef TESTING_REDSTRAIN_BUILD_API

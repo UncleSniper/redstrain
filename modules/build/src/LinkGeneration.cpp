@@ -4,6 +4,8 @@
 #endif /* TESTING_REDSTRAIN_BUILD_API */
 
 #include "Linker.hpp"
+#include "Action.hpp"
+#include "BuildUI.hpp"
 #include "LinkGeneration.hpp"
 #include "LinkerConfiguration.hpp"
 
@@ -36,6 +38,22 @@ namespace build {
 			linkage->addSource((*begin)->getPathname());
 		configuration.applyConfiguration(**linkage);
 		linkage->invoke();
+	}
+
+	void LinkGeneration::notifyUIWillGenerate(BuildUI& ui, const Action& action,
+			const list<FileArtifact*>&, FileArtifact* target) {
+		if(!target)
+			return;
+		ui.willPerformAction(BuildUI::ActionDescriptor(action.getComponentType(), action.getComponentName(),
+				"linking", "", target->getHumanReadableReference(false)));
+	}
+
+	void LinkGeneration::notifyUIWouldGenerate(BuildUI& ui, const Action& action,
+			const list<FileArtifact*>&, FileArtifact* target) {
+		if(!target)
+			return;
+		ui.willPerformAction(BuildUI::ActionDescriptor(action.getComponentType(), action.getComponentName(),
+				"would link", "", target->getHumanReadableReference(false)));
 	}
 
 #ifdef TESTING_REDSTRAIN_BUILD_API
