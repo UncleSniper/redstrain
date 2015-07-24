@@ -348,11 +348,13 @@ namespace build {
 
 		virtual void append(const Flavor& flavor) {
 			const string& cbase = component.getBaseDirectory();
-			string ctail(directoryMapper.getBuildDirectory(component, language.language, flavor));
-			string buildDirectory(Pathname::join(cbase, ctail));
+			string ctailHead, ctailTail;
+			directoryMapper.getBuildDirectory(component, language.language, flavor, ctailHead, ctailTail);
+			string buildDirectory(Pathname::join(cbase, ctailHead));
+			string fullBuildDirectory(Pathname::join(buildDirectory, ctailTail));
 			bool cleanArtifact = buildDirectory == cbase;
 			if(!cleanArtifact)
-				allBuildDirectories.insert(PathPair(cbase, ctail, language.language.getCleanFlavor()));
+				allBuildDirectories.insert(PathPair(cbase, ctailHead, language.language.getCleanFlavor()));
 			FlavorGraph& graph = language.getOrMakeFlavorGraph(flavor);
 			list<PathPair>::const_iterator sbegin(language.sources.begin()), send(language.sources.end());
 			bool isSingle = !language.language.isOneToOne(flavor);
@@ -366,13 +368,14 @@ namespace build {
 					}
 					else {
 						newTrigger = language.language.getGenerationTrigger(sbegin->directory,
-								sbegin->basename, sbegin->flavor, buildDirectory, flavor, component);
+								sbegin->basename, sbegin->flavor, fullBuildDirectory, flavor, component);
 						graph.singleTrigger = newTrigger;
 					}
 				}
 				else {
 					Delete<Component::GenerationHolder> trigger(language.language.getGenerationTrigger(
-							sbegin->directory, sbegin->basename, sbegin->flavor, buildDirectory, flavor, component));
+							sbegin->directory, sbegin->basename, sbegin->flavor, fullBuildDirectory,
+							flavor, component));
 					if(*trigger) {
 						graph.allTriggers.push_back(*trigger);
 						newTrigger = trigger.set();

@@ -20,13 +20,13 @@ namespace boot {
 	XakeBuildDirectoryMapper::XakeBuildDirectoryMapper(const XakeBuildDirectoryMapper& mapper)
 			: BuildDirectoryMapper(mapper), project(mapper.project) {}
 
-	string XakeBuildDirectoryMapper::getBuildDirectory(const Component&, const Language& language,
-			const Flavor& flavor) {
+	void XakeBuildDirectoryMapper::getBuildDirectory(const Component&, const Language& language,
+			const Flavor& flavor, string& directory, string& basename) {
 		if(&language == project.getCPPLanguage()) {
 			const Resources& configuration = project.getProjectConfiguration();
-			string bdir(configuration.getProperty(Resources::RES_BUILD_DIRECTORY));
-			if(bdir.empty())
-				bdir = XakeBuildDirectoryMapper::DEFAULT_BUILD_DIRECTORY;
+			directory = configuration.getProperty(Resources::RES_BUILD_DIRECTORY);
+			if(directory.empty())
+				directory = XakeBuildDirectoryMapper::DEFAULT_BUILD_DIRECTORY;
 			Resources::ID id;
 			const char* fdirDefault;
 			if(flavor == Flavor::STATIC) {
@@ -37,15 +37,18 @@ namespace boot {
 				id = Resources::RES_DYNAMIC_BUILD_DIRECTORY;
 				fdirDefault = XakeBuildDirectoryMapper::DEFAULT_DYNAMIC_BUILD_DIRECTORY;
 			}
-			else
-				return bdir;
-			string fdir(configuration.getProperty(id));
-			if(fdir.empty())
-				fdir = fdirDefault;
-			return Pathname::join(bdir, fdir);
+			else {
+				basename.clear();
+				return;
+			}
+			basename = configuration.getProperty(id);
+			if(basename.empty())
+				basename = fdirDefault;
 		}
-		else
-			return "";
+		else {
+			directory.clear();
+			basename.clear();
+		}
 	}
 
 	void XakeBuildDirectoryMapper::getHeaderExposeDirectory(const Component& component, const Language&,
