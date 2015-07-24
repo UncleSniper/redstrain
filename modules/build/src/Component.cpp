@@ -422,8 +422,8 @@ namespace build {
 		// discover shipped sources
 		PathIterator sdbegin(sourceDirectories.begin()), sdend(sourceDirectories.end());
 		for(; sdbegin != sdend; ++sdbegin) {
-			SetupTraverser handler(langinfo, *sdbegin);
 			string srcdir(Pathname::join(baseDirectory, *sdbegin));
+			SetupTraverser handler(langinfo, srcdir);
 			if(Filesystem::access(srcdir, Filesystem::FILE_EXISTS))
 				Filesystem::traverse(srcdir, handler);
 		}
