@@ -279,13 +279,20 @@ namespace build {
 			(*tbegin)->dumpTrigger(stream);
 		stream << unshift << indent << '}' << endln;
 		// valves
+		stream << indent << "valves = {" << endln << shift;
 		ConstValveIterator vbegin(valves.begin()), vend(valves.end());
 		for(; vbegin != vend; ++vbegin) {
 			stream << indent << vbegin->first << " -> " << endln << shift;
 			vbegin->second->dumpValve(stream);
 			stream << unshift;
 		}
-		//TODO: dump groups
+		stream << unshift << indent << '}' << endln;
+		// valve groups
+		stream << indent << "valveGroups = {" << endln << shift;
+		ValveGroupIterator vgbegin(groups.begin()), vgend(groups.end());
+		for(; vgbegin != vgend; ++vgbegin)
+			(*vgbegin)->dumpValveGroup(stream);
+		stream << unshift << indent << '}' << endln;
 		// done
 		stream << unshift << indent << '}' << endln;
 	}

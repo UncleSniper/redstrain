@@ -75,6 +75,7 @@ int bootstrap(const string&, const Options& options) {
 	xproject.makeValveGroups(**context);
 	redengine::io::FileOutputStream sout(redengine::platform::Console::getStandardHandle(redengine::platform::Console::STANDARD_OUTPUT));
 	redengine::io::DefaultConfiguredOutputStream<char>::Stream fout(sout);
+	fout.getConfiguration<redengine::io::IndentingOutputStreamConfig<char> >().setTabulation("    ");
 	context->dumpContext(fout);
 	return 0;
 }

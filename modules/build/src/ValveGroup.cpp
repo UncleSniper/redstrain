@@ -1,5 +1,18 @@
+#ifdef TESTING_REDSTRAIN_BUILD_API
+#include <redstrain/io/streamoperators.hpp>
+#endif /* TESTING_REDSTRAIN_BUILD_API */
+
 #include "ValveGroup.hpp"
 #include "StaticValve.hpp"
+
+#ifdef TESTING_REDSTRAIN_BUILD_API
+using redengine::io::DefaultConfiguredOutputStream;
+using redengine::io::endln;
+using redengine::io::shift;
+using redengine::io::indent;
+using redengine::io::unshift;
+using redengine::io::operator<<;
+#endif /* TESTING_REDSTRAIN_BUILD_API */
 
 namespace redengine {
 namespace build {
@@ -90,5 +103,22 @@ namespace build {
 			(*dbegin)->setOpen(true);
 		return true;
 	}
+
+#ifdef TESTING_REDSTRAIN_BUILD_API
+	void ValveGroup::dumpValveGroup(DefaultConfiguredOutputStream<char>::Stream& stream) const {
+		stream << indent << "ValveGroup " << this << " {" << endln << shift;
+		stream << indent << "members = {" << endln << shift;
+		ValveIterator mbegin(valves.begin()), mend(valves.end());
+		for(; mbegin != mend; ++mbegin)
+			(*mbegin)->dumpValve(stream);
+		stream << unshift << indent << '}' << endln;
+		stream << indent << "defaults = {" << endln << shift;
+		StaticValveIterator dbegin(defaults.begin()), dend(defaults.end());
+		for(; dbegin != dend; ++dbegin)
+			(*dbegin)->dumpValve(stream);
+		stream << unshift << indent << '}' << endln;
+		stream << unshift << indent << '}' << endln;
+	}
+#endif /* TESTING_REDSTRAIN_BUILD_API */
 
 }}
