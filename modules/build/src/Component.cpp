@@ -509,12 +509,12 @@ namespace build {
 					context.addTrigger(graph.singleTrigger->getTrigger());
 					delete graph.singleTrigger;
 					graph.singleTrigger = NULL;
-					while(!graph.allTriggers.empty()) {
-						GenerationHolder* trigger = graph.allTriggers.front();
-						context.addTrigger(trigger->getTrigger());
-						delete trigger;
-						graph.allTriggers.pop_front();
-					}
+				}
+				while(!graph.allTriggers.empty()) {
+					GenerationHolder* trigger = graph.allTriggers.front();
+					context.addTrigger(trigger->getTrigger());
+					delete trigger;
+					graph.allTriggers.pop_front();
 				}
 				delete fgit->second;
 				info.graphs.erase(fgit);
