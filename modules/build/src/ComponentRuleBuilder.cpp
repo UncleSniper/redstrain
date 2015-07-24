@@ -4,13 +4,15 @@ namespace redengine {
 namespace build {
 
 	ComponentRuleBuilder::ComponentRuleBuilder(Component::BuildDirectoryMapper& directoryMapper,
-			Component::ValveInjector* injector) : directoryMapper(directoryMapper), injector(injector) {}
+			Component::ComponentTypeStringifier& typeStringifier, Component::ValveInjector* injector)
+			: directoryMapper(directoryMapper), typeStringifier(typeStringifier), injector(injector) {}
 
 	ComponentRuleBuilder::ComponentRuleBuilder(const ComponentRuleBuilder& builder)
-			: RuleBuilder(builder), directoryMapper(builder.directoryMapper), injector(builder.injector) {}
+			: RuleBuilder(builder), directoryMapper(builder.directoryMapper),
+			typeStringifier(builder.typeStringifier), injector(builder.injector) {}
 
 	void ComponentRuleBuilder::setupRules(const Project&, Component& component, BuildContext& context) {
-		component.setupRules(directoryMapper, context, injector);
+		component.setupRules(directoryMapper, typeStringifier, context, injector);
 	}
 
 }}

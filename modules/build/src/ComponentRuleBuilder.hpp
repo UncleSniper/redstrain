@@ -10,10 +10,12 @@ namespace build {
 
 	  private:
 		Component::BuildDirectoryMapper& directoryMapper;
+		Component::ComponentTypeStringifier& typeStringifier;
 		Component::ValveInjector* injector;
 
 	  public:
-		ComponentRuleBuilder(Component::BuildDirectoryMapper&, Component::ValveInjector* = NULL);
+		ComponentRuleBuilder(Component::BuildDirectoryMapper&, Component::ComponentTypeStringifier&,
+				Component::ValveInjector* = NULL);
 		ComponentRuleBuilder(const ComponentRuleBuilder&);
 
 		inline Component::BuildDirectoryMapper& getBuildDirectoryMapper() {
@@ -22,6 +24,14 @@ namespace build {
 
 		inline const Component::BuildDirectoryMapper& getBuildDirectoryMapper() const {
 			return directoryMapper;
+		}
+
+		inline Component::ComponentTypeStringifier& getComponentTypeStringifier() {
+			return typeStringifier;
+		}
+
+		inline const Component::ComponentTypeStringifier& getComponentTypeStringifier() const {
+			return typeStringifier;
 		}
 
 		inline Component::ValveInjector* getValveInjector() const {

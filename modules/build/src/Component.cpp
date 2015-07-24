@@ -50,6 +50,14 @@ namespace build {
 
 	Component::ValveInjector::~ValveInjector() {}
 
+	// ======== ComponentTypeStringifier ========
+
+	Component::ComponentTypeStringifier::ComponentTypeStringifier() {}
+
+	Component::ComponentTypeStringifier::ComponentTypeStringifier(const ComponentTypeStringifier&) {}
+
+	Component::ComponentTypeStringifier::~ComponentTypeStringifier() {}
+
 	// ======== Component ========
 
 	Component::Component(Type type, const string& name, const string& baseDirectory)
@@ -341,14 +349,15 @@ namespace build {
 		LanguageInfo& language;
 		list<LanguageInfo>& languages;
 		Component::BuildDirectoryMapper& directoryMapper;
+		Component::ComponentTypeStringifier& typeStringifier;
 		bool addedMoreSources;
 		set<PathPair>& allBuildDirectories;
 
 		FlavorAppender(BuildContext& context, Component& component, LanguageInfo& language,
 				list<LanguageInfo>& languages, Component::BuildDirectoryMapper& directoryMapper,
-				set<PathPair>& allBuildDirectories)
+				Component::ComponentTypeStringifier& typeStringifier, set<PathPair>& allBuildDirectories)
 				: context(context), component(component), language(language), languages(languages),
-				directoryMapper(directoryMapper), addedMoreSources(false),
+				directoryMapper(directoryMapper), typeStringifier(typeStringifier), addedMoreSources(false),
 				allBuildDirectories(allBuildDirectories) {}
 
 		virtual void append(const Flavor& flavor) {
@@ -413,14 +422,21 @@ namespace build {
 							}
 						}
 					}
+					string componentType(typeStringifier.stringifyComponentType(component.getType()));
+					Trigger::ActionIterator abegin, aend;
+					newTrigger->getTrigger()->getActions(abegin, aend);
+					for(; abegin != aend; ++abegin) {
+						(*abegin)->setComponentType(componentType);
+						(*abegin)->setComponentName(component.getName());
+					}
 				}
 			}
 		}
 
 	};
 
-	void Component::setupRules(BuildDirectoryMapper& directoryMapper, BuildContext& context,
-			ValveInjector* injector) {
+	void Component::setupRules(BuildDirectoryMapper& directoryMapper, ComponentTypeStringifier& typeStringifier,
+			BuildContext& context, ValveInjector* injector) {
 		list<LanguageInfo> langinfo;
 		LanguageIterator lbegin(languages.begin()), lend(languages.end());
 		for(; lbegin != lend; ++lbegin)
@@ -441,7 +457,7 @@ namespace build {
 			list<LanguageInfo>::iterator libegin(langinfo.begin()), liend(langinfo.end());
 			for(; libegin != liend; ++libegin) {
 				if(!libegin->sources.empty()) {
-					FlavorAppender fhandler(context, *this, *libegin, langinfo, directoryMapper,
+					FlavorAppender fhandler(context, *this, *libegin, langinfo, directoryMapper, typeStringifier,
 							allBuildDirectories);
 					libegin->language.getSupportedFlavors(type, fhandler);
 					libegin->sources.clear();
@@ -451,6 +467,7 @@ namespace build {
 			}
 		} while(onceMoreWithFeeling);
 		// process headers, including generated ones
+		string componentType(typeStringifier.stringifyComponentType(type));
 		list<LanguageInfo>::iterator libegin(langinfo.begin()), liend(langinfo.end());
 		for(; libegin != liend; ++libegin) {
 			if(!libegin->headers.empty()) {
@@ -474,14 +491,22 @@ namespace build {
 						graph.allTriggers.push_back(*trigger);
 						newTrigger = trigger.set();
 					}
-					if(newTrigger && cleanArtifact) {
-						GenerationTrigger::ArtifactIterator tbegin, tend;
-						newTrigger->getTargets(tbegin, tend);
-						for(; tbegin != tend; ++tbegin) {
-							FileArtifact* file = dynamic_cast<FileArtifact*>(*tbegin);
-							if(file)
-								allBuildDirectories.insert(PathPair(file->getDirectory(), file->getBasename(),
-										libegin->language.getCleanFlavor()));
+					if(newTrigger) {
+						if(cleanArtifact) {
+							GenerationTrigger::ArtifactIterator tbegin, tend;
+							newTrigger->getTargets(tbegin, tend);
+							for(; tbegin != tend; ++tbegin) {
+								FileArtifact* file = dynamic_cast<FileArtifact*>(*tbegin);
+								if(file)
+									allBuildDirectories.insert(PathPair(file->getDirectory(), file->getBasename(),
+											libegin->language.getCleanFlavor()));
+							}
+						}
+						Trigger::ActionIterator abegin, aend;
+						newTrigger->getTrigger()->getActions(abegin, aend);
+						for(; abegin != aend; ++abegin) {
+							(*abegin)->setComponentType(componentType);
+							(*abegin)->setComponentName(name);
 						}
 					}
 				}
@@ -536,6 +561,8 @@ namespace build {
 			trigger->addArtifact(file);
 			Delete<RemoveAction> remove(new RemoveAction);
 			remove->addArtifact(file);
+			remove->setComponentType(typeStringifier.stringifyComponentType(type));
+			remove->setComponentName(name);
 			trigger->addAction(*remove);
 			remove.set();
 			if(injector)

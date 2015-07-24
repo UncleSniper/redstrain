@@ -64,6 +64,17 @@ namespace build {
 
 		};
 
+		class REDSTRAIN_BUILD_API ComponentTypeStringifier {
+
+		  public:
+			ComponentTypeStringifier();
+			ComponentTypeStringifier(const ComponentTypeStringifier&);
+			virtual ~ComponentTypeStringifier();
+
+			virtual std::string stringifyComponentType(Type) = 0;
+
+		};
+
 
 	  private:
 		typedef std::list<std::string> Paths;
@@ -143,7 +154,7 @@ namespace build {
 		void clearExternalDependencies();
 		void getExternalDependencies(const Language&, DependencyIterator&, DependencyIterator&) const;
 
-		void setupRules(BuildDirectoryMapper&, BuildContext&, ValveInjector* = NULL);
+		void setupRules(BuildDirectoryMapper&, ComponentTypeStringifier&, BuildContext&, ValveInjector* = NULL);
 
 	};
 
