@@ -7,6 +7,7 @@
 #endif /* TESTING_REDSTRAIN_BUILD_API */
 
 #include "Action.hpp"
+#include "BuildUI.hpp"
 #include "Generation.hpp"
 
 namespace redengine {
@@ -118,12 +119,12 @@ namespace build {
 				target->wouldModify();
 		}
 
-		virtual void notifyUIWillPerform(BuildUI&) const {
-			//TODO
+		virtual void notifyUIWillPerform(BuildUI& ui) const {
+			generation.notifyUIWillGenerate(ui, *this, sources, target);
 		}
 
-		virtual void notifyUIWouldPerform(BuildUI&) const {
-			//TODO
+		virtual void notifyUIWouldPerform(BuildUI& ui) const {
+			generation.notifyUIWouldGenerate(ui, *this, sources, target);
 		}
 
 #ifdef TESTING_REDSTRAIN_BUILD_API

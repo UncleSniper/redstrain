@@ -1,7 +1,8 @@
 #ifndef REDSTRAIN_MOD_BUILD_ARTIFACT_HPP
 #define REDSTRAIN_MOD_BUILD_ARTIFACT_HPP
 
-#include <time.h>
+#include <ctime>
+#include <string>
 #include <redstrain/util/ReferenceCounted.hpp>
 #ifdef TESTING_REDSTRAIN_BUILD_API
 #include <redstrain/io/streamtypes.hpp>
@@ -72,6 +73,7 @@ namespace build {
 		virtual bool isPresent() = 0;
 		virtual time_t getModificationTimestamp() = 0;
 		virtual void remove() = 0;
+		virtual std::string getHumanReadableReference(bool) const = 0;
 
 #ifdef TESTING_REDSTRAIN_BUILD_API
 		virtual void dumpArtifact(io::DefaultConfiguredOutputStream<char>::Stream&) const = 0;

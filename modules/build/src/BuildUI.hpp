@@ -18,11 +18,10 @@ namespace build {
 		  private:
 			std::string componentType, componentName;
 			std::string actionName, source, target;
-			bool preferSource;
 
 		  public:
 			ActionDescriptor(const std::string&, const std::string&,
-					const std::string&, const std::string&, const std::string&, bool);
+					const std::string&, const std::string&, const std::string&);
 			ActionDescriptor(const ActionDescriptor&);
 
 			inline const std::string& getComponentType() const {
@@ -54,14 +53,6 @@ namespace build {
 			}
 
 			void setTarget(const std::string&);
-
-			inline bool isPreferSource() const {
-				return preferSource;
-			}
-
-			inline void setPreferSource(bool preferSource) {
-				this->preferSource = preferSource;
-			}
 
 		};
 

@@ -10,6 +10,8 @@
 namespace redengine {
 namespace build {
 
+	class Action;
+	class BuildUI;
 	class BuildContext;
 
 	template<typename ArtifactT>
@@ -24,6 +26,8 @@ namespace build {
 		virtual ~Generation() {}
 
 		virtual void generate(const std::list<ArtifactT*>&, ArtifactT*, BuildContext&) = 0;
+		virtual void notifyUIWillGenerate(BuildUI&, const Action&, const std::list<ArtifactT*>&, ArtifactT*) = 0;
+		virtual void notifyUIWouldGenerate(BuildUI&, const Action&, const std::list<ArtifactT*>&, ArtifactT*) = 0;
 
 #ifdef TESTING_REDSTRAIN_BUILD_API
 		virtual void dumpGeneration(io::DefaultConfiguredOutputStream<char>::Stream&) const = 0;

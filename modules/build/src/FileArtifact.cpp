@@ -50,6 +50,13 @@ namespace build {
 			Filesystem::removeRecursively(pathname);
 	}
 
+	string FileArtifact::getHumanReadableReference(bool asTarget) const {
+		if(asTarget)
+			return directory.empty() ? basename : directory;
+		else
+			return basename.empty() ? directory : basename;
+	}
+
 #ifdef TESTING_REDSTRAIN_BUILD_API
 	void FileArtifact::dumpArtifact(DefaultConfiguredOutputStream<char>::Stream& stream) const {
 		stream << indent << "FileArtifact " << this << " {" << endln << shift;

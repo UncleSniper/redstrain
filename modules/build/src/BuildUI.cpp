@@ -8,14 +8,13 @@ namespace build {
 	// ======== ActionDescriptor ========
 
 	BuildUI::ActionDescriptor::ActionDescriptor(const string& componentType, const string& componentName,
-			const string& actionName, const string& source, const string& target, bool preferSource)
+			const string& actionName, const string& source, const string& target)
 			: componentType(componentType), componentName(componentName), actionName(actionName),
-			source(source), target(target), preferSource(preferSource) {}
+			source(source), target(target) {}
 
 	BuildUI::ActionDescriptor::ActionDescriptor(const ActionDescriptor& descriptor)
 			: componentType(descriptor.componentType), componentName(descriptor.componentName),
-			actionName(descriptor.actionName), source(descriptor.source), target(descriptor.target),
-			preferSource(descriptor.preferSource) {}
+			actionName(descriptor.actionName), source(descriptor.source), target(descriptor.target) {}
 
 	void BuildUI::ActionDescriptor::setComponentType(const string& type) {
 		componentType = type;

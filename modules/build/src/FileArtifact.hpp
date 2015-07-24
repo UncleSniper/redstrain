@@ -1,8 +1,6 @@
 #ifndef REDSTRAIN_MOD_BUILD_FILEARTIFACT_HPP
 #define REDSTRAIN_MOD_BUILD_FILEARTIFACT_HPP
 
-#include <string>
-
 #include "Artifact.hpp"
 
 namespace redengine {
@@ -31,6 +29,7 @@ namespace build {
 		virtual bool isPresent();
 		virtual time_t getModificationTimestamp();
 		virtual void remove();
+		virtual std::string getHumanReadableReference(bool) const;
 
 #ifdef TESTING_REDSTRAIN_BUILD_API
 		virtual void dumpArtifact(io::DefaultConfiguredOutputStream<char>::Stream&) const;

@@ -2,9 +2,11 @@
 #include <redstrain/io/streamoperators.hpp>
 #endif /* TESTING_REDSTRAIN_BUILD_API */
 
+#include "BuildUI.hpp"
 #include "Artifact.hpp"
 #include "RemoveAction.hpp"
 
+using std::string;
 #ifdef TESTING_REDSTRAIN_BUILD_API
 using redengine::io::DefaultConfiguredOutputStream;
 using redengine::io::endln;
@@ -73,12 +75,24 @@ namespace build {
 				(*begin)->wouldRemove();
 	}
 
-	void RemoveAction::notifyUIWillPerform(BuildUI&) const {
-		//TODO
+	void RemoveAction::notifyUIWillPerform(BuildUI& ui) const {
+		const string& componentType = getComponentType();
+		const string& componentName = getComponentName();
+		ArtifactIterator begin(artifacts.begin()), end(artifacts.end());
+		for(; begin != end; ++begin)
+			if((*begin)->isPresent())
+				ui.willPerformAction(BuildUI::ActionDescriptor(componentType, componentName, "removing",
+						(*begin)->getHumanReadableReference(false), ""));
 	}
 
-	void RemoveAction::notifyUIWouldPerform(BuildUI&) const {
-		//TODO
+	void RemoveAction::notifyUIWouldPerform(BuildUI& ui) const {
+		const string& componentType = getComponentType();
+		const string& componentName = getComponentName();
+		ArtifactIterator begin(artifacts.begin()), end(artifacts.end());
+		for(; begin != end; ++begin)
+			if((*begin)->wouldBePresent())
+				ui.wouldPerformAction(BuildUI::ActionDescriptor(componentType, componentName, "would remove",
+						(*begin)->getHumanReadableReference(false), ""));
 	}
 
 #ifdef TESTING_REDSTRAIN_BUILD_API

@@ -7,6 +7,7 @@
 #include <redstrain/io/streamoperators.hpp>
 #endif /* TESTING_REDSTRAIN_BUILD_API */
 
+#include "BuildUI.hpp"
 #include "FileArtifact.hpp"
 #include "FileCopyAction.hpp"
 
@@ -68,12 +69,14 @@ namespace build {
 			destination.wouldModify();
 	}
 
-	void FileCopyAction::notifyUIWillPerform(BuildUI&) const {
-		//TODO
+	void FileCopyAction::notifyUIWillPerform(BuildUI& ui) const {
+		ui.willPerformAction(BuildUI::ActionDescriptor(getComponentType(), getComponentName(), "copying",
+				source.getHumanReadableReference(false), destination.getHumanReadableReference(true)));
 	}
 
-	void FileCopyAction::notifyUIWouldPerform(BuildUI&) const {
-		//TODO
+	void FileCopyAction::notifyUIWouldPerform(BuildUI& ui) const {
+		ui.wouldPerformAction(BuildUI::ActionDescriptor(getComponentType(), getComponentName(), "would copy",
+				source.getHumanReadableReference(false), destination.getHumanReadableReference(true)));
 	}
 
 #ifdef TESTING_REDSTRAIN_BUILD_API

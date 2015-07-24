@@ -79,7 +79,7 @@ namespace build {
 			if(target.empty())
 				formatted << ' ' << source << endln;
 			else
-				formatted << ' ' << (action.isPreferSource() ? source : target) << endln;
+				formatted << ' ' << source << " -> " << target << endln;
 		}
 	}
 

@@ -5,6 +5,8 @@
 #include <redstrain/io/streamoperators.hpp>
 #endif /* TESTING_REDSTRAIN_BUILD_API */
 
+#include "Action.hpp"
+#include "BuildUI.hpp"
 #include "Compiler.hpp"
 #include "CompileGeneration.hpp"
 #include "CompilerConfiguration.hpp"
@@ -32,19 +34,41 @@ namespace build {
 			: Generation<FileArtifact>(generation), compiler(generation.compiler), mode(generation.mode),
 			configuration(generation.configuration) {}
 
-	void CompileGeneration::generate(const list<FileArtifact*>& sources, FileArtifact* target, BuildContext&) {
-		if(sources.empty() || !target)
-			return;
-		if(sources.size() > static_cast<list<FileArtifact>::size_type>(1u))
+	FileArtifact* CompileGeneration::getSoleSource(const list<FileArtifact*>& sources) {
+		if(sources.empty())
+			return NULL;
+		if(sources.size() > static_cast<list<FileArtifact*>::size_type>(1u))
 			throw IllegalArgumentError("Compilation cannot have more than one source: "
 					+ StringUtils::toString(sources.size()));
-		FileArtifact* source = sources.front();
-		if(!source)
+		return sources.front();
+	}
+
+	void CompileGeneration::generate(const list<FileArtifact*>& sources, FileArtifact* target, BuildContext&) {
+		FileArtifact* source = CompileGeneration::getSoleSource(sources);
+		if(!source || !target)
 			return;
 		Delete<Compilation> compilation(compiler.newCompilation(source->getPathname(), mode));
 		compilation->setTarget(target->getPathname());
 		configuration.applyConfiguration(**compilation);
 		compilation->invoke();
+	}
+
+	void CompileGeneration::notifyUIWillGenerate(BuildUI& ui, const Action& action,
+			const list<FileArtifact*>& sources, FileArtifact* target) {
+		FileArtifact* source = CompileGeneration::getSoleSource(sources);
+		if(!source || !target)
+			return;
+		ui.willPerformAction(BuildUI::ActionDescriptor(action.getComponentType(), action.getComponentName(),
+				"compiling", source->getHumanReadableReference(false), target->getHumanReadableReference(true)));
+	}
+
+	void CompileGeneration::notifyUIWouldGenerate(BuildUI& ui, const Action& action,
+			const list<FileArtifact*>& sources, FileArtifact* target) {
+		FileArtifact* source = CompileGeneration::getSoleSource(sources);
+		if(!source || !target)
+			return;
+		ui.wouldPerformAction(BuildUI::ActionDescriptor(action.getComponentType(), action.getComponentName(),
+				"compiling", source->getHumanReadableReference(false), target->getHumanReadableReference(true)));
 	}
 
 #ifdef TESTING_REDSTRAIN_BUILD_API

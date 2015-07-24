@@ -1,6 +1,7 @@
 #ifndef REDSTRAIN_MOD_BUILD_ACTION_HPP
 #define REDSTRAIN_MOD_BUILD_ACTION_HPP
 
+#include <string>
 #include <redstrain/util/ReferenceCounted.hpp>
 #ifdef TESTING_REDSTRAIN_BUILD_API
 #include <redstrain/io/streamtypes.hpp>
@@ -16,9 +17,22 @@ namespace build {
 
 	class REDSTRAIN_BUILD_API Action : public util::ReferenceCounted {
 
+		std::string componentType, componentName;
+
 	  public:
 		Action();
 		Action(const Action&);
+
+		inline const std::string& getComponentType() const {
+			return componentType;
+		}
+
+		inline const std::string& getComponentName() const {
+			return componentName;
+		}
+
+		void setComponentType(const std::string&);
+		void setComponentName(const std::string&);
 
 		virtual void perform(BuildContext&) = 0;
 		virtual void wouldPerform(BuildContext&) = 0;
