@@ -34,7 +34,8 @@ namespace build {
 			virtual ~BuildDirectoryMapper();
 
 			virtual std::string getBuildDirectory(const Component&, const Language&, const Flavor&) = 0;
-			virtual std::string getHeaderExposeDirectory(const Component&, const Language&) = 0;
+			virtual void getHeaderExposeDirectory(const Component&, const Language&,
+					std::string&, std::string&) = 0;
 
 		};
 

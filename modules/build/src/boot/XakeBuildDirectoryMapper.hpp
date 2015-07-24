@@ -33,7 +33,7 @@ namespace boot {
 		}
 
 		virtual std::string getBuildDirectory(const Component&, const Language&, const Flavor&);
-		virtual std::string getHeaderExposeDirectory(const Component&, const Language&);
+		virtual void getHeaderExposeDirectory(const Component&, const Language&, std::string&, std::string&);
 
 	};
 

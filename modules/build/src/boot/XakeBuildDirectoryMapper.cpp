@@ -34,7 +34,7 @@ namespace boot {
 				fdirDefault = XakeBuildDirectoryMapper::DEFAULT_STATIC_BUILD_DIRECTORY;
 			}
 			else if(flavor == Flavor::DYNAMIC) {
-				id = Resources::RES_STATIC_BUILD_DIRECTORY;
+				id = Resources::RES_DYNAMIC_BUILD_DIRECTORY;
 				fdirDefault = XakeBuildDirectoryMapper::DEFAULT_DYNAMIC_BUILD_DIRECTORY;
 			}
 			else
@@ -48,12 +48,12 @@ namespace boot {
 			return "";
 	}
 
-	string XakeBuildDirectoryMapper::getHeaderExposeDirectory(const Component& component, const Language&) {
-		string directory(project.getProjectConfiguration().getProperty(Resources::RES_HEADER_EXPOSE_DIRECTORY));
+	void XakeBuildDirectoryMapper::getHeaderExposeDirectory(const Component& component, const Language&,
+			string& directory, string& basename) {
+		directory = project.getProjectConfiguration().getProperty(Resources::RES_HEADER_EXPOSE_DIRECTORY);
 		if(directory.empty())
 			directory = XakeBuildDirectoryMapper::DEFAULT_HEADER_EXPOSE_DIRECTORY;
-		directory = Pathname::join(directory, project.getProjectName());
-		return Pathname::join(directory, component.getName());
+		basename = Pathname::join(project.getProjectName(), component.getName());
 	}
 
 }}}

@@ -449,17 +449,20 @@ namespace build {
 			if(!libegin->headers.empty()) {
 				Flavor heflavor = libegin->language.getHeaderExposeTransformFlavor();
 				FlavorGraph& graph = libegin->getOrMakeFlavorGraph(heflavor);
-				string edtail(directoryMapper.getHeaderExposeDirectory(*this, libegin->language));
-				string exposeDirectory(Pathname::join(baseDirectory, edtail));
+				string edtailHead, edtailTail;
+				directoryMapper.getHeaderExposeDirectory(*this, libegin->language, edtailHead, edtailTail);
+				string exposeDirectory(Pathname::join(baseDirectory, edtailHead));
+				string fullExposeDirectory(Pathname::join(exposeDirectory, edtailTail));
 				putHeaderExposeDirectory(libegin->language, exposeDirectory);
 				bool cleanArtifact = exposeDirectory == baseDirectory;
 				if(!cleanArtifact)
-					allBuildDirectories.insert(PathPair(baseDirectory, edtail, libegin->language.getCleanFlavor()));
+					allBuildDirectories.insert(PathPair(baseDirectory, edtailHead,
+							libegin->language.getCleanFlavor()));
 				list<PathPair>::const_iterator hbegin(libegin->headers.begin()), hend(libegin->headers.end());
 				for(; hbegin != hend; ++hbegin) {
 					GenerationHolder* newTrigger = NULL;
 					Delete<GenerationHolder> trigger(libegin->language.getHeaderExposeTrigger(hbegin->directory,
-							hbegin->basename, hbegin->flavor, exposeDirectory, heflavor));
+							hbegin->basename, hbegin->flavor, fullExposeDirectory, heflavor));
 					if(*trigger) {
 						graph.allTriggers.push_back(*trigger);
 						newTrigger = trigger.set();
