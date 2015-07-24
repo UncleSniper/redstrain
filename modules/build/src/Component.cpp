@@ -355,7 +355,7 @@ namespace build {
 				allBuildDirectories.insert(PathPair(cbase, ctail, language.language.getCleanFlavor()));
 			FlavorGraph& graph = language.getOrMakeFlavorGraph(flavor);
 			list<PathPair>::const_iterator sbegin(language.sources.begin()), send(language.sources.end());
-			bool isSingle = language.language.isOneToOne(flavor);
+			bool isSingle = !language.language.isOneToOne(flavor);
 			for(; sbegin != send; ++sbegin) {
 				Component::GenerationHolder* newTrigger = NULL;
 				if(isSingle) {
@@ -455,29 +455,14 @@ namespace build {
 				bool cleanArtifact = exposeDirectory == baseDirectory;
 				if(!cleanArtifact)
 					allBuildDirectories.insert(PathPair(baseDirectory, edtail, libegin->language.getCleanFlavor()));
-				bool isSingle = libegin->language.isOneToOne(heflavor);
 				list<PathPair>::const_iterator hbegin(libegin->headers.begin()), hend(libegin->headers.end());
 				for(; hbegin != hend; ++hbegin) {
 					GenerationHolder* newTrigger = NULL;
-					if(isSingle) {
-						if(graph.singleTrigger) {
-							Delete<FileArtifact> file(new FileArtifact(hbegin->directory, hbegin->basename));
-							graph.singleTrigger->addSource(*file);
-							file.set();
-						}
-						else {
-							newTrigger = libegin->language.getHeaderExposeTrigger(hbegin->directory,
-									hbegin->basename, hbegin->flavor, exposeDirectory, heflavor);
-							graph.singleTrigger = newTrigger;
-						}
-					}
-					else {
-						Delete<GenerationHolder> trigger(libegin->language.getHeaderExposeTrigger(hbegin->directory,
-								hbegin->basename, hbegin->flavor, exposeDirectory, heflavor));
-						if(*trigger) {
-							graph.allTriggers.push_back(*trigger);
-							newTrigger = trigger.set();
-						}
+					Delete<GenerationHolder> trigger(libegin->language.getHeaderExposeTrigger(hbegin->directory,
+							hbegin->basename, hbegin->flavor, exposeDirectory, heflavor));
+					if(*trigger) {
+						graph.allTriggers.push_back(*trigger);
+						newTrigger = trigger.set();
 					}
 					if(newTrigger && cleanArtifact) {
 						GenerationTrigger::ArtifactIterator tbegin, tend;
