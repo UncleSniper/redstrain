@@ -300,9 +300,10 @@ namespace build {
 
 		list<LanguageInfo>& languages;
 		const string& sourceDirectory;
+		bool useHeaders;
 
-		SetupTraverser(list<LanguageInfo>& languages, const string& sourceDirectory)
-				: languages(languages), sourceDirectory(sourceDirectory) {}
+		SetupTraverser(list<LanguageInfo>& languages, const string& sourceDirectory, bool useHeaders)
+				: languages(languages), sourceDirectory(sourceDirectory), useHeaders(useHeaders) {}
 
 		virtual bool enterDirectory(const string&) {
 			return true;
@@ -320,9 +321,10 @@ namespace build {
 								begin->language.getShippedSourceFlavor()));
 						break;
 					case Language::AT_HEADER:
-						begin->headers.push_back(PathPair(sourceDirectory,
-								Pathname::stripPrefix(path, sourceDirectory),
-								begin->language.getShippedHeaderFlavor()));
+						if(useHeaders)
+							begin->headers.push_back(PathPair(sourceDirectory,
+									Pathname::stripPrefix(path, sourceDirectory),
+									begin->language.getShippedHeaderFlavor()));
 						break;
 					default:
 						break;
@@ -426,7 +428,7 @@ namespace build {
 		PathIterator sdbegin(sourceDirectories.begin()), sdend(sourceDirectories.end());
 		for(; sdbegin != sdend; ++sdbegin) {
 			string srcdir(Pathname::join(baseDirectory, *sdbegin));
-			SetupTraverser handler(langinfo, srcdir);
+			SetupTraverser handler(langinfo, srcdir, type != EXECUTABLE);
 			if(Filesystem::access(srcdir, Filesystem::FILE_EXISTS))
 				Filesystem::traverse(srcdir, handler);
 		}
