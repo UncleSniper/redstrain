@@ -71,6 +71,8 @@ namespace boot {
 			variables["module"] = cmpguard;
 			component.setInternalBuildName(XakeUtils::subst(tpl, variables));
 		}
+		// add source directories
+		component.addSourceDirectory(project.getProjectConfiguration().getProperty(Resources::RES_SOURCE_DIRECTORY));
 		// add languages
 		component.addLanguage(project.getCPPLanguage());
 	}
