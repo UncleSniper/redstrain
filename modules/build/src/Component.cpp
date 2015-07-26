@@ -102,7 +102,8 @@ namespace build {
 			baseDirectory(component.baseDirectory), sourceDirectories(component.sourceDirectories),
 			languages(component.languages), preciousArtifacts(component.preciousArtifacts),
 			exposeDirectories(component.exposeDirectories), dependencies(component.dependencies),
-			externalDependencies(component.externalDependencies), exposedHeaders(component.exposedHeaders) {
+			externalDependencies(component.externalDependencies), exposedHeaders(component.exposedHeaders),
+			localHeaders(component.localHeaders) {
 		PreciousArtifactIterator pabegin(preciousArtifacts.begin()), paend(preciousArtifacts.end());
 		for(; pabegin != paend; ++pabegin)
 			(*pabegin)->ref();
@@ -114,9 +115,16 @@ namespace build {
 		for(; eh0begin != eh0end; ++eh0begin) {
 			map<string, FileArtifact*>::const_iterator eh1begin(eh0begin->second.begin()),
 					eh1end(eh0begin->second.end());
-			for(; eh1begin != eh1end; ++eh1begin) {
+			for(; eh1begin != eh1end; ++eh1begin)
 				eh1begin->second->ref();
-			}
+		}
+		eh0begin = localHeaders.begin();
+		eh0end = localHeaders.end();
+		for(; eh0begin != eh0end; ++eh0begin) {
+			map<string, FileArtifact*>::const_iterator eh1begin(eh0begin->second.begin()),
+					eh1end(eh0begin->second.end());
+			for(; eh1begin != eh1end; ++eh1begin)
+				eh1begin->second->ref();
 		}
 	}
 
@@ -132,9 +140,16 @@ namespace build {
 		for(; eh0begin != eh0end; ++eh0begin) {
 			map<string, FileArtifact*>::const_iterator eh1begin(eh0begin->second.begin()),
 					eh1end(eh0begin->second.end());
-			for(; eh1begin != eh1end; ++eh1begin) {
-				eh1begin->second->ref();
-			}
+			for(; eh1begin != eh1end; ++eh1begin)
+				eh1begin->second->unref();
+		}
+		eh0begin = localHeaders.begin();
+		eh0end = localHeaders.end();
+		for(; eh0begin != eh0end; ++eh0begin) {
+			map<string, FileArtifact*>::const_iterator eh1begin(eh0begin->second.begin()),
+					eh1end(eh0begin->second.end());
+			for(; eh1begin != eh1end; ++eh1begin)
+				eh1begin->second->unref();
 		}
 		UnresolvedGenerationIterator ugbegin(unresolvedGenerations.begin()), ugend(unresolvedGenerations.end());
 		for(; ugbegin != ugend; ++ugbegin)
@@ -364,6 +379,64 @@ namespace build {
 	FileArtifact* Component::getExposedHeader(const Language& language, const string& path) const {
 		map<const Language*, map<string, FileArtifact*> >::const_iterator it0 = exposedHeaders.find(&language);
 		if(it0 == exposedHeaders.end())
+			return NULL;
+		map<string, FileArtifact*>::const_iterator it1 = it0->second.find(path);
+		return it1 == it0->second.end() ? NULL : it1->second;
+	}
+
+	bool Component::addLocalHeader(const Language& language, const string& path,
+			FileArtifact& file) {
+		map<const Language*, map<string, FileArtifact*> >::iterator it0 = localHeaders.find(&language);
+		map<string, FileArtifact*>* eh1;
+		if(it0 == localHeaders.end()) {
+			localHeaders[&language] = map<string, FileArtifact*>();
+			eh1 = &localHeaders[&language];
+		}
+		else
+			eh1 = &it0->second;
+		map<string, FileArtifact*>::iterator it1 = eh1->find(path);
+		if(it1 == eh1->end()) {
+			(*eh1)[path] = &file;
+			file.ref();
+			return true;
+		}
+		else if(it1->second == &file)
+			return false;
+		else {
+			FileArtifact* old = it1->second;
+			it1->second = &file;
+			file.ref();
+			old->unref();
+			return true;
+		}
+	}
+
+	void Component::clearLocalHeaders(const Language& language) {
+		map<const Language*, map<string, FileArtifact*> >::iterator it0 = localHeaders.find(&language);
+		if(it0 == localHeaders.end())
+			return;
+		map<string, FileArtifact*>::const_iterator eh1begin(it0->second.begin()), eh1end(it0->second.end());
+		for(; eh1begin != eh1end; ++eh1begin)
+			eh1begin->second->unref();
+		localHeaders.erase(it0);
+	}
+
+	void Component::clearLocalHeaders() {
+		map<const Language*, map<string, FileArtifact*> >::const_iterator eh0begin(localHeaders.begin()),
+				eh0end(localHeaders.end());
+		for(; eh0begin != eh0end; ++eh0begin) {
+			map<string, FileArtifact*>::const_iterator eh1begin(eh0begin->second.begin()),
+					eh1end(eh0begin->second.end());
+			for(; eh1begin != eh1end; ++eh1begin) {
+				eh1begin->second->ref();
+			}
+		}
+		localHeaders.clear();
+	}
+
+	FileArtifact* Component::getLocalHeader(const Language& language, const string& path) const {
+		map<const Language*, map<string, FileArtifact*> >::const_iterator it0 = localHeaders.find(&language);
+		if(it0 == localHeaders.end())
 			return NULL;
 		map<string, FileArtifact*>::const_iterator it1 = it0->second.find(path);
 		return it1 == it0->second.end() ? NULL : it1->second;
@@ -645,6 +718,8 @@ namespace build {
 							libegin->language.getCleanFlavor()));
 				list<PathPair>::const_iterator hbegin(libegin->headers.begin()), hend(libegin->headers.end());
 				for(; hbegin != hend; ++hbegin) {
+					addLocalHeader(libegin->language, hbegin->basename,
+							*context.internFileArtifact(hbegin->directory, hbegin->basename));
 					GenerationHolder* newTrigger = NULL;
 					Ref<GenerationHolder> trigger(libegin->language.getHeaderExposeTrigger(context,
 							hbegin->directory, hbegin->basename, hbegin->flavor, fullExposeDirectory, heflavor));

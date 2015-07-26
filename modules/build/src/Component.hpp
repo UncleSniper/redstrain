@@ -150,7 +150,7 @@ namespace build {
 		Components dependencies;
 		ExternalDependencies externalDependencies;
 		std::string buildName;
-		ExposedHeaders exposedHeaders;
+		ExposedHeaders exposedHeaders, localHeaders;
 		UnresolvedGenerations unresolvedGenerations;
 
 	  public:
@@ -209,6 +209,11 @@ namespace build {
 		void clearExposedHeaders(const Language&);
 		void clearExposedHeaders();
 		FileArtifact* getExposedHeader(const Language&, const std::string&) const;
+
+		bool addLocalHeader(const Language&, const std::string&, FileArtifact&);
+		void clearLocalHeaders(const Language&);
+		void clearLocalHeaders();
+		FileArtifact* getLocalHeader(const Language&, const std::string&) const;
 
 		bool addUnresolvedGeneration(GenerationHolder*);
 		void resolveUnresolvedGenerations();
