@@ -71,7 +71,7 @@ namespace build {
 
 		};
 
-		class REDSTRAIN_BUILD_API GenerationHolder {
+		class REDSTRAIN_BUILD_API GenerationHolder : public util::ReferenceCounted {
 
 		  public:
 			GenerationHolder();
@@ -83,6 +83,8 @@ namespace build {
 			virtual void addTriggerSource(FileArtifact*) = 0;
 			virtual void getTargets(GenerationTrigger::ArtifactIterator&, GenerationTrigger::ArtifactIterator&) = 0;
 			virtual PreciousArtifact* getPreciousArtifact();
+			virtual bool evokesDependencySources();
+			virtual void addDependencySources(const Component&);
 
 		};
 
@@ -128,6 +130,8 @@ namespace build {
 		typedef std::map<const Language*, std::set<std::string> > ExternalDependencies;
 		typedef ExternalDependencies::const_iterator ExternalDependencyIterator;
 		typedef std::map<const Language*, std::map<std::string, FileArtifact*> > ExposedHeaders;
+		typedef std::set<GenerationHolder*> UnresolvedGenerations;
+		typedef UnresolvedGenerations::iterator UnresolvedGenerationIterator;
 
 	  public:
 		typedef Paths::const_iterator PathIterator;
@@ -147,6 +151,7 @@ namespace build {
 		ExternalDependencies externalDependencies;
 		std::string buildName;
 		ExposedHeaders exposedHeaders;
+		UnresolvedGenerations unresolvedGenerations;
 
 	  public:
 		Component(Type, const std::string&, const std::string&);
@@ -204,6 +209,9 @@ namespace build {
 		void clearExposedHeaders(const Language&);
 		void clearExposedHeaders();
 		FileArtifact* getExposedHeader(const Language&, const std::string&) const;
+
+		bool addUnresolvedGeneration(GenerationHolder*);
+		void resolveUnresolvedGenerations();
 
 		void setupRules(BuildDirectoryMapper&, BuildArtifactMapper&, ComponentTypeStringifier&,
 				BuildContext&, ValveInjector* = NULL);

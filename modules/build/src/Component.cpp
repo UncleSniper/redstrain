@@ -54,13 +54,19 @@ namespace build {
 
 	Component::GenerationHolder::GenerationHolder() {}
 
-	Component::GenerationHolder::GenerationHolder(const GenerationHolder&) {}
+	Component::GenerationHolder::GenerationHolder(const GenerationHolder& holder) : ReferenceCounted(holder) {}
 
 	Component::GenerationHolder::~GenerationHolder() {}
 
 	Component::PreciousArtifact* Component::GenerationHolder::getPreciousArtifact() {
 		return NULL;
 	}
+
+	bool Component::GenerationHolder::evokesDependencySources() {
+		return false;
+	}
+
+	void Component::addDependencySources(const Component&) {}
 
 	// ======== ValveInjector ========
 
@@ -130,6 +136,9 @@ namespace build {
 				eh1begin->second->ref();
 			}
 		}
+		UnresolvedGenerationIterator ugbegin(unresolvedGenerations.begin()), ugend(unresolvedGenerations.end());
+		for(; ugbegin != ugend; ++ugbegin)
+			(*ugbegin)->unref();
 	}
 
 	void Component::setInternalBuildName(const string& name) {
@@ -360,6 +369,25 @@ namespace build {
 		return it1 == it0->second.end() ? NULL : it1->second;
 	}
 
+	bool Component::addUnresolvedGeneration(GenerationHolder* holder) {
+		if(!holder)
+			return false;
+		if(!unresolvedGenerations.insert(holder).second)
+			return false;
+		holder->ref();
+		return true;
+	}
+
+	void Component::resolveUnresolvedGenerations() {
+		while(!unresolvedGenerations.empty()) {
+			UnresolvedGenerationIterator front = unresolvedGenerations.begin();
+			GenerationHolder* ug = *front;
+			ug->addDependencySources(*this);
+			unresolvedGenerations.erase(front);
+			ug->unref();
+		}
+	}
+
 	struct PathPair {
 
 		const string directory, basename;
@@ -390,10 +418,10 @@ namespace build {
 
 		~FlavorGraph() {
 			if(singleTrigger)
-				delete singleTrigger;
+				singleTrigger->unref();
 			list<Component::GenerationHolder*>::const_iterator begin(allTriggers.begin()), end(allTriggers.end());
 			for(; begin != end; ++begin)
-				delete *begin;
+				(*begin)->unref();
 		}
 
 	};
@@ -509,11 +537,14 @@ namespace build {
 						newTrigger = language.language.getGenerationTrigger(context, sbegin->directory,
 								sbegin->basename, sbegin->flavor, fullBuildDirectory, flavor, component,
 								artifactMapper);
-						graph.singleTrigger = newTrigger;
+						if(newTrigger) {
+							graph.singleTrigger = newTrigger;
+							newTrigger->ref();
+						}
 					}
 				}
 				else {
-					Delete<Component::GenerationHolder> trigger(language.language.getGenerationTrigger(context,
+					Ref<Component::GenerationHolder> trigger(language.language.getGenerationTrigger(context,
 							sbegin->directory, sbegin->basename, sbegin->flavor, fullBuildDirectory,
 							flavor, component, artifactMapper));
 					if(*trigger) {
@@ -560,6 +591,8 @@ namespace build {
 					Component::PreciousArtifact* preciousArtifact = newTrigger->getPreciousArtifact();
 					if(preciousArtifact)
 						component.addPreciousArtifact(preciousArtifact);
+					if(newTrigger->evokesDependencySources())
+						component.addUnresolvedGeneration(newTrigger);
 				}
 			}
 		}
@@ -616,7 +649,7 @@ namespace build {
 				list<PathPair>::const_iterator hbegin(libegin->headers.begin()), hend(libegin->headers.end());
 				for(; hbegin != hend; ++hbegin) {
 					GenerationHolder* newTrigger = NULL;
-					Delete<GenerationHolder> trigger(libegin->language.getHeaderExposeTrigger(context,
+					Ref<GenerationHolder> trigger(libegin->language.getHeaderExposeTrigger(context,
 							hbegin->directory, hbegin->basename, hbegin->flavor, fullExposeDirectory, heflavor));
 					if(*trigger) {
 						graph.allTriggers.push_back(*trigger);
@@ -642,6 +675,8 @@ namespace build {
 							(*abegin)->setComponentType(componentType);
 							(*abegin)->setComponentName(name);
 						}
+						if(newTrigger->evokesDependencySources())
+							addUnresolvedGeneration(newTrigger);
 					}
 				}
 			}

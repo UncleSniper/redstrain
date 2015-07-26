@@ -112,6 +112,9 @@ namespace build {
 		project->getComponents(cnbegin, cnend);
 		for(; cnbegin != cnend; ++cnbegin)
 			ruleBuilder.setupRules(*project, *project->getComponent(*cnbegin), **context);
+		project->getComponents(cnbegin, cnend);
+		for(; cnbegin != cnend; ++cnbegin)
+			project->getComponent(*cnbegin)->resolveUnresolvedGenerations();
 		return context.set();
 	}
 
