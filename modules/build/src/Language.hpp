@@ -34,6 +34,7 @@ namespace build {
 		virtual Flavor getShippedSourceFlavor();
 		virtual Flavor getShippedHeaderFlavor();
 		virtual ArtifactType classifyFile(const std::string&) = 0;
+		virtual bool acceptsSource(const Flavor&, const Flavor&) = 0;
 		virtual void getSupportedFlavors(Component::Type, util::Appender<Flavor>&) = 0;
 		virtual bool isOneToOne(const Flavor&) = 0;
 		virtual Component::GenerationHolder* getGenerationTrigger(BuildContext&, const std::string&,

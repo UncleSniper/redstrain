@@ -101,6 +101,10 @@ namespace build {
 	CompiledLanguage::CompiledLanguage(const CompiledLanguage& language)
 			: Language(language), compiler(language.compiler) {}
 
+	bool CompiledLanguage::acceptsSource(const Flavor&, const Flavor&) {
+		return true;
+	}
+
 	static const Flavor *const FLAVORS[] = {
 		&Flavor::STATIC,
 		&Flavor::DYNAMIC,

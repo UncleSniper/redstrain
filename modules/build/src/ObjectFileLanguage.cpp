@@ -75,6 +75,10 @@ namespace build {
 		return linker.isObjectFile(path) ? AT_SOURCE : AT_NONE;
 	}
 
+	bool ObjectFileLanguage::acceptsSource(const Flavor& sourceFlavor, const Flavor& transformFlavor) {
+		return sourceFlavor == transformFlavor;
+	}
+
 	static const Flavor *const FLAVORS[] = {
 		&Flavor::STATIC,
 		&Flavor::DYNAMIC,

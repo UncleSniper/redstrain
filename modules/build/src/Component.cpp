@@ -404,6 +404,8 @@ namespace build {
 			list<PathPair>::const_iterator sbegin(language.sources.begin()), send(language.sources.end());
 			bool isSingle = !language.language.isOneToOne(flavor);
 			for(; sbegin != send; ++sbegin) {
+				if(!language.language.acceptsSource(sbegin->flavor, flavor))
+					continue;
 				Component::GenerationHolder* newTrigger = NULL;
 				if(isSingle) {
 					if(graph.singleTrigger)
