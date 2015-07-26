@@ -22,20 +22,28 @@ namespace build {
 	// ======== LinkGenerationHolder ========
 
 	ObjectFileLanguage::LinkGenerationHolder::LinkGenerationHolder(GenerationTrigger* trigger,
-			LinkGenerationAction* action) : trigger(trigger), action(action) {
+			LinkGenerationAction* action, Component::PreciousArtifact* preciousArtifact)
+			: trigger(trigger), action(action), preciousArtifact(preciousArtifact) {
 		if(trigger)
 			trigger->ref();
+		if(preciousArtifact)
+			preciousArtifact->ref();
 	}
 
 	ObjectFileLanguage::LinkGenerationHolder::LinkGenerationHolder(const LinkGenerationHolder& holder)
-			: GenerationHolder(holder), trigger(holder.trigger), action(holder.action) {
+			: GenerationHolder(holder), trigger(holder.trigger), action(holder.action),
+			preciousArtifact(holder.preciousArtifact) {
 		if(trigger)
 			trigger->ref();
+		if(preciousArtifact)
+			preciousArtifact->ref();
 	}
 
 	ObjectFileLanguage::LinkGenerationHolder::~LinkGenerationHolder() {
 		if(trigger)
 			trigger->unref();
+		if(preciousArtifact)
+			preciousArtifact->unref();
 	}
 
 	Trigger* ObjectFileLanguage::LinkGenerationHolder::getTrigger() {
@@ -57,6 +65,10 @@ namespace build {
 			trigger->getTargets(begin, end);
 		else
 			begin = end = emptyArtifactList.end();
+	}
+
+	Component::PreciousArtifact* ObjectFileLanguage::LinkGenerationHolder::getPreciousArtifact() {
+		return preciousArtifact;
 	}
 
 	// ======== ObjectFileLanguage ========
@@ -117,7 +129,9 @@ namespace build {
 				getLinkerConfiguration(transformFlavor, component)));
 		action->addSource(srcfile);
 		trigger->addAction(*action);
-		LinkGenerationHolder* holder = new LinkGenerationHolder(*trigger, *action);
+		Unref<Component::PreciousArtifact> preciousArtifact(new Component::PreciousArtifact(*this,
+				transformFlavor, *trgfile));
+		LinkGenerationHolder* holder = new LinkGenerationHolder(*trigger, *action, *preciousArtifact);
 		trigger.set();
 		return holder;
 	}

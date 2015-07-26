@@ -18,9 +18,10 @@ namespace build {
 		  private:
 			GenerationTrigger* trigger;
 			LinkGenerationAction* action;
+			Component::PreciousArtifact* preciousArtifact;
 
 		  public:
-			LinkGenerationHolder(GenerationTrigger*, LinkGenerationAction*);
+			LinkGenerationHolder(GenerationTrigger*, LinkGenerationAction*, Component::PreciousArtifact*);
 			LinkGenerationHolder(const LinkGenerationHolder&);
 			virtual ~LinkGenerationHolder();
 
@@ -31,6 +32,7 @@ namespace build {
 			virtual Trigger* getTrigger();
 			virtual void addSource(FileArtifact*);
 			virtual void getTargets(GenerationTrigger::ArtifactIterator&, GenerationTrigger::ArtifactIterator&);
+			virtual Component::PreciousArtifact* getPreciousArtifact();
 
 		};
 

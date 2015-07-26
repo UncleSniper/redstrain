@@ -1,4 +1,3 @@
-#include <map>
 #include <redstrain/util/Ref.hpp>
 #include <redstrain/util/Delete.hpp>
 #include <redstrain/util/StringUtils.hpp>
@@ -34,6 +33,23 @@ namespace build {
 
 	Component::BuildDirectoryMapper::~BuildDirectoryMapper() {}
 
+	// ======== PreciousArtifact ========
+
+	Component::PreciousArtifact::PreciousArtifact(const Language& language, const Flavor& flavor,
+			FileArtifact& artifact) : language(language), flavor(flavor), artifact(artifact) {
+		artifact.ref();
+	}
+
+	Component::PreciousArtifact::PreciousArtifact(const PreciousArtifact& artifact)
+			: ReferenceCounted(artifact), language(artifact.language), flavor(artifact.flavor),
+			artifact(artifact.artifact) {
+		this->artifact.ref();
+	}
+
+	Component::PreciousArtifact::~PreciousArtifact() {
+		artifact.unref();
+	}
+
 	// ======== GenerationHolder ========
 
 	Component::GenerationHolder::GenerationHolder() {}
@@ -41,6 +57,10 @@ namespace build {
 	Component::GenerationHolder::GenerationHolder(const GenerationHolder&) {}
 
 	Component::GenerationHolder::~GenerationHolder() {}
+
+	Component::PreciousArtifact* Component::GenerationHolder::getPreciousArtifact() {
+		return NULL;
+	}
 
 	// ======== ValveInjector ========
 
@@ -76,22 +96,40 @@ namespace build {
 			baseDirectory(component.baseDirectory), sourceDirectories(component.sourceDirectories),
 			languages(component.languages), preciousArtifacts(component.preciousArtifacts),
 			exposeDirectories(component.exposeDirectories), dependencies(component.dependencies),
-			externalDependencies(component.externalDependencies) {
-		FileArtifactIterator pabegin(preciousArtifacts.begin()), paend(preciousArtifacts.end());
+			externalDependencies(component.externalDependencies), exposedHeaders(component.exposedHeaders) {
+		PreciousArtifactIterator pabegin(preciousArtifacts.begin()), paend(preciousArtifacts.end());
 		for(; pabegin != paend; ++pabegin)
 			(*pabegin)->ref();
 		ComponentIterator depbegin(dependencies.begin()), depend(dependencies.end());
 		for(; depbegin != depend; ++depbegin)
 			(*depbegin)->ref();
+		map<const Language*, map<string, FileArtifact*> >::const_iterator eh0begin(exposedHeaders.begin()),
+				eh0end(exposedHeaders.end());
+		for(; eh0begin != eh0end; ++eh0begin) {
+			map<string, FileArtifact*>::const_iterator eh1begin(eh0begin->second.begin()),
+					eh1end(eh0begin->second.end());
+			for(; eh1begin != eh1end; ++eh1begin) {
+				eh1begin->second->ref();
+			}
+		}
 	}
 
 	Component::~Component() {
-		FileArtifactIterator pabegin(preciousArtifacts.begin()), paend(preciousArtifacts.end());
+		PreciousArtifactIterator pabegin(preciousArtifacts.begin()), paend(preciousArtifacts.end());
 		for(; pabegin != paend; ++pabegin)
 			(*pabegin)->unref();
 		ComponentIterator depbegin(dependencies.begin()), depend(dependencies.end());
 		for(; depbegin != depend; ++depbegin)
 			(*depbegin)->unref();
+		map<const Language*, map<string, FileArtifact*> >::const_iterator eh0begin(exposedHeaders.begin()),
+				eh0end(exposedHeaders.end());
+		for(; eh0begin != eh0end; ++eh0begin) {
+			map<string, FileArtifact*>::const_iterator eh1begin(eh0begin->second.begin()),
+					eh1end(eh0begin->second.end());
+			for(; eh1begin != eh1end; ++eh1begin) {
+				eh1begin->second->ref();
+			}
+		}
 	}
 
 	void Component::setInternalBuildName(const string& name) {
@@ -127,46 +165,46 @@ namespace build {
 		end = languages.end();
 	}
 
-	bool Component::addPreciousArtifact(FileArtifact* file) {
-		if(!file)
+	bool Component::addPreciousArtifact(PreciousArtifact* artifact) {
+		if(!artifact)
 			return false;
-		if(!preciousArtifacts.insert(file).second)
+		if(!preciousArtifacts.insert(artifact).second)
 			return false;
-		file->ref();
+		artifact->ref();
 		return true;
 	}
 
-	bool Component::removePreciousArtifact(FileArtifact* file) {
-		if(!preciousArtifacts.erase(file))
+	bool Component::removePreciousArtifact(PreciousArtifact* artifact) {
+		if(!preciousArtifacts.erase(artifact))
 			return false;
-		file->unref();
+		artifact->unref();
 		return true;
 	}
 
 	void Component::clearPreciousArtifacts() {
-		FileArtifactIterator pabegin(preciousArtifacts.begin()), paend(preciousArtifacts.end());
+		PreciousArtifactIterator pabegin(preciousArtifacts.begin()), paend(preciousArtifacts.end());
 		for(; pabegin != paend; ++pabegin)
 			(*pabegin)->unref();
 		preciousArtifacts.clear();
 	}
 
-	void Component::getPreciousArtifacts(FileArtifactIterator& begin, FileArtifactIterator& end) const {
+	void Component::getPreciousArtifacts(PreciousArtifactIterator& begin, PreciousArtifactIterator& end) const {
 		begin = preciousArtifacts.begin();
 		end = preciousArtifacts.end();
 	}
 
 	bool Component::putHeaderExposeDirectory(const Language& language, const string& directory) {
-		bool result = exposeDirectories.find(language.getName()) == exposeDirectories.end();
-		exposeDirectories[language.getName()] = directory;
+		bool result = exposeDirectories.find(&language) == exposeDirectories.end();
+		exposeDirectories[&language] = directory;
 		return result;
 	}
 
 	bool Component::removeHeaderExposeDirectory(const Language& language) {
-		return exposeDirectories.erase(language.getName());
+		return exposeDirectories.erase(&language);
 	}
 
 	string Component::getHeaderExposeDirectory(const Language& language) const {
-		ExposeDirectories::const_iterator it = exposeDirectories.find(language.getName());
+		ExposeDirectories::const_iterator it = exposeDirectories.find(&language);
 		return it == exposeDirectories.end() ? "" : it->second;
 	}
 
@@ -220,13 +258,12 @@ namespace build {
 	}
 
 	bool Component::addExternalDependency(const Language& language, const string& library) {
-		const string& name = language.getName();
-		ExternalDependencies::iterator oit = externalDependencies.find(name);
+		ExternalDependencies::iterator oit = externalDependencies.find(&language);
 		set<string>* inner;
 		bool insouter = oit == externalDependencies.end();
 		if(insouter) {
-			externalDependencies[name] = set<string>();
-			inner = &externalDependencies[name];
+			externalDependencies[&language] = set<string>();
+			inner = &externalDependencies[&language];
 		}
 		else
 			inner = &oit->second;
@@ -236,15 +273,14 @@ namespace build {
 	}
 
 	bool Component::removeExternalDependency(const Language& language, const string& library) {
-		const string& name = language.getName();
-		ExternalDependencies::iterator oit = externalDependencies.find(name);
+		ExternalDependencies::iterator oit = externalDependencies.find(&language);
 		if(oit == externalDependencies.end())
 			return false;
 		return oit->second.erase(library);
 	}
 
 	void Component::clearExternalDependencies(const Language& language) {
-		ExternalDependencies::iterator oit = externalDependencies.find(language.getName());
+		ExternalDependencies::iterator oit = externalDependencies.find(&language);
 		if(oit != externalDependencies.end())
 			oit->second.clear();
 	}
@@ -257,13 +293,71 @@ namespace build {
 
 	void Component::getExternalDependencies(const Language& language,
 			DependencyIterator& begin, DependencyIterator& end) const {
-		ExternalDependencyIterator oit = externalDependencies.find(language.getName());
+		ExternalDependencyIterator oit = externalDependencies.find(&language);
 		if(oit == externalDependencies.end())
 			begin = end = emptyStringSet.end();
 		else {
 			begin = oit->second.begin();
 			end = oit->second.end();
 		}
+	}
+
+	bool Component::addExposedHeader(const Language& language, const string& path,
+			FileArtifact& file) {
+		map<const Language*, map<string, FileArtifact*> >::iterator it0 = exposedHeaders.find(&language);
+		map<string, FileArtifact*>* eh1;
+		if(it0 == exposedHeaders.end()) {
+			exposedHeaders[&language] = map<string, FileArtifact*>();
+			eh1 = &exposedHeaders[&language];
+		}
+		else
+			eh1 = &it0->second;
+		map<string, FileArtifact*>::iterator it1 = eh1->find(path);
+		if(it1 == eh1->end()) {
+			(*eh1)[path] = &file;
+			file.ref();
+			return true;
+		}
+		else if(it1->second == &file)
+			return false;
+		else {
+			FileArtifact* old = it1->second;
+			it1->second = &file;
+			file.ref();
+			old->unref();
+			return true;
+		}
+	}
+
+	void Component::clearExposedHeaders(const Language& language) {
+		map<const Language*, map<string, FileArtifact*> >::iterator it0 = exposedHeaders.find(&language);
+		if(it0 == exposedHeaders.end())
+			return;
+		map<string, FileArtifact*>::const_iterator eh1begin(it0->second.begin()), eh1end(it0->second.end());
+		for(; eh1begin != eh1end; ++eh1begin)
+			eh1begin->second->unref();
+		exposedHeaders.erase(it0);
+	}
+
+	void Component::clearExposedHeaders() {
+		map<const Language*, map<string, FileArtifact*> >::const_iterator eh0begin(exposedHeaders.begin()),
+				eh0end(exposedHeaders.end());
+		for(; eh0begin != eh0end; ++eh0begin) {
+			map<string, FileArtifact*>::const_iterator eh1begin(eh0begin->second.begin()),
+					eh1end(eh0begin->second.end());
+			for(; eh1begin != eh1end; ++eh1begin) {
+				eh1begin->second->ref();
+			}
+		}
+		exposedHeaders.clear();
+	}
+
+	FileArtifact* Component::getExposedHeader(const Language& language, const string& path) const {
+		map<const Language*, map<string, FileArtifact*> >::const_iterator it0 = exposedHeaders.find(&language);
+		if(it0 == exposedHeaders.end())
+			return NULL;
+		map<string, FileArtifact*>::const_iterator it1 = it0->second.find(path);
+		return it1 == it0->second.end() ? NULL : it1->second;
 	}
 
 	struct PathPair {
@@ -463,6 +557,9 @@ namespace build {
 						(*abegin)->setComponentType(componentType);
 						(*abegin)->setComponentName(component.getName());
 					}
+					Component::PreciousArtifact* preciousArtifact = newTrigger->getPreciousArtifact();
+					if(preciousArtifact)
+						component.addPreciousArtifact(preciousArtifact);
 				}
 			}
 		}
@@ -531,9 +628,12 @@ namespace build {
 							newTrigger->getTargets(tbegin, tend);
 							for(; tbegin != tend; ++tbegin) {
 								FileArtifact* file = dynamic_cast<FileArtifact*>(*tbegin);
-								if(file)
+								if(file) {
 									allBuildDirectories.insert(PathPair(file->getDirectory(), file->getBasename(),
 											libegin->language.getCleanFlavor()));
+									addExposedHeader(libegin->language,
+											Pathname::stripPrefix(file->getPathname(), exposeDirectory), *file);
+								}
 							}
 						}
 						Trigger::ActionIterator abegin, aend;

@@ -7,6 +7,7 @@
 #include <string>
 #include <redstrain/util/ReferenceCounted.hpp>
 
+#include "Flavor.hpp"
 #include "GenerationTrigger.hpp"
 
 namespace redengine {
@@ -40,6 +41,36 @@ namespace build {
 
 		};
 
+		class REDSTRAIN_BUILD_API PreciousArtifact : public util::ReferenceCounted {
+
+		  private:
+			const Language& language;
+			const Flavor flavor;
+			FileArtifact& artifact;
+
+		  public:
+			PreciousArtifact(const Language&, const Flavor&, FileArtifact&);
+			PreciousArtifact(const PreciousArtifact&);
+			virtual ~PreciousArtifact();
+
+			inline const Language& getLanguage() const {
+				return language;
+			}
+
+			inline const Flavor& getFlavor() const {
+				return flavor;
+			}
+
+			inline FileArtifact& getArtifact() {
+				return artifact;
+			}
+
+			inline const FileArtifact& getArtifact() const {
+				return artifact;
+			}
+
+		};
+
 		class REDSTRAIN_BUILD_API GenerationHolder {
 
 		  public:
@@ -50,6 +81,7 @@ namespace build {
 			virtual Trigger* getTrigger() = 0;
 			virtual void addSource(FileArtifact*) = 0;
 			virtual void getTargets(GenerationTrigger::ArtifactIterator&, GenerationTrigger::ArtifactIterator&) = 0;
+			virtual PreciousArtifact* getPreciousArtifact();
 
 		};
 
@@ -89,16 +121,17 @@ namespace build {
 	  private:
 		typedef std::list<std::string> Paths;
 		typedef std::set<Language*> Languages;
-		typedef std::set<FileArtifact*> FileArtifacts;
-		typedef std::map<std::string, std::string> ExposeDirectories;
+		typedef std::set<PreciousArtifact*> PreciousArtifacts;
+		typedef std::map<const Language*, std::string> ExposeDirectories;
 		typedef std::set<Component*> Components;
-		typedef std::map<std::string, std::set<std::string> > ExternalDependencies;
+		typedef std::map<const Language*, std::set<std::string> > ExternalDependencies;
 		typedef ExternalDependencies::const_iterator ExternalDependencyIterator;
+		typedef std::map<const Language*, std::map<std::string, FileArtifact*> > ExposedHeaders;
 
 	  public:
 		typedef Paths::const_iterator PathIterator;
 		typedef Languages::const_iterator LanguageIterator;
-		typedef FileArtifacts::const_iterator FileArtifactIterator;
+		typedef PreciousArtifacts::const_iterator PreciousArtifactIterator;
 		typedef Components::const_iterator ComponentIterator;
 		typedef std::set<std::string>::const_iterator DependencyIterator;
 
@@ -107,11 +140,12 @@ namespace build {
 		const std::string name, baseDirectory;
 		Paths sourceDirectories;
 		Languages languages;
-		FileArtifacts preciousArtifacts;
+		PreciousArtifacts preciousArtifacts;
 		ExposeDirectories exposeDirectories;
 		Components dependencies;
 		ExternalDependencies externalDependencies;
 		std::string buildName;
+		ExposedHeaders exposedHeaders;
 
 	  public:
 		Component(Type, const std::string&, const std::string&);
@@ -144,10 +178,10 @@ namespace build {
 		void clearLanguages();
 		void getLanguages(LanguageIterator&, LanguageIterator&) const;
 
-		bool addPreciousArtifact(FileArtifact*);
-		bool removePreciousArtifact(FileArtifact*);
+		bool addPreciousArtifact(PreciousArtifact*);
+		bool removePreciousArtifact(PreciousArtifact*);
 		void clearPreciousArtifacts();
-		void getPreciousArtifacts(FileArtifactIterator&, FileArtifactIterator&) const;
+		void getPreciousArtifacts(PreciousArtifactIterator&, PreciousArtifactIterator&) const;
 
 		bool putHeaderExposeDirectory(const Language&, const std::string&);
 		bool removeHeaderExposeDirectory(const Language&);
@@ -164,6 +198,11 @@ namespace build {
 		void clearExternalDependencies(const Language&);
 		void clearExternalDependencies();
 		void getExternalDependencies(const Language&, DependencyIterator&, DependencyIterator&) const;
+
+		bool addExposedHeader(const Language&, const std::string&, FileArtifact&);
+		void clearExposedHeaders(const Language&);
+		void clearExposedHeaders();
+		FileArtifact* getExposedHeader(const Language&, const std::string&) const;
 
 		void setupRules(BuildDirectoryMapper&, BuildArtifactMapper&, ComponentTypeStringifier&,
 				BuildContext&, ValveInjector* = NULL);
