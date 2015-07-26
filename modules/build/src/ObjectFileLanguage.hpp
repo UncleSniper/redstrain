@@ -31,6 +31,7 @@ namespace build {
 
 			virtual Trigger* getTrigger();
 			virtual void addSource(FileArtifact*);
+			virtual void addTriggerSource(FileArtifact*);
 			virtual void getTargets(GenerationTrigger::ArtifactIterator&, GenerationTrigger::ArtifactIterator&);
 			virtual Component::PreciousArtifact* getPreciousArtifact();
 

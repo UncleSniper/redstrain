@@ -80,6 +80,7 @@ namespace build {
 
 			virtual Trigger* getTrigger() = 0;
 			virtual void addSource(FileArtifact*) = 0;
+			virtual void addTriggerSource(FileArtifact*) = 0;
 			virtual void getTargets(GenerationTrigger::ArtifactIterator&, GenerationTrigger::ArtifactIterator&) = 0;
 			virtual PreciousArtifact* getPreciousArtifact();
 
