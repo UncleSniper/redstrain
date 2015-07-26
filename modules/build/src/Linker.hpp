@@ -13,6 +13,7 @@ namespace build {
 
 	  private:
 		redmond::Architecture architecture;
+		redmond::OperatingSystem targetOS;
 
 	  protected:
 		inline void setTargetArchitecture(redmond::Architecture architecture) {
@@ -20,7 +21,8 @@ namespace build {
 		}
 
 	  public:
-		Linker(redmond::Architecture = REDSTRAIN_BUILD_DEFAULT_ARCH);
+		Linker(redmond::Architecture = REDSTRAIN_BUILD_DEFAULT_ARCH,
+				redmond::OperatingSystem = REDSTRAIN_BUILD_DEFAULT_OS);
 		Linker(const Linker&);
 		virtual ~Linker();
 
@@ -28,7 +30,16 @@ namespace build {
 			return architecture;
 		}
 
+		inline redmond::OperatingSystem getTargetOperatingSystem() {
+			return targetOS;
+		}
+
 		virtual Linkage* newLinkage(const std::string&, Linkage::LinkMode) = 0;
+		virtual bool isObjectFile(const std::string&) = 0;
+		virtual std::string decorateBinaryFileName(const std::string&, Linkage::LinkMode) = 0;
+		virtual std::string getObjectFileFormatName() = 0;
+
+		static redmond::OperatingSystem parseOperatingSystem(const std::string&);
 
 	};
 

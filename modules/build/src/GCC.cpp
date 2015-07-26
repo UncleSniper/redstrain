@@ -13,7 +13,10 @@ using redengine::util::StringUtils;
 using redengine::platform::Pathname;
 using redengine::platform::Filesystem;
 using redengine::redmond::Architecture;
+using redengine::redmond::OperatingSystem;
+using redengine::redmond::OS_LINUX;
 using redengine::redmond::ARCH_I686;
+using redengine::redmond::OS_WINDOWS;
 using redengine::redmond::ARCH_X86_64;
 
 namespace redengine {
@@ -159,9 +162,9 @@ namespace build {
 
 	// ======== GCC ========
 
-	GCC::GCC(const string& executable, const string& arExecutable, Architecture architecture)
-			: ExternalTool(executable), ExternalCompiler(executable, architecture),
-			ExternalLinker(executable, architecture), arExecutable(arExecutable) {}
+	GCC::GCC(const string& executable, const string& arExecutable, Architecture architecture,
+			OperatingSystem targetOS) : ExternalTool(executable), ExternalCompiler(executable, architecture),
+			ExternalLinker(executable, architecture, targetOS), arExecutable(arExecutable) {}
 
 	GCC::GCC(const GCC& gcc) : ExternalTool(gcc), ExternalCompiler(gcc), ExternalLinker(gcc),
 			arExecutable(gcc.arExecutable) {}
@@ -196,6 +199,55 @@ namespace build {
 	Linkage* GCC::newLinkage(const string& target, Linkage::LinkMode mode) {
 		return new GCCLinkage(mode == Linkage::STATIC_LIBRARY ? arExecutable : getExecutable(),
 				ExternalLinker::getTargetArchitecture(), target, mode);
+	}
+
+	bool GCC::isObjectFile(const string& path) {
+		string bn(Pathname::basename(path));
+		return bn.length() > static_cast<string::size_type>(2u) && StringUtils::endsWith(bn, ".o");
+	}
+
+	string GCC::decorateBinaryFileName(const string& name, Linkage::LinkMode mode) {
+		switch(mode) {
+			case Linkage::STATIC_EXECUTABLE:
+			case Linkage::DYNAMIC_EXECUTABLE:
+				return decorateNativeExecutableName(name, getTargetOperatingSystem());
+			case Linkage::STATIC_LIBRARY:
+				return "lib" + name + ".a";
+			case Linkage::DYNAMIC_LIBRARY:
+				return "lib" + decorateNativeDynamicLibraryName(name, getTargetOperatingSystem());
+			default:
+				return name;
+		}
+	}
+
+	string GCC::getObjectFileFormatName() {
+		Architecture arch = ExternalLinker::getTargetArchitecture();
+		OperatingSystem os = getTargetOperatingSystem();
+		switch(arch) {
+			case ARCH_I686:
+				switch(os) {
+					case OS_LINUX:
+						return "elf32-i386";
+					case OS_WINDOWS:
+						return "pe-i386";
+					default:
+						break;
+				}
+				break;
+			case ARCH_X86_64:
+				switch(os) {
+					case OS_LINUX:
+						return "elf64-x86-64";
+					case OS_WINDOWS:
+						return "pe-x86-64";
+					default:
+						break;
+				}
+				break;
+			default:
+				break;
+		}
+		return "object";
 	}
 
 }}

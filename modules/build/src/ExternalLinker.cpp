@@ -2,6 +2,7 @@
 
 using std::string;
 using redengine::redmond::Architecture;
+using redengine::redmond::OperatingSystem;
 
 namespace redengine {
 namespace build {
@@ -27,8 +28,8 @@ namespace build {
 
 	// ======== ExternalLinker ========
 
-	ExternalLinker::ExternalLinker(const string& executable, Architecture architecture)
-			: ExternalTool(executable), Linker(architecture) {}
+	ExternalLinker::ExternalLinker(const string& executable, Architecture architecture, OperatingSystem targetOS)
+			: ExternalTool(executable), Linker(architecture, targetOS) {}
 
 	ExternalLinker::ExternalLinker(const ExternalLinker& linker) : ExternalTool(linker), Linker(linker) {}
 

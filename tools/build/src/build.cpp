@@ -10,6 +10,7 @@
 #include <redstrain/build/boot/XakeComponentFactory.hpp>
 #include <redstrain/error/UnsupportedOperationError.hpp>
 #include <redstrain/build/boot/XakeDependencyResolver.hpp>
+#include <redstrain/build/boot/XakeBuildArtifactMapper.hpp>
 #include <redstrain/build/boot/XakeBuildDirectoryMapper.hpp>
 #include <redstrain/build/DefaultComponentTypeStringifier.hpp>
 #include <redstrain/cmdline/parseopt.hpp>
@@ -35,6 +36,7 @@ using redengine::build::boot::XakeComponentFinder;
 using redengine::error::UnsupportedOperationError;
 using redengine::build::boot::XakeComponentFactory;
 using redengine::build::boot::XakeDependencyResolver;
+using redengine::build::boot::XakeBuildArtifactMapper;
 using redengine::build::boot::XakeBuildDirectoryMapper;
 using redengine::build::DefaultComponentTypeStringifier;
 using redengine::cmdline::ConfigurationObjectOptionLogic;
@@ -67,8 +69,10 @@ int bootstrap(const string&, const Options& options) {
 	XakeComponentFactory componentFactory(xproject);
 	XakeDependencyResolver dependencyResolver(xproject);
 	XakeBuildDirectoryMapper buildDirectoryMapper(xproject);
+	XakeBuildArtifactMapper buildArtifactMapper(xproject);
 	XakeValveInjector valveInjector(xproject);
-	ComponentRuleBuilder ruleBuilder(buildDirectoryMapper, DefaultComponentTypeStringifier::instance, &valveInjector);
+	ComponentRuleBuilder ruleBuilder(buildDirectoryMapper, buildArtifactMapper,
+			DefaultComponentTypeStringifier::instance, &valveInjector);
 	ProjectBuilder projectBuilder(projectFactory, componentFinder, componentFactory,
 			dependencyResolver, ruleBuilder);
 	projectBuilder.buildProject(base);

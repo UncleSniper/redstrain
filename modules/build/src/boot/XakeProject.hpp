@@ -8,6 +8,7 @@
 #include "../Component.hpp"
 #include "../CPPLanguage.hpp"
 #include "../StaticValve.hpp"
+#include "../ObjectFileLanguage.hpp"
 
 namespace redengine {
 namespace build {
@@ -28,7 +29,8 @@ namespace boot {
 			const XakeProject& project;
 
 		  public:
-			XakeGCC(const XakeProject&, const std::string&, const std::string&, redmond::Architecture);
+			XakeGCC(const XakeProject&, const std::string&, const std::string&,
+					redmond::Architecture, redmond::OperatingSystem);
 			XakeGCC(const XakeGCC&);
 
 			inline const XakeProject& getProject() const {
@@ -55,6 +57,24 @@ namespace boot {
 
 		};
 
+		class REDSTRAIN_BUILD_API XakeObjectFileLanguage : public ObjectFileLanguage {
+
+		  private:
+			const XakeProject& project;
+
+		  protected:
+			virtual LinkerConfiguration& getLinkerConfiguration(const Flavor&, const Component&);
+
+		  public:
+			XakeObjectFileLanguage(const std::string&, XakeProject&);
+			XakeObjectFileLanguage(const XakeObjectFileLanguage&);
+
+			inline const XakeProject& getProject() const {
+				return project;
+			}
+
+		};
+
 	  private:
 		typedef std::map<const Component*, XakeComponent*> Components;
 		typedef Components::iterator ComponentIterator;
@@ -69,6 +89,7 @@ namespace boot {
 		Compiler* compiler;
 		Linker* linker;
 		XakeCPPLanguage* cppLanguage;
+		XakeObjectFileLanguage* objectFileLanguage;
 		std::string compilerName;
 		StaticValve *cleanValve, *buildValve, *modulesValve, *toolsValve, *staticValve, *dynamicValve;
 		Valves valves;
@@ -102,6 +123,7 @@ namespace boot {
 		Compiler* getCompiler();
 		Linker* getLinker();
 		Language* getCPPLanguage();
+		Language* getObjectFileLanguage();
 		const std::string& getCompilerName();
 
 		StaticValve* getCleanValve(BuildContext&);

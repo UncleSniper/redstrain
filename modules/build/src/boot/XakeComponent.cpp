@@ -1,3 +1,4 @@
+#include <set>
 #include <redstrain/platform/Stat.hpp>
 #include <redstrain/platform/Pathname.hpp>
 #include <redstrain/platform/Filesystem.hpp>
@@ -5,7 +6,11 @@
 
 #include "XakeProject.hpp"
 #include "XakeComponent.hpp"
+#include "XakeBuildArtifactMapper.hpp"
+#include "../platform.hpp"
 
+using std::set;
+using std::list;
 using std::string;
 using redengine::platform::Stat;
 using redengine::platform::Pathname;
@@ -18,12 +23,50 @@ namespace redengine {
 namespace build {
 namespace boot {
 
+	// ======== XakeLinkerConfiguration ========
+
+	XakeComponent::XakeLinkerConfiguration::XakeLinkerConfiguration(XakeComponent& component, bool forStatic)
+			: component(component), forStatic(forStatic) {}
+
+	XakeComponent::XakeLinkerConfiguration::XakeLinkerConfiguration(const XakeLinkerConfiguration& configuration)
+			: LinkerConfiguration(configuration), component(configuration.component),
+			forStatic(configuration.forStatic) {}
+
+	void XakeComponent::XakeLinkerConfiguration::applyConfiguration(Linkage& linkage) {
+		Component* c = component.getComponent();
+		if(c) {
+			XakeProject& project = component.getProject();
+			const Language& cpp = *project.getCPPLanguage();
+			// dependencies
+			if(c->getType() == Component::EXECUTABLE
+					|| requiresInterlinkedLibraries(project.getLinker()->getTargetOperatingSystem())) {
+				list<Component*> dependencies;
+				c->getTransitiveDependencies(dependencies);
+				XakeBuildArtifactMapper artifactMapper(project);
+				list<Component*>::const_iterator cdbegin(dependencies.begin()), cdend(dependencies.end());
+				for(; cdbegin != cdend; ++cdbegin) {
+					linkage.addLibraryDirectory((*cdbegin)->getBaseDirectory());
+					linkage.addLibrary(artifactMapper.getTargetFileName(*c, cpp,
+							forStatic ? Flavor::STATIC : Flavor::DYNAMIC));
+				}
+			}
+			// external dependencies
+			Component::DependencyIterator edbegin, edend;
+			c->getExternalDependencies(cpp, edbegin, edend);
+			for(; edbegin != edend; ++edbegin)
+				linkage.addLibrary(*edbegin);
+		}
+	}
+
+	// ======== XakeComponent ========
+
 	const char *const XakeComponent::DEFAULT_COMMON_MODULES_PROPERTIES_FILE = "modules.properties";
 	const char *const XakeComponent::DEFAULT_COMMON_TOOLS_PROPERTIES_FILE = "tools.properties";
 	const char *const XakeComponent::DEFAULT_COMPONENT_PROPERTIES_FILE = "component.properties";
 
 	XakeComponent::XakeComponent(XakeProject& project, const string& baseDirectory, Component::Type type)
-			: project(project), baseDirectory(baseDirectory), type(type), component(NULL) {
+			: project(project), baseDirectory(baseDirectory), type(type), component(NULL),
+			staticLinkerConfiguration(*this, true), dynamicLinkerConfiguration(*this, false) {
 		Resources::ID typeres;
 		const char* typedefault;
 		switch(type) {
@@ -67,7 +110,8 @@ namespace boot {
 
 	XakeComponent::XakeComponent(const XakeComponent& component) : CompilerConfiguration(component),
 			project(component.project), baseDirectory(component.baseDirectory), type(component.type),
-			configuration(component.configuration), component(component.component) {}
+			configuration(component.configuration), component(component.component),
+			staticLinkerConfiguration(*this, true), dynamicLinkerConfiguration(*this, false) {}
 
 	void XakeComponent::applyConfiguration(Compilation& compilation) {
 		// internal API macro
@@ -95,6 +139,18 @@ namespace boot {
 		}
 		compilation.defineMacro("XAKE_COMPILER_GCC", "1");
 		compilation.defineMacro("XAKE_COMPILER", project.getCompilerName());
+		// include directories
+		if(component) {
+			list<Component*> dependencies;
+			component->getTransitiveDependencies(dependencies);
+			const Language& cpp = *project.getCPPLanguage();
+			list<Component*>::const_iterator cdbegin(dependencies.begin()), cdend(dependencies.end());
+			for(; cdbegin != cdend; ++cdbegin) {
+				string hedir((*cdbegin)->getHeaderExposeDirectory(cpp));
+				if(!hedir.empty())
+					compilation.addIncludeDirectory(hedir);
+			}
+		}
 	}
 
 }}}

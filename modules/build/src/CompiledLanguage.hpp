@@ -71,7 +71,8 @@ namespace build {
 		virtual void getSupportedFlavors(Component::Type, util::Appender<Flavor>&);
 		virtual bool isOneToOne(const Flavor&);
 		virtual Component::GenerationHolder* getGenerationTrigger(BuildContext&, const std::string&,
-				const std::string&, const Flavor&, const std::string&, const Flavor&, Component&);
+				const std::string&, const Flavor&, const std::string&, const Flavor&, Component&,
+				Component::BuildArtifactMapper&);
 		virtual Flavor getGeneratedSourceFlavor(const Flavor&, const Flavor&, const std::string&);
 		virtual Flavor getGeneratedHeaderFlavor(const Flavor&, const Flavor&, const std::string&);
 		virtual Component::GenerationHolder* getHeaderExposeTrigger(BuildContext&, const std::string&,

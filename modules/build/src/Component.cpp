@@ -58,6 +58,14 @@ namespace build {
 
 	Component::ComponentTypeStringifier::~ComponentTypeStringifier() {}
 
+	// ======== BuildArtifactMapper ========
+
+	Component::BuildArtifactMapper::BuildArtifactMapper() {}
+
+	Component::BuildArtifactMapper::BuildArtifactMapper(const BuildArtifactMapper&) {}
+
+	Component::BuildArtifactMapper::~BuildArtifactMapper() {}
+
 	// ======== Component ========
 
 	Component::Component(Type type, const string& name, const string& baseDirectory)
@@ -188,6 +196,27 @@ namespace build {
 	void Component::getDependencies(ComponentIterator& begin, ComponentIterator& end) const {
 		begin = dependencies.begin();
 		end = dependencies.end();
+	}
+
+	static void getTransitiveDependenciesImpl(const Component& component, list<Component*>& deplist,
+			set<Component*>& depset) {
+		Component::ComponentIterator ddbegin, ddend;
+		component.getDependencies(ddbegin, ddend);
+		for(; ddbegin != ddend; ++ddbegin)
+			getTransitiveDependenciesImpl(**ddbegin, deplist, depset);
+		component.getDependencies(ddbegin, ddend);
+		for(; ddbegin != ddend; ++ddbegin) {
+			if(depset.find(*ddbegin) == depset.end()) {
+				deplist.push_front(*ddbegin);
+				depset.insert(*ddbegin);
+			}
+		}
+	}
+
+	void Component::getTransitiveDependencies(list<Component*>& dependencies) const {
+		dependencies.clear();
+		set<Component*> depset;
+		getTransitiveDependenciesImpl(*this, dependencies, depset);
 	}
 
 	bool Component::addExternalDependency(const Language& language, const string& library) {
@@ -349,16 +378,18 @@ namespace build {
 		LanguageInfo& language;
 		list<LanguageInfo>& languages;
 		Component::BuildDirectoryMapper& directoryMapper;
+		Component::BuildArtifactMapper& artifactMapper;
 		Component::ComponentTypeStringifier& typeStringifier;
 		bool addedMoreSources;
 		set<PathPair>& allBuildDirectories;
 
 		FlavorAppender(BuildContext& context, Component& component, LanguageInfo& language,
 				list<LanguageInfo>& languages, Component::BuildDirectoryMapper& directoryMapper,
+				Component::BuildArtifactMapper& artifactMapper,
 				Component::ComponentTypeStringifier& typeStringifier, set<PathPair>& allBuildDirectories)
 				: context(context), component(component), language(language), languages(languages),
-				directoryMapper(directoryMapper), typeStringifier(typeStringifier), addedMoreSources(false),
-				allBuildDirectories(allBuildDirectories) {}
+				directoryMapper(directoryMapper), artifactMapper(artifactMapper), typeStringifier(typeStringifier),
+				addedMoreSources(false), allBuildDirectories(allBuildDirectories) {}
 
 		virtual void append(const Flavor& flavor) {
 			const string& cbase = component.getBaseDirectory();
@@ -380,14 +411,15 @@ namespace build {
 								sbegin->basename));
 					else {
 						newTrigger = language.language.getGenerationTrigger(context, sbegin->directory,
-								sbegin->basename, sbegin->flavor, fullBuildDirectory, flavor, component);
+								sbegin->basename, sbegin->flavor, fullBuildDirectory, flavor, component,
+								artifactMapper);
 						graph.singleTrigger = newTrigger;
 					}
 				}
 				else {
 					Delete<Component::GenerationHolder> trigger(language.language.getGenerationTrigger(context,
 							sbegin->directory, sbegin->basename, sbegin->flavor, fullBuildDirectory,
-							flavor, component));
+							flavor, component, artifactMapper));
 					if(*trigger) {
 						graph.allTriggers.push_back(*trigger);
 						newTrigger = trigger.set();
@@ -435,8 +467,8 @@ namespace build {
 
 	};
 
-	void Component::setupRules(BuildDirectoryMapper& directoryMapper, ComponentTypeStringifier& typeStringifier,
-			BuildContext& context, ValveInjector* injector) {
+	void Component::setupRules(BuildDirectoryMapper& directoryMapper, BuildArtifactMapper& artifactMapper,
+			ComponentTypeStringifier& typeStringifier, BuildContext& context, ValveInjector* injector) {
 		list<LanguageInfo> langinfo;
 		LanguageIterator lbegin(languages.begin()), lend(languages.end());
 		for(; lbegin != lend; ++lbegin)
@@ -457,8 +489,8 @@ namespace build {
 			list<LanguageInfo>::iterator libegin(langinfo.begin()), liend(langinfo.end());
 			for(; libegin != liend; ++libegin) {
 				if(!libegin->sources.empty()) {
-					FlavorAppender fhandler(context, *this, *libegin, langinfo, directoryMapper, typeStringifier,
-							allBuildDirectories);
+					FlavorAppender fhandler(context, *this, *libegin, langinfo, directoryMapper, artifactMapper,
+							typeStringifier, allBuildDirectories);
 					libegin->language.getSupportedFlavors(type, fhandler);
 					libegin->sources.clear();
 					if(fhandler.addedMoreSources)

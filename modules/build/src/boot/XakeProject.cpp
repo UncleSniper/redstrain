@@ -18,6 +18,7 @@ using redengine::platform::Stat;
 using redengine::platform::Pathname;
 using redengine::platform::Filesystem;
 using redengine::redmond::Architecture;
+using redengine::redmond::OperatingSystem;
 using redengine::redmond::OS_LINUX;
 using redengine::redmond::OS_WINDOWS;
 using redengine::redmond::buildTargetOS;
@@ -32,8 +33,8 @@ namespace boot {
 	const char *const XakeProject::XakeGCC::DEFAULT_AR_EXECUTABLE = "ar";
 
 	XakeProject::XakeGCC::XakeGCC(const XakeProject& project, const string& executable, const string& arExecutable,
-			Architecture architecture) : ExternalTool(executable), GCC(executable, arExecutable, architecture),
-			project(project) {}
+			Architecture architecture, OperatingSystem targetOS) : ExternalTool(executable),
+			GCC(executable, arExecutable, architecture, targetOS), project(project) {}
 
 	XakeProject::XakeGCC::XakeGCC(const XakeGCC& gcc) : ExternalTool(gcc), GCC(gcc), project(gcc.project) {}
 
@@ -52,6 +53,26 @@ namespace boot {
 			return *xcomponent;
 		else
 			return CPPLanguage::getCompilerConfiguration(transformFlavor, component);
+	}
+
+	// ======== XakeObjectFileLanguage ========
+
+	XakeProject::XakeObjectFileLanguage::XakeObjectFileLanguage(const string& name, XakeProject& project)
+			: ObjectFileLanguage(name, *project.getLinker()), project(project) {}
+
+	XakeProject::XakeObjectFileLanguage::XakeObjectFileLanguage(const XakeObjectFileLanguage& language)
+			: ObjectFileLanguage(language), project(language.project) {}
+
+	LinkerConfiguration& XakeProject::XakeObjectFileLanguage::getLinkerConfiguration(const Flavor& transformFlavor,
+			const Component& component) {
+		XakeComponent* xcomponent = project.getComponent(&component);
+		if(xcomponent) {
+			if(transformFlavor == Flavor::STATIC)
+				return xcomponent->getStaticLinkerConfiguration();
+			if(transformFlavor == Flavor::DYNAMIC)
+				return xcomponent->getDynamicLinkerConfiguration();
+		}
+		return ObjectFileLanguage::getLinkerConfiguration(transformFlavor, component);
 	}
 
 	// ======== XakeProject ========
@@ -174,7 +195,9 @@ namespace boot {
 			arExecutable = XakeGCC::DEFAULT_AR_EXECUTABLE;
 		string arch(configuration.getProperty(Resources::RES_RSB_TARGET_ARCHITECTURE));
 		Architecture architecture = arch.empty() ? REDSTRAIN_BUILD_DEFAULT_ARCH : Compiler::parseArchitecture(arch);
-		Delete<XakeGCC> gcc(new XakeGCC(*this, executable, arExecutable, architecture));
+		string os(configuration.getProperty(Resources::RES_RSB_TARGET_OS));
+		OperatingSystem targetOS = os.empty() ? REDSTRAIN_BUILD_DEFAULT_OS : Linker::parseOperatingSystem(os);
+		Delete<XakeGCC> gcc(new XakeGCC(*this, executable, arExecutable, architecture, targetOS));
 		compiler = *gcc;
 		linker = *gcc;
 		gcc.set();
@@ -184,6 +207,12 @@ namespace boot {
 		if(!cppLanguage)
 			cppLanguage = new XakeCPPLanguage(*this);
 		return cppLanguage;
+	}
+
+	Language* XakeProject::getObjectFileLanguage() {
+		if(!objectFileLanguage)
+			objectFileLanguage = new XakeObjectFileLanguage(getLinker()->getObjectFileFormatName(), *this);
+		return objectFileLanguage;
 	}
 
 	const string& XakeProject::getCompilerName() {

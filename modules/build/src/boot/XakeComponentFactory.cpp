@@ -75,6 +75,7 @@ namespace boot {
 		component.addSourceDirectory(project.getProjectConfiguration().getProperty(Resources::RES_SOURCE_DIRECTORY));
 		// add languages
 		component.addLanguage(project.getCPPLanguage());
+		component.addLanguage(project.getObjectFileLanguage());
 	}
 
 }}}

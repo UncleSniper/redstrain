@@ -75,6 +75,16 @@ namespace build {
 
 		};
 
+		class REDSTRAIN_BUILD_API BuildArtifactMapper {
+
+		  public:
+			BuildArtifactMapper();
+			BuildArtifactMapper(const BuildArtifactMapper&);
+			virtual ~BuildArtifactMapper();
+
+			virtual std::string getTargetFileName(const Component&, const Language&, const Flavor&) = 0;
+
+		};
 
 	  private:
 		typedef std::list<std::string> Paths;
@@ -147,6 +157,7 @@ namespace build {
 		bool removeDependency(Component*);
 		void clearDependencies();
 		void getDependencies(ComponentIterator&, ComponentIterator&) const;
+		void getTransitiveDependencies(std::list<Component*>&) const;
 
 		bool addExternalDependency(const Language&, const std::string&);
 		bool removeExternalDependency(const Language&, const std::string&);
@@ -154,7 +165,8 @@ namespace build {
 		void clearExternalDependencies();
 		void getExternalDependencies(const Language&, DependencyIterator&, DependencyIterator&) const;
 
-		void setupRules(BuildDirectoryMapper&, ComponentTypeStringifier&, BuildContext&, ValveInjector* = NULL);
+		void setupRules(BuildDirectoryMapper&, BuildArtifactMapper&, ComponentTypeStringifier&,
+				BuildContext&, ValveInjector* = NULL);
 
 	};
 

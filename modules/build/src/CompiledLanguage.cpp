@@ -117,7 +117,8 @@ namespace build {
 
 	Component::GenerationHolder* CompiledLanguage::getGenerationTrigger(BuildContext& context,
 			const string& sourceDirectory, const string& sourceBasename, const Flavor&,
-			const string& targetDirectory, const Flavor& transformFlavor, Component& component) {
+			const string& targetDirectory, const Flavor& transformFlavor, Component& component,
+			Component::BuildArtifactMapper&) {
 		Compilation::CompileMode mode;
 		if(transformFlavor == Flavor::STATIC)
 			mode = component.getType() == Component::EXECUTABLE

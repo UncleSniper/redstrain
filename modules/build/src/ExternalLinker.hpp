@@ -28,7 +28,7 @@ namespace build {
 		};
 
 	  public:
-		ExternalLinker(const std::string&, redmond::Architecture);
+		ExternalLinker(const std::string&, redmond::Architecture, redmond::OperatingSystem);
 		ExternalLinker(const ExternalLinker&);
 
 	};
