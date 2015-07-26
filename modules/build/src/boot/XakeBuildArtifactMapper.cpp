@@ -51,8 +51,8 @@ namespace boot {
 					decoration = XakeBuildArtifactMapper::DEFAULT_STATIC_FLAVOR_DECORATION;
 				string::size_type pos = decoration.find('%');
 				if(pos != string::npos)
-					basename = basename.substr(static_cast<string::size_type>(0u), pos) + basename
-							+ basename.substr(pos + static_cast<string::size_type>(1u));
+					basename = decoration.substr(static_cast<string::size_type>(0u), pos) + basename
+							+ decoration.substr(pos + static_cast<string::size_type>(1u));
 			}
 			return basename;
 		}
