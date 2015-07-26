@@ -13,6 +13,7 @@ namespace build {
 		CPPLanguage(const CPPLanguage&);
 
 		virtual ArtifactType classifyFile(const std::string&);
+		virtual void getReferencedHeaders(const std::string&, util::Appender<ReferencedHeader>&);
 
 	};
 

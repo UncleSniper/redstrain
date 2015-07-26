@@ -19,6 +19,26 @@ namespace build {
 			AT_HEADER
 		};
 
+		class REDSTRAIN_BUILD_API ReferencedHeader {
+
+		  private:
+			const std::string path;
+			bool local;
+
+		  public:
+			ReferencedHeader(const std::string&, bool);
+			ReferencedHeader(const ReferencedHeader&);
+
+			inline const std::string& getPath() const {
+				return path;
+			}
+
+			inline bool isLocal() const {
+				return local;
+			}
+
+		};
+
 	  private:
 		const std::string name;
 
@@ -46,6 +66,7 @@ namespace build {
 		virtual Flavor getCleanFlavor();
 		virtual Component::GenerationHolder* getHeaderExposeTrigger(BuildContext&, const std::string&,
 				const std::string&, const Flavor&, const std::string&, const Flavor&) = 0;
+		virtual void getReferencedHeaders(const std::string&, util::Appender<ReferencedHeader>&);
 
 		static ArtifactType classifyFileBySuffix(const std::string&, const char *const*, const char *const*);
 		static void sinkSupportedFlavors(const Flavor *const*, util::Appender<Flavor>&);

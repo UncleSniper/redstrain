@@ -11,6 +11,15 @@ using redengine::platform::Pathname;
 namespace redengine {
 namespace build {
 
+	// ======== ReferencedHeader ========
+
+	Language::ReferencedHeader::ReferencedHeader(const string& path, bool local) : path(path), local(local) {}
+
+	Language::ReferencedHeader::ReferencedHeader(const ReferencedHeader& header)
+			: path(header.path), local(header.local) {}
+
+	// ======== Language ========
+
 	Language::Language(const string& name) : name(name) {}
 
 	Language::Language(const Language& language) : name(language.name) {}
@@ -31,6 +40,10 @@ namespace build {
 
 	Flavor Language::getCleanFlavor() {
 		return Flavor::CLEAN;
+	}
+
+	void Language::getReferencedHeaders(const string&, Appender<ReferencedHeader>& sink) {
+		sink.doneAppending();
 	}
 
 	Language::ArtifactType Language::classifyFileBySuffix(const string& path,
