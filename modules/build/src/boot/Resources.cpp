@@ -81,7 +81,8 @@ namespace boot {
 		"component.name",
 		"component.guard",
 		"depend.modules",
-		"target.architecture"
+		"target.architecture",
+		"target.os"
 	};
 
 	Resources::Resources() {}
