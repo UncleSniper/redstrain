@@ -54,7 +54,7 @@ namespace build {
 
 	void CompiledLanguage::CompileGenerationHolder::addTriggerSource(FileArtifact* source) {
 		if(source && trigger)
-			trigger->addSource(source);
+			trigger->addOptionalSource(source);
 	}
 
 	void CompiledLanguage::CompileGenerationHolder::getTargets(GenerationTrigger::ArtifactIterator& begin,
@@ -92,7 +92,7 @@ namespace build {
 
 	void CompiledLanguage::ExposeGenerationHolder::addTriggerSource(FileArtifact* source) {
 		if(source && trigger)
-			trigger->addSource(source);
+			trigger->addOptionalSource(source);
 	}
 
 	void CompiledLanguage::ExposeGenerationHolder::getTargets(GenerationTrigger::ArtifactIterator& begin,

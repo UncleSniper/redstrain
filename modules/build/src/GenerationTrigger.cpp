@@ -20,12 +20,17 @@ namespace build {
 	GenerationTrigger::GenerationTrigger() {}
 
 	GenerationTrigger::GenerationTrigger(const GenerationTrigger& trigger)
-			: Trigger(trigger), sources(trigger.sources), targets(trigger.targets) {
+			: Trigger(trigger), sources(trigger.sources), targets(trigger.targets),
+			optionalSources(trigger.optionalSources) {
 		ArtifactIterator begin(sources.begin()), end(sources.end());
 		for(; begin != end; ++begin)
 			(*begin)->ref();
 		begin = targets.begin();
 		end = targets.end();
+		for(; begin != end; ++begin)
+			(*begin)->ref();
+		begin = optionalSources.begin();
+		end = optionalSources.end();
 		for(; begin != end; ++begin)
 			(*begin)->ref();
 	}
@@ -36,6 +41,10 @@ namespace build {
 			(*begin)->unref();
 		begin = targets.begin();
 		end = targets.end();
+		for(; begin != end; ++begin)
+			(*begin)->unref();
+		begin = optionalSources.begin();
+		end = optionalSources.end();
 		for(; begin != end; ++begin)
 			(*begin)->unref();
 	}
@@ -73,6 +82,39 @@ namespace build {
 		end = sources.end();
 	}
 
+	void GenerationTrigger::addOptionalSource(Artifact* source) {
+		if(!source)
+			return;
+		optionalSources.push_back(source);
+		source->ref();
+	}
+
+	bool GenerationTrigger::removeOptionalSource(Artifact* source) {
+		if(!source)
+			return false;
+		list<Artifact*>::iterator begin(optionalSources.begin()), end(optionalSources.end());
+		for(; begin != end; ++begin) {
+			if(*begin == source) {
+				optionalSources.erase(begin);
+				source->unref();
+				return true;
+			}
+		}
+		return false;
+	}
+
+	void GenerationTrigger::clearOptionalSources() {
+		ArtifactIterator begin(optionalSources.begin()), end(optionalSources.end());
+		for(; begin != end; ++begin)
+			(*begin)->unref();
+		optionalSources.clear();
+	}
+
+	void GenerationTrigger::getOptionalSources(ArtifactIterator& begin, ArtifactIterator& end) const {
+		begin = optionalSources.begin();
+		end = optionalSources.end();
+	}
+
 	void GenerationTrigger::addTarget(Artifact* target) {
 		if(!target)
 			return;
@@ -107,7 +149,7 @@ namespace build {
 	}
 
 	bool GenerationTrigger::triggered(const Artifact::Mood& mood) const {
-		if(sources.empty() || targets.empty())
+		if((sources.empty() && optionalSources.empty()) || targets.empty())
 			return false;
 		time_t oldestTarget;
 		bool hasTargets = false, missingTargets = false;
@@ -146,9 +188,24 @@ namespace build {
 			else
 				missingSources = true;
 		}
+		begin = optionalSources.begin();
+		end = optionalSources.end();
+		for(; begin != end; ++begin) {
+			if(mood.present(**begin)) {
+				time_t timestamp = mood.modificationTimestamp(**begin);
+				if(hasSources) {
+					if(timestamp > newestSource)
+						newestSource = timestamp;
+				}
+				else {
+					newestSource = timestamp;
+					hasSources = true;
+				}
+			}
+		}
 		if(missingSources)
 			return false;
-		return missingTargets || newestSource > oldestTarget;
+		return missingTargets || (hasSources && newestSource > oldestTarget);
 	}
 
 	bool GenerationTrigger::isTriggered(BuildContext&) {

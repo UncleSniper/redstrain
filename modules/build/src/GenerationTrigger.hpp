@@ -16,7 +16,7 @@ namespace build {
 		typedef Artifacts::const_iterator ArtifactIterator;
 
 	  private:
-		Artifacts sources, targets;
+		Artifacts sources, targets, optionalSources;
 
 	  private:
 		bool triggered(const Artifact::Mood&) const;
@@ -34,6 +34,11 @@ namespace build {
 		bool removeSource(Artifact*);
 		void clearSources();
 		void getSources(ArtifactIterator&, ArtifactIterator&) const;
+
+		void addOptionalSource(Artifact*);
+		bool removeOptionalSource(Artifact*);
+		void clearOptionalSources();
+		void getOptionalSources(ArtifactIterator&, ArtifactIterator&) const;
 
 		void addTarget(Artifact*);
 		bool removeTarget(Artifact*);
