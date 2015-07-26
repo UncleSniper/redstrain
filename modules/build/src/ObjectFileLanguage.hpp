@@ -16,17 +16,28 @@ namespace build {
 		class REDSTRAIN_BUILD_API LinkGenerationHolder : public Component::GenerationHolder {
 
 		  private:
+			const ObjectFileLanguage& language;
 			GenerationTrigger* trigger;
 			LinkGenerationAction* action;
 			Component::PreciousArtifact* preciousArtifact;
+			Flavor transformFlavor;
 
 		  public:
-			LinkGenerationHolder(GenerationTrigger*, LinkGenerationAction*, Component::PreciousArtifact*);
+			LinkGenerationHolder(const ObjectFileLanguage&, GenerationTrigger*, LinkGenerationAction*,
+					Component::PreciousArtifact*, const Flavor&);
 			LinkGenerationHolder(const LinkGenerationHolder&);
 			virtual ~LinkGenerationHolder();
 
+			inline const ObjectFileLanguage& getLanguage() const {
+				return language;
+			}
+
 			inline LinkGenerationAction* getLinkGenerationAction() const {
 				return action;
+			}
+
+			inline const Flavor& getTransformFlavor() const {
+				return transformFlavor;
 			}
 
 			virtual Trigger* getTrigger();
@@ -34,6 +45,8 @@ namespace build {
 			virtual void addTriggerSource(FileArtifact*);
 			virtual void getTargets(GenerationTrigger::ArtifactIterator&, GenerationTrigger::ArtifactIterator&);
 			virtual Component::PreciousArtifact* getPreciousArtifact();
+			virtual bool evokesDependencySources();
+			virtual void addDependencySources(const Component&);
 
 		};
 

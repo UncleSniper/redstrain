@@ -66,7 +66,7 @@ namespace build {
 		return false;
 	}
 
-	void Component::addDependencySources(const Component&) {}
+	void Component::GenerationHolder::addDependencySources(const Component&) {}
 
 	// ======== ValveInjector ========
 
@@ -537,10 +537,7 @@ namespace build {
 						newTrigger = language.language.getGenerationTrigger(context, sbegin->directory,
 								sbegin->basename, sbegin->flavor, fullBuildDirectory, flavor, component,
 								artifactMapper);
-						if(newTrigger) {
-							graph.singleTrigger = newTrigger;
-							newTrigger->ref();
-						}
+						graph.singleTrigger = newTrigger;
 					}
 				}
 				else {
@@ -708,13 +705,13 @@ namespace build {
 				FlavorGraph& graph = *fgit->second;
 				if(graph.singleTrigger) {
 					context.addTrigger(graph.singleTrigger->getTrigger());
-					delete graph.singleTrigger;
+					graph.singleTrigger->unref();
 					graph.singleTrigger = NULL;
 				}
 				while(!graph.allTriggers.empty()) {
 					GenerationHolder* trigger = graph.allTriggers.front();
 					context.addTrigger(trigger->getTrigger());
-					delete trigger;
+					trigger->unref();
 					graph.allTriggers.pop_front();
 				}
 				delete fgit->second;

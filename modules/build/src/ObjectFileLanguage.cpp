@@ -21,9 +21,10 @@ namespace build {
 
 	// ======== LinkGenerationHolder ========
 
-	ObjectFileLanguage::LinkGenerationHolder::LinkGenerationHolder(GenerationTrigger* trigger,
-			LinkGenerationAction* action, Component::PreciousArtifact* preciousArtifact)
-			: trigger(trigger), action(action), preciousArtifact(preciousArtifact) {
+	ObjectFileLanguage::LinkGenerationHolder::LinkGenerationHolder(const ObjectFileLanguage& language,
+			GenerationTrigger* trigger, LinkGenerationAction* action, Component::PreciousArtifact* preciousArtifact,
+			const Flavor& transformFlavor) : language(language), trigger(trigger), action(action),
+			preciousArtifact(preciousArtifact), transformFlavor(transformFlavor) {
 		if(trigger)
 			trigger->ref();
 		if(preciousArtifact)
@@ -31,8 +32,8 @@ namespace build {
 	}
 
 	ObjectFileLanguage::LinkGenerationHolder::LinkGenerationHolder(const LinkGenerationHolder& holder)
-			: GenerationHolder(holder), trigger(holder.trigger), action(holder.action),
-			preciousArtifact(holder.preciousArtifact) {
+			: GenerationHolder(holder), language(holder.language), trigger(holder.trigger), action(holder.action),
+			preciousArtifact(holder.preciousArtifact), transformFlavor(holder.transformFlavor) {
 		if(trigger)
 			trigger->ref();
 		if(preciousArtifact)
@@ -74,6 +75,25 @@ namespace build {
 
 	Component::PreciousArtifact* ObjectFileLanguage::LinkGenerationHolder::getPreciousArtifact() {
 		return preciousArtifact;
+	}
+
+	bool ObjectFileLanguage::LinkGenerationHolder::evokesDependencySources() {
+		return true;
+	}
+
+	void ObjectFileLanguage::LinkGenerationHolder::addDependencySources(const Component& owner) {
+		Component::ComponentIterator ddbegin, ddend;
+		Component::PreciousArtifactIterator pabegin, paend;
+		owner.getDependencies(ddbegin, ddend);
+		for(; ddbegin != ddend; ++ddbegin) {
+			(*ddbegin)->getPreciousArtifacts(pabegin, paend);
+			for(; pabegin != paend; ++pabegin) {
+				if(&(*pabegin)->getLanguage() != &language)
+					continue;
+				if((*pabegin)->getFlavor() == transformFlavor)
+					addTriggerSource(&(*pabegin)->getArtifact());
+			}
+		}
 	}
 
 	// ======== ObjectFileLanguage ========
@@ -136,7 +156,8 @@ namespace build {
 		trigger->addAction(*action);
 		Unref<Component::PreciousArtifact> preciousArtifact(new Component::PreciousArtifact(*this,
 				transformFlavor, *trgfile));
-		LinkGenerationHolder* holder = new LinkGenerationHolder(*trigger, *action, *preciousArtifact);
+		LinkGenerationHolder* holder = new LinkGenerationHolder(*this, *trigger, *action,
+				*preciousArtifact, transformFlavor);
 		trigger.set();
 		return holder;
 	}

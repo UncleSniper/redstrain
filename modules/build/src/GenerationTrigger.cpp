@@ -224,6 +224,12 @@ namespace build {
 		for(; abegin != aend; ++abegin)
 			(*abegin)->dumpArtifact(stream);
 		stream << unshift << indent << '}' << endln;
+		stream << indent << "optionalSources = {" << endln << shift;
+		abegin = optionalSources.begin();
+		aend = optionalSources.end();
+		for(; abegin != aend; ++abegin)
+			(*abegin)->dumpArtifact(stream);
+		stream << unshift << indent << '}' << endln;
 		stream << indent << "targets = {" << endln << shift;
 		abegin = targets.begin();
 		aend = targets.end();
