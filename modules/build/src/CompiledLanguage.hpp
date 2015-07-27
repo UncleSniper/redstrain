@@ -85,7 +85,7 @@ namespace build {
 		virtual Flavor getGeneratedSourceFlavor(const Flavor&, const Flavor&, const std::string&);
 		virtual Flavor getGeneratedHeaderFlavor(const Flavor&, const Flavor&, const std::string&);
 		virtual Component::GenerationHolder* getHeaderExposeTrigger(BuildContext&, const std::string&,
-				const std::string&, const Flavor&, const std::string&, const Flavor&);
+				const std::string&, const Flavor&, const std::string&, const Flavor&, Component&);
 
 	};
 

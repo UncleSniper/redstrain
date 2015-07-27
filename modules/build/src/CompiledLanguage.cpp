@@ -151,6 +151,7 @@ namespace build {
 		Unref<CompileGenerationAction> action(new CompileGenerationAction(trgfile, compiler, mode,
 				getCompilerConfiguration(transformFlavor, component)));
 		action->addSource(srcfile);
+		action->addIntermediateDirectories(component, context);
 		trigger->addAction(*action);
 		Component::GenerationHolder* holder = newCompileGenerationHolder(*trigger, *action);
 		trigger.set();
@@ -167,13 +168,14 @@ namespace build {
 
 	Component::GenerationHolder* CompiledLanguage::getHeaderExposeTrigger(BuildContext& context,
 			const string& sourceDirectory, const string& sourceBasename, const Flavor&,
-			const string& targetDirectory, const Flavor&) {
+			const string& targetDirectory, const Flavor&, Component& component) {
 		FileArtifact* srcfile = context.internFileArtifact(sourceDirectory, sourceBasename);
 		FileArtifact* destfile = context.internFileArtifact(targetDirectory, sourceBasename);
 		Delete<GenerationTrigger> trigger(new GenerationTrigger);
 		trigger->addSource(srcfile);
 		trigger->addTarget(destfile);
 		Unref<FileCopyAction> action(new FileCopyAction(*srcfile, *destfile));
+		action->addIntermediateDirectories(component, context);
 		trigger->addAction(*action);
 		ExposeGenerationHolder* holder = new ExposeGenerationHolder(*trigger);
 		trigger.set();

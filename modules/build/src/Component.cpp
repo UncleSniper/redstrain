@@ -802,7 +802,8 @@ namespace build {
 							*context.internFileArtifact(hbegin->directory, hbegin->basename));
 					GenerationHolder* newTrigger = NULL;
 					Ref<GenerationHolder> trigger(libegin->language.getHeaderExposeTrigger(context,
-							hbegin->directory, hbegin->basename, hbegin->flavor, fullExposeDirectory, heflavor));
+							hbegin->directory, hbegin->basename, hbegin->flavor, fullExposeDirectory,
+							heflavor, *this));
 					if(*trigger) {
 						graph.allTriggers.push_back(*trigger);
 						newTrigger = trigger.set();

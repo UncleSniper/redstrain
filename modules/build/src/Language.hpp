@@ -65,7 +65,7 @@ namespace build {
 		virtual Flavor getHeaderExposeTransformFlavor();
 		virtual Flavor getCleanFlavor();
 		virtual Component::GenerationHolder* getHeaderExposeTrigger(BuildContext&, const std::string&,
-				const std::string&, const Flavor&, const std::string&, const Flavor&) = 0;
+				const std::string&, const Flavor&, const std::string&, const Flavor&, Component&) = 0;
 		virtual void getReferencedHeaders(const std::string&, util::Appender<ReferencedHeader>&);
 
 		static ArtifactType classifyFileBySuffix(const std::string&, const char *const*, const char *const*);

@@ -3,11 +3,13 @@
 
 #include "LinkGeneration.hpp"
 #include "GenerationAction.hpp"
+#include "FileGeneratingAction.hpp"
 
 namespace redengine {
 namespace build {
 
-	class REDSTRAIN_BUILD_API LinkGenerationAction : public GenerationAction<FileArtifact> {
+	class REDSTRAIN_BUILD_API LinkGenerationAction
+			: public GenerationAction<FileArtifact>, FileGeneratingAction {
 
 	  private:
 		LinkGeneration generation;
@@ -23,6 +25,15 @@ namespace build {
 		inline const LinkGeneration& getLinkGeneration() const {
 			return generation;
 		}
+
+		void addIntermediateDirectories(const Component&, BuildContext&);
+
+		virtual void perform(BuildContext&);
+		virtual void wouldPerform(BuildContext&);
+
+#ifdef TESTING_REDSTRAIN_BUILD_API
+		virtual void dumpAction(io::DefaultConfiguredOutputStream<char>::Stream&) const;
+#endif /* TESTING_REDSTRAIN_BUILD_API */
 
 	};
 

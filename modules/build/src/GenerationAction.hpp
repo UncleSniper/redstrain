@@ -14,7 +14,7 @@ namespace redengine {
 namespace build {
 
 	template<typename ArtifactT>
-	class GenerationAction : public Action {
+	class GenerationAction : public virtual Action {
 
 	  private:
 		typedef typename std::list<ArtifactT*> Artifacts;
@@ -44,6 +44,30 @@ namespace build {
 		Generation<ArtifactT>& generation;
 		Artifacts sources;
 		ArtifactT* target;
+
+	  protected:
+#ifdef TESTING_REDSTRAIN_BUILD_API
+		void dumpGenerationActionAspects(io::DefaultConfiguredOutputStream<char>::Stream& stream) const {
+			using redengine::io::endln;
+			using redengine::io::shift;
+			using redengine::io::indent;
+			using redengine::io::unshift;
+			using redengine::io::operator<<;
+			stream << indent << "generation ->" << endln << shift;
+			generation.dumpGeneration(stream);
+			stream << unshift;
+			stream << indent << "sources = {" << endln << shift;
+			ArtifactIterator sbegin(sources.begin()), send(sources.end());
+			for(; sbegin != send; ++sbegin)
+				(*sbegin)->dumpArtifact(stream);
+			stream << unshift << indent << '}' << endln;
+			if(target) {
+				stream << indent << "target ->" << endln << shift;
+				target->dumpArtifact(stream);
+				stream << unshift;
+			}
+		}
+#endif /* TESTING_REDSTRAIN_BUILD_API */
 
 	  public:
 		GenerationAction(Generation<ArtifactT>& generation, ArtifactT* target = NULL)
@@ -139,19 +163,7 @@ namespace build {
 			using redengine::io::unshift;
 			using redengine::io::operator<<;
 			stream << indent << "GenerationAction " << this << " {" << endln << shift;
-			stream << indent << "generation ->" << endln << shift;
-			generation.dumpGeneration(stream);
-			stream << unshift;
-			stream << indent << "sources = {" << endln << shift;
-			ArtifactIterator sbegin(sources.begin()), send(sources.end());
-			for(; sbegin != send; ++sbegin)
-				(*sbegin)->dumpArtifact(stream);
-			stream << unshift << indent << '}' << endln;
-			if(target) {
-				stream << indent << "target ->" << endln << shift;
-				target->dumpArtifact(stream);
-				stream << unshift;
-			}
+			dumpGenerationActionAspects(stream);
 			stream << unshift << indent << '}' << endln;
 		}
 #endif /* TESTING_REDSTRAIN_BUILD_API */

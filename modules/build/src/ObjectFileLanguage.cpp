@@ -153,6 +153,7 @@ namespace build {
 		Unref<LinkGenerationAction> action(new LinkGenerationAction(trgfile, linker, mode,
 				getLinkerConfiguration(transformFlavor, component)));
 		action->addSource(srcfile);
+		action->addIntermediateDirectories(component, context);
 		trigger->addAction(*action);
 		Unref<Component::PreciousArtifact> preciousArtifact(new Component::PreciousArtifact(*this,
 				transformFlavor, *trgfile));
@@ -173,7 +174,7 @@ namespace build {
 	}
 
 	Component::GenerationHolder* ObjectFileLanguage::getHeaderExposeTrigger(BuildContext&, const string&,
-			const string&, const Flavor&, const string&, const Flavor&) {
+			const string&, const Flavor&, const string&, const Flavor&, Component&) {
 		return NULL;
 	}
 

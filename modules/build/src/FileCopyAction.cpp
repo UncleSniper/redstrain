@@ -1,5 +1,6 @@
 #include <redstrain/platform/Stat.hpp>
 #include <redstrain/io/StreamCloser.hpp>
+#include <redstrain/platform/Pathname.hpp>
 #include <redstrain/io/FileInputStream.hpp>
 #include <redstrain/io/FileOutputStream.hpp>
 #include <redstrain/platform/Filesystem.hpp>
@@ -8,12 +9,14 @@
 #endif /* TESTING_REDSTRAIN_BUILD_API */
 
 #include "BuildUI.hpp"
+#include "Component.hpp"
 #include "FileArtifact.hpp"
 #include "FileCopyAction.hpp"
 
 using std::string;
 using redengine::platform::Stat;
 using redengine::io::StreamCloser;
+using redengine::platform::Pathname;
 using redengine::io::FileInputStream;
 using redengine::io::FileOutputStream;
 using redengine::platform::Filesystem;
@@ -35,8 +38,9 @@ namespace build {
 		destination.ref();
 	}
 
-	FileCopyAction::FileCopyAction(const FileCopyAction& action) : Action(action), source(action.source),
-			destination(action.destination), preservePermissions(action.preservePermissions) {
+	FileCopyAction::FileCopyAction(const FileCopyAction& action) : Action(action), FileGeneratingAction(action),
+			source(action.source), destination(action.destination),
+			preservePermissions(action.preservePermissions) {
 		source.ref();
 		destination.ref();
 	}
@@ -46,9 +50,14 @@ namespace build {
 		destination.unref();
 	}
 
+	void FileCopyAction::addIntermediateDirectories(const Component& component, BuildContext& context) {
+		addIntermediateDirectoriesFor(component.getBaseDirectory(),
+				Pathname::stripPrefix(Pathname::dirname(destination.getPathname()),
+				component.getBaseDirectory()), context);
+	}
+
 	void FileCopyAction::perform(BuildContext&) {
-		if(!Filesystem::access(destination.getDirectory(), Filesystem::FILE_EXISTS))
-			Filesystem::mkdirRecursive(destination.getDirectory());
+		createIntermediateDirectories();
 		string srcpath(source.getPathname()), destpath(destination.getPathname());
 		FileInputStream fis(srcpath);
 		StreamCloser inclose(fis);
@@ -65,8 +74,10 @@ namespace build {
 	}
 
 	void FileCopyAction::wouldPerform(BuildContext&) {
-		if(source.wouldBePresent())
+		if(source.wouldBePresent()) {
+			wouldCreateIntermediateDirectories();
 			destination.wouldModify();
+		}
 	}
 
 	void FileCopyAction::notifyUIWillPerform(BuildUI& ui) const {
@@ -89,6 +100,7 @@ namespace build {
 		destination.dumpArtifact(stream);
 		stream << unshift;
 		stream << indent << "preservePermissions = " << (preservePermissions ? "true" : "false") << endln;
+		dumpFileGeneratingActionAspects(stream);
 		stream << unshift << indent << '}' << endln;
 	}
 #endif /* TESTING_REDSTRAIN_BUILD_API */

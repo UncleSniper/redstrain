@@ -1,14 +1,15 @@
 #ifndef REDSTRAIN_MOD_BUILD_FILECOPYACTION_HPP
 #define REDSTRAIN_MOD_BUILD_FILECOPYACTION_HPP
 
-#include "Action.hpp"
+#include "FileGeneratingAction.hpp"
 
 namespace redengine {
 namespace build {
 
+	class Component;
 	class FileArtifact;
 
-	class REDSTRAIN_BUILD_API FileCopyAction : public Action {
+	class REDSTRAIN_BUILD_API FileCopyAction : public FileGeneratingAction {
 
 	  private:
 		FileArtifact& source;
@@ -43,6 +44,8 @@ namespace build {
 		inline void setPreservePermissions(bool preservePermissions) {
 			this->preservePermissions = preservePermissions;
 		}
+
+		void addIntermediateDirectories(const Component&, BuildContext&);
 
 		virtual void perform(BuildContext&);
 		virtual void wouldPerform(BuildContext&);
