@@ -88,6 +88,7 @@ namespace text {
 		String16 natural, logical;
 		while(fis.readLine(natural)) {
 			String16 trimmed(StringUtils<Char16>::trim(natural, StringUtils<Char16>::TRIM_FRONT));
+			natural.clear();
 			if(trimmed.empty())
 				continue;
 			Char16 firstChar = trimmed[0];
