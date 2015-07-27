@@ -24,6 +24,10 @@ namespace build {
 			CompileGenerationHolder(const CompileGenerationHolder&);
 			virtual ~CompileGenerationHolder();
 
+			inline GenerationTrigger* getGenerationTrigger() const {
+				return trigger;
+			}
+
 			inline CompileGenerationAction* getCompileGenerationAction() const {
 				return action;
 			}
@@ -57,6 +61,8 @@ namespace build {
 
 	  protected:
 		virtual CompilerConfiguration& getCompilerConfiguration(const Flavor&, const Component&);
+		virtual Component::GenerationHolder* newCompileGenerationHolder(GenerationTrigger*,
+				CompileGenerationAction*);
 
 	  public:
 		CompiledLanguage(const std::string&, Compiler&);

@@ -132,6 +132,7 @@ namespace build {
 		typedef std::map<const Language*, std::map<std::string, FileArtifact*> > ExposedHeaders;
 		typedef std::set<GenerationHolder*> UnresolvedGenerations;
 		typedef UnresolvedGenerations::iterator UnresolvedGenerationIterator;
+		typedef std::map<const Language*, std::map<FileArtifact*, FileArtifact*> > UnexposedHeaders;
 
 	  public:
 		typedef Paths::const_iterator PathIterator;
@@ -152,6 +153,7 @@ namespace build {
 		std::string buildName;
 		ExposedHeaders exposedHeaders, localHeaders;
 		UnresolvedGenerations unresolvedGenerations;
+		UnexposedHeaders unexposedHeaders;
 
 	  public:
 		Component(Type, const std::string&, const std::string&);
@@ -217,6 +219,11 @@ namespace build {
 
 		bool addUnresolvedGeneration(GenerationHolder*);
 		void resolveUnresolvedGenerations();
+
+		void addUnexposedHeader(const Language&, FileArtifact*, FileArtifact*);
+		void clearUnexposedHeaders(const Language&);
+		void clearUnexposedHeaders();
+		FileArtifact* getUnexposedHeader(const Language&, FileArtifact*) const;
 
 		void setupRules(BuildDirectoryMapper&, BuildArtifactMapper&, ComponentTypeStringifier&,
 				BuildContext&, ValveInjector* = NULL);

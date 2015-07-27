@@ -110,6 +110,10 @@ namespace build {
 			end = sources.end();
 		}
 
+		inline ArtifactT* getTarget() const {
+			return target;
+		}
+
 		virtual void perform(BuildContext& context) {
 			generation.generate(sources, target, context);
 		}

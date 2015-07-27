@@ -103,7 +103,7 @@ namespace build {
 			languages(component.languages), preciousArtifacts(component.preciousArtifacts),
 			exposeDirectories(component.exposeDirectories), dependencies(component.dependencies),
 			externalDependencies(component.externalDependencies), exposedHeaders(component.exposedHeaders),
-			localHeaders(component.localHeaders) {
+			localHeaders(component.localHeaders), unexposedHeaders(component.unexposedHeaders) {
 		PreciousArtifactIterator pabegin(preciousArtifacts.begin()), paend(preciousArtifacts.end());
 		for(; pabegin != paend; ++pabegin)
 			(*pabegin)->ref();
@@ -125,6 +125,16 @@ namespace build {
 					eh1end(eh0begin->second.end());
 			for(; eh1begin != eh1end; ++eh1begin)
 				eh1begin->second->ref();
+		}
+		map<const Language*, map<FileArtifact*, FileArtifact*> >::const_iterator uh0begin(unexposedHeaders.begin()),
+				uh0end(unexposedHeaders.end());
+		for(; uh0begin != uh0end; ++uh0begin) {
+			map<FileArtifact*, FileArtifact*>::const_iterator uh1begin(uh0begin->second.begin()),
+					uh1end(uh0begin->second.end());
+			for(; uh1begin != uh1end; ++uh1begin) {
+				uh1begin->first->ref();
+				uh1begin->second->ref();
+			}
 		}
 	}
 
@@ -154,6 +164,16 @@ namespace build {
 		UnresolvedGenerationIterator ugbegin(unresolvedGenerations.begin()), ugend(unresolvedGenerations.end());
 		for(; ugbegin != ugend; ++ugbegin)
 			(*ugbegin)->unref();
+		map<const Language*, map<FileArtifact*, FileArtifact*> >::const_iterator uh0begin(unexposedHeaders.begin()),
+				uh0end(unexposedHeaders.end());
+		for(; uh0begin != uh0end; ++uh0begin) {
+			map<FileArtifact*, FileArtifact*>::const_iterator uh1begin(uh0begin->second.begin()),
+					uh1end(uh0begin->second.end());
+			for(; uh1begin != uh1end; ++uh1begin) {
+				uh1begin->first->unref();
+				uh1begin->second->unref();
+			}
+		}
 	}
 
 	void Component::setInternalBuildName(const string& name) {
@@ -461,6 +481,66 @@ namespace build {
 		}
 	}
 
+	void Component::addUnexposedHeader(const Language& language, FileArtifact* exposed, FileArtifact* unexposed) {
+		if(!exposed || !unexposed)
+			return;
+		map<const Language*, map<FileArtifact*, FileArtifact*> >::iterator it0 = unexposedHeaders.find(&language);
+		map<FileArtifact*, FileArtifact*>* uh1;
+		if(it0 == unexposedHeaders.end()) {
+			unexposedHeaders[&language] = map<FileArtifact*, FileArtifact*>();
+			uh1 = &unexposedHeaders[&language];
+		}
+		else
+			uh1 = &it0->second;
+		map<FileArtifact*, FileArtifact*>::iterator it1 = uh1->find(exposed);
+		if(it1 == uh1->end()) {
+			(*uh1)[exposed] = unexposed;
+			exposed->ref();
+			unexposed->ref();
+		}
+		else if(it1->second != unexposed) {
+			FileArtifact* old = it1->second;
+			it1->second = unexposed;
+			unexposed->ref();
+			old->unref();
+		}
+	}
+
+	void Component::clearUnexposedHeaders(const Language& language) {
+		map<const Language*, map<FileArtifact*, FileArtifact*> >::iterator it0 = unexposedHeaders.find(&language);
+		if(it0 == unexposedHeaders.end())
+			return;
+		map<FileArtifact*, FileArtifact*>::const_iterator uh1begin(it0->second.begin()), uh1end(it0->second.end());
+		for(; uh1begin != uh1end; ++uh1begin) {
+			uh1begin->first->unref();
+			uh1begin->second->unref();
+		}
+		unexposedHeaders.erase(it0);
+	}
+
+	void Component::clearUnexposedHeaders() {
+		map<const Language*, map<FileArtifact*, FileArtifact*> >::const_iterator uh0begin(unexposedHeaders.begin()),
+				uh0end(unexposedHeaders.end());
+		for(; uh0begin != uh0end; ++uh0begin) {
+			map<FileArtifact*, FileArtifact*>::const_iterator uh1begin(uh0begin->second.begin()),
+					uh1end(uh0begin->second.end());
+			for(; uh1begin != uh1end; ++uh1begin) {
+				uh1begin->first->unref();
+				uh1begin->second->unref();
+			}
+		}
+		unexposedHeaders.clear();
+	}
+
+	FileArtifact* Component::getUnexposedHeader(const Language& language, FileArtifact* exposed) const {
+		map<const Language*, map<FileArtifact*, FileArtifact*> >::const_iterator it0
+				= unexposedHeaders.find(&language);
+		if(it0 == unexposedHeaders.end())
+			return NULL;
+		map<FileArtifact*, FileArtifact*>::const_iterator it1 = it0->second.find(exposed);
+		return it1 == it0->second.end() ? NULL : it1->second;
+	}
+
 	struct PathPair {
 
 		const string directory, basename;
@@ -729,6 +809,7 @@ namespace build {
 					}
 					if(newTrigger) {
 						if(cleanArtifact) {
+							FileArtifact* hesource = NULL;
 							GenerationTrigger::ArtifactIterator tbegin, tend;
 							newTrigger->getTargets(tbegin, tend);
 							for(; tbegin != tend; ++tbegin) {
@@ -738,6 +819,9 @@ namespace build {
 											libegin->language.getCleanFlavor()));
 									addExposedHeader(libegin->language,
 											Pathname::stripPrefix(file->getPathname(), exposeDirectory), *file);
+									if(!hesource)
+										hesource = context.internFileArtifact(hbegin->directory, hbegin->basename);
+									addUnexposedHeader(libegin->language, file, hesource);
 								}
 							}
 						}

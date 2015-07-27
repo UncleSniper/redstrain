@@ -1,18 +1,25 @@
+#include <set>
+#include <list>
 #include <redstrain/platform/Stat.hpp>
 #include <redstrain/io/StreamCloser.hpp>
 #include <redstrain/util/StringUtils.hpp>
+#include <redstrain/platform/Pathname.hpp>
 #include <redstrain/io/FileInputStream.hpp>
 #include <redstrain/platform/Filesystem.hpp>
 #include <redstrain/error/ProgrammingError.hpp>
 #include <redstrain/io/FormattedInputStream.hpp>
 
 #include "CPPLanguage.hpp"
+#include "CompileGenerationAction.hpp"
 
+using std::set;
+using std::list;
 using std::string;
 using redengine::util::Appender;
 using redengine::platform::Stat;
 using redengine::io::StreamCloser;
 using redengine::util::StringUtils;
+using redengine::platform::Pathname;
 using redengine::io::FileInputStream;
 using redengine::platform::Filesystem;
 using redengine::error::ProgrammingError;
@@ -21,9 +28,99 @@ using redengine::io::FormattedInputStream;
 namespace redengine {
 namespace build {
 
+	// ======== CPPCompileGenerationHolder ========
+
+	CPPLanguage::CPPCompileGenerationHolder::CPPCompileGenerationHolder(CPPLanguage& language,
+			GenerationTrigger* trigger, CompileGenerationAction* action)
+			: CompileGenerationHolder(trigger, action), language(language) {}
+
+	CPPLanguage::CPPCompileGenerationHolder::CPPCompileGenerationHolder(const CPPCompileGenerationHolder& holder)
+			: CompileGenerationHolder(holder), language(holder.language) {}
+
+	bool CPPLanguage::CPPCompileGenerationHolder::evokesDependencySources() {
+		return true;
+	}
+
+	struct CPPIncludeRuleBuilder : Appender<Language::ReferencedHeader> {
+
+		CPPLanguage& language;
+		const Component& owner;
+		const string subject;
+		const string sourceDirectory;
+		set<string>& alreadySearched;
+		GenerationTrigger& trigger;
+
+		CPPIncludeRuleBuilder(CPPLanguage& language, const Component& owner, const string& subject,
+				const string& sourceDirectory, set<string>& alreadySearched, GenerationTrigger& trigger)
+				: language(language), owner(owner), subject(subject), sourceDirectory(sourceDirectory),
+				alreadySearched(alreadySearched), trigger(trigger) {}
+
+		void buildRules() {
+			if(alreadySearched.find(subject) != alreadySearched.end())
+				return;
+			alreadySearched.insert(subject);
+			language.getReferencedHeaders(subject, *this);
+		}
+
+		virtual void append(const Language::ReferencedHeader& header) {
+			if(header.isLocal()) {
+				string lref(Pathname::tidy(Pathname::join(Pathname::dirname(subject), header.getPath())));
+				if(Pathname::startsWith(lref, Pathname::tidy(owner.getBaseDirectory()))) {
+					FileArtifact* lheader = owner.getLocalHeader(language,
+							Pathname::stripPrefix(lref, sourceDirectory));
+					if(lheader) {
+						trigger.addOptionalSource(lheader);
+						CPPIncludeRuleBuilder builder(language, owner, lheader->getPathname(),
+								lheader->getDirectory(), alreadySearched, trigger);
+						builder.buildRules();
+						return;
+					}
+				}
+			}
+			list<Component*> deps;
+			owner.getTransitiveDependencies(deps);
+			list<Component*>::const_iterator depbegin(deps.begin()), depend(deps.end());
+			for(; depbegin != depend; ++depbegin) {
+				FileArtifact* gheader = (*depbegin)->getExposedHeader(language, header.getPath());
+				if(gheader) {
+					trigger.addOptionalSource(gheader);
+					FileArtifact* ueheader = (*depbegin)->getUnexposedHeader(language, gheader);
+					if(!ueheader)
+						ueheader = gheader;
+					CPPIncludeRuleBuilder builder(language, **depbegin, ueheader->getPathname(),
+							ueheader->getDirectory(), alreadySearched, trigger);
+					builder.buildRules();
+					return;
+				}
+			}
+		}
+
+	};
+
+	void CPPLanguage::CPPCompileGenerationHolder::addDependencySources(const Component& component) {
+		CompileGenerationAction* action = getCompileGenerationAction();
+		GenerationTrigger* trigger = getGenerationTrigger();
+		if(!action || !trigger)
+			return;
+		FileArtifact* file = action->getTarget();
+		if(file) {
+			set<string> alreadySearched;
+			CPPIncludeRuleBuilder builder(language, component, file->getPathname(), file->getDirectory(),
+					alreadySearched, *trigger);
+			builder.buildRules();
+		}
+	}
+
+	// ======== CPPLanguage ========
+
 	CPPLanguage::CPPLanguage(Compiler& compiler) : CompiledLanguage("C++", compiler) {}
 
 	CPPLanguage::CPPLanguage(const CPPLanguage& cpp) : CompiledLanguage(cpp) {}
+
+	Component::GenerationHolder* CPPLanguage::newCompileGenerationHolder(GenerationTrigger* trigger,
+			CompileGenerationAction* action) {
+		return new CPPCompileGenerationHolder(*this, trigger, action);
+	}
 
 	static const char *const SOURCE_SUFFIXES[] = {
 		".cpp",

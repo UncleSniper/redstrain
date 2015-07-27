@@ -152,7 +152,7 @@ namespace build {
 				getCompilerConfiguration(transformFlavor, component)));
 		action->addSource(srcfile);
 		trigger->addAction(*action);
-		CompileGenerationHolder* holder = new CompileGenerationHolder(*trigger, *action);
+		Component::GenerationHolder* holder = newCompileGenerationHolder(*trigger, *action);
 		trigger.set();
 		return holder;
 	}
@@ -182,6 +182,11 @@ namespace build {
 
 	CompilerConfiguration& CompiledLanguage::getCompilerConfiguration(const Flavor&, const Component&) {
 		return EmptyCompilerConfiguration::instance;
+	}
+
+	Component::GenerationHolder* CompiledLanguage::newCompileGenerationHolder(GenerationTrigger* trigger,
+			CompileGenerationAction* action) {
+		return new CompileGenerationHolder(trigger, action);
 	}
 
 }}
