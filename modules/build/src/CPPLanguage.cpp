@@ -31,11 +31,22 @@ namespace build {
 	// ======== CPPCompileGenerationHolder ========
 
 	CPPLanguage::CPPCompileGenerationHolder::CPPCompileGenerationHolder(CPPLanguage& language,
-			GenerationTrigger* trigger, CompileGenerationAction* action)
-			: CompileGenerationHolder(trigger, action), language(language) {}
+			GenerationTrigger* trigger, CompileGenerationAction* action, FileArtifact* source)
+			: CompileGenerationHolder(trigger, action), language(language), source(source) {
+		if(source)
+			source->ref();
+	}
 
 	CPPLanguage::CPPCompileGenerationHolder::CPPCompileGenerationHolder(const CPPCompileGenerationHolder& holder)
-			: CompileGenerationHolder(holder), language(holder.language) {}
+			: CompileGenerationHolder(holder), language(holder.language), source(holder.source) {
+		if(source)
+			source->ref();
+	}
+
+	CPPLanguage::CPPCompileGenerationHolder::~CPPCompileGenerationHolder() {
+		if(source)
+			source->unref();
+	}
 
 	bool CPPLanguage::CPPCompileGenerationHolder::evokesDependencySources() {
 		return true;
@@ -102,10 +113,9 @@ namespace build {
 		GenerationTrigger* trigger = getGenerationTrigger();
 		if(!action || !trigger)
 			return;
-		FileArtifact* file = action->getTarget();
-		if(file) {
+		if(source) {
 			set<string> alreadySearched;
-			CPPIncludeRuleBuilder builder(language, component, file->getPathname(), file->getDirectory(),
+			CPPIncludeRuleBuilder builder(language, component, source->getPathname(), source->getDirectory(),
 					alreadySearched, *trigger);
 			builder.buildRules();
 		}
@@ -119,7 +129,14 @@ namespace build {
 
 	Component::GenerationHolder* CPPLanguage::newCompileGenerationHolder(GenerationTrigger* trigger,
 			CompileGenerationAction* action) {
-		return new CPPCompileGenerationHolder(*this, trigger, action);
+		FileArtifact* source = NULL;
+		if(action) {
+			GenerationAction<FileArtifact>::ArtifactIterator sbegin, send;
+			action->getSources(sbegin, send);
+			if(sbegin != send)
+				source = *sbegin;
+		}
+		return new CPPCompileGenerationHolder(*this, trigger, action, source);
 	}
 
 	static const char *const SOURCE_SUFFIXES[] = {

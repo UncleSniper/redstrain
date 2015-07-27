@@ -13,10 +13,12 @@ namespace build {
 
 		  private:
 			CPPLanguage& language;
+			FileArtifact* source;
 
 		  public:
-			CPPCompileGenerationHolder(CPPLanguage&, GenerationTrigger*, CompileGenerationAction*);
+			CPPCompileGenerationHolder(CPPLanguage&, GenerationTrigger*, CompileGenerationAction*, FileArtifact*);
 			CPPCompileGenerationHolder(const CPPCompileGenerationHolder&);
+			virtual ~CPPCompileGenerationHolder();
 
 			inline CPPLanguage& getLanguage() {
 				return language;
@@ -24,6 +26,10 @@ namespace build {
 
 			inline const CPPLanguage& getLanguage() const {
 				return language;
+			}
+
+			inline FileArtifact* getSource() const {
+				return source;
 			}
 
 			virtual bool evokesDependencySources();

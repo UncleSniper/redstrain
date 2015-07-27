@@ -808,21 +808,20 @@ namespace build {
 						newTrigger = trigger.set();
 					}
 					if(newTrigger) {
-						if(cleanArtifact) {
-							FileArtifact* hesource = NULL;
-							GenerationTrigger::ArtifactIterator tbegin, tend;
-							newTrigger->getTargets(tbegin, tend);
-							for(; tbegin != tend; ++tbegin) {
-								FileArtifact* file = dynamic_cast<FileArtifact*>(*tbegin);
-								if(file) {
+						FileArtifact* hesource = NULL;
+						GenerationTrigger::ArtifactIterator tbegin, tend;
+						newTrigger->getTargets(tbegin, tend);
+						for(; tbegin != tend; ++tbegin) {
+							FileArtifact* file = dynamic_cast<FileArtifact*>(*tbegin);
+							if(file) {
+								if(cleanArtifact)
 									allBuildDirectories.insert(PathPair(file->getDirectory(), file->getBasename(),
 											libegin->language.getCleanFlavor()));
-									addExposedHeader(libegin->language,
-											Pathname::stripPrefix(file->getPathname(), exposeDirectory), *file);
-									if(!hesource)
-										hesource = context.internFileArtifact(hbegin->directory, hbegin->basename);
-									addUnexposedHeader(libegin->language, file, hesource);
-								}
+								addExposedHeader(libegin->language,
+										Pathname::stripPrefix(file->getPathname(), exposeDirectory), *file);
+								if(!hesource)
+									hesource = context.internFileArtifact(hbegin->directory, hbegin->basename);
+								addUnexposedHeader(libegin->language, file, hesource);
 							}
 						}
 						Trigger::ActionIterator abegin, aend;
