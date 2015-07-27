@@ -1,4 +1,5 @@
 #include <redstrain/util/Delete.hpp>
+#include <redstrain/build/Project.hpp>
 #include <redstrain/platform/Pathname.hpp>
 #include <redstrain/build/BuildContext.hpp>
 #include <redstrain/build/ConsoleBuildUI.hpp>
@@ -15,13 +16,11 @@
 #include <redstrain/build/DefaultComponentTypeStringifier.hpp>
 #include <redstrain/cmdline/parseopt.hpp>
 
-#include <redstrain/io/FileOutputStream.hpp>
-#include <redstrain/io/streamtypes.hpp>
-
 #include "Options.hpp"
 
 using std::string;
 using redengine::util::Delete;
+using redengine::build::Component;
 using redengine::platform::Pathname;
 using redengine::build::BuildContext;
 using redengine::cmdline::OptionLogic;
@@ -50,6 +49,8 @@ int main(int argc, char** argv) {
 	ConfigurationObjectOptionLogic<Options> logic(&options);
 	logic.addLongOption("help", &Options::usage);
 	logic.addLongOption("bootstrap", &Options::setBootstrap);
+	logic.addLongOption("dry", &Options::setDry);
+	logic.addShortOption('y', &Options::setDry);
 	logic.addLongOption("base", &Options::setBase, OptionLogic::REQUIRED_ARGUMENT);
 	return runWithOptions(argv, argc, logic, &Options::addBareword, &Options::checkBarewords, run);
 }
@@ -79,10 +80,17 @@ int bootstrap(const string&, const Options& options) {
 	ConsoleBuildUI ui;
 	Delete<BuildContext> context(projectBuilder.newBuildContext(ui));
 	xproject.makeValveGroups(**context);
-	redengine::io::FileOutputStream sout(redengine::platform::Console::getStandardHandle(redengine::platform::Console::STANDARD_OUTPUT));
-	redengine::io::DefaultConfiguredOutputStream<char>::Stream fout(sout);
-	fout.getConfiguration<redengine::io::IndentingOutputStreamConfig<char> >().setTabulation("    ");
-	context->dumpContext(fout);
+	ui.setMinimalComponentTypeWidth(static_cast<unsigned>(
+			Component::getMaximalComponentTypeWidth(DefaultComponentTypeStringifier::instance)));
+	ui.setMinimalComponentNameWidth(static_cast<unsigned>(
+			projectBuilder.getProject()->getMaximalComponentNameWidth()));
+	if(options.isDry())
+		context->predictiveLoop();
+	else {
+		ui.setFlags(ConsoleBuildUI::PRINT_DEFINITIVE);
+		context->predictiveLoop();
+		context->definitiveLoop();
+	}
 	return 0;
 }
 

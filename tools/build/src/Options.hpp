@@ -13,7 +13,7 @@ class Options {
   private:
 	const std::string progname;
 	ValveNames valves;
-	bool bootstrap;
+	bool bootstrap, dry;
 	std::string base;
 
   private:
@@ -26,6 +26,10 @@ class Options {
 		return bootstrap;
 	}
 
+	inline bool isDry() const {
+		return dry;
+	}
+
 	inline const std::string& getBase() const {
 		return base;
 	}
@@ -34,6 +38,7 @@ class Options {
 
 	void usage();
 	void setBootstrap(bool);
+	void setDry(bool);
 	void setBase(const std::string&);
 	void addBareword(const std::string&);
 	void checkBarewords();

@@ -26,12 +26,19 @@ void Options::usage() {
 		<< "                   usual files; emulate Xake instead (useful to build RedStrain" << endl
 		<< "                   itsself, as bootstrap mode can be used without blobs)" << endl
 		<< "    --base DIR     use DIR as the project base directory (defaults to '.')" << endl
+		<< "    --dry          perform dry run: print only what would be done, without" << endl
+		<< "                   actually performing the actions" << endl
+		<< "    -y             same as --dry" << endl
 		<< "    --help         print this helpful message and quit" << endl;
 	throw StopExecution(0);
 }
 
 void Options::setBootstrap(bool bootstrap) {
 	this->bootstrap = bootstrap;
+}
+
+void Options::setDry(bool dry) {
+	this->dry = dry;
 }
 
 void Options::setBase(const string& base) {

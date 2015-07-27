@@ -104,8 +104,12 @@ namespace build {
 		void spinTriggers();
 		void predictTriggers();
 		bool queueAction(Action*);
-		void performActions();
-		void predictActions();
+		bool performActions();
+		bool predictActions();
+		bool definitiveCycle();
+		bool predictiveCycle();
+		bool definitiveLoop();
+		bool predictiveLoop();
 
 		FileArtifact* internFileArtifact(const std::string&, const std::string&);
 

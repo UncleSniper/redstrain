@@ -274,7 +274,9 @@ namespace build {
 
 	};
 
-	void BuildContext::performActions() {
+	bool BuildContext::performActions() {
+		if(actionQueue.empty())
+			return false;
 		ActionQueue buffer(actionQueue);
 		actionQueue.clear();
 		UnrefActionQueue unrefQueue(&buffer);
@@ -286,9 +288,12 @@ namespace build {
 			alreadyPerformed.insert(*action);
 		}
 		unrefQueue.actions = NULL;
+		return true;
 	}
 
-	void BuildContext::predictActions() {
+	bool BuildContext::predictActions() {
+		if(actionQueue.empty())
+			return false;
 		ActionQueue buffer(actionQueue);
 		actionQueue.clear();
 		UnrefActionQueue unrefQueue(&buffer);
@@ -300,6 +305,31 @@ namespace build {
 			alreadyPerformed.insert(*action);
 		}
 		unrefQueue.actions = NULL;
+		return true;
+	}
+
+	bool BuildContext::definitiveCycle() {
+		spinTriggers();
+		return performActions();
+	}
+
+	bool BuildContext::predictiveCycle() {
+		predictTriggers();
+		return predictActions();
+	}
+
+	bool BuildContext::definitiveLoop() {
+		bool had = false;
+		while(definitiveCycle())
+			had = true;
+		return had;
+	}
+
+	bool BuildContext::predictiveLoop() {
+		bool had = false;
+		while(predictiveCycle())
+			had = true;
+		return had;
 	}
 
 	FileArtifact* BuildContext::internFileArtifact(const string& directory, const string& basename) {

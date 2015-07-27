@@ -46,6 +46,7 @@ namespace build {
 	  private:
 		typedef std::map<ComponentReference, Component*> Components;
 		typedef Components::iterator ComponentIterator;
+		typedef Components::const_iterator ConstComponentIterator;
 
 	  public:
 		class REDSTRAIN_BUILD_API ComponentNameIterator {
@@ -91,6 +92,8 @@ namespace build {
 		Component* getComponent(ComponentCategory, const std::string&) const;
 		Component* getComponent(const ComponentReference&) const;
 		void getComponents(ComponentNameIterator&, ComponentNameIterator&) const;
+
+		std::string::size_type getMaximalComponentNameWidth() const;
 
 	};
 

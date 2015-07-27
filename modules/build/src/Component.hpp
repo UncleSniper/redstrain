@@ -228,6 +228,8 @@ namespace build {
 		void setupRules(BuildDirectoryMapper&, BuildArtifactMapper&, ComponentTypeStringifier&,
 				BuildContext&, ValveInjector* = NULL);
 
+		static std::string::size_type getMaximalComponentTypeWidth(ComponentTypeStringifier&);
+
 	};
 
 }}

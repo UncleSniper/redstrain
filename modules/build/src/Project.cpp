@@ -147,4 +147,15 @@ namespace build {
 		end = ComponentNameIterator(components.end());
 	}
 
+	string::size_type Project::getMaximalComponentNameWidth() const {
+		string::size_type max = static_cast<string::size_type>(0u);
+		ConstComponentIterator begin(components.begin()), end(components.end());
+		for(; begin != end; ++begin) {
+			string::size_type cur = begin->second->getName().length();
+			if(cur > max)
+				max = cur;
+		}
+		return max;
+	}
+
 }}
