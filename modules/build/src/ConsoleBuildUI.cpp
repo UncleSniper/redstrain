@@ -29,11 +29,13 @@ namespace build {
 			componentNameWidth(ui.componentNameWidth), flags(ui.flags) {}
 
 	void ConsoleBuildUI::willPerformAction(const ActionDescriptor& action) {
-		printAction(getDefinitiveActionCount(), getPredictiveActionCount(), action);
+		if(flags & ConsoleBuildUI::PRINT_DEFINITIVE)
+			printAction(getDefinitiveActionCount(), getPredictiveActionCount(), action);
 	}
 
 	void ConsoleBuildUI::wouldPerformAction(const ActionDescriptor& action) {
-		printAction(getPredictiveActionCount(), 0u, action);
+		if(flags & ConsoleBuildUI::PRINT_PREDICTIVE)
+			printAction(getPredictiveActionCount(), 0u, action);
 	}
 
 	void ConsoleBuildUI::indent(unsigned level) {
