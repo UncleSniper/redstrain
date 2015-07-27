@@ -12,10 +12,20 @@ namespace build {
 
 	class REDSTRAIN_BUILD_API ConsoleBuildUI : public AbstractBuildUI {
 
+	  public:
+		enum {
+			PRINT_PREDICTIVE = 01,
+			PRINT_DEFINITIVE = 02
+		};
+
+	  public:
+		static const int DEFAULT_FLAGS = PRINT_PREDICTIVE | PRINT_DEFINITIVE;
+
 	  private:
 		io::FileOutputStream output;
 		io::FormattedOutputStream<char> formatted;
 		unsigned componentTypeWidth, componentNameWidth;
+		int flags;
 
 	  private:
 		void indent(unsigned);
@@ -49,6 +59,14 @@ namespace build {
 
 		inline void setMinimalComponentNameWidth(unsigned width) {
 			componentNameWidth = width;
+		}
+
+		inline int getFlags() const {
+			return flags;
+		}
+
+		inline void setFlags(int flags) {
+			this->flags = flags;
 		}
 
 		virtual void willPerformAction(const ActionDescriptor&);

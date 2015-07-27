@@ -14,18 +14,19 @@ namespace build {
 
 	ConsoleBuildUI::ConsoleBuildUI()
 			: output(Console::getStandardHandle(Console::STANDARD_OUTPUT)), formatted(output),
-			componentTypeWidth(0u), componentNameWidth(0u) {}
+			componentTypeWidth(0u), componentNameWidth(0u), flags(DEFAULT_FLAGS) {}
 
 	ConsoleBuildUI::ConsoleBuildUI(const File::Handle& handle)
-			: output(handle), formatted(output), componentTypeWidth(0u), componentNameWidth(0u) {}
+			: output(handle), formatted(output), componentTypeWidth(0u), componentNameWidth(0u),
+			flags(DEFAULT_FLAGS) {}
 
 	ConsoleBuildUI::ConsoleBuildUI(Console::StandardHandle handle)
 			: output(Console::getStandardHandle(handle)), formatted(output), componentTypeWidth(0u),
-			componentNameWidth(0u) {}
+			componentNameWidth(0u), flags(DEFAULT_FLAGS) {}
 
 	ConsoleBuildUI::ConsoleBuildUI(const ConsoleBuildUI& ui) : AbstractBuildUI(ui),
 			output(ui.output.getFile().getHandle()), formatted(output), componentTypeWidth(ui.componentTypeWidth),
-			componentNameWidth(ui.componentNameWidth) {}
+			componentNameWidth(ui.componentNameWidth), flags(ui.flags) {}
 
 	void ConsoleBuildUI::willPerformAction(const ActionDescriptor& action) {
 		printAction(getDefinitiveActionCount(), getPredictiveActionCount(), action);
@@ -54,7 +55,7 @@ namespace build {
 			formatted << '[';
 			indent(countDigits(needCount) - countDigits(haveCount + 1u));
 			formatted << (haveCount + 1u) << '/' << needCount << " = ";
-			unsigned percent = haveCount * 100u / needCount;
+			unsigned percent = needCount > 1u ? haveCount * 100u / (needCount - 1u) : 100u;
 			indent(3u - countDigits(percent));
 			formatted << percent << "%] ";
 		}
