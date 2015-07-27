@@ -1,7 +1,12 @@
+#include <iostream>
+
+#include "DebugMode.hpp"
 #include "ExternalTool.hpp"
 
 #include "ToolchainFailureError.hpp"
 
+using std::cerr;
+using std::endl;
 using std::string;
 using redengine::platform::Process;
 using redengine::platform::ProcessBuilder;
@@ -30,6 +35,14 @@ namespace build {
 	}
 
 	void ExternalTool::ExternalInvocation::invoke() {
+		if(DebugMode::getInstance().isDebug()) {
+			cerr << "REDBUILD_DEBUG: Will execute:";
+			ProcessBuilder::ArgumentIterator argbegin, argend;
+			command.getArguments(argbegin, argend);
+			for(; argbegin != argend; ++argbegin)
+				cerr << " '" << *argbegin << '\'';
+			cerr << endl;
+		}
 		Process proc = command.execute();
 		checkStatus(proc.wait());
 	}
