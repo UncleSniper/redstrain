@@ -62,7 +62,7 @@ namespace build {
 
 	void ObjectFileLanguage::LinkGenerationHolder::addTriggerSource(FileArtifact* source) {
 		if(source && trigger)
-			trigger->addOptionalSource(source);
+			trigger->addSource(source);
 	}
 
 	void ObjectFileLanguage::LinkGenerationHolder::getTargets(GenerationTrigger::ArtifactIterator& begin,
