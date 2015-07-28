@@ -82,7 +82,9 @@ namespace boot {
 		"component.guard",
 		"depend.modules",
 		"target.architecture",
-		"target.os"
+		"target.os",
+		"linux.external.libraries",
+		"windows.external.libraries"
 	};
 
 	Resources::Resources() {}
