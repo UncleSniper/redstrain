@@ -1,10 +1,59 @@
-#include "CodeTableDefinitionLanguage.hpp"
+#include <redstrain/util/Unref.hpp>
+#include <redstrain/util/Delete.hpp>
+#include <redstrain/util/StringUtils.hpp>
 
+#include "FileArtifact.hpp"
+#include "CodeTableDefinitionLanguage.hpp"
+#include "CodeTableCompileGenerationAction.hpp"
+
+using std::set;
 using std::string;
+using redengine::util::Unref;
+using redengine::util::Delete;
 using redengine::util::Appender;
+using redengine::util::StringUtils;
 
 namespace redengine {
 namespace build {
+
+	static set<Artifact*> emptyArtifactSet;
+
+	// ======== CodeTableCompileGenerationHolder ========
+
+	CodeTableDefinitionLanguage::CodeTableCompileGenerationHolder::CodeTableCompileGenerationHolder(
+			GenerationTrigger* trigger) : trigger(trigger) {
+		if(trigger)
+			trigger->ref();
+	}
+
+	CodeTableDefinitionLanguage::CodeTableCompileGenerationHolder::~CodeTableCompileGenerationHolder() {
+		if(trigger)
+			trigger->unref();
+	}
+
+	Trigger* CodeTableDefinitionLanguage::CodeTableCompileGenerationHolder::getTrigger() {
+		return trigger;
+	}
+
+	void CodeTableDefinitionLanguage::CodeTableCompileGenerationHolder::addSource(FileArtifact* source) {
+		if(source && trigger)
+			trigger->addSource(source);
+	}
+
+	void CodeTableDefinitionLanguage::CodeTableCompileGenerationHolder::addTriggerSource(FileArtifact* source) {
+		if(source && trigger)
+			trigger->addOptionalSource(source);
+	}
+
+	void CodeTableDefinitionLanguage::CodeTableCompileGenerationHolder::getTargets(
+			GenerationTrigger::ArtifactIterator& begin, GenerationTrigger::ArtifactIterator& end) {
+		if(trigger)
+			trigger->getTargets(begin, end);
+		else
+			begin = end = emptyArtifactSet.end();
+	}
+
+	// ======== CodeTableDefinitionLanguage ========
 
 	CodeTableDefinitionLanguage::CodeTableDefinitionLanguage() : Language("code table definition") {}
 
@@ -37,11 +86,27 @@ namespace build {
 		return true;
 	}
 
-	Component::GenerationHolder* CodeTableDefinitionLanguage::getGenerationTrigger(BuildContext&, const string&,
-			const string&, const Flavor&, const string&, const Flavor&, Component&,
+	Component::GenerationHolder* CodeTableDefinitionLanguage::getGenerationTrigger(BuildContext& context,
+			const string& sourceDirectory, const string& sourceBasename, const Flavor&,
+			const string& targetDirectory, const Flavor&, Component& component,
 			Component::BuildArtifactMapper&) {
-		//TODO
-		return NULL;
+		string targetBasename(StringUtils::endsWith(sourceBasename, ".ctdef")
+				? sourceBasename.substr(static_cast<string::size_type>(0u),
+				sourceBasename.length() - static_cast<string::size_type>(6u))
+				: sourceBasename);
+		targetBasename += ".redct";
+		FileArtifact* srcfile = context.internFileArtifact(sourceDirectory, sourceBasename);
+		FileArtifact* trgfile = context.internFileArtifact(targetDirectory, targetBasename);
+		Delete<GenerationTrigger> trigger(new GenerationTrigger);
+		trigger->addSource(srcfile);
+		trigger->addTarget(trgfile);
+		Unref<CodeTableCompileGenerationAction> action(new CodeTableCompileGenerationAction(trgfile));
+		action->addSource(srcfile);
+		action->addIntermediateDirectories(component, context);
+		trigger->addAction(*action);
+		CodeTableCompileGenerationHolder* holder = new CodeTableCompileGenerationHolder(*trigger);
+		trigger.set();
+		return holder;
 	}
 
 	Flavor CodeTableDefinitionLanguage::getGeneratedSourceFlavor(const Flavor&, const Flavor&, const string&) {
