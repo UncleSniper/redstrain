@@ -112,12 +112,19 @@ int bootstrap(const string&, const Options& options) {
 		return 0;
 	}
 	context->forceValveGroups();
-	if(options.isDry())
-		context->predictiveLoop();
+	if(options.isDry()) {
+		ui.startPredictiveRun();
+		bool didSomething = context->predictiveLoop();
+		ui.endPredictiveRun(didSomething);
+	}
 	else {
 		ui.setFlags(ConsoleBuildUI::PRINT_DEFINITIVE);
-		context->predictiveLoop();
-		context->definitiveLoop();
+		ui.startPredictiveRun();
+		bool didSomething = context->predictiveLoop();
+		ui.endPredictiveRun(didSomething);
+		ui.startDefinitiveRun();
+		didSomething = context->definitiveLoop();
+		ui.endDefinitiveRun(didSomething);
 	}
 	return 0;
 }

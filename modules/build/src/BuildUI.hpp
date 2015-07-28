@@ -65,6 +65,10 @@ namespace build {
 		virtual void wouldPerformAction(const Action&) = 0;
 		virtual void willPerformAction(const ActionDescriptor&) = 0;
 		virtual void wouldPerformAction(const ActionDescriptor&) = 0;
+		virtual void startPredictiveRun() = 0;
+		virtual void endPredictiveRun(bool) = 0;
+		virtual void startDefinitiveRun() = 0;
+		virtual void endDefinitiveRun(bool) = 0;
 
 	};
 
