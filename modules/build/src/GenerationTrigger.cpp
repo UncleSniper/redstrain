@@ -46,25 +46,22 @@ namespace build {
 			(*begin)->unref();
 	}
 
-	void GenerationTrigger::addSource(Artifact* source) {
+	bool GenerationTrigger::addSource(Artifact* source) {
 		if(!source)
-			return;
-		sources.push_back(source);
+			return false;
+		if(!sources.insert(source).second)
+			return false;
 		source->ref();
+		return true;
 	}
 
 	bool GenerationTrigger::removeSource(Artifact* source) {
 		if(!source)
 			return false;
-		list<Artifact*>::iterator begin(sources.begin()), end(sources.end());
-		for(; begin != end; ++begin) {
-			if(*begin == source) {
-				sources.erase(begin);
-				source->unref();
-				return true;
-			}
-		}
-		return false;
+		if(!sources.erase(source))
+			return false;
+		source->unref();
+		return true;
 	}
 
 	void GenerationTrigger::clearSources() {
@@ -79,25 +76,22 @@ namespace build {
 		end = sources.end();
 	}
 
-	void GenerationTrigger::addOptionalSource(Artifact* source) {
+	bool GenerationTrigger::addOptionalSource(Artifact* source) {
 		if(!source)
-			return;
-		optionalSources.push_back(source);
+			return false;
+		if(!optionalSources.insert(source).second)
+			return false;
 		source->ref();
+		return true;
 	}
 
 	bool GenerationTrigger::removeOptionalSource(Artifact* source) {
 		if(!source)
 			return false;
-		list<Artifact*>::iterator begin(optionalSources.begin()), end(optionalSources.end());
-		for(; begin != end; ++begin) {
-			if(*begin == source) {
-				optionalSources.erase(begin);
-				source->unref();
-				return true;
-			}
-		}
-		return false;
+		if(!optionalSources.erase(source))
+			return false;
+		source->unref();
+		return true;
 	}
 
 	void GenerationTrigger::clearOptionalSources() {
@@ -112,25 +106,22 @@ namespace build {
 		end = optionalSources.end();
 	}
 
-	void GenerationTrigger::addTarget(Artifact* target) {
+	bool GenerationTrigger::addTarget(Artifact* target) {
 		if(!target)
-			return;
-		targets.push_back(target);
+			return false;
+		if(!targets.insert(target).second)
+			return false;
 		target->ref();
+		return true;
 	}
 
 	bool GenerationTrigger::removeTarget(Artifact* target) {
 		if(!target)
 			return false;
-		list<Artifact*>::iterator begin(targets.begin()), end(targets.end());
-		for(; begin != end; ++begin) {
-			if(*begin == target) {
-				targets.erase(begin);
-				target->unref();
-				return true;
-			}
-		}
-		return false;
+		if(!targets.erase(target))
+			return false;
+		target->unref();
+		return true;
 	}
 
 	void GenerationTrigger::clearTargets() {

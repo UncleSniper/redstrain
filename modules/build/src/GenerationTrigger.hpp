@@ -10,7 +10,7 @@ namespace build {
 	class REDSTRAIN_BUILD_API GenerationTrigger : public Trigger {
 
 	  private:
-		typedef std::list<Artifact*> Artifacts;
+		typedef std::set<Artifact*> Artifacts;
 
 	  public:
 		typedef Artifacts::const_iterator ArtifactIterator;
@@ -30,17 +30,17 @@ namespace build {
 		GenerationTrigger(const GenerationTrigger&);
 		virtual ~GenerationTrigger();
 
-		void addSource(Artifact*);
+		bool addSource(Artifact*);
 		bool removeSource(Artifact*);
 		void clearSources();
 		void getSources(ArtifactIterator&, ArtifactIterator&) const;
 
-		void addOptionalSource(Artifact*);
+		bool addOptionalSource(Artifact*);
 		bool removeOptionalSource(Artifact*);
 		void clearOptionalSources();
 		void getOptionalSources(ArtifactIterator&, ArtifactIterator&) const;
 
-		void addTarget(Artifact*);
+		bool addTarget(Artifact*);
 		bool removeTarget(Artifact*);
 		void clearTargets();
 		void getTargets(ArtifactIterator&, ArtifactIterator&) const;
