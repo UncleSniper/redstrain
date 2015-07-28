@@ -138,7 +138,7 @@ namespace boot {
 				break;
 		}
 		compilation.defineMacro("XAKE_COMPILER_GCC", "1");
-		compilation.defineMacro("XAKE_COMPILER", project.getCompilerName());
+		compilation.defineMacro("XAKE_COMPILER", "XAKE_COMPILER_" + project.getCompilerName());
 		// include directories
 		if(component) {
 			list<Component*> dependencies;
