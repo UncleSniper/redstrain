@@ -1115,6 +1115,10 @@ namespace platform {
 			Filesystem::removeRecursively(parent + Pathname::SEPARATOR + child);
 		}
 
+		virtual void doneAppending() {
+			Filesystem::rmdir(parent);
+		}
+
 	};
 
 	void Filesystem::removeRecursively(const string& path) {
