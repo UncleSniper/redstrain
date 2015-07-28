@@ -80,7 +80,7 @@ namespace build {
 					FileArtifact* lheader = owner.getLocalHeader(language,
 							Pathname::stripPrefix(lref, sourceDirectory));
 					if(lheader) {
-						trigger.addOptionalSource(lheader);
+						trigger.addSource(lheader);
 						CPPIncludeRuleBuilder builder(language, owner, lheader->getPathname(),
 								lheader->getDirectory(), alreadySearched, trigger);
 						builder.buildRules();
@@ -94,7 +94,7 @@ namespace build {
 			for(; depbegin != depend; ++depbegin) {
 				FileArtifact* gheader = (*depbegin)->getExposedHeader(language, header.getPath());
 				if(gheader) {
-					trigger.addOptionalSource(gheader);
+					trigger.addSource(gheader);
 					FileArtifact* ueheader = (*depbegin)->getUnexposedHeader(language, gheader);
 					if(!ueheader)
 						ueheader = gheader;
