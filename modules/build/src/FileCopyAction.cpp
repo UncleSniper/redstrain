@@ -69,10 +69,10 @@ namespace build {
 		}
 	}
 
-	void FileCopyAction::wouldPerform(BuildContext&) {
+	void FileCopyAction::wouldPerform(BuildContext& context) {
 		if(source.wouldBePresent()) {
-			wouldCreateIntermediateDirectories();
-			destination.wouldModify();
+			wouldCreateIntermediateDirectories(context);
+			destination.wouldModify(context);
 		}
 	}
 

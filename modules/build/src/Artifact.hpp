@@ -11,6 +11,8 @@
 namespace redengine {
 namespace build {
 
+	class BuildContext;
+
 	class REDSTRAIN_BUILD_API Artifact : public util::ReferenceCounted {
 
 	  public:
@@ -65,7 +67,7 @@ namespace build {
 
 		bool wouldBePresent();
 		time_t getPredictedModificationTimestamp();
-		void wouldModify();
+		void wouldModify(BuildContext&);
 		void wouldRemove();
 
 		virtual bool isPresent() = 0;

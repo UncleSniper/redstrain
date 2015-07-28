@@ -138,9 +138,9 @@ namespace build {
 			generation.generate(sources, target, context);
 		}
 
-		virtual void wouldPerform(BuildContext&) {
+		virtual void wouldPerform(BuildContext& context) {
 			if(target)
-				target->wouldModify();
+				target->wouldModify(context);
 		}
 
 		virtual void notifyUIWillPerform(BuildUI& ui) const {

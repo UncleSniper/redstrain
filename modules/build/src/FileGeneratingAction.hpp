@@ -25,7 +25,7 @@ namespace build {
 		void addIntermediateDirectoriesFor(const std::string&, const std::string&, BuildContext&);
 		void addIntermediateDirectoriesFor(const FileArtifact&, BuildContext&);
 		void createIntermediateDirectories() const;
-		void wouldCreateIntermediateDirectories() const;
+		void wouldCreateIntermediateDirectories(BuildContext&) const;
 
 		void dumpFileGeneratingActionAspects(io::DefaultConfiguredOutputStream<char>::Stream&) const;
 

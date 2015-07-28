@@ -4,6 +4,7 @@
 #include <map>
 #include <set>
 #include <deque>
+#include <ctime>
 #include <string>
 #include <redstrain/util/ReferenceCounted.hpp>
 #include <redstrain/io/streamtypes.hpp>
@@ -63,6 +64,7 @@ namespace build {
 		ActionSet alreadyPerformed;
 		Groups groups;
 		FileArtifacts fileArtifacts;
+		time_t virtualTime;
 
 	  private:
 		BuildContext(const BuildContext&);
@@ -78,6 +80,12 @@ namespace build {
 		inline const BuildUI& getUI() const {
 			return ui;
 		}
+
+		inline time_t getVirtualTime() const {
+			return virtualTime;
+		}
+
+		time_t tickVirtualTime();
 
 		bool addTrigger(Trigger*);
 		bool removeTrigger(Trigger*);

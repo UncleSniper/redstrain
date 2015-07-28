@@ -84,10 +84,10 @@ namespace build {
 			Filesystem::mkdirRecursive((*begin)->getPathname());
 	}
 
-	void FileGeneratingAction::wouldCreateIntermediateDirectories() const {
+	void FileGeneratingAction::wouldCreateIntermediateDirectories(BuildContext& context) const {
 		FileArtifactIterator begin(intermediates.begin()), end(intermediates.end());
 		for(; begin != end; ++begin)
-			(*begin)->wouldModify();
+			(*begin)->wouldModify(context);
 	}
 
 	void FileGeneratingAction::dumpFileGeneratingActionAspects(DefaultConfiguredOutputStream<char>::Stream&

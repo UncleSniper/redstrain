@@ -55,12 +55,12 @@ namespace build {
 
 	// ======== BuildContext ========
 
-	BuildContext::BuildContext(BuildUI& ui) : ui(ui) {}
+	BuildContext::BuildContext(BuildUI& ui) : ui(ui), virtualTime(time(NULL)) {}
 
 	BuildContext::BuildContext(const BuildContext& context)
 			: ui(context.ui), triggers(context.triggers), actionQueue(context.actionQueue),
 			actionSet(context.actionSet), valves(context.valves), alreadyPerformed(context.alreadyPerformed),
-			groups(context.groups), fileArtifacts(context.fileArtifacts) {
+			groups(context.groups), fileArtifacts(context.fileArtifacts), virtualTime(context.virtualTime) {
 		TriggerIterator tbegin(triggers.begin()), tend(triggers.end());
 		for(; tbegin != tend; ++tbegin)
 			(*tbegin)->ref();
@@ -94,6 +94,10 @@ namespace build {
 		FileArtifactIterator fabegin(fileArtifacts.begin()), faend(fileArtifacts.end());
 		for(; fabegin != faend; ++fabegin)
 			fabegin->second->unref();
+	}
+
+	time_t BuildContext::tickVirtualTime() {
+		return ++virtualTime;
 	}
 
 	bool BuildContext::addTrigger(Trigger* trigger) {

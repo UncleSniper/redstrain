@@ -37,7 +37,7 @@ namespace build {
 	}
 
 	void CompileGenerationAction::wouldPerform(BuildContext& context) {
-		wouldCreateIntermediateDirectories();
+		wouldCreateIntermediateDirectories(context);
 		GenerationAction<FileArtifact>::wouldPerform(context);
 	}
 
