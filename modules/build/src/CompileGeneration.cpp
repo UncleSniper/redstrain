@@ -1,5 +1,6 @@
 #include <redstrain/util/Delete.hpp>
 #include <redstrain/util/StringUtils.hpp>
+#include <redstrain/platform/Pathname.hpp>
 #include <redstrain/error/IllegalArgumentError.hpp>
 #ifdef TESTING_REDSTRAIN_BUILD_API
 #include <redstrain/io/streamoperators.hpp>
@@ -14,6 +15,7 @@
 using std::list;
 using redengine::util::Delete;
 using redengine::util::StringUtils;
+using redengine::platform::Pathname;
 using redengine::error::IllegalArgumentError;
 #ifdef TESTING_REDSTRAIN_BUILD_API
 using redengine::io::DefaultConfiguredOutputStream;
@@ -59,7 +61,8 @@ namespace build {
 		if(!source || !target)
 			return;
 		ui.willPerformAction(BuildUI::ActionDescriptor(action.getComponentType(), action.getComponentName(),
-				"compiling", source->getHumanReadableReference(false), target->getHumanReadableReference(true)));
+				"compiling", source->getBasename(), Pathname::stripPrefix(target->getDirectory(),
+				action.getComponentBaseDirectory())));
 	}
 
 	void CompileGeneration::notifyUIWouldGenerate(BuildUI& ui, const Action& action,
@@ -68,7 +71,8 @@ namespace build {
 		if(!source || !target)
 			return;
 		ui.wouldPerformAction(BuildUI::ActionDescriptor(action.getComponentType(), action.getComponentName(),
-				"would compile", source->getHumanReadableReference(false), target->getHumanReadableReference(true)));
+				"would compile", source->getBasename(), Pathname::stripPrefix(target->getDirectory(),
+				action.getComponentBaseDirectory())));
 	}
 
 #ifdef TESTING_REDSTRAIN_BUILD_API

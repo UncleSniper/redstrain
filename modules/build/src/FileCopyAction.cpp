@@ -82,12 +82,14 @@ namespace build {
 
 	void FileCopyAction::notifyUIWillPerform(BuildUI& ui) const {
 		ui.willPerformAction(BuildUI::ActionDescriptor(getComponentType(), getComponentName(), "copying",
-				source.getHumanReadableReference(false), destination.getHumanReadableReference(true)));
+				source.getBasename(), Pathname::stripPrefix(destination.getDirectory(),
+				getComponentBaseDirectory())));
 	}
 
 	void FileCopyAction::notifyUIWouldPerform(BuildUI& ui) const {
 		ui.wouldPerformAction(BuildUI::ActionDescriptor(getComponentType(), getComponentName(), "would copy",
-				source.getHumanReadableReference(false), destination.getHumanReadableReference(true)));
+				source.getBasename(), Pathname::stripPrefix(destination.getDirectory(),
+				getComponentBaseDirectory())));
 	}
 
 #ifdef TESTING_REDSTRAIN_BUILD_API

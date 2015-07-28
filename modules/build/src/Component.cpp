@@ -737,6 +737,7 @@ namespace build {
 					for(; abegin != aend; ++abegin) {
 						(*abegin)->setComponentType(componentType);
 						(*abegin)->setComponentName(component.getName());
+						(*abegin)->setComponentBaseDirectory(component.getBaseDirectory());
 					}
 					Component::PreciousArtifact* preciousArtifact = newTrigger->getPreciousArtifact();
 					if(preciousArtifact)
@@ -830,6 +831,7 @@ namespace build {
 						for(; abegin != aend; ++abegin) {
 							(*abegin)->setComponentType(componentType);
 							(*abegin)->setComponentName(name);
+							(*abegin)->setComponentBaseDirectory(baseDirectory);
 						}
 						if(newTrigger->evokesDependencySources())
 							addUnresolvedGeneration(newTrigger);

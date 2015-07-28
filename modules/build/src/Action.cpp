@@ -17,4 +17,8 @@ namespace build {
 		componentName = name;
 	}
 
+	void Action::setComponentBaseDirectory(const string& directory) {
+		componentBase = directory;
+	}
+
 }}

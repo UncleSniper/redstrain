@@ -45,7 +45,7 @@ namespace build {
 		if(!target)
 			return;
 		ui.willPerformAction(BuildUI::ActionDescriptor(action.getComponentType(), action.getComponentName(),
-				"linking", "", target->getHumanReadableReference(false)));
+				"linking", "", target->getBasename()));
 	}
 
 	void LinkGeneration::notifyUIWouldGenerate(BuildUI& ui, const Action& action,
@@ -53,7 +53,7 @@ namespace build {
 		if(!target)
 			return;
 		ui.wouldPerformAction(BuildUI::ActionDescriptor(action.getComponentType(), action.getComponentName(),
-				"would link", "", target->getHumanReadableReference(false)));
+				"would link", "", target->getBasename()));
 	}
 
 #ifdef TESTING_REDSTRAIN_BUILD_API

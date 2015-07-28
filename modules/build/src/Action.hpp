@@ -17,7 +17,7 @@ namespace build {
 
 	class REDSTRAIN_BUILD_API Action : public util::ReferenceCounted {
 
-		std::string componentType, componentName;
+		std::string componentType, componentName, componentBase;
 
 	  public:
 		Action();
@@ -31,8 +31,13 @@ namespace build {
 			return componentName;
 		}
 
+		inline const std::string& getComponentBaseDirectory() const {
+			return componentBase;
+		}
+
 		void setComponentType(const std::string&);
 		void setComponentName(const std::string&);
+		void setComponentBaseDirectory(const std::string&);
 
 		virtual void perform(BuildContext&) = 0;
 		virtual void wouldPerform(BuildContext&) = 0;
