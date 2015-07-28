@@ -50,15 +50,19 @@ namespace build {
 			const char *const* sourceSuffixes, const char *const* headerSuffixes) {
 		string bn(Pathname::basename(path));
 		string::size_type bnlen = bn.length();
-		for(; *sourceSuffixes; ++sourceSuffixes) {
-			string suffix(*sourceSuffixes);
-			if(bnlen > suffix.length() && StringUtils::endsWith(bn, suffix))
-				return AT_SOURCE;
+		if(sourceSuffixes) {
+			for(; *sourceSuffixes; ++sourceSuffixes) {
+				string suffix(*sourceSuffixes);
+				if(bnlen > suffix.length() && StringUtils::endsWith(bn, suffix))
+					return AT_SOURCE;
+			}
 		}
-		for(; *headerSuffixes; ++headerSuffixes) {
-			string suffix(*headerSuffixes);
-			if(bnlen > suffix.length() && StringUtils::endsWith(bn, suffix))
-				return AT_HEADER;
+		if(headerSuffixes) {
+			for(; *headerSuffixes; ++headerSuffixes) {
+				string suffix(*headerSuffixes);
+				if(bnlen > suffix.length() && StringUtils::endsWith(bn, suffix))
+					return AT_HEADER;
+			}
 		}
 		return AT_NONE;
 	}
