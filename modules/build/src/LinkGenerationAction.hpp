@@ -31,9 +31,7 @@ namespace build {
 		virtual void perform(BuildContext&);
 		virtual void wouldPerform(BuildContext&);
 
-#ifdef TESTING_REDSTRAIN_BUILD_API
 		virtual void dumpAction(io::DefaultConfiguredOutputStream<char>::Stream&) const;
-#endif /* TESTING_REDSTRAIN_BUILD_API */
 
 	};
 

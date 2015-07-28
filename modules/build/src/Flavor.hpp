@@ -29,6 +29,7 @@ namespace build {
 		static const Flavor STATIC;
 		static const Flavor DYNAMIC;
 		static const Flavor HEADER;
+		static const Flavor GENERIC;
 
 	};
 

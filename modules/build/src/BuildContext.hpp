@@ -4,11 +4,10 @@
 #include <map>
 #include <set>
 #include <deque>
+#include <ctime>
 #include <string>
 #include <redstrain/util/ReferenceCounted.hpp>
-#ifdef TESTING_REDSTRAIN_BUILD_API
 #include <redstrain/io/streamtypes.hpp>
-#endif /* TESTING_REDSTRAIN_BUILD_API */
 
 #include "api.hpp"
 
@@ -18,6 +17,7 @@ namespace build {
 	class Action;
 	class Trigger;
 	class BuildUI;
+	class Artifact;
 	class ValveGroup;
 	class StaticValve;
 	class FileArtifact;
@@ -51,6 +51,9 @@ namespace build {
 		typedef std::set<ValveGroup*> Groups;
 		typedef std::map<PathPair, FileArtifact*> FileArtifacts;
 		typedef FileArtifacts::const_iterator FileArtifactIterator;
+		typedef std::map<const Artifact*, unsigned> SlatedRebuilds;
+		typedef SlatedRebuilds::iterator SlatedRebuildIterator;
+		typedef SlatedRebuilds::const_iterator ConstSlatedRebuildIterator;
 
 	  public:
 		typedef Triggers::const_iterator TriggerIterator;
@@ -65,6 +68,8 @@ namespace build {
 		ActionSet alreadyPerformed;
 		Groups groups;
 		FileArtifacts fileArtifacts;
+		time_t virtualTime;
+		SlatedRebuilds slatedRebuilds;
 
 	  private:
 		BuildContext(const BuildContext&);
@@ -80,6 +85,12 @@ namespace build {
 		inline const BuildUI& getUI() const {
 			return ui;
 		}
+
+		inline time_t getVirtualTime() const {
+			return virtualTime;
+		}
+
+		time_t tickVirtualTime();
 
 		bool addTrigger(Trigger*);
 		bool removeTrigger(Trigger*);
@@ -101,6 +112,11 @@ namespace build {
 		bool wasActionPerformed(Action*) const;
 		void clearPerformedActions();
 
+		bool slateRebuild(const Artifact*);
+		bool unslateRebuild(const Artifact*);
+		bool isSlatedForRebuild(const Artifact*) const;
+		void clearSlatedRebuilds();
+
 		void spinTriggers();
 		void predictTriggers();
 		bool queueAction(Action*);
@@ -113,9 +129,7 @@ namespace build {
 
 		FileArtifact* internFileArtifact(const std::string&, const std::string&);
 
-#ifdef TESTING_REDSTRAIN_BUILD_API
 		void dumpContext(io::DefaultConfiguredOutputStream<char>::Stream&) const;
-#endif /* TESTING_REDSTRAIN_BUILD_API */
 
 	};
 

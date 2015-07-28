@@ -10,9 +10,10 @@ using redengine::cmdline::StopExecution;
 
 Options::Options(const Options& options)
 		: progname(options.progname), valves(options.valves), bootstrap(options.bootstrap), dry(options.dry),
-		base(options.base) {}
+		dumpContext(options.dumpContext), base(options.base) {}
 
-Options::Options(const char* progname) : progname(progname), bootstrap(false), dry(false), base(".") {}
+Options::Options(const char* progname)
+		: progname(progname), bootstrap(false), dry(false), dumpContext(false), base(".") {}
 
 void Options::getValves(ValveNameIterator& begin, ValveNameIterator& end) const {
 	begin = valves.begin();
@@ -44,6 +45,10 @@ void Options::setDry(bool dry) {
 
 void Options::setBase(const string& base) {
 	this->base = base;
+}
+
+void Options::setDumpContext(bool dumpContext) {
+	this->dumpContext = dumpContext;
 }
 
 void Options::addBareword(const string& word) {

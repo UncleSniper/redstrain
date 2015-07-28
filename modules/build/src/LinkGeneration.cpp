@@ -1,7 +1,5 @@
 #include <redstrain/util/Delete.hpp>
-#ifdef TESTING_REDSTRAIN_BUILD_API
 #include <redstrain/io/streamoperators.hpp>
-#endif /* TESTING_REDSTRAIN_BUILD_API */
 
 #include "Linker.hpp"
 #include "Action.hpp"
@@ -11,14 +9,12 @@
 
 using std::list;
 using redengine::util::Delete;
-#ifdef TESTING_REDSTRAIN_BUILD_API
 using redengine::io::DefaultConfiguredOutputStream;
 using redengine::io::endln;
 using redengine::io::shift;
 using redengine::io::indent;
 using redengine::io::unshift;
 using redengine::io::operator<<;
-#endif /* TESTING_REDSTRAIN_BUILD_API */
 
 namespace redengine {
 namespace build {
@@ -56,7 +52,6 @@ namespace build {
 				"would link", "", target->getBasename()));
 	}
 
-#ifdef TESTING_REDSTRAIN_BUILD_API
 	void LinkGeneration::dumpGeneration(DefaultConfiguredOutputStream<char>::Stream& stream) const {
 		stream << indent << "LinkGeneration {" << endln << shift;
 		stream << indent << "mode = ";
@@ -77,6 +72,5 @@ namespace build {
 		stream << endln;
 		stream << unshift << indent << '}' << endln;
 	}
-#endif /* TESTING_REDSTRAIN_BUILD_API */
 
 }}

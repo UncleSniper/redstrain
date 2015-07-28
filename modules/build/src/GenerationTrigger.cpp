@@ -1,18 +1,15 @@
-#ifdef TESTING_REDSTRAIN_BUILD_API
 #include <redstrain/io/streamoperators.hpp>
-#endif /* TESTING_REDSTRAIN_BUILD_API */
 
+#include "BuildContext.hpp"
 #include "GenerationTrigger.hpp"
 
 using std::list;
-#ifdef TESTING_REDSTRAIN_BUILD_API
 using redengine::io::DefaultConfiguredOutputStream;
 using redengine::io::endln;
 using redengine::io::shift;
 using redengine::io::indent;
 using redengine::io::unshift;
 using redengine::io::operator<<;
-#endif /* TESTING_REDSTRAIN_BUILD_API */
 
 namespace redengine {
 namespace build {
@@ -49,25 +46,22 @@ namespace build {
 			(*begin)->unref();
 	}
 
-	void GenerationTrigger::addSource(Artifact* source) {
+	bool GenerationTrigger::addSource(Artifact* source) {
 		if(!source)
-			return;
-		sources.push_back(source);
+			return false;
+		if(!sources.insert(source).second)
+			return false;
 		source->ref();
+		return true;
 	}
 
 	bool GenerationTrigger::removeSource(Artifact* source) {
 		if(!source)
 			return false;
-		list<Artifact*>::iterator begin(sources.begin()), end(sources.end());
-		for(; begin != end; ++begin) {
-			if(*begin == source) {
-				sources.erase(begin);
-				source->unref();
-				return true;
-			}
-		}
-		return false;
+		if(!sources.erase(source))
+			return false;
+		source->unref();
+		return true;
 	}
 
 	void GenerationTrigger::clearSources() {
@@ -82,25 +76,22 @@ namespace build {
 		end = sources.end();
 	}
 
-	void GenerationTrigger::addOptionalSource(Artifact* source) {
+	bool GenerationTrigger::addOptionalSource(Artifact* source) {
 		if(!source)
-			return;
-		optionalSources.push_back(source);
+			return false;
+		if(!optionalSources.insert(source).second)
+			return false;
 		source->ref();
+		return true;
 	}
 
 	bool GenerationTrigger::removeOptionalSource(Artifact* source) {
 		if(!source)
 			return false;
-		list<Artifact*>::iterator begin(optionalSources.begin()), end(optionalSources.end());
-		for(; begin != end; ++begin) {
-			if(*begin == source) {
-				optionalSources.erase(begin);
-				source->unref();
-				return true;
-			}
-		}
-		return false;
+		if(!optionalSources.erase(source))
+			return false;
+		source->unref();
+		return true;
 	}
 
 	void GenerationTrigger::clearOptionalSources() {
@@ -115,25 +106,22 @@ namespace build {
 		end = optionalSources.end();
 	}
 
-	void GenerationTrigger::addTarget(Artifact* target) {
+	bool GenerationTrigger::addTarget(Artifact* target) {
 		if(!target)
-			return;
-		targets.push_back(target);
+			return false;
+		if(!targets.insert(target).second)
+			return false;
 		target->ref();
+		return true;
 	}
 
 	bool GenerationTrigger::removeTarget(Artifact* target) {
 		if(!target)
 			return false;
-		list<Artifact*>::iterator begin(targets.begin()), end(targets.end());
-		for(; begin != end; ++begin) {
-			if(*begin == target) {
-				targets.erase(begin);
-				target->unref();
-				return true;
-			}
-		}
-		return false;
+		if(!targets.erase(target))
+			return false;
+		target->unref();
+		return true;
 	}
 
 	void GenerationTrigger::clearTargets() {
@@ -148,7 +136,7 @@ namespace build {
 		end = targets.end();
 	}
 
-	bool GenerationTrigger::triggered(const Artifact::Mood& mood) const {
+	bool GenerationTrigger::triggered(const Artifact::Mood& mood, BuildContext& context) const {
 		if((sources.empty() && optionalSources.empty()) || targets.empty())
 			return false;
 		time_t oldestTarget;
@@ -174,6 +162,8 @@ namespace build {
 		begin = sources.begin();
 		end = sources.end();
 		for(; begin != end; ++begin) {
+			if(context.isSlatedForRebuild(*begin))
+				return false;
 			if(mood.present(**begin)) {
 				time_t timestamp = mood.modificationTimestamp(**begin);
 				if(hasSources) {
@@ -191,6 +181,8 @@ namespace build {
 		begin = optionalSources.begin();
 		end = optionalSources.end();
 		for(; begin != end; ++begin) {
+			if(context.isSlatedForRebuild(*begin))
+				return false;
 			if(mood.present(**begin)) {
 				time_t timestamp = mood.modificationTimestamp(**begin);
 				if(hasSources) {
@@ -208,15 +200,14 @@ namespace build {
 		return missingTargets || (hasSources && newestSource > oldestTarget);
 	}
 
-	bool GenerationTrigger::isTriggered(BuildContext&) {
-		return triggered(Artifact::DEFINITIVE_MOOD);
+	bool GenerationTrigger::isTriggered(BuildContext& context) {
+		return triggered(Artifact::DEFINITIVE_MOOD, context);
 	}
 
-	bool GenerationTrigger::wouldTrigger(BuildContext&) {
-		return triggered(Artifact::PREDICTIVE_MOOD);
+	bool GenerationTrigger::wouldTrigger(BuildContext& context) {
+		return triggered(Artifact::PREDICTIVE_MOOD, context);
 	}
 
-#ifdef TESTING_REDSTRAIN_BUILD_API
 	void GenerationTrigger::dumpTrigger(DefaultConfiguredOutputStream<char>::Stream& stream) const {
 		stream << indent << "GenerationTrigger " << this << " {" << endln << shift;
 		stream << indent << "sources = {" << endln << shift;
@@ -239,6 +230,5 @@ namespace build {
 		dumpTriggerAspects(stream);
 		stream << unshift << indent << '}' << endln;
 	}
-#endif /* TESTING_REDSTRAIN_BUILD_API */
 
 }}

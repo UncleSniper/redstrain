@@ -2,9 +2,7 @@
 #include <redstrain/util/StringUtils.hpp>
 #include <redstrain/platform/Pathname.hpp>
 #include <redstrain/error/IllegalArgumentError.hpp>
-#ifdef TESTING_REDSTRAIN_BUILD_API
 #include <redstrain/io/streamoperators.hpp>
-#endif /* TESTING_REDSTRAIN_BUILD_API */
 
 #include "Action.hpp"
 #include "BuildUI.hpp"
@@ -17,14 +15,12 @@ using redengine::util::Delete;
 using redengine::util::StringUtils;
 using redengine::platform::Pathname;
 using redengine::error::IllegalArgumentError;
-#ifdef TESTING_REDSTRAIN_BUILD_API
 using redengine::io::DefaultConfiguredOutputStream;
 using redengine::io::endln;
 using redengine::io::shift;
 using redengine::io::indent;
 using redengine::io::unshift;
 using redengine::io::operator<<;
-#endif /* TESTING_REDSTRAIN_BUILD_API */
 
 namespace redengine {
 namespace build {
@@ -75,7 +71,6 @@ namespace build {
 				action.getComponentBaseDirectory())));
 	}
 
-#ifdef TESTING_REDSTRAIN_BUILD_API
 	void CompileGeneration::dumpGeneration(DefaultConfiguredOutputStream<char>::Stream& stream) const {
 		stream << indent << "CompileGeneration {" << endln << shift;
 		stream << indent << "mode = ";
@@ -96,6 +91,5 @@ namespace build {
 		stream << endln;
 		stream << unshift << indent << '}' << endln;
 	}
-#endif /* TESTING_REDSTRAIN_BUILD_API */
 
 }}

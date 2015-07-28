@@ -3,7 +3,7 @@
 
 #include <redstrain/platform/Console.hpp>
 #include <redstrain/io/FileOutputStream.hpp>
-#include <redstrain/io/FormattedOutputStream.hpp>
+#include <redstrain/io/streamtypes.hpp>
 
 #include "AbstractBuildUI.hpp"
 
@@ -23,7 +23,7 @@ namespace build {
 
 	  private:
 		io::FileOutputStream output;
-		io::FormattedOutputStream<char> formatted;
+		io::DefaultConfiguredOutputStream<char>::Stream formatted;
 		unsigned componentTypeWidth, componentNameWidth;
 		int flags;
 
@@ -71,6 +71,8 @@ namespace build {
 
 		virtual void willPerformAction(const ActionDescriptor&);
 		virtual void wouldPerformAction(const ActionDescriptor&);
+		virtual void endPredictiveRun(bool);
+		virtual void endDefinitiveRun(bool);
 
 	};
 

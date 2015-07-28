@@ -15,7 +15,7 @@ class Options {
   private:
 	const std::string progname;
 	ValveNames valves;
-	bool bootstrap, dry;
+	bool bootstrap, dry, dumpContext;
 	std::string base;
 
   private:
@@ -32,6 +32,10 @@ class Options {
 		return dry;
 	}
 
+	inline bool isDumpContext() const {
+		return dumpContext;
+	}
+
 	inline const std::string& getBase() const {
 		return base;
 	}
@@ -41,6 +45,7 @@ class Options {
 	void usage();
 	void setBootstrap(bool);
 	void setDry(bool);
+	void setDumpContext(bool);
 	void setBase(const std::string&);
 	void addBareword(const std::string&);
 	void checkBarewords();

@@ -1,17 +1,18 @@
 #include "Artifact.hpp"
+#include "BuildContext.hpp"
 
 namespace redengine {
 namespace build {
 
-	Artifact::DefinitiveMood Artifact::DEFINITIVE_MOOD;
-
-	Artifact::PredictiveMood Artifact::PREDICTIVE_MOOD;
+	// ======== Mood ========
 
 	Artifact::Mood::Mood() {}
 
 	Artifact::Mood::Mood(const Mood&) {}
 
 	Artifact::Mood::~Mood() {}
+
+	// ======== DefinitiveMood ========
 
 	Artifact::DefinitiveMood::DefinitiveMood() {}
 
@@ -25,6 +26,8 @@ namespace build {
 		return artifact.getModificationTimestamp();
 	}
 
+	// ======== PredictiveMood ========
+
 	Artifact::PredictiveMood::PredictiveMood() {}
 
 	Artifact::PredictiveMood::PredictiveMood(const PredictiveMood& mood) : Mood(mood) {}
@@ -36,6 +39,12 @@ namespace build {
 	time_t Artifact::PredictiveMood::modificationTimestamp(Artifact& artifact) const {
 		return artifact.getPredictedModificationTimestamp();
 	}
+
+	// ======== Artifact ========
+
+	Artifact::DefinitiveMood Artifact::DEFINITIVE_MOOD;
+
+	Artifact::PredictiveMood Artifact::PREDICTIVE_MOOD;
 
 	Artifact::Artifact() : predictedPresent(false), predictedTimestamp(static_cast<time_t>(0u)) {}
 
@@ -55,8 +64,8 @@ namespace build {
 		predictedTimestamp = timestamp;
 	}
 
-	void Artifact::wouldModify() {
-		predictedTimestamp = time(NULL);
+	void Artifact::wouldModify(BuildContext& context) {
+		predictedTimestamp = context.tickVirtualTime();
 		predictedPresent = true;
 	}
 

@@ -1,20 +1,16 @@
 #include <redstrain/platform/Pathname.hpp>
-#ifdef TESTING_REDSTRAIN_BUILD_API
 #include <redstrain/io/streamoperators.hpp>
-#endif /* TESTING_REDSTRAIN_BUILD_API */
 
 #include "Component.hpp"
 #include "CompileGenerationAction.hpp"
 
 using redengine::platform::Pathname;
-#ifdef TESTING_REDSTRAIN_BUILD_API
 using redengine::io::DefaultConfiguredOutputStream;
 using redengine::io::endln;
 using redengine::io::shift;
 using redengine::io::indent;
 using redengine::io::unshift;
 using redengine::io::operator<<;
-#endif /* TESTING_REDSTRAIN_BUILD_API */
 
 namespace redengine {
 namespace build {
@@ -41,17 +37,15 @@ namespace build {
 	}
 
 	void CompileGenerationAction::wouldPerform(BuildContext& context) {
-		wouldCreateIntermediateDirectories();
+		wouldCreateIntermediateDirectories(context);
 		GenerationAction<FileArtifact>::wouldPerform(context);
 	}
 
-#ifdef TESTING_REDSTRAIN_BUILD_API
 	void CompileGenerationAction::dumpAction(DefaultConfiguredOutputStream<char>::Stream& stream) const {
 		stream << indent << "CompileGenerationAction " << this << " {" << endln << shift;
 		dumpGenerationActionAspects(stream);
 		dumpFileGeneratingActionAspects(stream);
 		stream << unshift << indent << '}' << endln;
 	}
-#endif /* TESTING_REDSTRAIN_BUILD_API */
 
 }}

@@ -60,11 +60,13 @@ namespace build {
 		const string sourceDirectory;
 		set<string>& alreadySearched;
 		GenerationTrigger& trigger;
+		const string globalBase;
 
 		CPPIncludeRuleBuilder(CPPLanguage& language, const Component& owner, const string& subject,
-				const string& sourceDirectory, set<string>& alreadySearched, GenerationTrigger& trigger)
+				const string& sourceDirectory, set<string>& alreadySearched, GenerationTrigger& trigger,
+				const string& globalBase)
 				: language(language), owner(owner), subject(subject), sourceDirectory(sourceDirectory),
-				alreadySearched(alreadySearched), trigger(trigger) {}
+				alreadySearched(alreadySearched), trigger(trigger), globalBase(globalBase) {}
 
 		void buildRules() {
 			if(alreadySearched.find(subject) != alreadySearched.end())
@@ -74,15 +76,32 @@ namespace build {
 		}
 
 		virtual void append(const Language::ReferencedHeader& header) {
+			string hpath(Pathname::tidy(header.getPath()));
 			if(header.isLocal()) {
-				string lref(Pathname::tidy(Pathname::join(Pathname::dirname(subject), header.getPath())));
-				if(Pathname::startsWith(lref, Pathname::tidy(owner.getBaseDirectory()))) {
-					FileArtifact* lheader = owner.getLocalHeader(language,
-							Pathname::stripPrefix(lref, sourceDirectory));
-					if(lheader) {
-						trigger.addSource(lheader);
-						CPPIncludeRuleBuilder builder(language, owner, lheader->getPathname(),
-								lheader->getDirectory(), alreadySearched, trigger);
+				if(globalBase.empty()) {
+					string lref(Pathname::tidy(Pathname::join(Pathname::dirname(subject), hpath)));
+					if(Pathname::startsWith(lref, Pathname::tidy(owner.getBaseDirectory()))) {
+						FileArtifact* lheader = owner.getLocalHeader(language,
+								Pathname::stripPrefix(lref, sourceDirectory));
+						if(lheader) {
+							trigger.addSource(lheader);
+							CPPIncludeRuleBuilder builder(language, owner, lheader->getPathname(),
+									lheader->getDirectory(), alreadySearched, trigger, "");
+							builder.buildRules();
+							return;
+						}
+					}
+				}
+				else {
+					hpath = Pathname::join(globalBase, hpath);
+					FileArtifact* gheader = owner.getExposedHeader(language, hpath);
+					if(gheader) {
+						trigger.addSource(gheader);
+						FileArtifact* ueheader = owner.getUnexposedHeader(language, gheader);
+						if(!ueheader)
+							ueheader = gheader;
+						CPPIncludeRuleBuilder builder(language, owner, ueheader->getPathname(),
+								ueheader->getDirectory(), alreadySearched, trigger, globalBase);
 						builder.buildRules();
 						return;
 					}
@@ -92,14 +111,15 @@ namespace build {
 			owner.getTransitiveDependencies(deps);
 			list<Component*>::const_iterator depbegin(deps.begin()), depend(deps.end());
 			for(; depbegin != depend; ++depbegin) {
-				FileArtifact* gheader = (*depbegin)->getExposedHeader(language, header.getPath());
+				FileArtifact* gheader = (*depbegin)->getExposedHeader(language, hpath);
 				if(gheader) {
 					trigger.addSource(gheader);
 					FileArtifact* ueheader = (*depbegin)->getUnexposedHeader(language, gheader);
 					if(!ueheader)
 						ueheader = gheader;
 					CPPIncludeRuleBuilder builder(language, **depbegin, ueheader->getPathname(),
-							ueheader->getDirectory(), alreadySearched, trigger);
+							ueheader->getDirectory(), alreadySearched, trigger,
+							(*depbegin)->getHeaderExposeDirectory(language));
 					builder.buildRules();
 					return;
 				}
@@ -116,7 +136,7 @@ namespace build {
 		if(source) {
 			set<string> alreadySearched;
 			CPPIncludeRuleBuilder builder(language, component, source->getPathname(), source->getDirectory(),
-					alreadySearched, *trigger);
+					alreadySearched, *trigger, "");
 			builder.buildRules();
 		}
 	}

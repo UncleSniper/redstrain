@@ -3,9 +3,7 @@
 
 #include <string>
 #include <redstrain/util/ReferenceCounted.hpp>
-#ifdef TESTING_REDSTRAIN_BUILD_API
 #include <redstrain/io/streamtypes.hpp>
-#endif /* TESTING_REDSTRAIN_BUILD_API */
 
 #include "api.hpp"
 
@@ -43,10 +41,9 @@ namespace build {
 		virtual void wouldPerform(BuildContext&) = 0;
 		virtual void notifyUIWillPerform(BuildUI&) const = 0;
 		virtual void notifyUIWouldPerform(BuildUI&) const = 0;
+		virtual void slateRebuilds(BuildContext&);
 
-#ifdef TESTING_REDSTRAIN_BUILD_API
 		virtual void dumpAction(io::DefaultConfiguredOutputStream<char>::Stream&) const = 0;
-#endif /* TESTING_REDSTRAIN_BUILD_API */
 
 	};
 

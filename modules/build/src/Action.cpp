@@ -21,4 +21,6 @@ namespace build {
 		componentBase = directory;
 	}
 
+	void Action::slateRebuilds(BuildContext&) {}
+
 }}

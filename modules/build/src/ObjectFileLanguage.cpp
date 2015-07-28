@@ -8,7 +8,7 @@
 #include "LinkGenerationAction.hpp"
 #include "EmptyLinkerConfiguration.hpp"
 
-using std::list;
+using std::set;
 using std::string;
 using redengine::util::Unref;
 using redengine::util::Delete;
@@ -17,7 +17,7 @@ using redengine::util::Appender;
 namespace redengine {
 namespace build {
 
-	static list<Artifact*> emptyArtifactList;
+	static set<Artifact*> emptyArtifactSet;
 
 	// ======== LinkGenerationHolder ========
 
@@ -70,7 +70,7 @@ namespace build {
 		if(trigger)
 			trigger->getTargets(begin, end);
 		else
-			begin = end = emptyArtifactList.end();
+			begin = end = emptyArtifactSet.end();
 	}
 
 	Component::PreciousArtifact* ObjectFileLanguage::LinkGenerationHolder::getPreciousArtifact() {

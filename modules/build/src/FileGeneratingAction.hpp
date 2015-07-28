@@ -25,11 +25,9 @@ namespace build {
 		void addIntermediateDirectoriesFor(const std::string&, const std::string&, BuildContext&);
 		void addIntermediateDirectoriesFor(const FileArtifact&, BuildContext&);
 		void createIntermediateDirectories() const;
-		void wouldCreateIntermediateDirectories() const;
+		void wouldCreateIntermediateDirectories(BuildContext&) const;
 
-#ifdef TESTING_REDSTRAIN_BUILD_API
 		void dumpFileGeneratingActionAspects(io::DefaultConfiguredOutputStream<char>::Stream&) const;
-#endif /* TESTING_REDSTRAIN_BUILD_API */
 
 	  public:
 		FileGeneratingAction();

@@ -3,9 +3,7 @@
 
 #include <set>
 #include <redstrain/util/ReferenceCounted.hpp>
-#ifdef TESTING_REDSTRAIN_BUILD_API
 #include <redstrain/io/streamtypes.hpp>
-#endif /* TESTING_REDSTRAIN_BUILD_API */
 
 #include "api.hpp"
 
@@ -47,9 +45,7 @@ namespace build {
 
 		bool forceDefaults(BuildContext&);
 
-#ifdef TESTING_REDSTRAIN_BUILD_API
 		void dumpValveGroup(io::DefaultConfiguredOutputStream<char>::Stream&) const;
-#endif /* TESTING_REDSTRAIN_BUILD_API */
 
 	};
 

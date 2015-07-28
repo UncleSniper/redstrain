@@ -4,9 +4,7 @@
 #include <redstrain/io/FileInputStream.hpp>
 #include <redstrain/io/FileOutputStream.hpp>
 #include <redstrain/platform/Filesystem.hpp>
-#ifdef TESTING_REDSTRAIN_BUILD_API
 #include <redstrain/io/streamoperators.hpp>
-#endif /* TESTING_REDSTRAIN_BUILD_API */
 
 #include "BuildUI.hpp"
 #include "Component.hpp"
@@ -20,14 +18,12 @@ using redengine::platform::Pathname;
 using redengine::io::FileInputStream;
 using redengine::io::FileOutputStream;
 using redengine::platform::Filesystem;
-#ifdef TESTING_REDSTRAIN_BUILD_API
 using redengine::io::DefaultConfiguredOutputStream;
 using redengine::io::endln;
 using redengine::io::shift;
 using redengine::io::indent;
 using redengine::io::unshift;
 using redengine::io::operator<<;
-#endif /* TESTING_REDSTRAIN_BUILD_API */
 
 namespace redengine {
 namespace build {
@@ -73,10 +69,10 @@ namespace build {
 		}
 	}
 
-	void FileCopyAction::wouldPerform(BuildContext&) {
+	void FileCopyAction::wouldPerform(BuildContext& context) {
 		if(source.wouldBePresent()) {
-			wouldCreateIntermediateDirectories();
-			destination.wouldModify();
+			wouldCreateIntermediateDirectories(context);
+			destination.wouldModify(context);
 		}
 	}
 
@@ -92,7 +88,6 @@ namespace build {
 				getComponentBaseDirectory())));
 	}
 
-#ifdef TESTING_REDSTRAIN_BUILD_API
 	void FileCopyAction::dumpAction(DefaultConfiguredOutputStream<char>::Stream& stream) const {
 		stream << indent << "FileCopyAction " << this << " {" << endln << shift;
 		stream << indent << "source ->" << endln << shift;
@@ -105,6 +100,5 @@ namespace build {
 		dumpFileGeneratingActionAspects(stream);
 		stream << unshift << indent << '}' << endln;
 	}
-#endif /* TESTING_REDSTRAIN_BUILD_API */
 
 }}

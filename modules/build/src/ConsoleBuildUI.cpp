@@ -8,6 +8,7 @@ using redengine::platform::Console;
 using redengine::io::FileOutputStream;
 using redengine::io::endln;
 using redengine::io::operator<<;
+using redengine::io::config::pad;
 
 namespace redengine {
 namespace build {
@@ -54,12 +55,10 @@ namespace build {
 
 	void ConsoleBuildUI::printAction(unsigned haveCount, unsigned needCount, const ActionDescriptor& action) {
 		if(needCount && haveCount < needCount) {
-			formatted << '[';
-			indent(countDigits(needCount) - countDigits(haveCount + 1u));
+			formatted << '[' << pad<char>(countDigits(haveCount + 1u), ' ');
 			formatted << (haveCount + 1u) << '/' << needCount << " = ";
 			unsigned percent = needCount > 1u ? haveCount * 100u / (needCount - 1u) : 100u;
-			indent(3u - countDigits(percent));
-			formatted << percent << "%] ";
+			formatted << pad<char>(3u, ' ') << percent << "%] ";
 		}
 		const string& componentType = action.getComponentType();
 		string::size_type ctlen = componentType.length();
@@ -84,6 +83,31 @@ namespace build {
 			else
 				formatted << ' ' << source << " -> " << target << endln;
 		}
+	}
+
+	void ConsoleBuildUI::endPredictiveRun(bool didSomething) {
+		AbstractBuildUI::endPredictiveRun(didSomething);
+		if(!didSomething && (flags & ConsoleBuildUI::PRINT_PREDICTIVE))
+			formatted << "Nothing to do." << endln;
+	}
+
+	void ConsoleBuildUI::endDefinitiveRun(bool didSomething) {
+		AbstractBuildUI::endDefinitiveRun(didSomething);
+		if(!(flags & ConsoleBuildUI::PRINT_DEFINITIVE))
+			return;
+		if(!didSomething) {
+			formatted << "Nothing to do." << endln;
+			return;
+		}
+		unsigned delta = static_cast<unsigned>(getRunDuration());
+		unsigned sec = delta % 60u;
+		delta /= 60u;
+		unsigned min = delta % 60;
+		unsigned hrs = delta / 60u;
+		formatted << pad<char>(2u) << "Build successful in ";
+		if(hrs)
+			formatted << hrs << ':';
+		formatted << min << ':' << sec << endln;
 	}
 
 }}

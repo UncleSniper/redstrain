@@ -10,6 +10,7 @@ namespace build {
 	const Flavor Flavor::STATIC("static");
 	const Flavor Flavor::DYNAMIC("dynamic");
 	const Flavor Flavor::HEADER("header");
+	const Flavor Flavor::GENERIC("generic");
 
 	Flavor::Flavor(const string& name) : name(name) {}
 
