@@ -1,3 +1,4 @@
+#include <iostream>
 #include <redstrain/util/Unref.hpp>
 #include <redstrain/util/Delete.hpp>
 #ifdef TESTING_REDSTRAIN_BUILD_API
@@ -7,12 +8,15 @@
 #include "Action.hpp"
 #include "Trigger.hpp"
 #include "BuildUI.hpp"
+#include "DebugMode.hpp"
 #include "ValveGroup.hpp"
 #include "StaticValve.hpp"
 #include "BuildContext.hpp"
 #include "FileArtifact.hpp"
 
 using std::set;
+using std::cerr;
+using std::endl;
 using std::deque;
 using std::string;
 using redengine::util::Unref;
@@ -222,12 +226,18 @@ namespace build {
 		TriggerIterator begin(triggers.begin()), end(triggers.end());
 		for(; begin != end; ++begin)
 			(*begin)->spin(*this);
+		if(DebugMode::getInstance().isDebug())
+			cerr << "REDBUILD_DEBUG: " << triggers.size() << " triggers spun, " << actionQueue.size()
+					<< " actions queued (definitive)" << endl;
 	}
 
 	void BuildContext::predictTriggers() {
 		TriggerIterator begin(triggers.begin()), end(triggers.end());
 		for(; begin != end; ++begin)
 			(*begin)->predictSpin(*this);
+		if(DebugMode::getInstance().isDebug())
+			cerr << "REDBUILD_DEBUG: " << triggers.size() << " triggers spun, " << actionQueue.size()
+					<< " actions queued (predictive)" << endl;
 	}
 
 	struct RemoveActionFromSet {
@@ -279,6 +289,7 @@ namespace build {
 			return false;
 		ActionQueue buffer(actionQueue);
 		actionQueue.clear();
+		actionSet.clear();
 		UnrefActionQueue unrefQueue(&buffer);
 		while(!buffer.empty()) {
 			Unref<Action> action(buffer.front());
@@ -296,6 +307,7 @@ namespace build {
 			return false;
 		ActionQueue buffer(actionQueue);
 		actionQueue.clear();
+		actionSet.clear();
 		UnrefActionQueue unrefQueue(&buffer);
 		while(!buffer.empty()) {
 			Unref<Action> action(buffer.front());
