@@ -52,7 +52,7 @@ namespace build {
 			const list<FileArtifact*>&, FileArtifact* target) {
 		if(!target)
 			return;
-		ui.willPerformAction(BuildUI::ActionDescriptor(action.getComponentType(), action.getComponentName(),
+		ui.wouldPerformAction(BuildUI::ActionDescriptor(action.getComponentType(), action.getComponentName(),
 				"would link", "", target->getHumanReadableReference(false)));
 	}
 

@@ -4,7 +4,7 @@
 namespace redengine {
 namespace build {
 
-	AbstractBuildUI::AbstractBuildUI() {}
+	AbstractBuildUI::AbstractBuildUI() : predictiveActionCount(0u), definitiveActionCount(0u) {}
 
 	AbstractBuildUI::AbstractBuildUI(const AbstractBuildUI& ui) : BuildUI(ui),
 			predictiveActionCount(ui.predictiveActionCount), definitiveActionCount(ui.definitiveActionCount) {}

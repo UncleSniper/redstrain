@@ -84,6 +84,7 @@ int bootstrap(const string&, const Options& options) {
 			Component::getMaximalComponentTypeWidth(DefaultComponentTypeStringifier::instance)));
 	ui.setMinimalComponentNameWidth(static_cast<unsigned>(
 			projectBuilder.getProject()->getMaximalComponentNameWidth()));
+	context->forceValveGroups();
 	if(options.isDry())
 		context->predictiveLoop();
 	else {

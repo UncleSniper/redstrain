@@ -22,13 +22,22 @@ using redengine::io::operator<<;
 namespace redengine {
 namespace build {
 
-	FileArtifact::FileArtifact(const string& pathname) : basename(pathname) {}
+	FileArtifact::FileArtifact(const string& pathname) : basename(pathname) {
+		initializePredictedState();
+	}
 
 	FileArtifact::FileArtifact(const string& directory, const string& basename)
-			: directory(directory), basename(basename) {}
+			: directory(directory), basename(basename) {
+		initializePredictedState();
+	}
 
 	FileArtifact::FileArtifact(const FileArtifact& artifact)
 			: Artifact(artifact), directory(artifact.directory), basename(artifact.basename) {}
+
+	void FileArtifact::initializePredictedState() {
+		if(isPresent())
+			setPredictedModificationTimestamp(getModificationTimestamp());
+	}
 
 	string FileArtifact::getPathname() const {
 		return Pathname::join(directory, basename);

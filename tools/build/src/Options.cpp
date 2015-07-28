@@ -9,9 +9,10 @@ using std::string;
 using redengine::cmdline::StopExecution;
 
 Options::Options(const Options& options)
-		: progname(options.progname), valves(options.valves), bootstrap(options.bootstrap), base(options.base) {}
+		: progname(options.progname), valves(options.valves), bootstrap(options.bootstrap), dry(options.dry),
+		base(options.base) {}
 
-Options::Options(const char* progname) : progname(progname), bootstrap(false), base(".") {}
+Options::Options(const char* progname) : progname(progname), bootstrap(false), dry(false), base(".") {}
 
 void Options::getValves(ValveNameIterator& begin, ValveNameIterator& end) const {
 	begin = valves.begin();

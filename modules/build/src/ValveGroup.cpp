@@ -95,7 +95,7 @@ namespace build {
 	bool ValveGroup::forceDefaults(BuildContext& context) {
 		ValveIterator mbegin(valves.begin()), mend(valves.end());
 		for(; mbegin != mend; ++mbegin) {
-			if(!(*mbegin)->isOpen(context))
+			if((*mbegin)->isOpen(context))
 				return false;
 		}
 		StaticValveIterator dbegin(defaults.begin()), dend(defaults.end());

@@ -11,6 +11,9 @@ namespace build {
 	  private:
 		const std::string directory, basename;
 
+	  private:
+		void initializePredictedState();
+
 	  public:
 		FileArtifact(const std::string&);
 		FileArtifact(const std::string&, const std::string&);

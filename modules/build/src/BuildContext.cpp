@@ -309,11 +309,13 @@ namespace build {
 	}
 
 	bool BuildContext::definitiveCycle() {
+		clearPerformedActions();
 		spinTriggers();
 		return performActions();
 	}
 
 	bool BuildContext::predictiveCycle() {
+		clearPerformedActions();
 		predictTriggers();
 		return predictActions();
 	}
