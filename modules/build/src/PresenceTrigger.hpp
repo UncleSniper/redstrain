@@ -41,9 +41,7 @@ namespace build {
 		void clearArtifacts();
 		void getArtifacts(ArtifactIterator&, ArtifactIterator&) const;
 
-#ifdef TESTING_REDSTRAIN_BUILD_API
 		virtual void dumpTrigger(io::DefaultConfiguredOutputStream<char>::Stream&) const;
-#endif /* TESTING_REDSTRAIN_BUILD_API */
 
 	};
 

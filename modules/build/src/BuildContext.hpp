@@ -6,9 +6,7 @@
 #include <deque>
 #include <string>
 #include <redstrain/util/ReferenceCounted.hpp>
-#ifdef TESTING_REDSTRAIN_BUILD_API
 #include <redstrain/io/streamtypes.hpp>
-#endif /* TESTING_REDSTRAIN_BUILD_API */
 
 #include "api.hpp"
 
@@ -113,9 +111,7 @@ namespace build {
 
 		FileArtifact* internFileArtifact(const std::string&, const std::string&);
 
-#ifdef TESTING_REDSTRAIN_BUILD_API
 		void dumpContext(io::DefaultConfiguredOutputStream<char>::Stream&) const;
-#endif /* TESTING_REDSTRAIN_BUILD_API */
 
 	};
 

@@ -27,9 +27,7 @@ namespace build {
 		void createIntermediateDirectories() const;
 		void wouldCreateIntermediateDirectories() const;
 
-#ifdef TESTING_REDSTRAIN_BUILD_API
 		void dumpFileGeneratingActionAspects(io::DefaultConfiguredOutputStream<char>::Stream&) const;
-#endif /* TESTING_REDSTRAIN_BUILD_API */
 
 	  public:
 		FileGeneratingAction();

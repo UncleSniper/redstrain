@@ -4,9 +4,7 @@
 #include <set>
 #include <list>
 #include <redstrain/util/ReferenceCounted.hpp>
-#ifdef TESTING_REDSTRAIN_BUILD_API
 #include <redstrain/io/streamtypes.hpp>
-#endif /* TESTING_REDSTRAIN_BUILD_API */
 
 #include "api.hpp"
 
@@ -35,9 +33,7 @@ namespace build {
 		bool areValvesOpen(BuildContext&) const;
 
 	  protected:
-#ifdef TESTING_REDSTRAIN_BUILD_API
 		void dumpTriggerAspects(io::DefaultConfiguredOutputStream<char>::Stream&) const;
-#endif /* TESTING_REDSTRAIN_BUILD_API */
 
 		virtual bool isTriggered(BuildContext&) = 0;
 		virtual bool wouldTrigger(BuildContext&) = 0;
@@ -60,9 +56,7 @@ namespace build {
 		void spin(BuildContext&);
 		void predictSpin(BuildContext&);
 
-#ifdef TESTING_REDSTRAIN_BUILD_API
 		virtual void dumpTrigger(io::DefaultConfiguredOutputStream<char>::Stream&) const = 0;
-#endif /* TESTING_REDSTRAIN_BUILD_API */
 
 	};
 

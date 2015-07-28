@@ -1,18 +1,14 @@
-#ifdef TESTING_REDSTRAIN_BUILD_API
 #include <redstrain/io/streamoperators.hpp>
-#endif /* TESTING_REDSTRAIN_BUILD_API */
 
 #include "PresenceTrigger.hpp"
 
 using std::list;
-#ifdef TESTING_REDSTRAIN_BUILD_API
 using redengine::io::DefaultConfiguredOutputStream;
 using redengine::io::endln;
 using redengine::io::shift;
 using redengine::io::indent;
 using redengine::io::unshift;
 using redengine::io::operator<<;
-#endif /* TESTING_REDSTRAIN_BUILD_API */
 
 namespace redengine {
 namespace build {
@@ -84,7 +80,6 @@ namespace build {
 		return triggered(Artifact::PREDICTIVE_MOOD);
 	}
 
-#ifdef TESTING_REDSTRAIN_BUILD_API
 	void PresenceTrigger::dumpTrigger(DefaultConfiguredOutputStream<char>::Stream& stream) const {
 		stream << indent << "PresenceTrigger " << this << " {" << endln << shift;
 		stream << indent << "junctor = " << (junctor == ANY ? "ANY" : "ALL") << endln;
@@ -96,6 +91,5 @@ namespace build {
 		dumpTriggerAspects(stream);
 		stream << unshift << indent << '}' << endln;
 	}
-#endif /* TESTING_REDSTRAIN_BUILD_API */
 
 }}

@@ -45,9 +45,7 @@ namespace build {
 		void clearTargets();
 		void getTargets(ArtifactIterator&, ArtifactIterator&) const;
 
-#ifdef TESTING_REDSTRAIN_BUILD_API
 		virtual void dumpTrigger(io::DefaultConfiguredOutputStream<char>::Stream&) const;
-#endif /* TESTING_REDSTRAIN_BUILD_API */
 
 	};
 

@@ -2,9 +2,7 @@
 #define REDSTRAIN_MOD_BUILD_GENERATIONACTION_HPP
 
 #include <cstddef>
-#ifdef TESTING_REDSTRAIN_BUILD_API
 #include <redstrain/io/streamoperators.hpp>
-#endif /* TESTING_REDSTRAIN_BUILD_API */
 
 #include "Action.hpp"
 #include "BuildUI.hpp"
@@ -46,7 +44,6 @@ namespace build {
 		ArtifactT* target;
 
 	  protected:
-#ifdef TESTING_REDSTRAIN_BUILD_API
 		void dumpGenerationActionAspects(io::DefaultConfiguredOutputStream<char>::Stream& stream) const {
 			using redengine::io::endln;
 			using redengine::io::shift;
@@ -67,7 +64,6 @@ namespace build {
 				stream << unshift;
 			}
 		}
-#endif /* TESTING_REDSTRAIN_BUILD_API */
 
 	  public:
 		GenerationAction(Generation<ArtifactT>& generation, ArtifactT* target = NULL)
@@ -155,7 +151,6 @@ namespace build {
 			generation.notifyUIWouldGenerate(ui, *this, sources, target);
 		}
 
-#ifdef TESTING_REDSTRAIN_BUILD_API
 		virtual void dumpAction(io::DefaultConfiguredOutputStream<char>::Stream& stream) const {
 			using redengine::io::endln;
 			using redengine::io::shift;
@@ -166,7 +161,6 @@ namespace build {
 			dumpGenerationActionAspects(stream);
 			stream << unshift << indent << '}' << endln;
 		}
-#endif /* TESTING_REDSTRAIN_BUILD_API */
 
 	};
 

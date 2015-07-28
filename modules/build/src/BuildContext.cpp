@@ -1,9 +1,7 @@
 #include <iostream>
 #include <redstrain/util/Unref.hpp>
 #include <redstrain/util/Delete.hpp>
-#ifdef TESTING_REDSTRAIN_BUILD_API
 #include <redstrain/io/streamoperators.hpp>
-#endif /* TESTING_REDSTRAIN_BUILD_API */
 
 #include "Action.hpp"
 #include "Trigger.hpp"
@@ -21,14 +19,12 @@ using std::deque;
 using std::string;
 using redengine::util::Unref;
 using redengine::util::Delete;
-#ifdef TESTING_REDSTRAIN_BUILD_API
 using redengine::io::DefaultConfiguredOutputStream;
 using redengine::io::endln;
 using redengine::io::shift;
 using redengine::io::indent;
 using redengine::io::unshift;
 using redengine::io::operator<<;
-#endif /* TESTING_REDSTRAIN_BUILD_API */
 
 namespace redengine {
 namespace build {
@@ -356,7 +352,6 @@ namespace build {
 		return file.set();
 	}
 
-#ifdef TESTING_REDSTRAIN_BUILD_API
 	void BuildContext::dumpContext(DefaultConfiguredOutputStream<char>::Stream& stream) const {
 		stream << indent << "BuildContext {" << endln << shift;
 		// triggers
@@ -383,6 +378,5 @@ namespace build {
 		// done
 		stream << unshift << indent << '}' << endln;
 	}
-#endif /* TESTING_REDSTRAIN_BUILD_API */
 
 }}

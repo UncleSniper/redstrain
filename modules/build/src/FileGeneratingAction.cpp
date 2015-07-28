@@ -1,8 +1,6 @@
 #include <redstrain/platform/Pathname.hpp>
 #include <redstrain/platform/Filesystem.hpp>
-#ifdef TESTING_REDSTRAIN_BUILD_API
 #include <redstrain/io/streamoperators.hpp>
-#endif /* TESTING_REDSTRAIN_BUILD_API */
 
 #include "FileArtifact.hpp"
 #include "BuildContext.hpp"
@@ -11,14 +9,12 @@
 using std::string;
 using redengine::platform::Pathname;
 using redengine::platform::Filesystem;
-#ifdef TESTING_REDSTRAIN_BUILD_API
 using redengine::io::DefaultConfiguredOutputStream;
 using redengine::io::endln;
 using redengine::io::shift;
 using redengine::io::indent;
 using redengine::io::unshift;
 using redengine::io::operator<<;
-#endif /* TESTING_REDSTRAIN_BUILD_API */
 
 namespace redengine {
 namespace build {
@@ -94,7 +90,6 @@ namespace build {
 			(*begin)->wouldModify();
 	}
 
-#ifdef TESTING_REDSTRAIN_BUILD_API
 	void FileGeneratingAction::dumpFileGeneratingActionAspects(DefaultConfiguredOutputStream<char>::Stream&
 			stream) const {
 		stream << indent << "intermediates = {" << endln << shift;
@@ -103,6 +98,5 @@ namespace build {
 			(*begin)->dumpArtifact(stream);
 		stream << unshift << indent << '}' << endln;
 	}
-#endif /* TESTING_REDSTRAIN_BUILD_API */
 
 }}

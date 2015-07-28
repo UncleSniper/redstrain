@@ -3,9 +3,7 @@
 
 #include <list>
 #include <redstrain/util/ReferenceCounted.hpp>
-#ifdef TESTING_REDSTRAIN_BUILD_API
 #include <redstrain/io/streamtypes.hpp>
-#endif /* TESTING_REDSTRAIN_BUILD_API */
 
 namespace redengine {
 namespace build {
@@ -29,9 +27,7 @@ namespace build {
 		virtual void notifyUIWillGenerate(BuildUI&, const Action&, const std::list<ArtifactT*>&, ArtifactT*) = 0;
 		virtual void notifyUIWouldGenerate(BuildUI&, const Action&, const std::list<ArtifactT*>&, ArtifactT*) = 0;
 
-#ifdef TESTING_REDSTRAIN_BUILD_API
 		virtual void dumpGeneration(io::DefaultConfiguredOutputStream<char>::Stream&) const = 0;
-#endif /* TESTING_REDSTRAIN_BUILD_API */
 
 	};
 

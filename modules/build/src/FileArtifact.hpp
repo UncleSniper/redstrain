@@ -34,9 +34,7 @@ namespace build {
 		virtual void remove();
 		virtual std::string getHumanReadableReference(bool) const;
 
-#ifdef TESTING_REDSTRAIN_BUILD_API
 		virtual void dumpArtifact(io::DefaultConfiguredOutputStream<char>::Stream&) const;
-#endif /* TESTING_REDSTRAIN_BUILD_API */
 
 	};
 
