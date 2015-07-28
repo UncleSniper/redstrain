@@ -7,6 +7,7 @@
 #include "Action.hpp"
 #include "BuildUI.hpp"
 #include "Generation.hpp"
+#include "BuildContext.hpp"
 
 namespace redengine {
 namespace build {
@@ -149,6 +150,10 @@ namespace build {
 
 		virtual void notifyUIWouldPerform(BuildUI& ui) const {
 			generation.notifyUIWouldGenerate(ui, *this, sources, target);
+		}
+
+		virtual void slateRebuilds(BuildContext& context) {
+			context.slateRebuild(target);
 		}
 
 		virtual void dumpAction(io::DefaultConfiguredOutputStream<char>::Stream& stream) const {

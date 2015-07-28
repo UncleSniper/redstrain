@@ -19,7 +19,7 @@ namespace build {
 		Artifacts sources, targets, optionalSources;
 
 	  private:
-		bool triggered(const Artifact::Mood&) const;
+		bool triggered(const Artifact::Mood&, BuildContext&) const;
 
 	  protected:
 		virtual bool isTriggered(BuildContext&);

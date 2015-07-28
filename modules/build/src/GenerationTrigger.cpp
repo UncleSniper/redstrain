@@ -1,5 +1,6 @@
 #include <redstrain/io/streamoperators.hpp>
 
+#include "BuildContext.hpp"
 #include "GenerationTrigger.hpp"
 
 using std::list;
@@ -144,7 +145,7 @@ namespace build {
 		end = targets.end();
 	}
 
-	bool GenerationTrigger::triggered(const Artifact::Mood& mood) const {
+	bool GenerationTrigger::triggered(const Artifact::Mood& mood, BuildContext& context) const {
 		if((sources.empty() && optionalSources.empty()) || targets.empty())
 			return false;
 		time_t oldestTarget;
@@ -170,6 +171,8 @@ namespace build {
 		begin = sources.begin();
 		end = sources.end();
 		for(; begin != end; ++begin) {
+			if(context.isSlatedForRebuild(*begin))
+				return false;
 			if(mood.present(**begin)) {
 				time_t timestamp = mood.modificationTimestamp(**begin);
 				if(hasSources) {
@@ -187,6 +190,8 @@ namespace build {
 		begin = optionalSources.begin();
 		end = optionalSources.end();
 		for(; begin != end; ++begin) {
+			if(context.isSlatedForRebuild(*begin))
+				return false;
 			if(mood.present(**begin)) {
 				time_t timestamp = mood.modificationTimestamp(**begin);
 				if(hasSources) {
@@ -204,12 +209,12 @@ namespace build {
 		return missingTargets || (hasSources && newestSource > oldestTarget);
 	}
 
-	bool GenerationTrigger::isTriggered(BuildContext&) {
-		return triggered(Artifact::DEFINITIVE_MOOD);
+	bool GenerationTrigger::isTriggered(BuildContext& context) {
+		return triggered(Artifact::DEFINITIVE_MOOD, context);
 	}
 
-	bool GenerationTrigger::wouldTrigger(BuildContext&) {
-		return triggered(Artifact::PREDICTIVE_MOOD);
+	bool GenerationTrigger::wouldTrigger(BuildContext& context) {
+		return triggered(Artifact::PREDICTIVE_MOOD, context);
 	}
 
 	void GenerationTrigger::dumpTrigger(DefaultConfiguredOutputStream<char>::Stream& stream) const {

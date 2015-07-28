@@ -41,6 +41,7 @@ namespace build {
 		virtual void wouldPerform(BuildContext&) = 0;
 		virtual void notifyUIWillPerform(BuildUI&) const = 0;
 		virtual void notifyUIWouldPerform(BuildUI&) const = 0;
+		virtual void slateRebuilds(BuildContext&);
 
 		virtual void dumpAction(io::DefaultConfiguredOutputStream<char>::Stream&) const = 0;
 

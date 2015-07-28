@@ -17,6 +17,7 @@ namespace build {
 	class Action;
 	class Trigger;
 	class BuildUI;
+	class Artifact;
 	class ValveGroup;
 	class StaticValve;
 	class FileArtifact;
@@ -50,6 +51,9 @@ namespace build {
 		typedef std::set<ValveGroup*> Groups;
 		typedef std::map<PathPair, FileArtifact*> FileArtifacts;
 		typedef FileArtifacts::const_iterator FileArtifactIterator;
+		typedef std::map<const Artifact*, unsigned> SlatedRebuilds;
+		typedef SlatedRebuilds::iterator SlatedRebuildIterator;
+		typedef SlatedRebuilds::const_iterator ConstSlatedRebuildIterator;
 
 	  public:
 		typedef Triggers::const_iterator TriggerIterator;
@@ -65,6 +69,7 @@ namespace build {
 		Groups groups;
 		FileArtifacts fileArtifacts;
 		time_t virtualTime;
+		SlatedRebuilds slatedRebuilds;
 
 	  private:
 		BuildContext(const BuildContext&);
@@ -106,6 +111,11 @@ namespace build {
 
 		bool wasActionPerformed(Action*) const;
 		void clearPerformedActions();
+
+		bool slateRebuild(const Artifact*);
+		bool unslateRebuild(const Artifact*);
+		bool isSlatedForRebuild(const Artifact*) const;
+		void clearSlatedRebuilds();
 
 		void spinTriggers();
 		void predictTriggers();

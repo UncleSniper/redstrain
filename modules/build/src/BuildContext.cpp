@@ -60,7 +60,8 @@ namespace build {
 	BuildContext::BuildContext(const BuildContext& context)
 			: ui(context.ui), triggers(context.triggers), actionQueue(context.actionQueue),
 			actionSet(context.actionSet), valves(context.valves), alreadyPerformed(context.alreadyPerformed),
-			groups(context.groups), fileArtifacts(context.fileArtifacts), virtualTime(context.virtualTime) {
+			groups(context.groups), fileArtifacts(context.fileArtifacts), virtualTime(context.virtualTime),
+			slatedRebuilds(context.slatedRebuilds) {
 		TriggerIterator tbegin(triggers.begin()), tend(triggers.end());
 		for(; tbegin != tend; ++tbegin)
 			(*tbegin)->ref();
@@ -222,6 +223,39 @@ namespace build {
 		alreadyPerformed.clear();
 	}
 
+	bool BuildContext::slateRebuild(const Artifact* artifact) {
+		if(!artifact)
+			return false;
+		SlatedRebuildIterator it = slatedRebuilds.find(artifact);
+		if(it == slatedRebuilds.end()) {
+			slatedRebuilds[artifact] = 1u;
+			return false;
+		}
+		else {
+			++it->second;
+			return true;
+		}
+	}
+
+	bool BuildContext::unslateRebuild(const Artifact* artifact) {
+		if(!artifact)
+			return false;
+		SlatedRebuildIterator it = slatedRebuilds.find(artifact);
+		if(it == slatedRebuilds.end())
+			return false;
+		if(!--it->second)
+			slatedRebuilds.erase(it);
+		return true;
+	}
+
+	bool BuildContext::isSlatedForRebuild(const Artifact* artifact) const {
+		return slatedRebuilds.find(artifact) != slatedRebuilds.end();
+	}
+
+	void BuildContext::clearSlatedRebuilds() {
+		slatedRebuilds.clear();
+	}
+
 	void BuildContext::spinTriggers() {
 		TriggerIterator begin(triggers.begin()), end(triggers.end());
 		for(; begin != end; ++begin)
@@ -265,6 +299,7 @@ namespace build {
 		actionQueue.push_back(action);
 		remove.actions = NULL;
 		action->ref();
+		action->slateRebuilds(*this);
 		return true;
 	}
 
@@ -322,12 +357,14 @@ namespace build {
 
 	bool BuildContext::definitiveCycle() {
 		clearPerformedActions();
+		clearSlatedRebuilds();
 		spinTriggers();
 		return performActions();
 	}
 
 	bool BuildContext::predictiveCycle() {
 		clearPerformedActions();
+		clearSlatedRebuilds();
 		predictTriggers();
 		return predictActions();
 	}
