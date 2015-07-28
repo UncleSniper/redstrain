@@ -4,6 +4,7 @@
 #include <redstrain/build/BuildContext.hpp>
 #include <redstrain/build/ConsoleBuildUI.hpp>
 #include <redstrain/build/boot/XakeProject.hpp>
+#include <redstrain/build/NoSuchValveError.hpp>
 #include <redstrain/build/ComponentRuleBuilder.hpp>
 #include <redstrain/build/boot/XakeValveInjector.hpp>
 #include <redstrain/build/boot/XakeProjectFactory.hpp>
@@ -22,10 +23,12 @@ using std::string;
 using redengine::util::Delete;
 using redengine::build::Component;
 using redengine::platform::Pathname;
+using redengine::build::StaticValve;
 using redengine::build::BuildContext;
 using redengine::cmdline::OptionLogic;
 using redengine::build::ConsoleBuildUI;
 using redengine::build::ProjectBuilder;
+using redengine::build::NoSuchValveError;
 using redengine::cmdline::runWithOptions;
 using redengine::build::boot::XakeProject;
 using redengine::build::ComponentRuleBuilder;
@@ -84,6 +87,14 @@ int bootstrap(const string&, const Options& options) {
 			Component::getMaximalComponentTypeWidth(DefaultComponentTypeStringifier::instance)));
 	ui.setMinimalComponentNameWidth(static_cast<unsigned>(
 			projectBuilder.getProject()->getMaximalComponentNameWidth()));
+	Options::ValveNameIterator ovbegin, ovend;
+	options.getValves(ovbegin, ovend);
+	for(; ovbegin != ovend; ++ovbegin) {
+		StaticValve* valve = context->getValve(*ovbegin);
+		if(!valve)
+			throw NoSuchValveError(*ovbegin);
+		valve->setOpen(true);
+	}
 	context->forceValveGroups();
 	if(options.isDry())
 		context->predictiveLoop();

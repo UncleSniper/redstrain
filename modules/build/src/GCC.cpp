@@ -52,7 +52,7 @@ namespace build {
 			default:
 				break;
 		}
-		if(requiresPositionIndependentCode(architecture)) {
+		if(mode == FOR_DYNAMIC_LIBRARY && requiresPositionIndependentCode(architecture)) {
 			command.addArgument("-fPIC");
 			command.addArgument("-DPIC");
 		}
@@ -103,7 +103,7 @@ namespace build {
 				break;
 			case DYNAMIC_LIBRARY:
 				command.addArgument("-shared");
-				command.addArgument("-Wl,-soname," + target);
+				command.addArgument("-Wl,-soname," + Pathname::basename(target));
 				break;
 			case STATIC_LIBRARY:
 				command.addArgument("rcs");
@@ -122,12 +122,20 @@ namespace build {
 				default:
 					break;
 			}
+			command.addArgument("-o");
+			command.addArgument(target);
 		}
+		else
+			command.addArgument(target);
 	}
 
 	GCC::GCCLinkage::GCCLinkage(const GCCLinkage& linkage) : Invocation(linkage), ExternalLinkage(linkage) {}
 
 	void GCC::GCCLinkage::invoke() {
+		PathIterator srcbegin, srcend;
+		getSources(srcbegin, srcend);
+		for(; srcbegin != srcend; ++srcbegin)
+			command.addArgument(*srcbegin);
 		if(getLinkMode() == STATIC_LIBRARY) {
 			list<string>::const_iterator lbegin(libraries.begin()), lend(libraries.end());
 			for(; lbegin != lend; ++lbegin) {

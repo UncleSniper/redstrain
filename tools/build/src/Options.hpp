@@ -8,6 +8,8 @@ class Options {
 
   private:
 	typedef std::list<std::string> ValveNames;
+
+  public:
 	typedef ValveNames::const_iterator ValveNameIterator;
 
   private:

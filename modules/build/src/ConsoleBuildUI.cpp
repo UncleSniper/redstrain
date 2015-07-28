@@ -53,7 +53,7 @@ namespace build {
 	}
 
 	void ConsoleBuildUI::printAction(unsigned haveCount, unsigned needCount, const ActionDescriptor& action) {
-		if(needCount) {
+		if(needCount && haveCount < needCount) {
 			formatted << '[';
 			indent(countDigits(needCount) - countDigits(haveCount + 1u));
 			formatted << (haveCount + 1u) << '/' << needCount << " = ";

@@ -36,7 +36,7 @@ namespace boot {
 		Component* c = component.getComponent();
 		if(c) {
 			XakeProject& project = component.getProject();
-			const Language& cpp = *project.getCPPLanguage();
+			const Language& objlang = *project.getObjectFileLanguage();
 			// dependencies
 			if(c->getType() == Component::EXECUTABLE
 					|| requiresInterlinkedLibraries(project.getLinker()->getTargetOperatingSystem())) {
@@ -46,13 +46,13 @@ namespace boot {
 				list<Component*>::const_iterator cdbegin(dependencies.begin()), cdend(dependencies.end());
 				for(; cdbegin != cdend; ++cdbegin) {
 					linkage.addLibraryDirectory((*cdbegin)->getBaseDirectory());
-					linkage.addLibrary(artifactMapper.getTargetFileName(*c, cpp,
+					linkage.addLibrary(artifactMapper.getTargetFileName(**cdbegin, objlang,
 							forStatic ? Flavor::STATIC : Flavor::DYNAMIC));
 				}
 			}
 			// external dependencies
 			Component::DependencyIterator edbegin, edend;
-			c->getExternalDependencies(cpp, edbegin, edend);
+			c->getExternalDependencies(*project.getCPPLanguage(), edbegin, edend);
 			for(; edbegin != edend; ++edbegin)
 				linkage.addLibrary(*edbegin);
 		}
