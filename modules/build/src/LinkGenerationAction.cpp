@@ -20,8 +20,8 @@ namespace build {
 			: GenerationAction<FileArtifact>(generation, target), generation(linker, mode, configuration) {}
 
 	LinkGenerationAction::LinkGenerationAction(const LinkGenerationAction& action)
-			: Action(action), GenerationAction<FileArtifact>(action), FileGeneratingAction(action),
-			generation(action.generation) {}
+			: Action(action), GenerationAction<FileArtifact>(generation, action.getTarget()),
+			FileGeneratingAction(action), generation(action.generation) {}
 
 	void LinkGenerationAction::addIntermediateDirectories(const Component& component, BuildContext& context) {
 		FileArtifact* target = getTarget();

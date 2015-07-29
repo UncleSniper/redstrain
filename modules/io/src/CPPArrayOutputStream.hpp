@@ -139,6 +139,7 @@ namespace io {
 
 		OutputStream<char>& getBackingOutputStream();
 		const OutputStream<char>& getBackingOutputStream() const;
+		void setVariableName(const std::string&);
 		void setExportMacro(const std::string&);
 		void setExtraInclude(const std::string&);
 		void setBlobPath(const std::string&);

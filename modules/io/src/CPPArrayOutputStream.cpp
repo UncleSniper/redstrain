@@ -158,6 +158,13 @@ namespace io {
 		return formatted.getBackingOutputStream();
 	}
 
+	void CPPArrayOutputStream::setVariableName(const string& variable) {
+		if(variable.empty())
+			this->variable = CPPArrayOutputStream::DEFAULT_VARIABLE_NAME;
+		else
+			this->variable = variable;
+	}
+
 	void CPPArrayOutputStream::setExportMacro(const string& macro) {
 		exportMacro = macro;
 	}

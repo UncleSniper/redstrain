@@ -2,7 +2,7 @@
 #include <redstrain/io/streamoperators.hpp>
 
 #include "Component.hpp"
-#include "CompileGenerationAction.hpp"
+#include "BlobGenerationAction.hpp"
 
 using redengine::platform::Pathname;
 using redengine::io::DefaultConfiguredOutputStream;
@@ -15,15 +15,14 @@ using redengine::io::operator<<;
 namespace redengine {
 namespace build {
 
-	CompileGenerationAction::CompileGenerationAction(FileArtifact* target, Compiler& compiler,
-			Compilation::CompileMode mode, CompilerConfiguration& configuration)
-			: GenerationAction<FileArtifact>(generation, target), generation(compiler, mode, configuration) {}
+	BlobGenerationAction::BlobGenerationAction(FileArtifact* target, BlobLanguage::BlobConfiguration& configuration,
+			bool header) : GenerationAction<FileArtifact>(generation, target), generation(configuration, header) {}
 
-	CompileGenerationAction::CompileGenerationAction(const CompileGenerationAction& action)
+	BlobGenerationAction::BlobGenerationAction(const BlobGenerationAction& action)
 			: Action(action), GenerationAction<FileArtifact>(generation, action.getTarget()),
 			FileGeneratingAction(action), generation(action.generation) {}
 
-	void CompileGenerationAction::addIntermediateDirectories(const Component& component, BuildContext& context) {
+	void BlobGenerationAction::addIntermediateDirectories(const Component& component, BuildContext& context) {
 		FileArtifact* target = getTarget();
 		if(target)
 			addIntermediateDirectoriesFor(component.getBaseDirectory(),
@@ -31,18 +30,18 @@ namespace build {
 					component.getBaseDirectory()), context);
 	}
 
-	void CompileGenerationAction::perform(BuildContext& context) {
+	void BlobGenerationAction::perform(BuildContext& context) {
 		createIntermediateDirectories();
 		GenerationAction<FileArtifact>::perform(context);
 	}
 
-	void CompileGenerationAction::wouldPerform(BuildContext& context) {
+	void BlobGenerationAction::wouldPerform(BuildContext& context) {
 		wouldCreateIntermediateDirectories(context);
 		GenerationAction<FileArtifact>::wouldPerform(context);
 	}
 
-	void CompileGenerationAction::dumpAction(DefaultConfiguredOutputStream<char>::Stream& stream) const {
-		stream << indent << "CompileGenerationAction " << this << " {" << endln << shift;
+	void BlobGenerationAction::dumpAction(DefaultConfiguredOutputStream<char>::Stream& stream) const {
+		stream << indent << "BlobGenerationAction " << this << " {" << endln << shift;
 		dumpGenerationActionAspects(stream);
 		dumpFileGeneratingActionAspects(stream);
 		stream << unshift << indent << '}' << endln;

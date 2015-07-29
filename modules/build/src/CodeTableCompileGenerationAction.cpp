@@ -19,8 +19,8 @@ namespace build {
 			: GenerationAction<FileArtifact>(generation, target) {}
 
 	CodeTableCompileGenerationAction::CodeTableCompileGenerationAction(const CodeTableCompileGenerationAction& action)
-			: Action(action), GenerationAction<FileArtifact>(action), FileGeneratingAction(action),
-			generation(action.generation) {}
+			: Action(action), GenerationAction<FileArtifact>(generation, action.getTarget()),
+			FileGeneratingAction(action), generation(action.generation) {}
 
 	void CodeTableCompileGenerationAction::addIntermediateDirectories(const Component& component,
 			BuildContext& context) {
