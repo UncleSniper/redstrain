@@ -83,11 +83,11 @@ namespace boot {
 			class REDSTRAIN_BUILD_API XakeBlobConfiguration : public BlobConfiguration {
 
 			  private:
-				const std::string variable, exportMacro, blobPath, extraInclude;
+				const std::string variable, exportMacro, blobPath, extraInclude, guardMacro;
 
 			  public:
 				XakeBlobConfiguration(const std::string&, const std::string&,
-						const std::string&, const std::string&);
+						const std::string&, const std::string&, const std::string&);
 				XakeBlobConfiguration(const XakeBlobConfiguration&);
 
 				inline const std::string& getVariableName() const {
@@ -104,6 +104,10 @@ namespace boot {
 
 				inline const std::string& getExtraInclude() const {
 					return extraInclude;
+				}
+
+				inline const std::string& getGuardMacro() const {
+					return guardMacro;
 				}
 
 				virtual void applyConfiguration(io::CPPArrayOutputStream&);

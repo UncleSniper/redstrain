@@ -148,7 +148,9 @@ namespace io {
 			: Stream(stream), OutputStream<char>(stream),
 			formatted(const_cast<OutputStream<char>&>(stream.formatted.getBackingOutputStream()),
 			stream.formatted.getLinebreakPolicy()), variable(stream.variable), state(stream.state),
-			needsIndent(stream.needsIndent), columns(stream.columns), arraySize(stream.arraySize) {}
+			needsIndent(stream.needsIndent), columns(stream.columns), arraySize(stream.arraySize),
+			exportMacro(stream.exportMacro), extraInclude(stream.extraInclude), blobPath(stream.blobPath),
+			guardMacro(stream.guardMacro) {}
 
 	OutputStream<char>& CPPArrayOutputStream::getBackingOutputStream() {
 		return formatted.getBackingOutputStream();
@@ -175,6 +177,10 @@ namespace io {
 
 	void CPPArrayOutputStream::setBlobPath(const string& path) {
 		blobPath = path;
+	}
+
+	void CPPArrayOutputStream::setGuardMacro(const string& macro) {
+		guardMacro = macro;
 	}
 
 	void CPPArrayOutputStream::writeBlock(const char* buffer, size_t count) {
@@ -265,6 +271,13 @@ namespace io {
 	}
 
 	void CPPArrayOutputStream::writeHeader() {
+		if(!guardMacro.empty()) {
+			formatted.print("#ifndef ");
+			formatted.println(guardMacro);
+			formatted.print("#define ");
+			formatted.println(guardMacro);
+			formatted.endLine();
+		}
 		putIncludes(false);
 		BeginningAppender beginner(formatted);
 		StringUtils::split(variable, "::", beginner);
@@ -287,6 +300,12 @@ namespace io {
 		formatted.println("_size;");
 		EndingAppender ender(formatted);
 		StringUtils::split(variable, "::", ender);
+		if(!guardMacro.empty()) {
+			formatted.endLine();
+			formatted.print("#endif /* ");
+			formatted.print(guardMacro);
+			formatted.println(" */");
+		}
 	}
 
 }}

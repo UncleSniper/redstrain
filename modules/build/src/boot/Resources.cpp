@@ -88,6 +88,7 @@ namespace boot {
 		"export.macro",
 		"blob.path",
 		"blob.include",
+		"guard.macro",
 		"generated.source.directory",
 		"linux.external.libraries",
 		"windows.external.libraries"
@@ -177,6 +178,7 @@ namespace boot {
 		"generated.namespace=%project%::%module%",
 		"export.macro=%project%_%module%_API",
 		"blob.path=/%project%/%module%/%srctail%",
+		"guard.macro=%project%_%module%_%file%",
 		NULL
 	};
 

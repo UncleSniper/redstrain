@@ -103,7 +103,7 @@ namespace io {
 		bool needsIndent;
 		unsigned columns;
 		size_t arraySize;
-		std::string exportMacro, extraInclude, blobPath;
+		std::string exportMacro, extraInclude, blobPath, guardMacro;
 
 	  public:
 		static const char *const DEFAULT_VARIABLE_NAME;
@@ -137,12 +137,17 @@ namespace io {
 			return blobPath;
 		}
 
+		inline const std::string& getGuardMacro() const {
+			return guardMacro;
+		}
+
 		OutputStream<char>& getBackingOutputStream();
 		const OutputStream<char>& getBackingOutputStream() const;
 		void setVariableName(const std::string&);
 		void setExportMacro(const std::string&);
 		void setExtraInclude(const std::string&);
 		void setBlobPath(const std::string&);
+		void setGuardMacro(const std::string&);
 		void endArray();
 		void writeHeader();
 

@@ -36,6 +36,8 @@ void Options::usage() {
 		<< "    -h                 same as --header" << endl
 		<< "    --blob PATH        generate blob injector into file PATH in source" << endl
 		<< "    -b PATH            same as --blob" << endl
+		<< "    --guard MACRO      use given guard MACRO in header" << endl
+		<< "    -g MACRO           same as --guard" << endl
 		<< "    --help             print this helpful message and quit" << endl;
 	throw StopExecution(0);
 }
@@ -58,6 +60,10 @@ void Options::setGenerateHeader(bool header) {
 
 void Options::setBlobPath(const string& path) {
 	blob = path;
+}
+
+void Options::setGuardMacro(const string& macro) {
+	guard = macro;
 }
 
 void Options::addBareword(const string& word) {

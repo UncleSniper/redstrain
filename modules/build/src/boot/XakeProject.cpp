@@ -102,7 +102,7 @@ namespace boot {
 	}
 
 	BlobLanguage::BlobConfiguration* XakeProject::XakeBlobLanguage::getBlobConfiguration(const FileArtifact& source,
-			const FileArtifact&, const Flavor&, const Component& component) {
+			const FileArtifact& target, const Flavor&, const Component& component) {
 		map<string, string> variables, mvariables;
 		variables["project"] = project.getProjectName();
 		variables["module"] = component.getName();
@@ -152,25 +152,36 @@ namespace boot {
 			xinclude = xcomponent->getComponentConfiguration().getProperty(Resources::RES_RSB_BLOB_INCLUDE);
 		if(xinclude.empty())
 			xinclude = project.getProjectConfiguration().getProperty(Resources::RES_RSB_BLOB_INCLUDE);
-		return new XakeBlobConfiguration(ns + sourceBasename, expmac, bpath, xinclude);
+		string gmac;
+		if(xcomponent)
+			gmac = xcomponent->getComponentConfiguration().getProperty(Resources::RES_RSB_GUARD_MACRO);
+		if(gmac.empty())
+			gmac = project.getProjectConfiguration().getProperty(Resources::RES_RSB_GUARD_MACRO);
+		if(!gmac.empty()) {
+			mvariables["file"] = XakeUtils::slugifyMacro(target.getBasename());
+			gmac = XakeUtils::subst(gmac, mvariables);
+		}
+		return new XakeBlobConfiguration(ns + sourceBasename, expmac, bpath, xinclude, gmac);
 	}
 
 	// ======== XakeBlobConfiguration ========
 
 	XakeProject::XakeBlobLanguage::XakeBlobConfiguration::XakeBlobConfiguration(const string& variable,
-			const string& exportMacro, const string& blobPath, const string& extraInclude)
-			: variable(variable), exportMacro(exportMacro), blobPath(blobPath), extraInclude(extraInclude) {}
+			const string& exportMacro, const string& blobPath, const string& extraInclude, const string& guardMacro)
+			: variable(variable), exportMacro(exportMacro), blobPath(blobPath), extraInclude(extraInclude),
+			guardMacro(guardMacro) {}
 
 	XakeProject::XakeBlobLanguage::XakeBlobConfiguration::XakeBlobConfiguration(const XakeBlobConfiguration&
 			configuration) : BlobConfiguration(configuration), variable(configuration.variable),
 			exportMacro(configuration.exportMacro), blobPath(configuration.blobPath),
-			extraInclude(configuration.extraInclude) {}
+			extraInclude(configuration.extraInclude), guardMacro(configuration.guardMacro) {}
 
 	void XakeProject::XakeBlobLanguage::XakeBlobConfiguration::applyConfiguration(CPPArrayOutputStream& stream) {
 		stream.setVariableName(variable);
 		stream.setExportMacro(exportMacro);
 		stream.setBlobPath(blobPath);
 		stream.setExtraInclude(extraInclude);
+		stream.setGuardMacro(guardMacro);
 	}
 
 	// ======== XakeProject ========

@@ -35,6 +35,8 @@ int main(int argc, char** argv) {
 	logic.addShortOption('h', &Options::setGenerateHeader);
 	logic.addLongOption("blob", &Options::setBlobPath, OptionLogic::REQUIRED_ARGUMENT);
 	logic.addShortOption('b', &Options::setBlobPath, OptionLogic::REQUIRED_ARGUMENT);
+	logic.addLongOption("guard", &Options::setGuardMacro, OptionLogic::REQUIRED_ARGUMENT);
+	logic.addShortOption('g', &Options::setGuardMacro, OptionLogic::REQUIRED_ARGUMENT);
 	return runWithOptions(argv, argc, logic, &Options::addBareword, &Options::checkBarewords, run);
 }
 
@@ -56,6 +58,7 @@ int run(const string&, const Options& options) {
 	gen.setExportMacro(options.getExportMacro());
 	gen.setExtraInclude(options.getExtraInclude());
 	gen.setBlobPath(options.getBlobPath());
+	gen.setGuardMacro(options.getGuardMacro());
 	if(options.shouldGenerateHeader())
 		gen.writeHeader();
 	else
