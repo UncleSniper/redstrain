@@ -8,6 +8,7 @@
 #include "../Component.hpp"
 #include "../CPPLanguage.hpp"
 #include "../StaticValve.hpp"
+#include "../BlobLanguage.hpp"
 #include "../ObjectFileLanguage.hpp"
 #include "../CodeTableDefinitionLanguage.hpp"
 
@@ -76,6 +77,50 @@ namespace boot {
 
 		};
 
+		class REDSTRAIN_BUILD_API XakeBlobLanguage : public BlobLanguage {
+
+		  public:
+			class REDSTRAIN_BUILD_API XakeBlobConfiguration : public BlobConfiguration {
+
+			  private:
+				const std::string variable, exportMacro, blobPath;
+
+			  public:
+				XakeBlobConfiguration(const std::string&, const std::string&, const std::string&);
+				XakeBlobConfiguration(const XakeBlobConfiguration&);
+
+				inline const std::string& getVariableName() const {
+					return variable;
+				}
+
+				inline const std::string& getExportMacro() const {
+					return exportMacro;
+				}
+
+				inline const std::string& getBlobPath() const {
+					return blobPath;
+				}
+
+				virtual void applyConfiguration(io::CPPArrayOutputStream&);
+
+			};
+
+		  private:
+			const XakeProject& project;
+
+		  protected:
+			virtual BlobConfiguration* getBlobConfiguration(const FileArtifact&, const Flavor&, const Component&);
+
+		  public:
+			XakeBlobLanguage(const XakeProject&);
+			XakeBlobLanguage(const XakeBlobLanguage&);
+
+			inline const XakeProject& getProject() const {
+				return project;
+			}
+
+		};
+
 	  private:
 		typedef std::map<const Component*, XakeComponent*> Components;
 		typedef Components::iterator ComponentIterator;
@@ -92,6 +137,7 @@ namespace boot {
 		XakeCPPLanguage* cppLanguage;
 		XakeObjectFileLanguage* objectFileLanguage;
 		CodeTableDefinitionLanguage* codeTableLanguage;
+		XakeBlobLanguage* blobLanguage;
 		std::string compilerName;
 		StaticValve *cleanValve, *buildValve, *modulesValve, *toolsValve, *staticValve, *dynamicValve;
 		Valves valves;
@@ -127,6 +173,7 @@ namespace boot {
 		Language* getCPPLanguage();
 		Language* getObjectFileLanguage();
 		Language* getCodeTableDefinitionLanguage();
+		Language* getBlobLanguage();
 		const std::string& getCompilerName();
 
 		StaticValve* getCleanValve(BuildContext&);

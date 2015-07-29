@@ -15,7 +15,7 @@ using redengine::io::operator<<;
 namespace redengine {
 namespace build {
 
-	BlobGenerationAction::BlobGenerationAction(FileArtifact* target, BlobLanguage::BlobConfiguration& configuration,
+	BlobGenerationAction::BlobGenerationAction(FileArtifact* target, BlobLanguage::BlobConfiguration* configuration,
 			bool header) : GenerationAction<FileArtifact>(generation, target), generation(configuration, header) {}
 
 	BlobGenerationAction::BlobGenerationAction(const BlobGenerationAction& action)

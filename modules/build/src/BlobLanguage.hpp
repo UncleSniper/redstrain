@@ -11,7 +11,7 @@ namespace build {
 	class REDSTRAIN_BUILD_API BlobLanguage : public FileConversionLanguage {
 
 	  public:
-		class REDSTRAIN_BUILD_API BlobConfiguration {
+		class REDSTRAIN_BUILD_API BlobConfiguration : public util::ReferenceCounted {
 
 		  public:
 			BlobConfiguration();
@@ -22,24 +22,11 @@ namespace build {
 
 		};
 
-		class REDSTRAIN_BUILD_API EmptyBlobConfiguration : public BlobConfiguration {
-
-		  public:
-			EmptyBlobConfiguration();
-			EmptyBlobConfiguration(const EmptyBlobConfiguration&);
-
-			virtual void applyConfiguration(io::CPPArrayOutputStream&);
-
-		  public:
-			static EmptyBlobConfiguration instance;
-
-		};
-
 	  protected:
 		virtual std::string getTargetBasename(const std::string&, const Flavor&, const Flavor&, const Component&);
 		virtual GenerationAction<FileArtifact>* newGenerationAction(FileArtifact*, const Flavor&, const Flavor&,
 				const Component&, BuildContext&);
-		virtual BlobConfiguration& getBlobConfiguration(const Flavor&, const Component&);
+		virtual BlobConfiguration* getBlobConfiguration(const FileArtifact&, const Flavor&, const Component&);
 
 	  public:
 		BlobLanguage();

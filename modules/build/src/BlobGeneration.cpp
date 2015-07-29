@@ -29,12 +29,23 @@ using redengine::io::operator<<;
 namespace redengine {
 namespace build {
 
-	BlobGeneration::BlobGeneration(BlobLanguage::BlobConfiguration& configuration, bool header)
-			: configuration(configuration), header(header) {}
+	BlobGeneration::BlobGeneration(BlobLanguage::BlobConfiguration* configuration, bool header)
+			: configuration(configuration), header(header) {
+		if(configuration)
+			configuration->ref();
+	}
 
 	BlobGeneration::BlobGeneration(const BlobGeneration& generation)
 			: Generation<FileArtifact>(generation), configuration(generation.configuration),
-			header(generation.header) {}
+			header(generation.header) {
+		if(configuration)
+			configuration->ref();
+	}
+
+	BlobGeneration::~BlobGeneration() {
+		if(configuration)
+			configuration->unref();
+	}
 
 	FileArtifact* BlobGeneration::getSoleSource(const list<FileArtifact*>& sources) {
 		if(sources.empty())
@@ -56,7 +67,8 @@ namespace build {
 		FileOutputStream out(target->getPathname());
 		StreamCloser outCloser(out);
 		CPPArrayOutputStream gen(out);
-		configuration.applyConfiguration(gen);
+		if(configuration)
+			configuration->applyConfiguration(gen);
 		if(header)
 			gen.writeHeader();
 		else

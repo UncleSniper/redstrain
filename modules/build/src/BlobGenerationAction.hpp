@@ -15,7 +15,7 @@ namespace build {
 		BlobGeneration generation;
 
 	  public:
-		BlobGenerationAction(FileArtifact*, BlobLanguage::BlobConfiguration&, bool);
+		BlobGenerationAction(FileArtifact*, BlobLanguage::BlobConfiguration*, bool);
 		BlobGenerationAction(const BlobGenerationAction&);
 
 		inline BlobGeneration& getBlobGeneration() {

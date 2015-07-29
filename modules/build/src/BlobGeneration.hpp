@@ -11,21 +11,18 @@ namespace build {
 	class REDSTRAIN_BUILD_API BlobGeneration : public Generation<FileArtifact> {
 
 	  private:
-		BlobLanguage::BlobConfiguration& configuration;
+		BlobLanguage::BlobConfiguration* configuration;
 		bool header;
 
 	  private:
 		static FileArtifact* getSoleSource(const std::list<FileArtifact*>&);
 
 	  public:
-		BlobGeneration(BlobLanguage::BlobConfiguration&, bool);
+		BlobGeneration(BlobLanguage::BlobConfiguration*, bool);
 		BlobGeneration(const BlobGeneration&);
+		virtual ~BlobGeneration();
 
-		inline BlobLanguage::BlobConfiguration& getBlobConfiguration() {
-			return configuration;
-		}
-
-		inline const BlobLanguage::BlobConfiguration& getBlobConfiguration() const {
+		inline BlobLanguage::BlobConfiguration* getBlobConfiguration() const {
 			return configuration;
 		}
 

@@ -98,6 +98,7 @@ namespace boot {
 		component.addLanguage(project.getCPPLanguage());
 		component.addLanguage(project.getObjectFileLanguage());
 		component.addLanguage(project.getCodeTableDefinitionLanguage());
+		component.addLanguage(project.getBlobLanguage());
 		// add external dependencies
 		const Language& cpp = *project.getCPPLanguage();
 		ExternalDependencyAppender sink(component, cpp);

@@ -84,6 +84,10 @@ namespace boot {
 		"target.architecture",
 		"target.os",
 		"blobs.directory",
+		"generated.namespace",
+		"export.macro",
+		"blob.path",
+		"generated.source.directory",
 		"linux.external.libraries",
 		"windows.external.libraries"
 	};
@@ -156,6 +160,7 @@ namespace boot {
 		"module.basename=%project%-%module%",
 		"tool.basename=%project%%tool%",
 		"source.directory=src",
+		"generated.source.directory=gensrc",
 		"build.directory=build",
 		"header.expose.directory=include",
 		"static.build.directory=static",
@@ -168,6 +173,9 @@ namespace boot {
 		"install.binary.directory=bin",
 		"install.header.directory=include",
 		"gcc.warn.compiler.flags=-pedantic -Wall -Wextra -Wno-long-long",
+		"generated.namespace=%project%::%module%",
+		"export.macro=%project%_%module%_API",
+		"blob.path=/%project%/%module%/%srctail%",
 		NULL
 	};
 

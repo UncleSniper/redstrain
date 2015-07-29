@@ -14,6 +14,7 @@ namespace boot {
 	const char *const XakeBuildDirectoryMapper::DEFAULT_BUILD_DIRECTORY = "build";
 	const char *const XakeBuildDirectoryMapper::DEFAULT_STATIC_BUILD_DIRECTORY = "static";
 	const char *const XakeBuildDirectoryMapper::DEFAULT_DYNAMIC_BUILD_DIRECTORY = "dynamic";
+	const char *const XakeBuildDirectoryMapper::DEFAULT_GENERATED_SOURCE_DIRECTORY = "gensrc";
 
 	XakeBuildDirectoryMapper::XakeBuildDirectoryMapper(XakeProject& project) : project(project) {}
 
@@ -50,6 +51,12 @@ namespace boot {
 			directory = configuration.getProperty(Resources::RES_BUILD_DIRECTORY);
 			if(directory.empty())
 				directory = XakeBuildDirectoryMapper::DEFAULT_BUILD_DIRECTORY;
+		}
+		else if(&language == project.getBlobLanguage()) {
+			const Resources& configuration = project.getProjectConfiguration();
+			directory = configuration.getProperty(Resources::RES_RSB_GENERATED_SOURCE_DIRECTORY);
+			if(directory.empty())
+				directory = XakeBuildDirectoryMapper::DEFAULT_GENERATED_SOURCE_DIRECTORY;
 		}
 		else {
 			directory.clear();

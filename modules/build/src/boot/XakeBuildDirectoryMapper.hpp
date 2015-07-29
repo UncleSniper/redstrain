@@ -16,6 +16,7 @@ namespace boot {
 		static const char *const DEFAULT_BUILD_DIRECTORY;
 		static const char *const DEFAULT_STATIC_BUILD_DIRECTORY;
 		static const char *const DEFAULT_DYNAMIC_BUILD_DIRECTORY;
+		static const char *const DEFAULT_GENERATED_SOURCE_DIRECTORY;
 
 	  private:
 		XakeProject& project;

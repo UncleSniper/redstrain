@@ -19,20 +19,10 @@ namespace build {
 
 	BlobLanguage::BlobConfiguration::BlobConfiguration() {}
 
-	BlobLanguage::BlobConfiguration::BlobConfiguration(const BlobConfiguration&) {}
+	BlobLanguage::BlobConfiguration::BlobConfiguration(const BlobConfiguration& configuration)
+			: ReferenceCounted(configuration) {}
 
 	BlobLanguage::BlobConfiguration::~BlobConfiguration() {}
-
-	// ======== EmptyBlobConfiguration ========
-
-	BlobLanguage::EmptyBlobConfiguration BlobLanguage::EmptyBlobConfiguration::instance;
-
-	BlobLanguage::EmptyBlobConfiguration::EmptyBlobConfiguration() {}
-
-	BlobLanguage::EmptyBlobConfiguration::EmptyBlobConfiguration(const EmptyBlobConfiguration& configuration)
-			: BlobConfiguration(configuration) {}
-
-	void BlobLanguage::EmptyBlobConfiguration::applyConfiguration(CPPArrayOutputStream&) {}
 
 	// ======== BlobLanguage ========
 
@@ -69,10 +59,16 @@ namespace build {
 
 	GenerationAction<FileArtifact>* BlobLanguage::newGenerationAction(FileArtifact* target,
 			const Flavor&, const Flavor& transformFlavor, const Component& component, BuildContext& context) {
-		Unref<BlobGenerationAction> action(new BlobGenerationAction(target,
-				getBlobConfiguration(transformFlavor, component), transformFlavor == Flavor::HEADER));
+		Unref<BlobConfiguration> configuration(getBlobConfiguration(*target, transformFlavor, component));
+		Unref<BlobGenerationAction> action(new BlobGenerationAction(target, *configuration,
+				transformFlavor == Flavor::HEADER));
 		action->addIntermediateDirectories(component, context);
 		return action.set();
+	}
+
+	BlobLanguage::BlobConfiguration* BlobLanguage::getBlobConfiguration(const FileArtifact&,
+			const Flavor&, const Component&) {
+		return NULL;
 	}
 
 }}
