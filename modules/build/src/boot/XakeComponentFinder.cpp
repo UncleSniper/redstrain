@@ -9,13 +9,15 @@ namespace boot {
 
 	const char *const XakeComponentFinder::DEFAULT_LIBRARIES_DIRECTORY = "modules";
 	const char *const XakeComponentFinder::DEFAULT_BINARIES_DIRECTORY = "tools";
+	const char *const XakeComponentFinder::DEFAULT_BLOBS_DIRECTORY = "data";
 
 	XakeComponentFinder::XakeComponentFinder(const XakeProject& project) : project(project) {}
 
 	XakeComponentFinder::XakeComponentFinder(const XakeComponentFinder& finder)
 			: DirectoryComponentFinder(finder), project(finder.project),
 			defaultLibrariesDirectory(finder.defaultLibrariesDirectory),
-			defaultBinariesDirectory(finder.defaultBinariesDirectory) {}
+			defaultBinariesDirectory(finder.defaultBinariesDirectory),
+			defaultBlobsDirectory(finder.defaultBlobsDirectory) {}
 
 	void XakeComponentFinder::setDefaultLibrariesDirectory(const string& directory) {
 		defaultLibrariesDirectory = directory;
@@ -23,6 +25,10 @@ namespace boot {
 
 	void XakeComponentFinder::setDefaultBinariesDirectory(const string& directory) {
 		defaultBinariesDirectory = directory;
+	}
+
+	void XakeComponentFinder::setDefaultBlobsDirectory(const string& directory) {
+		defaultBlobsDirectory = directory;
 	}
 
 	void XakeComponentFinder::findComponents(const Project& buildingProject, ProjectBuilder& builder) {
@@ -43,6 +49,14 @@ namespace boot {
 				directory = defaultBinariesDirectory;
 		}
 		addComponentsDirectory(directory, Component::EXECUTABLE);
+		directory = configuration.getProperty(Resources::RES_RSB_BLOBS_DIRECTORY);
+		if(directory.empty()) {
+			if(defaultBlobsDirectory.empty())
+				directory = XakeComponentFinder::DEFAULT_BLOBS_DIRECTORY;
+			else
+				directory = defaultBlobsDirectory;
+		}
+		addComponentsDirectory(directory, Component::BLOB);
 		DirectoryComponentFinder::findComponents(buildingProject, builder);
 	}
 

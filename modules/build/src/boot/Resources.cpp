@@ -83,6 +83,7 @@ namespace boot {
 		"depend.modules",
 		"target.architecture",
 		"target.os",
+		"blobs.directory",
 		"linux.external.libraries",
 		"windows.external.libraries"
 	};
@@ -148,6 +149,7 @@ namespace boot {
 	static const char *const PROP_DEFAULTS[] = {
 		"libraries.directory=modules",
 		"binaries.directory=tools",
+		"blobs.directory=data",
 		"common.modules.properties.file=modules.properties",
 		"common.tools.properties.file=tools.properties",
 		"component.properties.file=component.properties",

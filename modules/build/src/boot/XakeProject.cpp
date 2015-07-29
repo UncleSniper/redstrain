@@ -78,8 +78,9 @@ namespace boot {
 	// ======== XakeProject ========
 
 	XakeProject::XakeProject(const string& baseDirectory) : baseDirectory(baseDirectory),
-			compiler(NULL), linker(NULL), cppLanguage(NULL), objectFileLanguage(NULL), cleanValve(NULL),
-			buildValve(NULL), modulesValve(NULL), toolsValve(NULL), staticValve(NULL), dynamicValve(NULL) {
+			compiler(NULL), linker(NULL), cppLanguage(NULL), objectFileLanguage(NULL), codeTableLanguage(NULL),
+			cleanValve(NULL), buildValve(NULL), modulesValve(NULL), toolsValve(NULL), staticValve(NULL),
+			dynamicValve(NULL) {
 		configuration.load(Resources::DFL_DEFAULTS);
 		switch(buildTargetOS) {
 			case OS_LINUX:
@@ -108,8 +109,9 @@ namespace boot {
 
 	XakeProject::XakeProject(const XakeProject& project)
 			: baseDirectory(project.baseDirectory), configuration(project.configuration),
-			compiler(NULL), linker(NULL), cppLanguage(NULL), objectFileLanguage(NULL), cleanValve(NULL),
-			buildValve(NULL), modulesValve(NULL), toolsValve(NULL), staticValve(NULL), dynamicValve(NULL) {}
+			compiler(NULL), linker(NULL), cppLanguage(NULL), objectFileLanguage(NULL), codeTableLanguage(NULL),
+			cleanValve(NULL), buildValve(NULL), modulesValve(NULL), toolsValve(NULL), staticValve(NULL),
+			dynamicValve(NULL) {}
 
 	XakeProject::~XakeProject() {
 		ConstComponentIterator cbegin(components.begin()), cend(components.end());
@@ -213,6 +215,12 @@ namespace boot {
 		if(!objectFileLanguage)
 			objectFileLanguage = new XakeObjectFileLanguage(getLinker()->getObjectFileFormatName(), *this);
 		return objectFileLanguage;
+	}
+
+	Language* XakeProject::getCodeTableDefinitionLanguage() {
+		if(!codeTableLanguage)
+			codeTableLanguage = new CodeTableDefinitionLanguage();
+		return codeTableLanguage;
 	}
 
 	const string& XakeProject::getCompilerName() {

@@ -9,6 +9,7 @@
 #include "../CPPLanguage.hpp"
 #include "../StaticValve.hpp"
 #include "../ObjectFileLanguage.hpp"
+#include "../CodeTableDefinitionLanguage.hpp"
 
 namespace redengine {
 namespace build {
@@ -90,6 +91,7 @@ namespace boot {
 		Linker* linker;
 		XakeCPPLanguage* cppLanguage;
 		XakeObjectFileLanguage* objectFileLanguage;
+		CodeTableDefinitionLanguage* codeTableLanguage;
 		std::string compilerName;
 		StaticValve *cleanValve, *buildValve, *modulesValve, *toolsValve, *staticValve, *dynamicValve;
 		Valves valves;
@@ -124,6 +126,7 @@ namespace boot {
 		Linker* getLinker();
 		Language* getCPPLanguage();
 		Language* getObjectFileLanguage();
+		Language* getCodeTableDefinitionLanguage();
 		const std::string& getCompilerName();
 
 		StaticValve* getCleanValve(BuildContext&);

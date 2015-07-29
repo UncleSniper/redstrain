@@ -14,10 +14,11 @@ namespace boot {
 	  public:
 		static const char *const DEFAULT_LIBRARIES_DIRECTORY;
 		static const char *const DEFAULT_BINARIES_DIRECTORY;
+		static const char *const DEFAULT_BLOBS_DIRECTORY;
 
 	  private:
 		const XakeProject& project;
-		std::string defaultLibrariesDirectory, defaultBinariesDirectory;
+		std::string defaultLibrariesDirectory, defaultBinariesDirectory, defaultBlobsDirectory;
 
 	  public:
 		XakeComponentFinder(const XakeProject&);
@@ -38,6 +39,12 @@ namespace boot {
 		}
 
 		void setDefaultBinariesDirectory(const std::string&);
+
+		inline const std::string& getDefaultBlobsDirectory() const {
+			return defaultBlobsDirectory;
+		}
+
+		void setDefaultBlobsDirectory(const std::string&);
 
 		virtual void findComponents(const Project&, ProjectBuilder&);
 
