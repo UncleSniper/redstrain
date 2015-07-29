@@ -102,7 +102,7 @@ namespace boot {
 	}
 
 	BlobLanguage::BlobConfiguration* XakeProject::XakeBlobLanguage::getBlobConfiguration(const FileArtifact& source,
-			const Flavor&, const Component& component) {
+			const FileArtifact&, const Flavor&, const Component& component) {
 		map<string, string> variables, mvariables;
 		variables["project"] = project.getProjectName();
 		variables["module"] = component.getName();

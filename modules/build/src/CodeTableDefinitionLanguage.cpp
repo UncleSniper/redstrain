@@ -36,8 +36,8 @@ namespace build {
 		return targetBasename + ".redct";
 	}
 
-	GenerationAction<FileArtifact>* CodeTableDefinitionLanguage::newGenerationAction(FileArtifact* target,
-			const Flavor&, const Flavor&, const Component& component, BuildContext& context) {
+	GenerationAction<FileArtifact>* CodeTableDefinitionLanguage::newGenerationAction(FileArtifact*,
+			FileArtifact* target, const Flavor&, const Flavor&, const Component& component, BuildContext& context) {
 		Unref<CodeTableCompileGenerationAction> action(new CodeTableCompileGenerationAction(target));
 		action->addIntermediateDirectories(component, context);
 		return action.set();

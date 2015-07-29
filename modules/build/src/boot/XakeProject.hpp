@@ -114,7 +114,8 @@ namespace boot {
 			const XakeProject& project;
 
 		  protected:
-			virtual BlobConfiguration* getBlobConfiguration(const FileArtifact&, const Flavor&, const Component&);
+			virtual BlobConfiguration* getBlobConfiguration(const FileArtifact&, const FileArtifact&,
+					const Flavor&, const Component&);
 
 		  public:
 			XakeBlobLanguage(const XakeProject&);

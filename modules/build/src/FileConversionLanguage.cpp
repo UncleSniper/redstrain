@@ -43,7 +43,7 @@ namespace build {
 		Delete<GenerationTrigger> trigger(new GenerationTrigger);
 		trigger->addSource(srcfile);
 		trigger->addTarget(trgfile);
-		Unref<GenerationAction<FileArtifact> > action(newGenerationAction(trgfile,
+		Unref<GenerationAction<FileArtifact> > action(newGenerationAction(srcfile, trgfile,
 				sourceFlavor, transformFlavor, component, context));
 		action->addSource(srcfile);
 		trigger->addAction(*action);

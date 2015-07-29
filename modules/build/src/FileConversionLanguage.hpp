@@ -12,7 +12,7 @@ namespace build {
 	  protected:
 		virtual std::string getTargetBasename(const std::string&, const Flavor&, const Flavor&,
 				const Component&) = 0;
-		virtual GenerationAction<FileArtifact>* newGenerationAction(FileArtifact*, const Flavor&,
+		virtual GenerationAction<FileArtifact>* newGenerationAction(FileArtifact*, FileArtifact*, const Flavor&,
 				const Flavor&, const Component&, BuildContext&) = 0;
 
 	  public:

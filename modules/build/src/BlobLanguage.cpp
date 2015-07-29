@@ -57,16 +57,16 @@ namespace build {
 			return sourceBasename + ".cpp";
 	}
 
-	GenerationAction<FileArtifact>* BlobLanguage::newGenerationAction(FileArtifact* target,
+	GenerationAction<FileArtifact>* BlobLanguage::newGenerationAction(FileArtifact* source, FileArtifact* target,
 			const Flavor&, const Flavor& transformFlavor, const Component& component, BuildContext& context) {
-		Unref<BlobConfiguration> configuration(getBlobConfiguration(*target, transformFlavor, component));
+		Unref<BlobConfiguration> configuration(getBlobConfiguration(*source, *target, transformFlavor, component));
 		Unref<BlobGenerationAction> action(new BlobGenerationAction(target, *configuration,
 				transformFlavor == Flavor::HEADER));
 		action->addIntermediateDirectories(component, context);
 		return action.set();
 	}
 
-	BlobLanguage::BlobConfiguration* BlobLanguage::getBlobConfiguration(const FileArtifact&,
+	BlobLanguage::BlobConfiguration* BlobLanguage::getBlobConfiguration(const FileArtifact&, const FileArtifact&,
 			const Flavor&, const Component&) {
 		return NULL;
 	}

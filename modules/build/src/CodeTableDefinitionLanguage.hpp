@@ -10,8 +10,8 @@ namespace build {
 
 	  protected:
 		virtual std::string getTargetBasename(const std::string&, const Flavor&, const Flavor&, const Component&);
-		virtual GenerationAction<FileArtifact>* newGenerationAction(FileArtifact*, const Flavor&, const Flavor&,
-				const Component&, BuildContext&);
+		virtual GenerationAction<FileArtifact>* newGenerationAction(FileArtifact*, FileArtifact*,
+				const Flavor&, const Flavor&, const Component&, BuildContext&);
 
 	  public:
 		CodeTableDefinitionLanguage();
