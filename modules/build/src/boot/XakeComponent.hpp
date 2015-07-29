@@ -94,6 +94,8 @@ namespace boot {
 			return dynamicLinkerConfiguration;
 		}
 
+		std::string getComponentGuard() const;
+
 		virtual void applyConfiguration(Compilation&);
 
 	};

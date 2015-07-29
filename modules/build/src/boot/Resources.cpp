@@ -87,6 +87,7 @@ namespace boot {
 		"generated.namespace",
 		"export.macro",
 		"blob.path",
+		"blob.include",
 		"generated.source.directory",
 		"linux.external.libraries",
 		"windows.external.libraries"

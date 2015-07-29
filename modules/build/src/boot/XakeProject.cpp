@@ -103,7 +103,7 @@ namespace boot {
 
 	BlobLanguage::BlobConfiguration* XakeProject::XakeBlobLanguage::getBlobConfiguration(const FileArtifact& source,
 			const Flavor&, const Component& component) {
-		map<string, string> variables;
+		map<string, string> variables, mvariables;
 		variables["project"] = project.getProjectName();
 		variables["module"] = component.getName();
 		string sourceBasename(Pathname::basename(source.getPathname()));
@@ -122,13 +122,18 @@ namespace boot {
 			if(!StringUtils::endsWith(ns, "::"))
 				ns += "::";
 		}
+		mvariables["project"] = project.getProjectGuard();
+		if(xcomponent)
+			mvariables["module"] = xcomponent->getComponentGuard();
+		else
+			mvariables["module"] = XakeUtils::slugifyMacro(component.getName());
 		string expmac;
 		if(xcomponent)
 			expmac = xcomponent->getComponentConfiguration().getProperty(Resources::RES_RSB_EXPORT_MACRO);
 		if(expmac.empty())
 			expmac = project.getProjectConfiguration().getProperty(Resources::RES_RSB_EXPORT_MACRO);
 		if(!expmac.empty())
-			expmac = XakeUtils::subst(expmac, variables);
+			expmac = XakeUtils::subst(expmac, mvariables);
 		string bpath;
 		if(xcomponent)
 			bpath = xcomponent->getComponentConfiguration().getProperty(Resources::RES_RSB_BLOB_PATH);
@@ -142,23 +147,30 @@ namespace boot {
 			variables["srcpath"] = source.getPathname();
 			bpath = XakeUtils::subst(bpath, variables);
 		}
-		return new XakeBlobConfiguration(ns + sourceBasename, expmac, bpath);
+		string xinclude;
+		if(xcomponent)
+			xinclude = xcomponent->getComponentConfiguration().getProperty(Resources::RES_RSB_BLOB_INCLUDE);
+		if(xinclude.empty())
+			xinclude = project.getProjectConfiguration().getProperty(Resources::RES_RSB_BLOB_INCLUDE);
+		return new XakeBlobConfiguration(ns + sourceBasename, expmac, bpath, xinclude);
 	}
 
 	// ======== XakeBlobConfiguration ========
 
 	XakeProject::XakeBlobLanguage::XakeBlobConfiguration::XakeBlobConfiguration(const string& variable,
-			const string& exportMacro, const string& blobPath) : variable(variable), exportMacro(exportMacro),
-			blobPath(blobPath) {}
+			const string& exportMacro, const string& blobPath, const string& extraInclude)
+			: variable(variable), exportMacro(exportMacro), blobPath(blobPath), extraInclude(extraInclude) {}
 
 	XakeProject::XakeBlobLanguage::XakeBlobConfiguration::XakeBlobConfiguration(const XakeBlobConfiguration&
 			configuration) : BlobConfiguration(configuration), variable(configuration.variable),
-			exportMacro(configuration.exportMacro), blobPath(configuration.blobPath) {}
+			exportMacro(configuration.exportMacro), blobPath(configuration.blobPath),
+			extraInclude(configuration.extraInclude) {}
 
 	void XakeProject::XakeBlobLanguage::XakeBlobConfiguration::applyConfiguration(CPPArrayOutputStream& stream) {
 		stream.setVariableName(variable);
 		stream.setExportMacro(exportMacro);
 		stream.setBlobPath(blobPath);
+		stream.setExtraInclude(extraInclude);
 	}
 
 	// ======== XakeProject ========
@@ -238,6 +250,13 @@ namespace boot {
 		}
 		else
 			return name;
+	}
+
+	string XakeProject::getProjectGuard() const {
+		string guard(configuration.getProperty(Resources::RES_PROJECT_GUARD));
+		if(guard.empty())
+			guard = XakeUtils::slugifyMacro(getProjectName());
+		return guard;
 	}
 
 	XakeComponent* XakeProject::getComponent(const Component* component) const {

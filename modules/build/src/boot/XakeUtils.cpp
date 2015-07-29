@@ -1,9 +1,12 @@
+#include <cctype>
 #include <sstream>
+#include <algorithm>
 
 #include "XakeUtils.hpp"
 
 using std::map;
 using std::string;
+using std::transform;
 using std::stringstream;
 
 namespace redengine {
@@ -30,6 +33,25 @@ namespace boot {
 		}
 		ss << strTemplate.substr(old);
 		return ss.str();
+	}
+
+	static char slugify(char c) {
+		if(
+			(c >= 'a' && c <= 'z')
+			|| (c >= 'A' && c <= 'Z')
+			|| (c >= '0' && c <= '9')
+		)
+			return static_cast<char>(static_cast<unsigned char>(static_cast<unsigned>(toupper(
+				static_cast<int>(static_cast<unsigned int>(static_cast<unsigned char>(c)))
+			))));
+		else
+			return '_';
+	}
+
+	string XakeUtils::slugifyMacro(const string& macro) {
+		string sm(macro);
+		transform(sm.begin(), sm.end(), sm.begin(), slugify);
+		return sm;
 	}
 
 }}}

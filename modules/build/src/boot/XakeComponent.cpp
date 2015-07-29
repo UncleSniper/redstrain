@@ -4,6 +4,7 @@
 #include <redstrain/platform/Filesystem.hpp>
 #include <redstrain/redmond/constants.hpp>
 
+#include "XakeUtils.hpp"
 #include "XakeProject.hpp"
 #include "XakeComponent.hpp"
 #include "XakeBuildArtifactMapper.hpp"
@@ -112,6 +113,13 @@ namespace boot {
 			project(component.project), baseDirectory(component.baseDirectory), type(component.type),
 			configuration(component.configuration), component(component.component),
 			staticLinkerConfiguration(*this, true), dynamicLinkerConfiguration(*this, false) {}
+
+	string XakeComponent::getComponentGuard() const {
+		string guard(configuration.getProperty(Resources::RES_COMPONENT_GUARD));
+		if(guard.empty() && component)
+			guard = XakeUtils::slugifyMacro(component->getName());
+		return guard;
+	}
 
 	void XakeComponent::applyConfiguration(Compilation& compilation) {
 		// internal API macro

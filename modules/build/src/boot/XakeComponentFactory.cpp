@@ -1,5 +1,3 @@
-#include <cctype>
-#include <algorithm>
 #include <redstrain/util/Delete.hpp>
 #include <redstrain/util/StringUtils.hpp>
 #include <redstrain/platform/Pathname.hpp>
@@ -11,7 +9,6 @@
 
 using std::map;
 using std::string;
-using std::transform;
 using redengine::util::Delete;
 using redengine::util::Appender;
 using redengine::util::StringUtils;
@@ -42,19 +39,6 @@ namespace boot {
 		return component.set();
 	}
 
-	static char slugify(char c) {
-		if(
-			(c >= 'a' && c <= 'z')
-			|| (c >= 'A' && c <= 'Z')
-			|| (c >= '0' && c <= '9')
-		)
-			return static_cast<char>(static_cast<unsigned char>(static_cast<unsigned>(toupper(
-				static_cast<int>(static_cast<unsigned int>(static_cast<unsigned char>(c)))
-			))));
-		else
-			return '_';
-	}
-
 	struct ExternalDependencyAppender : Appender<string> {
 
 		Component& component;
@@ -74,22 +58,12 @@ namespace boot {
 	void XakeComponentFactory::setupComponent(Component& component, const XakeComponent& xcomponent) const {
 		// set internal build name
 		if(component.getType() != Component::EXECUTABLE) {
-			string prjguard(project.getProjectConfiguration().getProperty(Resources::RES_PROJECT_GUARD));
-			if(prjguard.empty()) {
-				prjguard = project.getProjectName();
-				transform(prjguard.begin(), prjguard.end(), prjguard.begin(), slugify);
-			}
-			string cmpguard(xcomponent.getComponentConfiguration().getProperty(Resources::RES_COMPONENT_GUARD));
-			if(cmpguard.empty()) {
-				cmpguard = component.getName();
-				transform(cmpguard.begin(), cmpguard.end(), cmpguard.begin(), slugify);
-			}
 			string tpl(xcomponent.getComponentConfiguration().getProperty(Resources::RES_INTERNAL_API_MACRO));
 			if(tpl.empty())
 				tpl = project.getProjectConfiguration().getProperty(Resources::RES_INTERNAL_API_MACRO);
 			map<string, string> variables;
-			variables["project"] = prjguard;
-			variables["module"] = cmpguard;
+			variables["project"] = project.getProjectGuard();
+			variables["module"] = xcomponent.getComponentGuard();
 			component.setInternalBuildName(XakeUtils::subst(tpl, variables));
 		}
 		// add source directories
