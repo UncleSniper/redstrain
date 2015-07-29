@@ -55,7 +55,7 @@ namespace build {
 
 	void ConsoleBuildUI::printAction(unsigned haveCount, unsigned needCount, const ActionDescriptor& action) {
 		if(needCount && haveCount < needCount) {
-			formatted << '[' << pad<char>(countDigits(haveCount + 1u), ' ');
+			formatted << '[' << pad<char>(countDigits(needCount), ' ');
 			formatted << (haveCount + 1u) << '/' << needCount << " = ";
 			unsigned percent = needCount > 1u ? haveCount * 100u / (needCount - 1u) : 100u;
 			formatted << pad<char>(3u, ' ') << percent << "%] ";
