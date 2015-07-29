@@ -88,6 +88,23 @@ namespace build {
 
 		};
 
+		class REDSTRAIN_BUILD_API DefaultGenerationHolder : public GenerationHolder {
+
+		  private:
+			GenerationTrigger* trigger;
+
+		  public:
+			DefaultGenerationHolder(GenerationTrigger*);
+			DefaultGenerationHolder(const DefaultGenerationHolder&);
+			virtual ~DefaultGenerationHolder();
+
+			virtual Trigger* getTrigger();
+			virtual void addSource(FileArtifact*);
+			virtual void addTriggerSource(FileArtifact*);
+			virtual void getTargets(GenerationTrigger::ArtifactIterator&, GenerationTrigger::ArtifactIterator&);
+
+		};
+
 		class REDSTRAIN_BUILD_API ValveInjector {
 
 		  public:

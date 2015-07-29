@@ -6,7 +6,6 @@
 #include "CodeTableDefinitionLanguage.hpp"
 #include "CodeTableCompileGenerationAction.hpp"
 
-using std::set;
 using std::string;
 using redengine::util::Unref;
 using redengine::util::Delete;
@@ -15,45 +14,6 @@ using redengine::util::StringUtils;
 
 namespace redengine {
 namespace build {
-
-	static set<Artifact*> emptyArtifactSet;
-
-	// ======== CodeTableCompileGenerationHolder ========
-
-	CodeTableDefinitionLanguage::CodeTableCompileGenerationHolder::CodeTableCompileGenerationHolder(
-			GenerationTrigger* trigger) : trigger(trigger) {
-		if(trigger)
-			trigger->ref();
-	}
-
-	CodeTableDefinitionLanguage::CodeTableCompileGenerationHolder::~CodeTableCompileGenerationHolder() {
-		if(trigger)
-			trigger->unref();
-	}
-
-	Trigger* CodeTableDefinitionLanguage::CodeTableCompileGenerationHolder::getTrigger() {
-		return trigger;
-	}
-
-	void CodeTableDefinitionLanguage::CodeTableCompileGenerationHolder::addSource(FileArtifact* source) {
-		if(source && trigger)
-			trigger->addSource(source);
-	}
-
-	void CodeTableDefinitionLanguage::CodeTableCompileGenerationHolder::addTriggerSource(FileArtifact* source) {
-		if(source && trigger)
-			trigger->addOptionalSource(source);
-	}
-
-	void CodeTableDefinitionLanguage::CodeTableCompileGenerationHolder::getTargets(
-			GenerationTrigger::ArtifactIterator& begin, GenerationTrigger::ArtifactIterator& end) {
-		if(trigger)
-			trigger->getTargets(begin, end);
-		else
-			begin = end = emptyArtifactSet.end();
-	}
-
-	// ======== CodeTableDefinitionLanguage ========
 
 	CodeTableDefinitionLanguage::CodeTableDefinitionLanguage() : Language("code table definition") {}
 
@@ -104,7 +64,7 @@ namespace build {
 		action->addSource(srcfile);
 		action->addIntermediateDirectories(component, context);
 		trigger->addAction(*action);
-		CodeTableCompileGenerationHolder* holder = new CodeTableCompileGenerationHolder(*trigger);
+		Component::DefaultGenerationHolder* holder = new Component::DefaultGenerationHolder(*trigger);
 		trigger.set();
 		return holder;
 	}

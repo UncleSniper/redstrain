@@ -25,6 +25,8 @@ using redengine::platform::Filesystem;
 namespace redengine {
 namespace build {
 
+	static set<Artifact*> emptyArtifactSet;
+
 	// ======== BuildDirectoryMapper ========
 
 	Component::BuildDirectoryMapper::BuildDirectoryMapper() {}
@@ -67,6 +69,47 @@ namespace build {
 	}
 
 	void Component::GenerationHolder::addDependencySources(const Component&) {}
+
+	// ======== DefaultGenerationHolder ========
+
+	Component::DefaultGenerationHolder::DefaultGenerationHolder(
+			GenerationTrigger* trigger) : trigger(trigger) {
+		if(trigger)
+			trigger->ref();
+	}
+
+	Component::DefaultGenerationHolder::DefaultGenerationHolder(const DefaultGenerationHolder& holder)
+			: GenerationHolder(holder), trigger(holder.trigger) {
+		if(trigger)
+			trigger->ref();
+	}
+
+	Component::DefaultGenerationHolder::~DefaultGenerationHolder() {
+		if(trigger)
+			trigger->unref();
+	}
+
+	Trigger* Component::DefaultGenerationHolder::getTrigger() {
+		return trigger;
+	}
+
+	void Component::DefaultGenerationHolder::addSource(FileArtifact* source) {
+		if(source && trigger)
+			trigger->addSource(source);
+	}
+
+	void Component::DefaultGenerationHolder::addTriggerSource(FileArtifact* source) {
+		if(source && trigger)
+			trigger->addOptionalSource(source);
+	}
+
+	void Component::DefaultGenerationHolder::getTargets(
+			GenerationTrigger::ArtifactIterator& begin, GenerationTrigger::ArtifactIterator& end) {
+		if(trigger)
+			trigger->getTargets(begin, end);
+		else
+			begin = end = emptyArtifactSet.end();
+	}
 
 	// ======== ValveInjector ========
 

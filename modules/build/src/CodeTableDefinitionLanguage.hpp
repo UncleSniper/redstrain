@@ -9,23 +9,6 @@ namespace build {
 	class REDSTRAIN_BUILD_API CodeTableDefinitionLanguage : public Language {
 
 	  public:
-		class REDSTRAIN_BUILD_API CodeTableCompileGenerationHolder : public Component::GenerationHolder {
-
-		  private:
-			GenerationTrigger* trigger;
-
-		  public:
-			CodeTableCompileGenerationHolder(GenerationTrigger*);
-			virtual ~CodeTableCompileGenerationHolder();
-
-			virtual Trigger* getTrigger();
-			virtual void addSource(FileArtifact*);
-			virtual void addTriggerSource(FileArtifact*);
-			virtual void getTargets(GenerationTrigger::ArtifactIterator&, GenerationTrigger::ArtifactIterator&);
-
-		};
-
-	  public:
 		CodeTableDefinitionLanguage();
 		CodeTableDefinitionLanguage(const CodeTableDefinitionLanguage&);
 
