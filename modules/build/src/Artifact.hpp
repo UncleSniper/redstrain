@@ -14,6 +14,7 @@
 namespace redengine {
 namespace build {
 
+	class Transform;
 	class BuildContext;
 
 	class REDSTRAIN_BUILD_API Artifact : public util::ReferenceCounted {
@@ -31,6 +32,8 @@ namespace build {
 			virtual void virtualClock(Artifact&, util::Appender<time_t>&) const = 0;
 			virtual void modified(Artifact&, BuildContext&) const = 0;
 			virtual void remove(Artifact&) const = 0;
+			virtual void require(Artifact&, BuildContext&) const = 0;
+			virtual void perform(Transform&, BuildContext&) const = 0;
 
 		};
 
@@ -45,6 +48,11 @@ namespace build {
 			virtual void virtualClock(Artifact&, util::Appender<time_t>&) const;
 			virtual void modified(Artifact&, BuildContext&) const;
 			virtual void remove(Artifact&) const;
+			virtual void require(Artifact&, BuildContext&) const;
+			virtual void perform(Transform&, BuildContext&) const;
+
+		  public:
+			static DefinitiveMood instance;
 
 		};
 
@@ -59,13 +67,34 @@ namespace build {
 			virtual void virtualClock(Artifact&, util::Appender<time_t>&) const;
 			virtual void modified(Artifact&, BuildContext&) const;
 			virtual void remove(Artifact&) const;
+			virtual void require(Artifact&, BuildContext&) const;
+			virtual void perform(Transform&, BuildContext&) const;
+
+		  public:
+			static PredictiveMood instance;
 
 		};
+
+	  private:
+		Transform* generatingTransform;
+
+	  private:
+		void require(const Mood&, BuildContext&);
+		void rebuild(const Mood&, BuildContext&);
 
 	  public:
 		Artifact();
 		Artifact(const Artifact&);
 		virtual ~Artifact();
+
+		inline Transform* getGeneratingTransform() const {
+			return generatingTransform;
+		}
+
+		void setGeneratingTransform(Transform*);
+
+		void require(BuildContext&);
+		void wouldRequire(BuildContext&);
 
 		virtual bool wouldBePresent() = 0;
 		virtual void getPredictedModificationTimestamp(util::Appender<time_t>&) = 0;
