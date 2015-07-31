@@ -18,6 +18,7 @@ namespace build {
 		virtual ~Goal();
 
 		virtual void attain(BuildContext&) = 0;
+		virtual void wouldAttain(BuildContext&) = 0;
 
 	};
 
