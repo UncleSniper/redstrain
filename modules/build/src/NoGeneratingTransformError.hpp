@@ -11,7 +11,7 @@ namespace build {
 	class REDSTRAIN_BUILD_API NoGeneratingTransformError : public BuildError {
 
 	  private:
-		Artifact* artifact;
+		Artifact *const artifact;
 
 	  public:
 		NoGeneratingTransformError(Artifact&);
