@@ -3,6 +3,7 @@
 
 #include "Artifact.hpp"
 #include "Transform.hpp"
+#include "NoGeneratingTransformError.hpp"
 
 using redengine::util::Appender;
 using redengine::util::MinimumAppender;
@@ -117,7 +118,7 @@ namespace build {
 	void Artifact::require(const Mood& mood, BuildContext& context) {
 		if(!mood.present(*this)) {
 			if(!generatingTransform)
-				; //TODO: throw
+				throw NoGeneratingTransformError(*this);
 			rebuild(mood, context);
 			return;
 		}
