@@ -88,6 +88,10 @@ namespace util {
 			return list.end();
 		}
 
+		size_t size() const {
+			return static_cast<size_t>(map.size());
+		}
+
 	};
 
 }}
