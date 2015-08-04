@@ -6,11 +6,14 @@
 namespace redengine {
 namespace build {
 
+	class ArtifactStage;
+
 	class REDSTRAIN_BUILD_API AbstractArtifact : public Artifact {
 
 	  private:
 		bool predictedPresent;
 		time_t predictedTimestamp, predictedVirtualClock, virtualClock;
+		ArtifactStage* stage;
 
 	  protected:
 		void setPredictedModificationTimestamp(time_t);
@@ -18,6 +21,14 @@ namespace build {
 	  public:
 		AbstractArtifact();
 		AbstractArtifact(const AbstractArtifact&);
+		virtual ~AbstractArtifact();
+
+		inline ArtifactStage* getStage() const {
+			return stage;
+		}
+
+		void setStage(ArtifactStage*);
+		ArtifactStage& getEffectiveArtifactStage() const;
 
 		virtual bool wouldBePresent();
 		virtual void getPredictedModificationTimestamp(util::Appender<time_t>&);

@@ -183,6 +183,11 @@ namespace platform {
 		static void removeRecursively(const std::string&);
 		static void traverse(const std::string&, TraversalSink&);
 		static void mkdirRecursive(const std::string&);
+		static std::string getSystemTempDirectory();
+		static bool mkdirExclusive(const std::string&, int, bool);
+		static bool creatExclusive(const std::string&, int, bool);
+		static std::string makeTempDirectory(const std::string& = "", int = 0700);
+		static std::string makeTempFile(const std::string& = "", int = 0600);
 
 	};
 

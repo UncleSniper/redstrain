@@ -1,5 +1,7 @@
+#include <cstdlib>
 #include <redstrain/util/DeleteArray.hpp>
 #include <redstrain/util/IntegerBits.hpp>
+#include <redstrain/util/random.hpp>
 
 #include "Thread.hpp"
 #include "Pathname.hpp"
@@ -25,6 +27,8 @@ using std::string;
 using redengine::util::Appender;
 using redengine::util::DeleteArray;
 using redengine::util::IntegerBits;
+using redengine::util::SubscriptRandomChooser;
+using redengine::util::randomChosen;
 
 namespace redengine {
 namespace platform {
@@ -60,6 +64,10 @@ namespace platform {
 	// ======== Filesystem ========
 
 #if REDSTRAIN_PLATFORM_OS == REDSTRAIN_PLATFORM_OS_UNIX
+
+	/********
+	 * UNIX *
+	 ********/
 
 	static void bail() {
 		switch(errno) {
@@ -601,7 +609,39 @@ namespace platform {
 		return getgid();
 	}
 
+	string Filesystem::getSystemTempDirectory() {
+		const char* dir = getenv("TMPDIR");
+		if(dir)
+			return dir;
+		dir = getenv("TMP");
+		return dir ? dir : "/tmp";
+	}
+
+	bool Filesystem::mkdirExclusive(const string& path, int permissions, bool throwIfExists) {
+		if(!::mkdir(path.c_str(), static_cast<mode_t>(permissions & 0777)))
+			return true;
+		if(throwIfExists || errno != EEXIST)
+			bail();
+		return false;
+	}
+
+	bool Filesystem::creatExclusive(const string& path, int permissions, bool throwIfExists) {
+		int fd = open(path.c_str(), O_RDONLY | O_CREAT | O_EXCL, static_cast<mode_t>(permissions & 0777));
+		if(fd != -1) {
+			if(close(fd))
+				bail();
+			return true;
+		}
+		if(throwIfExists || errno != EEXIST)
+			bail();
+		return false;
+	}
+
 #elif REDSTRAIN_PLATFORM_OS == REDSTRAIN_PLATFORM_OS_WINDOWS
+
+	/***********
+	 * Windows *
+	 ***********/
 
 	static void bail() {
 		DWORD error = GetLastError();
@@ -1101,9 +1141,28 @@ namespace platform {
 		return "";
 	}
 
+	string Filesystem::getSystemTempDirectory() {
+		//TODO
+		return "";
+	}
+
+	bool Filesystem::mkdirExclusive(const string&, int, bool) {
+		//TODO
+		return false;
+	}
+
+	bool Filesystem::creatExclusive(const string&, int, bool) {
+		//TODO
+		return false;
+	}
+
 #else /* OS not implemented */
 #error Platform not supported
 #endif /* OS-specific implementations */
+
+	/**********
+	 * Common *
+	 **********/
 
 	struct RecursiveRemover : public Appender<string> {
 
@@ -1171,6 +1230,42 @@ namespace platform {
 
 	void Filesystem::mkdirRecursive(const string& directory) {
 		mkdirrec(Pathname::tidy(Pathname::join(Pathname::getWorkingDirectory(), directory)));
+	}
+
+	static const char tempPatternChars[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+
+	static string makeTempEntry(const string& pathTemplate, int permissions,
+			bool (*tryCreate)(const string&, int, bool)) {
+		string::size_type pos = pathTemplate.find('%');
+		if(pos == string::npos && !pathTemplate.empty()) {
+			tryCreate(pathTemplate, permissions, true);
+			return pathTemplate;
+		}
+		string dir(Filesystem::getSystemTempDirectory());
+		char junk[8];
+		SubscriptRandomChooser<const char *const, char, unsigned char> chooser(tempPatternChars);
+		for(;;) {
+			randomChosen(junk, junk + sizeof(junk), chooser, static_cast<unsigned char>(62u));
+			string path;
+			if(pathTemplate.empty())
+				path.assign(junk, static_cast<string::size_type>(sizeof(junk)));
+			else {
+				path = pathTemplate.substr(static_cast<string::size_type>(0u), pos);
+				path.append(junk, static_cast<string::size_type>(sizeof(junk)));
+				path += pathTemplate.substr(pos + static_cast<string::size_type>(1u));
+			}
+			path = Pathname::join(dir, path);
+			if(tryCreate(path, permissions, false))
+				return path;
+		}
+	}
+
+	string Filesystem::makeTempDirectory(const string& pathTemplate, int permissions) {
+		return makeTempEntry(pathTemplate, permissions, Filesystem::mkdirExclusive);
+	}
+
+	string Filesystem::makeTempFile(const string& pathTemplate, int permissions) {
+		return makeTempEntry(pathTemplate, permissions, Filesystem::creatExclusive);
 	}
 
 }}

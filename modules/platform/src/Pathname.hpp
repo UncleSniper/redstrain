@@ -36,7 +36,9 @@ namespace platform {
 		static std::string canonicalizeSeparators(const std::string&);
 		static std::string normalizeSeparators(const std::string&);
 		static bool startsWith(const std::string&, const std::string&);
+		static bool endsWith(const std::string&, const std::string&);
 		static std::string stripPrefix(const std::string&, const std::string&);
+		static std::string stripSuffix(const std::string&, const std::string&);
 
 	};
 

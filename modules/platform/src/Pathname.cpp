@@ -266,6 +266,16 @@ namespace platform {
 		return StringUtils::startsWith(haystack, n) && haystack.length() > n.length();
 	}
 
+	bool Pathname::endsWith(const string& haystack, const string& needle) {
+		if(haystack == needle)
+			return true;
+		string n;
+		if(!StringUtils::startsWith(needle, Pathname::SEPARATOR))
+			n += Pathname::SEPARATOR;
+		n += needle;
+		return StringUtils::endsWith(haystack, n) && haystack.length() > n.length();
+	}
+
 	string Pathname::stripPrefix(const string& haystack, const string& needle) {
 		string n(needle);
 		if(!StringUtils::endsWith(n, Pathname::SEPARATOR))
@@ -273,6 +283,23 @@ namespace platform {
 		string::size_type nlen = n.length();
 		if(StringUtils::startsWith(haystack, n) && haystack.length() > nlen)
 			return haystack.substr(nlen);
+		return haystack;
+	}
+
+	string Pathname::stripSuffix(const string& haystack, const string& needle) {
+		if(haystack == needle) {
+			if(!Pathname::isAbsolute(haystack))
+				return Pathname::THIS_DIRECTORY;
+			if(Pathname::isRooted(haystack))
+				return Pathname::rootOf(haystack) + Pathname::SEPARATOR;
+			return Pathname::SEPARATOR;
+		}
+		string n;
+		if(!StringUtils::startsWith(needle, Pathname::SEPARATOR))
+			n += Pathname::SEPARATOR;
+		n += needle;
+		if(StringUtils::endsWith(haystack, n) && haystack.length() > n.length())
+			return haystack.substr(static_cast<string::size_type>(0u), haystack.length() - n.length());
 		return haystack;
 	}
 
