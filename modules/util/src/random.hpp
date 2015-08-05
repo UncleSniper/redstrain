@@ -6,11 +6,43 @@
 #include "api.hpp"
 #include "IntegerLog.hpp"
 #include "IntegerBits.hpp"
+#include "TypeCombinators.hpp"
 
 namespace redengine {
 namespace util {
 
 	REDSTRAIN_UTIL_API void ensureRandomSeeded();
+
+	template<typename IntegerT>
+	class RandomIntegerShift {
+
+	  private:
+		template<int, bool>
+		struct ShiftImpl {
+			static inline IntegerT shift(IntegerT current) {
+				return current * (static_cast<IntegerT>(RAND_MAX) + static_cast<IntegerT>(1));
+			}
+		};
+
+		template<int Dummy>
+		struct ShiftImpl<Dummy, true> {
+			static inline IntegerT shift(IntegerT current) {
+				return current;
+			}
+		};
+
+		typedef typename OfTwoIntegerTypes<IntegerT, long>::WithHigherUpperBound WithHigherUpperBound;
+
+	  public:
+		static inline IntegerT shift(IntegerT current) {
+			return ShiftImpl<
+				0,
+				static_cast<WithHigherUpperBound>(RAND_MAX)
+						== static_cast<WithHigherUpperBound>(IntegerBounds<IntegerT>::MAX)
+			>::shift(current);
+		}
+
+	};
 
 	template<typename IntegerT>
 	IntegerT randomInt() {
@@ -19,7 +51,7 @@ namespace util {
 		IntegerT result = static_cast<IntegerT>(0u);
 		unsigned haveBits;
 		for(haveBits = 0u; haveBits < static_cast<unsigned>(sizeof(IntegerT)) * 8u; haveBits += randomBits)
-			result = static_cast<IntegerT>(result * static_cast<IntegerT>(RAND_MAX + 1l)
+			result = static_cast<IntegerT>(RandomIntegerShift<IntegerT>::shift(result)
 					+ static_cast<IntegerT>(random()));
 		return result;
 	}
