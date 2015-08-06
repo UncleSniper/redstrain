@@ -60,7 +60,9 @@ namespace build {
 	}
 
 	void AbstractArtifact::wouldModify(BuildContext& context) {
-		virtualClock = context.tickVirtualTime();
+		predictedTimestamp = time(NULL);
+		predictedVirtualClock = context.tickVirtualTime();
+		predictedPresent = true;
 	}
 
 	void AbstractArtifact::wouldRemove() {
@@ -72,8 +74,8 @@ namespace build {
 		sink.doneAppending();
 	}
 
-	void AbstractArtifact::notifyModified(BuildContext&) {
-		//TODO
+	void AbstractArtifact::notifyModified(BuildContext& context) {
+		virtualClock = context.tickVirtualTime();
 	}
 
 }}

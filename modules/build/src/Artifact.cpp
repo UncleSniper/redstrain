@@ -116,6 +116,12 @@ namespace build {
 	}
 
 	void Artifact::require(const Mood& mood, BuildContext& context) {
+		Transform::PrerequisiteIterator pqbegin, pqend;
+		if(generatingTransform) {
+			generatingTransform->getPrerequisites(pqbegin, pqend);
+			for(; pqbegin != pqend; ++pqbegin)
+				mood.require(**pqbegin, context);
+		}
 		if(!mood.present(*this)) {
 			if(!generatingTransform)
 				throw NoGeneratingTransformError(*this);
@@ -125,10 +131,8 @@ namespace build {
 		if(!generatingTransform)
 			return;
 		MaximumAppender<time_t> newestSource, virtualNewestSource;
-		Transform::PrerequisiteIterator pqbegin, pqend;
 		generatingTransform->getPrerequisites(pqbegin, pqend);
 		for(; pqbegin != pqend; ++pqbegin) {
-			mood.require(**pqbegin, context);
 			mood.modificationTimestamp(**pqbegin, newestSource);
 			mood.virtualClock(**pqbegin, virtualNewestSource);
 		}

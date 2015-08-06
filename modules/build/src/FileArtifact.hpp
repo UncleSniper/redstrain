@@ -15,6 +15,10 @@ namespace build {
 		FileArtifact(const std::string&, const std::string&);
 		FileArtifact(const FileArtifact&);
 
+		inline const std::string& getPath() const {
+			return path;
+		}
+
 		virtual bool isPresent();
 		virtual void getModificationTimestamp(util::Appender<time_t>&);
 		virtual void remove();

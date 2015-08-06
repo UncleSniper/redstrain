@@ -51,11 +51,14 @@ namespace build {
 	}
 
 	void FileArtifact::getFileReference(const string& suffix, Appender<string>& sink) {
-		if(Pathname::endsWith(Pathname::tidy(path), Pathname::tidy(suffix)))
+		if(suffix.empty())
+			sink.append(path);
+		else if(Pathname::endsWith(Pathname::tidy(path), Pathname::tidy(suffix)))
 			sink.append(Pathname::stripSuffix(path, suffix));
 		else {
 			ArtifactStage& stage = getEffectiveArtifactStage();
-			stage.stage(*this, suffix);
+			if(Filesystem::access(path, Filesystem::FILE_EXISTS))
+				stage.stage(*this, suffix);
 			sink.append(stage.getDirectory());
 		}
 	}
