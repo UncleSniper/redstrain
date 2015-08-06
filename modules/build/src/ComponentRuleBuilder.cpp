@@ -107,8 +107,23 @@ namespace build {
 		language.getSupportedFlavors(perComponent.component.getType(), sink);
 	}
 
-	void SetupTraverser::processHeader(FileArtifact&, const Flavor&, Language&) {
-		//TODO
+	void SetupTraverser::processHeader(FileArtifact& header, const Flavor& headerFlavor, Language& language) {
+		perComponent.component.addPrivateHeader(language,
+				Pathname::stripPrefix(header.getPath(), sourceDirectory), header);
+		if(perComponent.component.getType() != Component::EXECUTABLE) {
+			const string& cbase = perComponent.component.getBaseDirectory();
+			string ctailHead, ctailTail;
+			perComponent.builder.getBuildDirectoryMapper().getHeaderExposeDirectory(perComponent.component,
+					language, ctailHead, ctailTail);
+			string exposeDirectory(Pathname::join(cbase, ctailHead));
+			string fullExposeDirectory(Pathname::join(exposeDirectory, ctailTail));
+			Flavor targetFlavor(Flavor::GENERIC);
+			Unref<FileArtifact> target(language.getHeaderExposeTransform(perComponent.context, sourceDirectory,
+					header, headerFlavor, fullExposeDirectory, perComponent.component,
+					perComponent.builder.getBuildArtifactMapper(), targetFlavor));
+			perComponent.component.addExposedHeader(language,
+					Pathname::stripPrefix(target->getPath(), exposeDirectory), **target);
+		}
 	}
 
 	void FlavorAppender::append(const Flavor& transformFlavor) {
