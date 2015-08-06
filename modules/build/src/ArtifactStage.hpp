@@ -34,7 +34,7 @@ namespace build {
 
 		void setLabel(const std::string&);
 
-		void stage(Artifact&, const std::string&);
+		void stage(Artifact&, const std::string&, bool);
 
 	};
 

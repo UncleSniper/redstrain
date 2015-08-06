@@ -49,7 +49,7 @@ namespace build {
 
 		virtual io::InputStream<char>* getInputStream();
 		virtual io::OutputStream<char>* getOutputStream();
-		virtual void getFileReference(const std::string&, util::Appender<std::string>&);
+		virtual void getFileReference(const std::string&, util::Appender<std::string>&, ReferenceDirection);
 
 		virtual bool isTransformable();
 		virtual std::string getName();

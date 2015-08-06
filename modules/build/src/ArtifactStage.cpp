@@ -35,16 +35,18 @@ namespace build {
 		this->label = label;
 	}
 
-	void ArtifactStage::stage(Artifact& artifact, const string& suffix) {
+	void ArtifactStage::stage(Artifact& artifact, const string& suffix, bool withContents) {
 		string fullPath(Pathname::join(directory, suffix));
 		Filesystem::mkdirRecursive(Pathname::dirname(fullPath, Pathname::LOGICAL));
-		Delete<InputStream<char> > in(artifact.getInputStream());
-		StreamCloser inCloser(*in);
-		FileOutputStream out(fullPath);
-		StreamCloser outCloser(out);
-		in->copyTo(out);
-		inCloser.close();
-		outCloser.close();
+		if(withContents) {
+			Delete<InputStream<char> > in(artifact.getInputStream());
+			StreamCloser inCloser(*in);
+			FileOutputStream out(fullPath);
+			StreamCloser outCloser(out);
+			in->copyTo(out);
+			inCloser.close();
+			outCloser.close();
+		}
 	}
 
 }}

@@ -50,15 +50,25 @@ namespace build {
 		return new FileOutputStream(path);
 	}
 
-	void FileArtifact::getFileReference(const string& suffix, Appender<string>& sink) {
-		if(suffix.empty())
+	void FileArtifact::getFileReference(const string& suffix, Appender<string>& sink, ReferenceDirection direction) {
+		if(suffix.empty()) {
+			if(direction == FOR_OUTPUT)
+				Filesystem::mkdirRecursive(Pathname::dirname(path, Pathname::LOGICAL));
 			sink.append(path);
-		else if(Pathname::endsWith(Pathname::tidy(path), Pathname::tidy(suffix)))
+		}
+		else if(Pathname::endsWith(Pathname::tidy(path), Pathname::tidy(suffix))) {
+			if(direction == FOR_OUTPUT)
+				Filesystem::mkdirRecursive(Pathname::dirname(path, Pathname::LOGICAL));
 			sink.append(Pathname::stripSuffix(path, suffix));
+		}
 		else {
 			ArtifactStage& stage = getEffectiveArtifactStage();
-			if(Filesystem::access(path, Filesystem::FILE_EXISTS))
-				stage.stage(*this, suffix);
+			if(direction == FOR_INPUT) {
+				if(Filesystem::access(path, Filesystem::FILE_EXISTS))
+					stage.stage(*this, suffix, true);
+			}
+			else
+				stage.stage(*this, suffix, false);
 			sink.append(stage.getDirectory());
 		}
 	}

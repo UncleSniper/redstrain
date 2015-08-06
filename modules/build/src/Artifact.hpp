@@ -75,6 +75,11 @@ namespace build {
 
 		};
 
+		enum REDSTRAIN_BUILD_API ReferenceDirection {
+			FOR_INPUT,
+			FOR_OUTPUT
+		};
+
 	  private:
 		Transform* generatingTransform;
 
@@ -110,7 +115,7 @@ namespace build {
 
 		virtual io::InputStream<char>* getInputStream() = 0;
 		virtual io::OutputStream<char>* getOutputStream() = 0;
-		virtual void getFileReference(const std::string&, util::Appender<std::string>&) = 0;
+		virtual void getFileReference(const std::string&, util::Appender<std::string>&, ReferenceDirection) = 0;
 
 		virtual bool isTransformable() = 0;
 		virtual std::string getName() = 0;
