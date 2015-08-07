@@ -64,7 +64,7 @@ namespace build {
 		virtual bool isOneToOne(const Flavor&) = 0;
 		virtual FileArtifact* getSourceTransform(BuildContext&, const std::string&, FileArtifact&,
 				const Flavor&, const std::string&, const Flavor&, Component&, BuildArtifactMapper&,
-				ManyToOneTransform<FileArtifact>*&, Flavor&) = 0;
+				ManyToOneTransform<FileArtifact>*&, Flavor&, bool&) = 0;
 		virtual FileArtifact* getHeaderExposeTransform(BuildContext&, const std::string&, FileArtifact&,
 				const Flavor&, const std::string&, Component&, BuildArtifactMapper&, Flavor&) = 0;
 		virtual void getReferencedHeaders(const std::string&, util::Appender<ReferencedHeader>&);

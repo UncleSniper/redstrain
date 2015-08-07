@@ -15,7 +15,8 @@ namespace build {
 	Component::Component(const Component& component)
 			: ReferenceCounted(component), type(component.type), name(component.name),
 			baseDirectory(component.baseDirectory), sourceDirectories(component.sourceDirectories),
-			privateHeaders(component.privateHeaders), exposedHeaders(component.exposedHeaders) {
+			privateHeaders(component.privateHeaders), exposedHeaders(component.exposedHeaders),
+			finalArtifacts(component.finalArtifacts) {
 		ComponentIterator depbegin(dependencies.begin()), depend(dependencies.end());
 		for(; depbegin != depend; ++depbegin)
 			(*depbegin)->ref();
@@ -35,6 +36,12 @@ namespace build {
 			for(; h1begin != h1end; ++h1begin)
 				h1begin->second->ref();
 		}
+		ArtifactIterator fabegin(finalArtifacts.begin()), faend(finalArtifacts.end());
+		for(; fabegin != faend; ++fabegin)
+			(*fabegin)->ref();
+		ConstUnexposedHeaderIterator uebegin(unexposedHeaders.begin()), ueend(unexposedHeaders.end());
+		for(; uebegin != ueend; ++uebegin)
+			uebegin->second->ref();
 	}
 
 	Component::~Component() {
@@ -57,6 +64,12 @@ namespace build {
 			for(; h1begin != h1end; ++h1begin)
 				h1begin->second->unref();
 		}
+		ArtifactIterator fabegin(finalArtifacts.begin()), faend(finalArtifacts.end());
+		for(; fabegin != faend; ++fabegin)
+			(*fabegin)->unref();
+		ConstUnexposedHeaderIterator uebegin(unexposedHeaders.begin()), ueend(unexposedHeaders.end());
+		for(; uebegin != ueend; ++uebegin)
+			uebegin->second->unref();
 	}
 
 	bool Component::addSourceDirectory(const string& directory) {
@@ -280,6 +293,68 @@ namespace build {
 			return NULL;
 		map<string, FileArtifact*>::const_iterator it1 = it0->second.find(path);
 		return it1 == it0->second.end() ? NULL : it1->second;
+	}
+
+	bool Component::addFinalArtifact(Artifact& artifact) {
+		if(!finalArtifacts.append(&artifact))
+			return false;
+		artifact.ref();
+		return true;
+	}
+
+	bool Component::removeFinalArtifact(Artifact& artifact) {
+		if(!finalArtifacts.erase(&artifact))
+			return false;
+		artifact.unref();
+		return true;
+	}
+
+	void Component::clearFinalArtifacts() {
+		ArtifactIterator fabegin(finalArtifacts.begin()), faend(finalArtifacts.end());
+		for(; fabegin != faend; ++fabegin)
+			(*fabegin)->unref();
+		finalArtifacts.clear();
+	}
+
+	void Component::getFinalArtifacts(ArtifactIterator& begin, ArtifactIterator& end) const {
+		begin = finalArtifacts.begin();
+		end = finalArtifacts.end();
+	}
+
+	bool Component::addUnexposedHeader(const Artifact& exposed, FileArtifact& unexposed) {
+		UnexposedHeaderIterator it = unexposedHeaders.find(&exposed);
+		if(it == unexposedHeaders.end()) {
+			unexposedHeaders[&exposed] = &unexposed;
+			unexposed.ref();
+			return true;
+		}
+		if(it->second == &unexposed)
+			return false;
+		unexposed.ref();
+		it->second->unref();
+		it->second = &unexposed;
+		return true;
+	}
+
+	bool Component::removeUnexposedHeader(const Artifact& exposed) {
+		UnexposedHeaderIterator it = unexposedHeaders.find(&exposed);
+		if(it == unexposedHeaders.end())
+			return false;
+		it->second->unref();
+		unexposedHeaders.erase(it);
+		return true;
+	}
+
+	void Component::clearUnexposedHeaders() {
+		ConstUnexposedHeaderIterator uebegin(unexposedHeaders.begin()), ueend(unexposedHeaders.end());
+		for(; uebegin != ueend; ++uebegin)
+			uebegin->second->unref();
+		unexposedHeaders.clear();
+	}
+
+	FileArtifact* Component::getUnexposedHeader(const Artifact& exposed) const {
+		ConstUnexposedHeaderIterator it = unexposedHeaders.find(&exposed);
+		return it == unexposedHeaders.end() ? NULL : it->second;
 	}
 
 }}

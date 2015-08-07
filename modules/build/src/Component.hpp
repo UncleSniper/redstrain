@@ -13,6 +13,7 @@ namespace redengine {
 namespace build {
 
 	class Language;
+	class Artifact;
 	class FileArtifact;
 
 	class REDSTRAIN_BUILD_API Component : public util::ReferenceCounted {
@@ -30,11 +31,16 @@ namespace build {
 		typedef std::set<Language*> Languages;
 		typedef std::set<Component*> Components;
 		typedef std::map<const Language*, std::map<std::string, FileArtifact*> > Headers;
+		typedef util::UniqueList<Artifact*> Artifacts;
+		typedef std::map<const Artifact*, FileArtifact*> UnexposedHeaders;
+		typedef UnexposedHeaders::iterator UnexposedHeaderIterator;
+		typedef UnexposedHeaders::const_iterator ConstUnexposedHeaderIterator;
 
 	  public:
 		typedef Paths::Iterator PathIterator;
 		typedef Languages::const_iterator LanguageIterator;
 		typedef Components::const_iterator ComponentIterator;
+		typedef Artifacts::Iterator ArtifactIterator;
 
 	  private:
 		const Type type;
@@ -43,6 +49,8 @@ namespace build {
 		Languages languages;
 		Components dependencies;
 		Headers privateHeaders, exposedHeaders;
+		Artifacts finalArtifacts;
+		UnexposedHeaders unexposedHeaders;
 
 	  public:
 		Component(Type, const std::string&, const std::string&);
@@ -88,6 +96,16 @@ namespace build {
 		void clearExposedHeaders(const Language&);
 		void clearExposedHeaders();
 		FileArtifact* getExposedHeader(const Language&, const std::string&) const;
+
+		bool addFinalArtifact(Artifact&);
+		bool removeFinalArtifact(Artifact&);
+		void clearFinalArtifacts();
+		void getFinalArtifacts(ArtifactIterator&, ArtifactIterator&) const;
+
+		bool addUnexposedHeader(const Artifact&, FileArtifact&);
+		bool removeUnexposedHeader(const Artifact&);
+		void clearUnexposedHeaders();
+		FileArtifact* getUnexposedHeader(const Artifact&) const;
 
 	};
 

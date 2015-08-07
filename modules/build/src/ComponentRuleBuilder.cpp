@@ -9,6 +9,8 @@
 #include "BuildDirectoryMapper.hpp"
 
 using std::map;
+using std::set;
+using std::list;
 using std::string;
 using redengine::util::Unref;
 using redengine::util::Appender;
@@ -26,12 +28,27 @@ namespace build {
 			: RuleBuilder(builder), directoryMapper(builder.directoryMapper),
 			artifactMapper(builder.artifactMapper) {}
 
+	struct PendingHeaderScan {
+
+		Language& language;
+		Transform& transform;
+		FileArtifact& source;
+
+		PendingHeaderScan(Language& language, Transform& transform, FileArtifact& source)
+				: language(language), transform(transform), source(source) {}
+
+		PendingHeaderScan(const PendingHeaderScan& scan)
+				: language(scan.language), transform(scan.transform), source(scan.source) {}
+
+	};
+
 	struct PerComponentSetupInfo {
 
 		Component& component;
 		BuildContext& context;
 		ComponentRuleBuilder& builder;
 		map<const Language*, ManyToOneTransform<FileArtifact>*> singleTransforms;
+		list<PendingHeaderScan> pendingHeaderScans;
 
 		PerComponentSetupInfo(Component& component, BuildContext& context, ComponentRuleBuilder& builder)
 				: component(component), context(context), builder(builder) {}
@@ -41,6 +58,11 @@ namespace build {
 					stbegin(singleTransforms.begin()), stend(singleTransforms.end());
 			for(; stbegin != stend; ++stbegin)
 				stbegin->second->unref();
+			list<PendingHeaderScan>::iterator phsbegin(pendingHeaderScans.begin()), phsend(pendingHeaderScans.end());
+			for(; phsbegin != phsend; ++phsbegin) {
+				phsbegin->transform.unref();
+				phsbegin->source.unref();
+			}
 		}
 
 	};
@@ -102,6 +124,24 @@ namespace build {
 
 	};
 
+	struct ReferencedHeaderAppender : Appender<Language::ReferencedHeader> {
+
+		const string& source;
+		Component& component;
+		bool allowPrivate;
+		Language& language;
+		Transform& transform;
+		set<const FileArtifact*>& scanned;
+
+		ReferencedHeaderAppender(const string& source, Component& component, bool allowPrivate,
+				Language& language, Transform& transform, set<const FileArtifact*>& scanned)
+				: source(source), component(component), allowPrivate(allowPrivate), language(language),
+				transform(transform), scanned(scanned) {}
+
+		virtual void append(const Language::ReferencedHeader&);
+
+	};
+
 	void SetupTraverser::processSource(FileArtifact& source, const Flavor& sourceFlavor, Language& language) {
 		FlavorAppender sink(perComponent, sourceDirectory, source, sourceFlavor, language);
 		language.getSupportedFlavors(perComponent.component.getType(), sink);
@@ -109,7 +149,7 @@ namespace build {
 
 	void SetupTraverser::processHeader(FileArtifact& header, const Flavor& headerFlavor, Language& language) {
 		perComponent.component.addPrivateHeader(language,
-				Pathname::stripPrefix(header.getPath(), sourceDirectory), header);
+				Pathname::tidy(Pathname::stripPrefix(header.getPath(), sourceDirectory)), header);
 		if(perComponent.component.getType() != Component::EXECUTABLE) {
 			const string& cbase = perComponent.component.getBaseDirectory();
 			string ctailHead, ctailTail;
@@ -121,8 +161,9 @@ namespace build {
 			Unref<FileArtifact> target(language.getHeaderExposeTransform(perComponent.context, sourceDirectory,
 					header, headerFlavor, fullExposeDirectory, perComponent.component,
 					perComponent.builder.getBuildArtifactMapper(), targetFlavor));
-			perComponent.component.addExposedHeader(language,
-					Pathname::stripPrefix(target->getPath(), exposeDirectory), **target);
+			if(*target)
+				perComponent.component.addExposedHeader(language,
+						Pathname::tidy(Pathname::stripPrefix(target->getPath(), exposeDirectory)), **target);
 		}
 	}
 
@@ -140,19 +181,35 @@ namespace build {
 			map<const Language*, ManyToOneTransform<FileArtifact>*>::const_iterator it
 					= perComponent.singleTransforms.find(&language);
 			if(it != perComponent.singleTransforms.end()) {
+				it->second->addPrerequisite(sourceArtifact);
 				it->second->addSource(sourceArtifact);
+				perComponent.pendingHeaderScans.push_back(PendingHeaderScan(language, *it->second, sourceArtifact));
+				it->second->ref();
+				sourceArtifact.ref();
 				return;
 			}
 		}
 		ManyToOneTransform<FileArtifact>* manyTransform = NULL;
 		Flavor targetFlavor(Flavor::GENERIC);
+		bool isFinal = false;
 		Unref<FileArtifact> target(language.getSourceTransform(perComponent.context, sourceDirectory,
 				sourceArtifact, sourceFlavor, fullBuildDirectory, transformFlavor, perComponent.component,
-				perComponent.builder.getBuildArtifactMapper(), manyTransform, targetFlavor));
+				perComponent.builder.getBuildArtifactMapper(), manyTransform, targetFlavor, isFinal));
+		if(!*target)
+			return;
 		if(!is121 && manyTransform) {
 			perComponent.singleTransforms[&language] = manyTransform;
 			manyTransform->ref();
 		}
+		Transform* generatingTransform = target->getGeneratingTransform();
+		if(generatingTransform) {
+			perComponent.pendingHeaderScans.push_back(PendingHeaderScan(language,
+					*generatingTransform, sourceArtifact));
+			generatingTransform->ref();
+			sourceArtifact.ref();
+		}
+		if(isFinal)
+			perComponent.component.addFinalArtifact(**target);
 		SetupTraverser followUp(perComponent, fullBuildDirectory);
 		Component::LanguageIterator lbegin, lend;
 		perComponent.component.getLanguages(lbegin, lend);
@@ -193,6 +250,56 @@ namespace build {
 			SetupTraverser handler(perComponent, srcdir);
 			if(Filesystem::access(srcdir, Filesystem::FILE_EXISTS))
 				Filesystem::traverse(srcdir, handler);
+		}
+		// scan sources for extra dependencies via headers
+		list<PendingHeaderScan>::iterator phsbegin(perComponent.pendingHeaderScans.begin()),
+				phsend(perComponent.pendingHeaderScans.end());
+		for(; phsbegin != phsend; ++phsbegin) {
+			PendingHeaderScan& scan = *phsbegin;
+			set<const FileArtifact*> scanned;
+			ReferencedHeaderAppender sink(scan.source.getLabel(), component, true,
+					scan.language, scan.transform, scanned);
+			scan.language.getReferencedHeaders(scan.source.getPath(), sink);
+		}
+	}
+
+	void ReferencedHeaderAppender::append(const Language::ReferencedHeader& header) {
+		if(header.isLocal() && allowPrivate) {
+			string lref(Pathname::tidy(Pathname::join(Pathname::dirname(source, Pathname::LOGICAL),
+					header.getPath())));
+			if(!Pathname::startsWith(lref, Pathname::PARENT_DIRECTORY)) {
+				FileArtifact* pheader = component.getPrivateHeader(language, lref);
+				if(pheader) {
+					transform.addPrerequisite(*pheader);
+					if(scanned.find(pheader) == scanned.end()) {
+						scanned.insert(pheader);
+						ReferencedHeaderAppender sink(pheader->getLabel(), component, true,
+								language, transform, scanned);
+						language.getReferencedHeaders(pheader->getPath(), sink);
+					}
+					return;
+				}
+			}
+		}
+		string gref(Pathname::tidy(header.getPath()));
+		list<Component*> dependencies;
+		component.getTransitiveDependencies(dependencies);
+		list<Component*>::const_iterator depbegin(dependencies.begin()), depend(dependencies.end());
+		for(; depbegin != depend; ++depbegin) {
+			FileArtifact* eheader = (*depbegin)->getExposedHeader(language, gref);
+			if(eheader) {
+				transform.addPrerequisite(*eheader);
+				FileArtifact* ueheader = (*depbegin)->getUnexposedHeader(*eheader);
+				if(!ueheader)
+					ueheader = eheader;
+				if(scanned.find(ueheader) == scanned.end()) {
+					scanned.insert(ueheader);
+					ReferencedHeaderAppender sink(ueheader->getLabel(), **depbegin, false,
+							language, transform, scanned);
+					language.getReferencedHeaders(ueheader->getPath(), sink);
+				}
+				return;
+			}
 		}
 	}
 
