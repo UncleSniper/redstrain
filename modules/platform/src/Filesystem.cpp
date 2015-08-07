@@ -1,6 +1,7 @@
 #include <cstdlib>
 #include <redstrain/util/DeleteArray.hpp>
 #include <redstrain/util/IntegerBits.hpp>
+#include <redstrain/util/SortingAppender.hpp>
 #include <redstrain/util/random.hpp>
 
 #include "Thread.hpp"
@@ -27,6 +28,7 @@ using std::string;
 using redengine::util::Appender;
 using redengine::util::DeleteArray;
 using redengine::util::IntegerBits;
+using redengine::util::SortingAppender;
 using redengine::util::SubscriptRandomChooser;
 using redengine::util::randomChosen;
 
@@ -1211,7 +1213,8 @@ namespace platform {
 		if(info.getType() == Stat::DIRECTORY) {
 			if(sink.enterDirectory(baseDirectory)) {
 				RecursiveTraverser handler(baseDirectory, sink);
-				readdir(baseDirectory, handler);
+				SortingAppender<string> sort(handler);
+				readdir(baseDirectory, sort);
 				sink.leaveDirectory(baseDirectory, true);
 			}
 			else
