@@ -47,9 +47,10 @@ namespace build {
 		virtual void notifyModified(BuildContext&);
 		virtual void remove();
 
-		virtual io::InputStream<char>* getInputStream();
-		virtual io::OutputStream<char>* getOutputStream();
-		virtual void getFileReference(const std::string&, util::Appender<std::string>&, ReferenceDirection);
+		virtual io::InputStream<char>* getInputStream(BuildContext&);
+		virtual io::OutputStream<char>* getOutputStream(BuildContext&);
+		virtual void getFileReference(const std::string&, util::Appender<std::string>&, ReferenceDirection,
+				BuildContext&);
 
 		virtual bool isTransformable();
 		virtual std::string getName();

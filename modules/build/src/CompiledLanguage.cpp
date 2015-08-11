@@ -65,6 +65,7 @@ namespace build {
 				getCompilerConfiguration(transformFlavor, component), sourceArtifact));
 		transform->addPrerequisite(sourceArtifact);
 		targetArtifact.setGeneratingTransform(*transform);
+		targetArtifact.addIntermediateDirectories(context, component.getBaseDirectory());
 		manyTransform = NULL;
 		targetFlavor = transformFlavor;
 		isFinal = false;
@@ -73,7 +74,7 @@ namespace build {
 	}
 
 	FileArtifact* CompiledLanguage::getHeaderExposeTransform(BuildContext& context, const string& sourceDirectory,
-			FileArtifact& sourceArtifact, const Flavor&, const string& targetDirectory, Component&,
+			FileArtifact& sourceArtifact, const Flavor&, const string& targetDirectory, Component& component,
 			BuildArtifactMapper&, Flavor& targetFlavor) {
 		string sourceBasename(Pathname::stripPrefix(sourceArtifact.getPath(), sourceDirectory));
 		FileArtifact& targetArtifact = context.internFileArtifact(Pathname::tidy(Pathname::join(targetDirectory,
@@ -81,6 +82,7 @@ namespace build {
 		Unref<CopyTransform> transform(new CopyTransform(sourceArtifact));
 		transform->addPrerequisite(sourceArtifact);
 		targetArtifact.setGeneratingTransform(*transform);
+		targetArtifact.addIntermediateDirectories(context, component.getBaseDirectory());
 		targetFlavor = Flavor::HEADER;
 		targetArtifact.ref();
 		return &targetArtifact;

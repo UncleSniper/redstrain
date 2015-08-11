@@ -9,8 +9,8 @@
 namespace redengine {
 namespace build {
 
-	class BuildUI;
 	class Artifact;
+	class BuildContext;
 
 	class REDSTRAIN_BUILD_API ArtifactStage : public util::ReferenceCounted {
 
@@ -34,7 +34,7 @@ namespace build {
 
 		void setLabel(const std::string&);
 
-		void stage(Artifact&, const std::string&, bool);
+		void stage(Artifact&, const std::string&, bool, BuildContext&);
 
 	};
 

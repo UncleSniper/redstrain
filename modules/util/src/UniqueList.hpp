@@ -92,6 +92,10 @@ namespace util {
 			return static_cast<size_t>(map.size());
 		}
 
+		bool empty() const {
+			return list.empty();
+		}
+
 	};
 
 }}
