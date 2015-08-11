@@ -9,6 +9,48 @@ using std::string;
 namespace redengine {
 namespace build {
 
+	// ======== FlavoredArtifact ========
+
+	Component::FlavoredArtifact::FlavoredArtifact(Artifact& artifact, const Flavor& flavor)
+			: artifact(&artifact), flavor(flavor) {
+		artifact.ref();
+	}
+
+	Component::FlavoredArtifact::FlavoredArtifact(const FlavoredArtifact& other)
+			: artifact(other.artifact), flavor(other.flavor) {
+		artifact->ref();
+	}
+
+	Component::FlavoredArtifact::~FlavoredArtifact() {
+		artifact->unref();
+	}
+
+	Component::FlavoredArtifact& Component::FlavoredArtifact::operator=(const FlavoredArtifact& other) {
+		other.artifact->ref();
+		artifact->unref();
+		artifact = other.artifact;
+		flavor = other.flavor;
+		return *this;
+	}
+
+	bool Component::FlavoredArtifact::operator==(const FlavoredArtifact& other) const {
+		return artifact == other.artifact && flavor == other.flavor;
+	}
+
+	bool Component::FlavoredArtifact::operator!=(const FlavoredArtifact& other) const {
+		return artifact != other.artifact || flavor != other.flavor;
+	}
+
+	bool Component::FlavoredArtifact::operator<(const FlavoredArtifact& other) const {
+		if(artifact < other.artifact)
+			return true;
+		if(artifact > other.artifact)
+			return false;
+		return flavor < other.flavor;
+	}
+
+	// ======== Component ========
+
 	Component::Component(Type type, const string& name, const string& baseDirectory)
 			: type(type), name(name), baseDirectory(baseDirectory) {}
 
@@ -36,9 +78,6 @@ namespace build {
 			for(; h1begin != h1end; ++h1begin)
 				h1begin->second->ref();
 		}
-		ArtifactIterator fabegin(finalArtifacts.begin()), faend(finalArtifacts.end());
-		for(; fabegin != faend; ++fabegin)
-			(*fabegin)->ref();
 		ConstUnexposedHeaderIterator uebegin(unexposedHeaders.begin()), ueend(unexposedHeaders.end());
 		for(; uebegin != ueend; ++uebegin)
 			uebegin->second->ref();
@@ -64,9 +103,6 @@ namespace build {
 			for(; h1begin != h1end; ++h1begin)
 				h1begin->second->unref();
 		}
-		ArtifactIterator fabegin(finalArtifacts.begin()), faend(finalArtifacts.end());
-		for(; fabegin != faend; ++fabegin)
-			(*fabegin)->unref();
 		ConstUnexposedHeaderIterator uebegin(unexposedHeaders.begin()), ueend(unexposedHeaders.end());
 		for(; uebegin != ueend; ++uebegin)
 			uebegin->second->unref();
@@ -80,7 +116,7 @@ namespace build {
 		return sourceDirectories.append(directory);
 	}
 
-	bool Component::removeSourceDirecotry(const string& directory) {
+	bool Component::removeSourceDirectory(const string& directory) {
 		return sourceDirectories.erase(directory);
 	}
 
@@ -299,28 +335,19 @@ namespace build {
 		return it1 == it0->second.end() ? NULL : it1->second;
 	}
 
-	bool Component::addFinalArtifact(Artifact& artifact) {
-		if(!finalArtifacts.append(&artifact))
-			return false;
-		artifact.ref();
-		return true;
+	bool Component::addFinalArtifact(Artifact& artifact, const Flavor& flavor) {
+		return finalArtifacts.append(FlavoredArtifact(artifact, flavor));
 	}
 
-	bool Component::removeFinalArtifact(Artifact& artifact) {
-		if(!finalArtifacts.erase(&artifact))
-			return false;
-		artifact.unref();
-		return true;
+	bool Component::removeFinalArtifact(Artifact& artifact, const Flavor& flavor) {
+		return finalArtifacts.erase(FlavoredArtifact(artifact, flavor));
 	}
 
 	void Component::clearFinalArtifacts() {
-		ArtifactIterator fabegin(finalArtifacts.begin()), faend(finalArtifacts.end());
-		for(; fabegin != faend; ++fabegin)
-			(*fabegin)->unref();
 		finalArtifacts.clear();
 	}
 
-	void Component::getFinalArtifacts(ArtifactIterator& begin, ArtifactIterator& end) const {
+	void Component::getFinalArtifacts(FlavoredArtifactIterator& begin, FlavoredArtifactIterator& end) const {
 		begin = finalArtifacts.begin();
 		end = finalArtifacts.end();
 	}

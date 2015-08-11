@@ -1,5 +1,7 @@
 #include "MultiGoal.hpp"
 
+using redengine::io::DefaultConfiguredOutputStream;
+
 namespace redengine {
 namespace build {
 
@@ -53,6 +55,10 @@ namespace build {
 		GoalIterator begin(goals.begin()), end(goals.end());
 		for(; begin != end; ++begin)
 			(*begin)->wouldAttain(context);
+	}
+
+	void MultiGoal::dumpGoal(DefaultConfiguredOutputStream<char>::Stream&) const {
+		//TODO
 	}
 
 }}

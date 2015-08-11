@@ -23,6 +23,8 @@ namespace build {
 
 		Flavor& operator=(const Flavor&);
 		bool operator==(const Flavor&) const;
+		bool operator!=(const Flavor&) const;
+		bool operator<(const Flavor&) const;
 
 		static const Flavor SHIPPED;
 		static const Flavor CLEAN;

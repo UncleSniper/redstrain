@@ -7,7 +7,7 @@
 #include <redstrain/util/UniqueList.hpp>
 #include <redstrain/util/ReferenceCounted.hpp>
 
-#include "api.hpp"
+#include "Flavor.hpp"
 
 namespace redengine {
 namespace build {
@@ -26,12 +26,39 @@ namespace build {
 			BLOB
 		};
 
+		class REDSTRAIN_BUILD_API FlavoredArtifact {
+
+		  private:
+			Artifact* artifact;
+			Flavor flavor;
+
+		  public:
+			FlavoredArtifact(Artifact&, const Flavor&);
+			FlavoredArtifact(const FlavoredArtifact&);
+			~FlavoredArtifact();
+
+			inline Artifact& getArtifact() const {
+				return *artifact;
+			}
+
+			inline const Flavor& getFlavor() const {
+				return flavor;
+			}
+
+			FlavoredArtifact& operator=(const FlavoredArtifact&);
+
+			bool operator==(const FlavoredArtifact&) const;
+			bool operator!=(const FlavoredArtifact&) const;
+			bool operator<(const FlavoredArtifact&) const;
+
+		};
+
 	  private:
 		typedef util::UniqueList<std::string> Paths;
 		typedef std::set<Language*> Languages;
 		typedef std::set<Component*> Components;
 		typedef std::map<const Language*, std::map<std::string, FileArtifact*> > Headers;
-		typedef util::UniqueList<Artifact*> Artifacts;
+		typedef util::UniqueList<FlavoredArtifact> FlavoredArtifacts;
 		typedef std::map<const Artifact*, FileArtifact*> UnexposedHeaders;
 		typedef UnexposedHeaders::iterator UnexposedHeaderIterator;
 		typedef UnexposedHeaders::const_iterator ConstUnexposedHeaderIterator;
@@ -40,7 +67,7 @@ namespace build {
 		typedef Paths::Iterator PathIterator;
 		typedef Languages::const_iterator LanguageIterator;
 		typedef Components::const_iterator ComponentIterator;
-		typedef Artifacts::Iterator ArtifactIterator;
+		typedef FlavoredArtifacts::Iterator FlavoredArtifactIterator;
 
 	  private:
 		const Type type;
@@ -49,7 +76,7 @@ namespace build {
 		Languages languages;
 		Components dependencies;
 		Headers privateHeaders, exposedHeaders;
-		Artifacts finalArtifacts;
+		FlavoredArtifacts finalArtifacts;
 		UnexposedHeaders unexposedHeaders;
 
 	  public:
@@ -72,7 +99,7 @@ namespace build {
 		std::string getGoalName() const;
 
 		bool addSourceDirectory(const std::string&);
-		bool removeSourceDirecotry(const std::string&);
+		bool removeSourceDirectory(const std::string&);
 		void clearSourceDirectories();
 		void getSourceDirectories(PathIterator&, PathIterator&) const;
 
@@ -99,10 +126,10 @@ namespace build {
 		void clearExposedHeaders();
 		FileArtifact* getExposedHeader(const Language&, const std::string&) const;
 
-		bool addFinalArtifact(Artifact&);
-		bool removeFinalArtifact(Artifact&);
+		bool addFinalArtifact(Artifact&, const Flavor&);
+		bool removeFinalArtifact(Artifact&, const Flavor&);
 		void clearFinalArtifacts();
-		void getFinalArtifacts(ArtifactIterator&, ArtifactIterator&) const;
+		void getFinalArtifacts(FlavoredArtifactIterator&, FlavoredArtifactIterator&) const;
 
 		bool addUnexposedHeader(const Artifact&, FileArtifact&);
 		bool removeUnexposedHeader(const Artifact&);

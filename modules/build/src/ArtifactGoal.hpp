@@ -34,6 +34,8 @@ namespace build {
 		virtual void attain(BuildContext&);
 		virtual void wouldAttain(BuildContext&);
 
+		virtual void dumpGoal(io::DefaultConfiguredOutputStream<char>::Stream&) const;
+
 	};
 
 }}

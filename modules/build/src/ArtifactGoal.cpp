@@ -1,6 +1,8 @@
 #include "Artifact.hpp"
 #include "ArtifactGoal.hpp"
 
+using redengine::io::DefaultConfiguredOutputStream;
+
 namespace redengine {
 namespace build {
 
@@ -54,6 +56,10 @@ namespace build {
 		ArtifactIterator begin(artifacts.begin()), end(artifacts.end());
 		for(; begin != end; ++begin)
 			(*begin)->wouldRequire(context);
+	}
+
+	void ArtifactGoal::dumpGoal(DefaultConfiguredOutputStream<char>::Stream&) const {
+		//TODO
 	}
 
 }}

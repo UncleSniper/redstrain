@@ -4,7 +4,9 @@
 
 #include "Language.hpp"
 #include "Component.hpp"
+#include "MultiGoal.hpp"
 #include "BuildContext.hpp"
+#include "ArtifactGoal.hpp"
 #include "ComponentRuleBuilder.hpp"
 #include "BuildDirectoryMapper.hpp"
 
@@ -209,7 +211,7 @@ namespace build {
 			sourceArtifact.ref();
 		}
 		if(isFinal)
-			perComponent.component.addFinalArtifact(**target);
+			perComponent.component.addFinalArtifact(**target, targetFlavor);
 		SetupTraverser followUp(perComponent, fullBuildDirectory);
 		Component::LanguageIterator lbegin, lend;
 		perComponent.component.getLanguages(lbegin, lend);
@@ -261,6 +263,31 @@ namespace build {
 					scan.language, scan.transform, scanned);
 			scan.language.getReferencedHeaders(scan.source.getPath(), sink);
 		}
+		// add goals
+		Unref<MultiGoal> allGoal(new MultiGoal);
+		map<Flavor, ArtifactGoal*> flavorGoals;
+		Component::FlavoredArtifactIterator fabegin, faend;
+		component.getFinalArtifacts(fabegin, faend);
+		for(; fabegin != faend; ++fabegin) {
+			map<Flavor, ArtifactGoal*>::const_iterator it = flavorGoals.find(fabegin->getFlavor());
+			ArtifactGoal* fgoal;
+			if(it == flavorGoals.end()) {
+				Unref<ArtifactGoal> goal(new ArtifactGoal);
+				string name(component.getGoalName() + ':' + fabegin->getFlavor().getName());
+				if(context.addGoal(name, **goal)) {
+					fgoal = *goal;
+					flavorGoals[fabegin->getFlavor()] = fgoal;
+					allGoal->addGoal(*fgoal);
+				}
+				else
+					fgoal = dynamic_cast<ArtifactGoal*>(context.getGoal(name));
+			}
+			else
+				fgoal = it->second;
+			if(fgoal)
+				fgoal->addArtifact(fabegin->getArtifact());
+		}
+		context.addGoal(component.getGoalName(), **allGoal);
 	}
 
 	void ReferencedHeaderAppender::append(const Language::ReferencedHeader& header) {
