@@ -12,18 +12,20 @@ using redengine::io::DefaultConfiguredOutputStream;
 namespace redengine {
 namespace build {
 
-	BuildContext::BuildContext(BuildUI& ui) : ui(ui), virtualTime(static_cast<time_t>(0u)) {}
+	BuildContext::BuildContext(BuildUI& ui) : ui(ui), virtualTime(static_cast<time_t>(0u)), defaultGoal(NULL) {}
 
 	BuildContext::BuildContext(const BuildContext& context)
 			: ui(context.ui), virtualTime(context.virtualTime), goals(context.goals),
 			fileArtifacts(context.fileArtifacts), buildingComponents(context.buildingComponents),
-			builtComponents(context.builtComponents) {
+			builtComponents(context.builtComponents), defaultGoal(context.defaultGoal) {
 		ConstGoalIterator gbegin(goals.begin()), gend(goals.end());
 		for(; gbegin != gend; ++gbegin)
 			gbegin->second->ref();
 		FileArtifactIterator fabegin(fileArtifacts.begin()), faend(fileArtifacts.end());
 		for(; fabegin != faend; ++fabegin)
 			fabegin->second->ref();
+		if(defaultGoal)
+			defaultGoal->ref();
 	}
 
 	BuildContext::~BuildContext() {
@@ -33,6 +35,8 @@ namespace build {
 		FileArtifactIterator fabegin(fileArtifacts.begin()), faend(fileArtifacts.end());
 		for(; fabegin != faend; ++fabegin)
 			fabegin->second->unref();
+		if(defaultGoal)
+			defaultGoal->unref();
 	}
 
 	time_t BuildContext::tickVirtualTime() {
@@ -94,6 +98,14 @@ namespace build {
 
 	bool BuildContext::hasComponentBeenBuilt(const Component& component) const {
 		return builtComponents.find(&component) != builtComponents.end();
+	}
+
+	void BuildContext::setDefaultGoal(Goal* goal) {
+		if(goal)
+			goal->ref();
+		if(defaultGoal)
+			defaultGoal->unref();
+		defaultGoal = goal;
 	}
 
 	void BuildContext::dumpContext(DefaultConfiguredOutputStream<char>::Stream&) const {

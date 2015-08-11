@@ -36,6 +36,7 @@ namespace build {
 		Goals goals;
 		FileArtifacts fileArtifacts;
 		Components buildingComponents, builtComponents;
+		Goal* defaultGoal;
 
 	  private:
 		BuildContext(const BuildContext&);
@@ -69,6 +70,12 @@ namespace build {
 		void beginBuildingComponent(Component&);
 		void endBuildingComponent(const Component&);
 		bool hasComponentBeenBuilt(const Component&) const;
+
+		inline Goal* getDefaultGoal() const {
+			return defaultGoal;
+		}
+
+		void setDefaultGoal(Goal*);
 
 		void dumpContext(io::DefaultConfiguredOutputStream<char>::Stream&) const;
 
