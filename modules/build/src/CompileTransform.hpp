@@ -22,6 +22,26 @@ namespace build {
 		CompileTransform(Compiler&, Compilation::CompileMode, CompilerConfiguration&, FileArtifact&);
 		CompileTransform(const CompileTransform&);
 
+		inline Compiler& getCompiler() {
+			return compiler;
+		}
+
+		inline const Compiler& getCompiler() const {
+			return compiler;
+		}
+
+		inline Compilation::CompileMode getCompileMode() const {
+			return mode;
+		}
+
+		inline CompilerConfiguration& getCompilerConfiguration() {
+			return configuration;
+		}
+
+		inline const CompilerConfiguration& getCompilerConfiguration() const {
+			return configuration;
+		}
+
 		virtual void perform(BuildContext&, Artifact&);
 
 	};
