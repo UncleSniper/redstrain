@@ -5,6 +5,7 @@
 #include "Language.hpp"
 #include "Component.hpp"
 #include "MultiGoal.hpp"
+#include "RemoveGoal.hpp"
 #include "BuildContext.hpp"
 #include "ArtifactGoal.hpp"
 #include "ComponentRuleBuilder.hpp"
@@ -16,6 +17,7 @@ using std::list;
 using std::string;
 using redengine::util::Unref;
 using redengine::util::Appender;
+using redengine::util::UniqueList;
 using redengine::platform::Pathname;
 using redengine::platform::Filesystem;
 
@@ -51,6 +53,7 @@ namespace build {
 		ComponentRuleBuilder& builder;
 		map<const Language*, ManyToOneTransform<FileArtifact>*> singleTransforms;
 		list<PendingHeaderScan> pendingHeaderScans;
+		UniqueList<FileArtifact*> buildDirectories;
 
 		PerComponentSetupInfo(Component& component, BuildContext& context, ComponentRuleBuilder& builder)
 				: component(component), context(context), builder(builder) {}
@@ -65,6 +68,9 @@ namespace build {
 				phsbegin->transform.unref();
 				phsbegin->source.unref();
 			}
+			UniqueList<FileArtifact*>::Iterator bdbegin(buildDirectories.begin()), bdend(buildDirectories.end());
+			for(; bdbegin != bdend; ++bdbegin)
+				(*bdbegin)->unref();
 		}
 
 	};
@@ -176,9 +182,10 @@ namespace build {
 		string ctailHead, ctailTail;
 		perComponent.builder.getBuildDirectoryMapper().getBuildDirectory(perComponent.component, language,
 				transformFlavor, ctailHead, ctailTail);
-		string buildDirectory(Pathname::join(cbase, ctailHead));
+		string buildDirectory(Pathname::tidy(Pathname::join(cbase, ctailHead)));
 		string fullBuildDirectory(Pathname::join(buildDirectory, ctailTail));
 		bool is121 = language.isOneToOne(transformFlavor);
+		bool cleanArtifact = buildDirectory == Pathname::tidy(cbase);
 		if(!is121) {
 			map<const Language*, ManyToOneTransform<FileArtifact>*>::const_iterator it
 					= perComponent.singleTransforms.find(&language);
@@ -212,6 +219,16 @@ namespace build {
 		}
 		if(isFinal)
 			perComponent.component.addFinalArtifact(**target, targetFlavor);
+		if(cleanArtifact) {
+			if(perComponent.buildDirectories.append(*target))
+				target->ref();
+		}
+		else {
+			FileArtifact& bdir = perComponent.context.internFileArtifact(buildDirectory,
+					Pathname::stripPrefix(buildDirectory, Pathname::tidy(cbase)));
+			if(perComponent.buildDirectories.append(&bdir))
+				bdir.ref();
+		}
 		SetupTraverser followUp(perComponent, fullBuildDirectory);
 		Component::LanguageIterator lbegin, lend;
 		perComponent.component.getLanguages(lbegin, lend);
@@ -288,6 +305,13 @@ namespace build {
 				fgoal->addArtifact(fabegin->getArtifact());
 		}
 		context.addGoal(component.getGoalName(), **allGoal);
+		context.addGoal(component.getGoalName() + ":build", **allGoal);
+		Unref<RemoveGoal> cleanGoal(new RemoveGoal);
+		UniqueList<FileArtifact*>::Iterator bdbegin(perComponent.buildDirectories.begin()),
+				bdend(perComponent.buildDirectories.end());
+		for(; bdbegin != bdend; ++bdbegin)
+			cleanGoal->addArtifact(**bdbegin);
+		context.addGoal(component.getGoalName() + ":clean", **cleanGoal);
 	}
 
 	void ReferencedHeaderAppender::append(const Language::ReferencedHeader& header) {
