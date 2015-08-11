@@ -23,7 +23,6 @@ namespace build {
 		CompileTransform(const CompileTransform&);
 
 		virtual void perform(BuildContext&, Artifact&);
-		virtual void wouldPerform(BuildContext&, Artifact&);
 
 	};
 

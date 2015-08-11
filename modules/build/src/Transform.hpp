@@ -35,7 +35,7 @@ namespace build {
 		void getPrerequisites(PrerequisiteIterator&, PrerequisiteIterator&) const;
 
 		virtual void perform(BuildContext&, Artifact&) = 0;
-		virtual void wouldPerform(BuildContext&, Artifact&) = 0;
+		virtual void wouldPerform(BuildContext&, Artifact&);
 
 	};
 

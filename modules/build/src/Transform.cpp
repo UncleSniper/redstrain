@@ -45,4 +45,8 @@ namespace build {
 		end = prerequisites.end();
 	}
 
+	void Transform::wouldPerform(BuildContext& context, Artifact& target) {
+		target.wouldModify(context);
+	}
+
 }}

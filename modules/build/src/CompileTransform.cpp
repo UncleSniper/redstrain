@@ -15,8 +15,4 @@ namespace build {
 		//TODO
 	}
 
-	void CompileTransform::wouldPerform(BuildContext&, Artifact&) {
-		//TODO
-	}
-
 }}
