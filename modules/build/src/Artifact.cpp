@@ -52,8 +52,8 @@ namespace build {
 		artifact.require(context);
 	}
 
-	void Artifact::DefinitiveMood::perform(Transform& transform, BuildContext& context) const {
-		transform.perform(context);
+	void Artifact::DefinitiveMood::perform(Transform& transform, BuildContext& context, Artifact& target) const {
+		transform.perform(context, target);
 	}
 
 	// ======== PredictiveMood ========
@@ -88,8 +88,8 @@ namespace build {
 		artifact.wouldRequire(context);
 	}
 
-	void Artifact::PredictiveMood::perform(Transform& transform, BuildContext& context) const {
-		transform.wouldPerform(context);
+	void Artifact::PredictiveMood::perform(Transform& transform, BuildContext& context, Artifact& target) const {
+		transform.wouldPerform(context, target);
 	}
 
 	// ======== Artifact ========
@@ -155,7 +155,7 @@ namespace build {
 	}
 
 	void Artifact::rebuild(const Mood& mood, BuildContext& context) {
-		mood.perform(*generatingTransform, context);
+		mood.perform(*generatingTransform, context, *this);
 		mood.modified(*this, context);
 	}
 

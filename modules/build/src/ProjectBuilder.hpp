@@ -9,6 +9,7 @@ namespace build {
 	class Project;
 	class BuildUI;
 	class RuleBuilder;
+	class GoalBuilder;
 	class BuildContext;
 	class ProjectFactory;
 	class ComponentFinder;

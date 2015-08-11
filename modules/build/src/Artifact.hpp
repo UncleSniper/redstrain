@@ -33,7 +33,7 @@ namespace build {
 			virtual void modified(Artifact&, BuildContext&) const = 0;
 			virtual void remove(Artifact&) const = 0;
 			virtual void require(Artifact&, BuildContext&) const = 0;
-			virtual void perform(Transform&, BuildContext&) const = 0;
+			virtual void perform(Transform&, BuildContext&, Artifact&) const = 0;
 
 		};
 
@@ -49,7 +49,7 @@ namespace build {
 			virtual void modified(Artifact&, BuildContext&) const;
 			virtual void remove(Artifact&) const;
 			virtual void require(Artifact&, BuildContext&) const;
-			virtual void perform(Transform&, BuildContext&) const;
+			virtual void perform(Transform&, BuildContext&, Artifact&) const;
 
 		  public:
 			static DefinitiveMood instance;
@@ -68,7 +68,7 @@ namespace build {
 			virtual void modified(Artifact&, BuildContext&) const;
 			virtual void remove(Artifact&) const;
 			virtual void require(Artifact&, BuildContext&) const;
-			virtual void perform(Transform&, BuildContext&) const;
+			virtual void perform(Transform&, BuildContext&, Artifact&) const;
 
 		  public:
 			static PredictiveMood instance;
