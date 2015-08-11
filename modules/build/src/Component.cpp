@@ -72,6 +72,10 @@ namespace build {
 			uebegin->second->unref();
 	}
 
+	string Component::getGoalName() const {
+		return (type == EXECUTABLE ? "exe:" : "lib:") + name;
+	}
+
 	bool Component::addSourceDirectory(const string& directory) {
 		return sourceDirectories.append(directory);
 	}

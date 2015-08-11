@@ -69,6 +69,8 @@ namespace build {
 			return baseDirectory;
 		}
 
+		std::string getGoalName() const;
+
 		bool addSourceDirectory(const std::string&);
 		bool removeSourceDirecotry(const std::string&);
 		void clearSourceDirectories();
