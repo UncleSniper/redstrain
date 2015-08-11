@@ -4,6 +4,7 @@
 
 #include "Project.hpp"
 #include "RuleBuilder.hpp"
+#include "GoalBuilder.hpp"
 #include "BuildContext.hpp"
 #include "ProjectBuilder.hpp"
 #include "ProjectFactory.hpp"
@@ -20,13 +21,15 @@ namespace redengine {
 namespace build {
 
 	ProjectBuilder::ProjectBuilder(ProjectFactory& projectFactory, ComponentFinder& finder,
-			ComponentFactory& componentFactory, DependencyResolver& resolver, RuleBuilder& ruleBuilder)
-			: project(NULL), projectFactory(projectFactory), finder(finder), componentFactory(componentFactory),
-			resolver(resolver), ruleBuilder(ruleBuilder) {}
+			ComponentFactory& componentFactory, DependencyResolver& resolver, RuleBuilder& ruleBuilder,
+			GoalBuilder& goalBuilder) : project(NULL), projectFactory(projectFactory), finder(finder),
+			componentFactory(componentFactory), resolver(resolver), ruleBuilder(ruleBuilder),
+			goalBuilder(goalBuilder) {}
 
 	ProjectBuilder::ProjectBuilder(const ProjectBuilder& builder) : project(NULL),
 			projectFactory(builder.projectFactory), finder(builder.finder),
-			componentFactory(builder.componentFactory), resolver(builder.resolver), ruleBuilder(ruleBuilder) {}
+			componentFactory(builder.componentFactory), resolver(builder.resolver),
+			ruleBuilder(builder.ruleBuilder), goalBuilder(builder.goalBuilder) {}
 
 	ProjectBuilder::~ProjectBuilder() {
 		if(project)
@@ -75,6 +78,7 @@ namespace build {
 		project->getComponents(cnbegin, cnend);
 		for(; cnbegin != cnend; ++cnbegin)
 			ruleBuilder.setupRules(*project, *project->getComponent(*cnbegin), **context);
+		goalBuilder.setupGoals(*project, **context);
 		return context.set();
 	}
 

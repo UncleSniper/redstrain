@@ -24,9 +24,11 @@ namespace build {
 		ComponentFactory& componentFactory;
 		DependencyResolver& resolver;
 		RuleBuilder& ruleBuilder;
+		GoalBuilder& goalBuilder;
 
 	  public:
-		ProjectBuilder(ProjectFactory&, ComponentFinder&, ComponentFactory&, DependencyResolver&, RuleBuilder&);
+		ProjectBuilder(ProjectFactory&, ComponentFinder&, ComponentFactory&, DependencyResolver&, RuleBuilder&,
+				GoalBuilder&);
 		ProjectBuilder(const ProjectBuilder&);
 		~ProjectBuilder();
 
@@ -72,6 +74,14 @@ namespace build {
 
 		inline const RuleBuilder& getRuleBuilder() const {
 			return ruleBuilder;
+		}
+
+		inline GoalBuilder& getGoalBuilder() {
+			return goalBuilder;
+		}
+
+		inline const GoalBuilder& getGoalBuilder() const {
+			return goalBuilder;
 		}
 
 		void buildProject(const std::string&);
