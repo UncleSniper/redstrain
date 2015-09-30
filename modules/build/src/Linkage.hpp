@@ -49,6 +49,8 @@ namespace build {
 		virtual void addLibraryDirectory(const std::string&) = 0;
 		virtual void addLibrary(const std::string&) = 0;
 
+		static const char* getLinkModeName(LinkMode);
+
 	};
 
 }}

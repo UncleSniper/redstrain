@@ -23,4 +23,17 @@ namespace build {
 		end = sources.end();
 	}
 
+	const char* Linkage::getLinkModeName(LinkMode mode) {
+		switch(mode) {
+			#define clamp(c) case c: return #c;
+			clamp(STATIC_EXECUTABLE)
+			clamp(DYNAMIC_EXECUTABLE)
+			clamp(STATIC_LIBRARY)
+			clamp(DYNAMIC_LIBRARY)
+			#undef clamp
+			default:
+				return NULL;
+		}
+	}
+
 }}
