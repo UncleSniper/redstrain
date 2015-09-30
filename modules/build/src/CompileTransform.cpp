@@ -7,6 +7,12 @@
 using std::string;
 using redengine::util::Delete;
 using redengine::util::Appender;
+using redengine::io::DefaultConfiguredOutputStream;
+using redengine::io::endln;
+using redengine::io::shift;
+using redengine::io::indent;
+using redengine::io::unshift;
+using redengine::io::operator<<;
 
 namespace redengine {
 namespace build {
@@ -60,6 +66,13 @@ namespace build {
 		compilation->setTarget(targetPath);
 		sourceSink.transform.getCompilerConfiguration().applyConfiguration(**compilation);
 		compilation->invoke();
+	}
+
+	void CompileTransform::dumpTransform(DefaultConfiguredOutputStream<char>::Stream& stream) const {
+		stream << indent << "CompileTransform " << this << " {" << endln << shift;
+		stream << indent << "mode = " << Compilation::getCompileModeName(mode) << endln;
+		dumpOneToOneTransformAspects(stream);
+		stream << unshift << indent << '}' << endln;
 	}
 
 }}

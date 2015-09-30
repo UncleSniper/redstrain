@@ -87,6 +87,9 @@ namespace build {
 		void require(const Mood&, BuildContext&);
 		void rebuild(const Mood&, BuildContext&);
 
+	  protected:
+		void dumpArtifactAspects(io::DefaultConfiguredOutputStream<char>::Stream&) const;
+
 	  public:
 		Artifact();
 		Artifact(const Artifact&);

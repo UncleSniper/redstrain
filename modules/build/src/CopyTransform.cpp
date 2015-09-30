@@ -1,5 +1,6 @@
 #include <redstrain/util/Delete.hpp>
 #include <redstrain/io/StreamCloser.hpp>
+#include <redstrain/io/streamoperators.hpp>
 
 #include "CopyTransform.hpp"
 
@@ -7,6 +8,12 @@ using redengine::util::Delete;
 using redengine::io::InputStream;
 using redengine::io::OutputStream;
 using redengine::io::StreamCloser;
+using redengine::io::DefaultConfiguredOutputStream;
+using redengine::io::endln;
+using redengine::io::shift;
+using redengine::io::indent;
+using redengine::io::unshift;
+using redengine::io::operator<<;
 
 namespace redengine {
 namespace build {
@@ -24,6 +31,12 @@ namespace build {
 		inCloser.close();
 		outCloser.close();
 		target.notifyModified(context);
+	}
+
+	void CopyTransform::dumpTransform(DefaultConfiguredOutputStream<char>::Stream& stream) const {
+		stream << indent << "CopyTransform " << this << " {" << endln << shift;
+		dumpOneToOneTransformAspects(stream);
+		stream << unshift << indent << '}' << endln;
 	}
 
 }}

@@ -1,3 +1,5 @@
+#include <redstrain/io/streamoperators.hpp>
+
 #include "MultiArtifact.hpp"
 #include "ArtifactMultiplicityError.hpp"
 
@@ -6,6 +8,11 @@ using redengine::util::Appender;
 using redengine::io::InputStream;
 using redengine::io::OutputStream;
 using redengine::io::DefaultConfiguredOutputStream;
+using redengine::io::endln;
+using redengine::io::shift;
+using redengine::io::indent;
+using redengine::io::unshift;
+using redengine::io::operator<<;
 
 namespace redengine {
 namespace build {
@@ -155,8 +162,16 @@ namespace build {
 		return label;
 	}
 
-	void MultiArtifact::dumpArtifact(io::DefaultConfiguredOutputStream<char>::Stream&) const {
-		//TODO
+	void MultiArtifact::dumpArtifact(DefaultConfiguredOutputStream<char>::Stream& stream) const {
+		stream << indent << "MultiArtifact " << this << " {" << endln << shift;
+		stream << indent << "label = '" << label << '\'' << endln;
+		stream << indent << "artifacts = {" << endln << shift;
+		ArtifactIterator abegin(artifacts.begin()), aend(artifacts.end());
+		for(; abegin != aend; ++abegin)
+			(*abegin)->dumpArtifact(stream);
+		stream << unshift << indent << '}' << endln;
+		dumpArtifactAspects(stream);
+		stream << unshift << indent << '}' << endln;
 	}
 
 }}

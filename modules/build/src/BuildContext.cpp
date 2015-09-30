@@ -1,4 +1,5 @@
 #include <redstrain/util/Unref.hpp>
+#include <redstrain/io/streamoperators.hpp>
 
 #include "Goal.hpp"
 #include "BuildContext.hpp"
@@ -8,6 +9,11 @@
 using std::string;
 using redengine::util::Unref;
 using redengine::io::DefaultConfiguredOutputStream;
+using redengine::io::endln;
+using redengine::io::shift;
+using redengine::io::indent;
+using redengine::io::unshift;
+using redengine::io::operator<<;
 
 namespace redengine {
 namespace build {
@@ -108,8 +114,14 @@ namespace build {
 		defaultGoal = goal;
 	}
 
-	void BuildContext::dumpContext(DefaultConfiguredOutputStream<char>::Stream&) const {
-		//TODO
+	void BuildContext::dumpContext(DefaultConfiguredOutputStream<char>::Stream& stream) const {
+		stream << indent << "BuildContext " << this << " {" << endln << shift;
+		stream << indent << "goals = {" << endln << shift;
+		ConstGoalIterator gbegin(goals.begin()), gend(goals.end());
+		for(; gbegin != gend; ++gbegin)
+			gbegin->second->dumpGoal(stream);
+		stream << unshift << indent << '}' << endln;
+		stream << unshift << indent << '}' << endln;
 	}
 
 }}

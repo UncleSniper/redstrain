@@ -1,5 +1,6 @@
 #include <redstrain/util/MinimumAppender.hpp>
 #include <redstrain/util/MaximumAppender.hpp>
+#include <redstrain/io/streamoperators.hpp>
 
 #include "Artifact.hpp"
 #include "Transform.hpp"
@@ -8,6 +9,12 @@
 using redengine::util::Appender;
 using redengine::util::MinimumAppender;
 using redengine::util::MaximumAppender;
+using redengine::io::DefaultConfiguredOutputStream;
+using redengine::io::endln;
+using redengine::io::shift;
+using redengine::io::indent;
+using redengine::io::unshift;
+using redengine::io::operator<<;
 
 namespace redengine {
 namespace build {
@@ -157,6 +164,17 @@ namespace build {
 	void Artifact::rebuild(const Mood& mood, BuildContext& context) {
 		mood.perform(*generatingTransform, context, *this);
 		mood.modified(*this, context);
+	}
+
+	void Artifact::dumpArtifactAspects(DefaultConfiguredOutputStream<char>::Stream& stream) const {
+		stream << indent << "generatingTransform =";
+		if(generatingTransform) {
+			stream << endln << shift;
+			generatingTransform->dumpTransform(stream);
+			stream << unshift;
+		}
+		else
+			stream << " NULL" << endln;
 	}
 
 }}

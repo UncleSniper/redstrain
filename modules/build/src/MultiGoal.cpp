@@ -1,6 +1,13 @@
+#include <redstrain/io/streamoperators.hpp>
+
 #include "MultiGoal.hpp"
 
 using redengine::io::DefaultConfiguredOutputStream;
+using redengine::io::endln;
+using redengine::io::shift;
+using redengine::io::indent;
+using redengine::io::unshift;
+using redengine::io::operator<<;
 
 namespace redengine {
 namespace build {
@@ -57,8 +64,14 @@ namespace build {
 			(*begin)->wouldAttain(context);
 	}
 
-	void MultiGoal::dumpGoal(DefaultConfiguredOutputStream<char>::Stream&) const {
-		//TODO
+	void MultiGoal::dumpGoal(DefaultConfiguredOutputStream<char>::Stream& stream) const {
+		stream << indent << "MultiGoal " << this << " {" << endln << shift;
+		stream << indent << "goals = {" << endln << shift;
+		GoalIterator gbegin(goals.begin()), gend(goals.end());
+		for(; gbegin != gend; ++gbegin)
+			(*gbegin)->dumpGoal(stream);
+		stream << unshift << indent << '}' << endln;
+		stream << unshift << indent << '}' << endln;
 	}
 
 }}

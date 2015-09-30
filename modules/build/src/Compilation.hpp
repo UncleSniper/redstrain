@@ -46,6 +46,8 @@ namespace build {
 		virtual void defineMacro(const std::string&, const std::string&) = 0;
 		virtual void addIncludeDirectory(const std::string&) = 0;
 
+		static const char* getCompileModeName(CompileMode);
+
 	};
 
 }}

@@ -18,4 +18,17 @@ namespace build {
 		target.clear();
 	}
 
+	const char* Compilation::getCompileModeName(CompileMode mode) {
+		switch(mode) {
+			#define clamp(c) case c: return #c;
+			clamp(FOR_STATIC_EXECUTABLE)
+			clamp(FOR_DYNAMIC_EXECUTABLE)
+			clamp(FOR_STATIC_LIBRARY)
+			clamp(FOR_DYNAMIC_LIBRARY)
+			#undef clamp
+			default:
+				return NULL;
+		}
+	}
+
 }}

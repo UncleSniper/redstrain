@@ -3,6 +3,7 @@
 #include <redstrain/io/FileInputStream.hpp>
 #include <redstrain/io/FileOutputStream.hpp>
 #include <redstrain/platform/Filesystem.hpp>
+#include <redstrain/io/streamoperators.hpp>
 
 #include "FileArtifact.hpp"
 #include "BuildContext.hpp"
@@ -18,6 +19,11 @@ using redengine::io::FileInputStream;
 using redengine::io::FileOutputStream;
 using redengine::platform::Filesystem;
 using redengine::io::DefaultConfiguredOutputStream;
+using redengine::io::endln;
+using redengine::io::shift;
+using redengine::io::indent;
+using redengine::io::unshift;
+using redengine::io::operator<<;
 
 namespace redengine {
 namespace build {
@@ -134,8 +140,17 @@ namespace build {
 		return label;
 	}
 
-	void FileArtifact::dumpArtifact(DefaultConfiguredOutputStream<char>::Stream&) const {
-		//TODO
+	void FileArtifact::dumpArtifact(DefaultConfiguredOutputStream<char>::Stream& stream) const {
+		stream << indent << "FileArtifact " << this << " {" << endln << shift;
+		stream << indent << "path = '" << path << '\'' << endln;
+		stream << indent << "label = '" << label << '\'' << endln;
+		stream << indent << "intermediateDirectories = {" << endln << shift;
+		FileArtifactIterator fabegin(intermediateDirectories.begin()), faend(intermediateDirectories.end());
+		for(; fabegin != faend; ++fabegin)
+			(*fabegin)->dumpArtifact(stream);
+		stream << unshift << indent << '}' << endln;
+		dumpArtifactAspects(stream);
+		stream << unshift << indent << '}' << endln;
 	}
 
 }}

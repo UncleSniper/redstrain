@@ -1,7 +1,14 @@
+#include <redstrain/io/streamoperators.hpp>
+
 #include "Artifact.hpp"
 #include "ArtifactGoal.hpp"
 
 using redengine::io::DefaultConfiguredOutputStream;
+using redengine::io::endln;
+using redengine::io::shift;
+using redengine::io::indent;
+using redengine::io::unshift;
+using redengine::io::operator<<;
 
 namespace redengine {
 namespace build {
@@ -58,8 +65,14 @@ namespace build {
 			(*begin)->wouldRequire(context);
 	}
 
-	void ArtifactGoal::dumpGoal(DefaultConfiguredOutputStream<char>::Stream&) const {
-		//TODO
+	void ArtifactGoal::dumpGoal(DefaultConfiguredOutputStream<char>::Stream& stream) const {
+		stream << indent << "ArtifactGoal " << this << " {" << endln << shift;
+		stream << indent << "artifacts = {" << endln << shift;
+		ArtifactIterator abegin(artifacts.begin()), aend(artifacts.end());
+		for(; abegin != aend; ++abegin)
+			(*abegin)->dumpArtifact(stream);
+		stream << unshift << indent << '}' << endln;
+		stream << unshift << indent << '}' << endln;
 	}
 
 }}

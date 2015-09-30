@@ -1,6 +1,8 @@
 #ifndef REDSTRAIN_MOD_BUILD_ONETOONETRANSFORM_HPP
 #define REDSTRAIN_MOD_BUILD_ONETOONETRANSFORM_HPP
 
+#include <redstrain/io/streamoperators.hpp>
+
 #include "Transform.hpp"
 
 namespace redengine {
@@ -11,6 +13,18 @@ namespace build {
 
 	  private:
 		ArtifactT* source;
+
+	  protected:
+		void dumpOneToOneTransformAspects(io::DefaultConfiguredOutputStream<char>::Stream& stream) const {
+			using redengine::io::endln;
+			using redengine::io::shift;
+			using redengine::io::indent;
+			using redengine::io::unshift;
+			using redengine::io::operator<<;
+			stream << indent << "source =" << endln << shift;
+			source->dumpArtifact(stream);
+			stream << unshift;
+		}
 
 	  public:
 		OneToOneTransform(ArtifactT& source) : source(&source) {
