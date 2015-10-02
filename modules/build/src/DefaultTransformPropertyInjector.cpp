@@ -8,10 +8,7 @@ namespace build {
 	DefaultTransformPropertyInjector::DefaultTransformPropertyInjector(const DefaultTransformPropertyInjector&
 			injector) : TransformPropertyInjector(injector) {}
 
-	void DefaultTransformPropertyInjector::injectSourceTransformProperties(Component&,
-			const Language&, const Flavor&, Transform&) {}
-
-	void DefaultTransformPropertyInjector::injectHeaderTransformProperties(Component&,
+	void DefaultTransformPropertyInjector::injectTransformProperties(Component&,
 			const Language&, const Flavor&, Transform&) {}
 
 }}
