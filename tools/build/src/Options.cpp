@@ -9,20 +9,20 @@ using std::string;
 using redengine::cmdline::StopExecution;
 
 Options::Options(const Options& options)
-		: progname(options.progname), valves(options.valves), bootstrap(options.bootstrap), dry(options.dry),
+		: progname(options.progname), goals(options.goals), bootstrap(options.bootstrap), dry(options.dry),
 		dumpContext(options.dumpContext), base(options.base) {}
 
 Options::Options(const char* progname)
 		: progname(progname), bootstrap(false), dry(false), dumpContext(false), base(".") {}
 
-void Options::getValves(ValveNameIterator& begin, ValveNameIterator& end) const {
-	begin = valves.begin();
-	end = valves.end();
+void Options::getGoals(GoalNameIterator& begin, GoalNameIterator& end) const {
+	begin = goals.begin();
+	end = goals.end();
 }
 
 void Options::usage() {
 	cout
-		<< "Usage: " << progname << " [options] [valve...]" << endl
+		<< "Usage: " << progname << " [options] [goal...]" << endl
 		<< "Options:" << endl
 		<< "    --bootstrap    forego use of the Redwood subsystem and thus do not read the" << endl
 		<< "                   usual files; emulate Xake instead (useful to build RedStrain" << endl
@@ -52,7 +52,7 @@ void Options::setDumpContext(bool dumpContext) {
 }
 
 void Options::addBareword(const string& word) {
-	valves.push_back(word);
+	goals.push_back(word);
 }
 
 void Options::checkBarewords() {}

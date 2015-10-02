@@ -7,14 +7,14 @@
 class Options {
 
   private:
-	typedef std::list<std::string> ValveNames;
+	typedef std::list<std::string> GoalNames;
 
   public:
-	typedef ValveNames::const_iterator ValveNameIterator;
+	typedef GoalNames::const_iterator GoalNameIterator;
 
   private:
 	const std::string progname;
-	ValveNames valves;
+	GoalNames goals;
 	bool bootstrap, dry, dumpContext;
 	std::string base;
 
@@ -40,7 +40,7 @@ class Options {
 		return base;
 	}
 
-	void getValves(ValveNameIterator&, ValveNameIterator&) const;
+	void getGoals(GoalNameIterator&, GoalNameIterator&) const;
 
 	void usage();
 	void setBootstrap(bool);
