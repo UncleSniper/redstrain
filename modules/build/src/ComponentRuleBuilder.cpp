@@ -10,6 +10,7 @@
 #include "ArtifactGoal.hpp"
 #include "ComponentRuleBuilder.hpp"
 #include "BuildDirectoryMapper.hpp"
+#include "DefaultTransformPropertyInjector.hpp"
 
 using std::map;
 using std::set;
@@ -24,13 +25,16 @@ using redengine::platform::Filesystem;
 namespace redengine {
 namespace build {
 
+	static DefaultTransformPropertyInjector defaultTransformPropertyInjector;
+
 	ComponentRuleBuilder::ComponentRuleBuilder(BuildDirectoryMapper& directoryMapper,
-			BuildArtifactMapper& artifactMapper) : directoryMapper(directoryMapper),
-			artifactMapper(artifactMapper) {}
+			BuildArtifactMapper& artifactMapper, TransformPropertyInjector* transformPropertyInjector)
+			: directoryMapper(directoryMapper), artifactMapper(artifactMapper),
+			transformPropertyInjector(transformPropertyInjector) {}
 
 	ComponentRuleBuilder::ComponentRuleBuilder(const ComponentRuleBuilder& builder)
 			: RuleBuilder(builder), directoryMapper(builder.directoryMapper),
-			artifactMapper(builder.artifactMapper) {}
+			artifactMapper(builder.artifactMapper), transformPropertyInjector(builder.transformPropertyInjector) {}
 
 	struct PendingHeaderScan {
 
@@ -71,6 +75,11 @@ namespace build {
 			UniqueList<FileArtifact*>::Iterator bdbegin(buildDirectories.begin()), bdend(buildDirectories.end());
 			for(; bdbegin != bdend; ++bdbegin)
 				(*bdbegin)->unref();
+		}
+
+		TransformPropertyInjector& getTransformPropertyInjector() const {
+			TransformPropertyInjector* injector = builder.getTransformPropertyInjector();
+			return injector ? *injector : defaultTransformPropertyInjector;
 		}
 
 	};
@@ -170,9 +179,14 @@ namespace build {
 			Unref<FileArtifact> target(language.getHeaderExposeTransform(perComponent.context, sourceDirectory,
 					header, headerFlavor, fullExposeDirectory, perComponent.component,
 					perComponent.builder.getBuildArtifactMapper(), targetFlavor));
-			if(*target)
+			if(*target) {
 				perComponent.component.addExposedHeader(language,
 						Pathname::tidy(Pathname::stripPrefix(target->getPath(), exposeDirectory)), **target);
+				Transform* transform = target->getGeneratingTransform();
+				if(transform)
+					perComponent.getTransformPropertyInjector().injectTransformProperties(perComponent.component,
+							language, Flavor::HEADER, *transform);
+			}
 		}
 	}
 
@@ -217,6 +231,8 @@ namespace build {
 					*generatingTransform, sourceArtifact));
 			generatingTransform->ref();
 			sourceArtifact.ref();
+			perComponent.getTransformPropertyInjector().injectTransformProperties(perComponent.component,
+					language, transformFlavor, *generatingTransform);
 		}
 		if(isFinal)
 			perComponent.component.addFinalArtifact(**target, targetFlavor);

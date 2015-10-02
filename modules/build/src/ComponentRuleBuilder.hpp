@@ -8,18 +8,20 @@ namespace build {
 
 	class BuildArtifactMapper;
 	class BuildDirectoryMapper;
+	class TransformPropertyInjector;
 
 	class REDSTRAIN_BUILD_API ComponentRuleBuilder : public RuleBuilder {
 
 	  private:
 		BuildDirectoryMapper& directoryMapper;
 		BuildArtifactMapper& artifactMapper;
+		TransformPropertyInjector* transformPropertyInjector;
 
 	  private:
 		void setupRulesImpl(const Project&, Component&, BuildContext&);
 
 	  public:
-		ComponentRuleBuilder(BuildDirectoryMapper&, BuildArtifactMapper&);
+		ComponentRuleBuilder(BuildDirectoryMapper&, BuildArtifactMapper&, TransformPropertyInjector* = NULL);
 		ComponentRuleBuilder(const ComponentRuleBuilder&);
 
 		inline BuildDirectoryMapper& getBuildDirectoryMapper() {
@@ -36,6 +38,14 @@ namespace build {
 
 		inline const BuildArtifactMapper& getBuildArtifactMapper() const {
 			return artifactMapper;
+		}
+
+		inline TransformPropertyInjector* getTransformPropertyInjector() const {
+			return transformPropertyInjector;
+		}
+
+		inline void setTransformPropertyInjector(TransformPropertyInjector* injector) {
+			transformPropertyInjector = injector;
 		}
 
 		virtual void setupRules(const Project&, Component&, BuildContext&);
