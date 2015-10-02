@@ -26,7 +26,7 @@ namespace boot {
 			return project;
 		}
 
-		virtual Component* newComponent(const Project&, const std::string&, Component::Type) = 0;
+		virtual Component* newComponent(const Project&, const std::string&, Component::Type);
 
 	};
 
