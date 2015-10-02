@@ -108,6 +108,10 @@ namespace build {
 			uebegin->second->unref();
 	}
 
+	void Component::setName(const string& name) {
+		this->name = name;
+	}
+
 	string Component::getGoalName() const {
 		return (type == EXECUTABLE ? "exe:" : "lib:") + name;
 	}
