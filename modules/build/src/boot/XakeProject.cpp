@@ -1,15 +1,23 @@
+#include <redstrain/util/Delete.hpp>
 #include <redstrain/platform/Stat.hpp>
 #include <redstrain/platform/Pathname.hpp>
 #include <redstrain/platform/Filesystem.hpp>
 #include <redstrain/redmond/constants.hpp>
 
+#include "XakeGCC.hpp"
 #include "XakeUtils.hpp"
 #include "XakeProject.hpp"
+#include "XakeCPPLanguage.hpp"
+#include "XakeObjectFileLanguage.hpp"
+#include "../UnsupportedToolchainError.hpp"
 
 using std::string;
+using redengine::util::Delete;
 using redengine::platform::Stat;
 using redengine::platform::Pathname;
 using redengine::platform::Filesystem;
+using redengine::redmond::Architecture;
+using redengine::redmond::OperatingSystem;
 using redengine::redmond::OS_LINUX;
 using redengine::redmond::OS_WINDOWS;
 using redengine::redmond::buildTargetOS;
@@ -19,7 +27,8 @@ namespace build {
 namespace boot {
 
 	XakeProject::XakeProject(const string& baseDirectory)
-			: baseDirectory(Pathname::tidy(Pathname::join(Pathname::getWorkingDirectory(), baseDirectory))) {
+			: baseDirectory(Pathname::tidy(Pathname::join(Pathname::getWorkingDirectory(), baseDirectory))),
+			compiler(NULL), linker(NULL), cppLanguage(NULL), objectFileLanguage(NULL) {
 		configuration.load(Resources::DFL_DEFAULTS);
 		switch(buildTargetOS) {
 			case OS_LINUX:
@@ -46,9 +55,18 @@ namespace boot {
 		}
 	}
 
-	XakeProject::XakeProject(const XakeProject& project) : configuration(project.configuration) {}
+	XakeProject::XakeProject(const XakeProject& project) : configuration(project.configuration), compiler(NULL),
+			linker(NULL), cppLanguage(NULL), objectFileLanguage(NULL) {}
 
-	XakeProject::~XakeProject() {}
+	XakeProject::~XakeProject() {
+		if(compiler)
+			delete compiler;
+		// 'linker' will always be the same object as 'compiler'
+		if(cppLanguage)
+			delete cppLanguage;
+		if(objectFileLanguage)
+			delete objectFileLanguage;
+	}
 
 	string XakeProject::getProjectName() const {
 		string name(configuration.getProperty(Resources::RES_PROJECT_NAME));
@@ -58,6 +76,62 @@ namespace boot {
 	string XakeProject::getProjectGuard() const {
 		string guard(configuration.getProperty(Resources::RES_PROJECT_GUARD));
 		return guard.empty() ? XakeUtils::slugifyMacro(getProjectName()) : guard;
+	}
+
+	Compiler& XakeProject::getCompiler() {
+		if(!compiler)
+			setupCompiler();
+		return *compiler;
+	}
+
+	Linker& XakeProject::getLinker() {
+		if(!linker)
+			setupCompiler();
+		return *linker;
+	}
+
+	void XakeProject::setupCompiler() {
+		string flavor(configuration.getProperty(Resources::RES_COMPILER_FLAVOR));
+		if(flavor.empty() || flavor == "gcc")
+			setupGCC();
+		else
+			throw UnsupportedToolchainError(flavor);
+	}
+
+	void XakeProject::setupGCC() {
+		compilerName = "GCC";
+		string executable(configuration.getProperty(Resources::RES_COMPILER_BINARY));
+		if(executable.empty())
+			executable = XakeGCC::DEFAULT_EXECUTABLE;
+		string arExecutable(configuration.getProperty(Resources::RES_STATIC_LINKER_BINARY));
+		if(arExecutable.empty())
+			arExecutable = XakeGCC::DEFAULT_AR_EXECUTABLE;
+		string arch(configuration.getProperty(Resources::RES_RSB_TARGET_ARCHITECTURE));
+		Architecture architecture = arch.empty() ? REDSTRAIN_BUILD_DEFAULT_ARCH : Compiler::parseArchitecture(arch);
+		string os(configuration.getProperty(Resources::RES_RSB_TARGET_OS));
+		OperatingSystem targetOS = os.empty() ? REDSTRAIN_BUILD_DEFAULT_OS : Linker::parseOperatingSystem(os);
+		Delete<XakeGCC> gcc(new XakeGCC(*this, executable, arExecutable, architecture, targetOS));
+		compiler = *gcc;
+		linker = *gcc;
+		gcc.set();
+	}
+
+	Language& XakeProject::getCPPLanguage() {
+		if(!cppLanguage)
+			cppLanguage = new XakeCPPLanguage(*this);
+		return *cppLanguage;
+	}
+
+	Language& XakeProject::getObjectFileLanguage() {
+		if(!objectFileLanguage)
+			objectFileLanguage = new XakeObjectFileLanguage(*this);
+		return *objectFileLanguage;
+	}
+
+	const string& XakeProject::getCompilerName() {
+		if(!compiler)
+			setupCompiler();
+		return compilerName;
 	}
 
 }}}

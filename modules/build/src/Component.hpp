@@ -62,22 +62,29 @@ namespace build {
 		typedef std::map<const Artifact*, FileArtifact*> UnexposedHeaders;
 		typedef UnexposedHeaders::iterator UnexposedHeaderIterator;
 		typedef UnexposedHeaders::const_iterator ConstUnexposedHeaderIterator;
+		typedef std::map<const Language*, std::set<std::string> > ExposeDirectories;
 
 	  public:
 		typedef Paths::Iterator PathIterator;
 		typedef Languages::const_iterator LanguageIterator;
 		typedef Components::const_iterator ComponentIterator;
 		typedef FlavoredArtifacts::Iterator FlavoredArtifactIterator;
+		typedef std::set<std::string>::const_iterator ExposeDirectoryIterator;
 
 	  private:
 		const Type type;
-		const std::string name, baseDirectory;
+		std::string name;
+		const std::string baseDirectory;
 		Paths sourceDirectories;
 		Languages languages;
 		Components dependencies;
 		Headers privateHeaders, exposedHeaders;
 		FlavoredArtifacts finalArtifacts;
 		UnexposedHeaders unexposedHeaders;
+		ExposeDirectories exposeDirectories;
+
+	  protected:
+		void setName(const std::string&);
 
 	  public:
 		Component(Type, const std::string&, const std::string&);
@@ -135,6 +142,12 @@ namespace build {
 		bool removeUnexposedHeader(const Artifact&);
 		void clearUnexposedHeaders();
 		FileArtifact* getUnexposedHeader(const Artifact&) const;
+
+		bool addHeaderExposeDirectory(const Language&, const std::string&);
+		bool removeHeaderExposeDirectory(const Language&, const std::string&);
+		void clearHeaderExposeDirectories(const Language&);
+		void clearHeaderExposeDirectories();
+		void getHeaderExposeDirectories(const Language&, ExposeDirectoryIterator&, ExposeDirectoryIterator&) const;
 
 	};
 

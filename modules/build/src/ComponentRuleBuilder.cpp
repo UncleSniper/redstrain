@@ -165,6 +165,7 @@ namespace build {
 					language, ctailHead, ctailTail);
 			string exposeDirectory(Pathname::join(cbase, ctailHead));
 			string fullExposeDirectory(Pathname::join(exposeDirectory, ctailTail));
+			perComponent.component.addHeaderExposeDirectory(language, exposeDirectory);
 			Flavor targetFlavor(Flavor::GENERIC);
 			Unref<FileArtifact> target(language.getHeaderExposeTransform(perComponent.context, sourceDirectory,
 					header, headerFlavor, fullExposeDirectory, perComponent.component,

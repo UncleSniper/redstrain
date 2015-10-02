@@ -58,7 +58,7 @@ namespace build {
 			: ReferenceCounted(component), type(component.type), name(component.name),
 			baseDirectory(component.baseDirectory), sourceDirectories(component.sourceDirectories),
 			privateHeaders(component.privateHeaders), exposedHeaders(component.exposedHeaders),
-			finalArtifacts(component.finalArtifacts) {
+			finalArtifacts(component.finalArtifacts), exposeDirectories(component.exposeDirectories) {
 		ComponentIterator depbegin(dependencies.begin()), depend(dependencies.end());
 		for(; depbegin != depend; ++depbegin)
 			(*depbegin)->ref();
@@ -386,6 +386,48 @@ namespace build {
 	FileArtifact* Component::getUnexposedHeader(const Artifact& exposed) const {
 		ConstUnexposedHeaderIterator it = unexposedHeaders.find(&exposed);
 		return it == unexposedHeaders.end() ? NULL : it->second;
+	}
+
+	bool Component::addHeaderExposeDirectory(const Language& language, const string& directory) {
+		set<string>* s;
+		map<const Language*, set<string> >::iterator it = exposeDirectories.find(&language);
+		if(it == exposeDirectories.end()) {
+			exposeDirectories[&language] = set<string>();
+			s = &exposeDirectories[&language];
+		}
+		else
+			s = &it->second;
+		return s->insert(directory).second;
+	}
+
+	bool Component::removeHeaderExposeDirectory(const Language& language, const string& directory) {
+		map<const Language*, set<string> >::iterator it = exposeDirectories.find(&language);
+		if(it == exposeDirectories.end())
+			return false;
+		return !!it->second.erase(directory);
+	}
+
+	void Component::clearHeaderExposeDirectories(const Language& language) {
+		exposeDirectories.erase(&language);
+	}
+
+	void Component::clearHeaderExposeDirectories() {
+		exposeDirectories.clear();
+	}
+
+	static set<string> emptyStringSet;
+
+	void Component::getHeaderExposeDirectories(const Language& language,
+			ExposeDirectoryIterator& begin, ExposeDirectoryIterator& end) const {
+		map<const Language*, set<string> >::const_iterator it = exposeDirectories.find(&language);
+		if(it == exposeDirectories.end()) {
+			begin = emptyStringSet.begin();
+			end = emptyStringSet.end();
+		}
+		else {
+			begin = it->second.begin();
+			end = it->second.end();
+		}
 	}
 
 }}
