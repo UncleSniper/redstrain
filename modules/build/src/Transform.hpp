@@ -24,6 +24,9 @@ namespace build {
 	  private:
 		Prerequisites prerequisites;
 
+	  protected:
+		void dumpTransformAspects(io::DefaultConfiguredOutputStream<char>::Stream&) const;
+
 	  public:
 		Transform();
 		Transform(const Transform&);

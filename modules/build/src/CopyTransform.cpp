@@ -36,6 +36,7 @@ namespace build {
 	void CopyTransform::dumpTransform(DefaultConfiguredOutputStream<char>::Stream& stream) const {
 		stream << indent << "CopyTransform " << this << " {" << endln << shift;
 		dumpOneToOneTransformAspects(stream);
+		dumpTransformAspects(stream);
 		stream << unshift << indent << '}' << endln;
 	}
 

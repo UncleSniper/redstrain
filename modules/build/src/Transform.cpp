@@ -1,5 +1,14 @@
+#include <redstrain/io/streamoperators.hpp>
+
 #include "Artifact.hpp"
 #include "Transform.hpp"
+
+using redengine::io::DefaultConfiguredOutputStream;
+using redengine::io::endln;
+using redengine::io::shift;
+using redengine::io::indent;
+using redengine::io::unshift;
+using redengine::io::operator<<;
 
 namespace redengine {
 namespace build {
@@ -47,6 +56,14 @@ namespace build {
 
 	void Transform::wouldPerform(BuildContext& context, Artifact& target) {
 		target.wouldModify(context);
+	}
+
+	void Transform::dumpTransformAspects(DefaultConfiguredOutputStream<char>::Stream& stream) const {
+		stream << indent << "prerequisites = {" << endln << shift;
+		PrerequisiteIterator pqbegin(prerequisites.begin()), pqend(prerequisites.end());
+		for(; pqbegin != pqend; ++pqbegin)
+			(*pqbegin)->dumpArtifact(stream);
+		stream << unshift << indent << '}' << endln;
 	}
 
 }}

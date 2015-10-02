@@ -70,6 +70,7 @@ namespace build {
 		stream << indent << "LinkTransform " << this << " {" << endln << shift;
 		stream << indent << "mode = " << Linkage::getLinkModeName(mode) << endln;
 		dumpManyToOneTransformAspects(stream);
+		dumpTransformAspects(stream);
 		stream << unshift << indent << '}' << endln;
 	}
 

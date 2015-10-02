@@ -72,6 +72,7 @@ namespace build {
 		stream << indent << "CompileTransform " << this << " {" << endln << shift;
 		stream << indent << "mode = " << Compilation::getCompileModeName(mode) << endln;
 		dumpOneToOneTransformAspects(stream);
+		dumpTransformAspects(stream);
 		stream << unshift << indent << '}' << endln;
 	}
 
