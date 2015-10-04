@@ -66,6 +66,7 @@ namespace build {
 		compilation->setTarget(targetPath);
 		sourceSink.transform.getCompilerConfiguration().applyConfiguration(**compilation);
 		compilation->invoke();
+		sourceSink.target.notifyModified(sourceSink.context);
 	}
 
 	void CompileTransform::dumpTransform(DefaultConfiguredOutputStream<char>::Stream& stream) const {

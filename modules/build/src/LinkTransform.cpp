@@ -28,9 +28,10 @@ namespace build {
 
 		LinkTransform& transform;
 		BuildContext& context;
+		Artifact& target;
 
-		LinkXformTargetSink(LinkTransform& transform, BuildContext& context)
-				: transform(transform), context(context) {}
+		LinkXformTargetSink(LinkTransform& transform, BuildContext& context, Artifact& target)
+				: transform(transform), context(context), target(target) {}
 
 		virtual void append(const string&);
 
@@ -55,6 +56,7 @@ namespace build {
 			(*sbegin)->getFileReference("", sink, Artifact::FOR_INPUT, context);
 		transform.getLinkerConfiguration().applyConfiguration(**linkage);
 		linkage->invoke();
+		target.notifyModified(context);
 	}
 
 	void LinkXformSourceSink::append(const string& sourcePath) {
@@ -62,7 +64,7 @@ namespace build {
 	}
 
 	void LinkTransform::perform(BuildContext& context, Artifact& target) {
-		LinkXformTargetSink sink(*this, context);
+		LinkXformTargetSink sink(*this, context, target);
 		target.getFileReference("", sink, Artifact::FOR_OUTPUT, context);
 	}
 
