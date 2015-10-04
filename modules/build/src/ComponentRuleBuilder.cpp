@@ -8,6 +8,7 @@
 #include "RemoveGoal.hpp"
 #include "BuildContext.hpp"
 #include "ArtifactGoal.hpp"
+#include "ArtifactStageMapper.hpp"
 #include "ComponentRuleBuilder.hpp"
 #include "BuildDirectoryMapper.hpp"
 #include "DefaultTransformPropertyInjector.hpp"
@@ -28,13 +29,15 @@ namespace build {
 	static DefaultTransformPropertyInjector defaultTransformPropertyInjector;
 
 	ComponentRuleBuilder::ComponentRuleBuilder(BuildDirectoryMapper& directoryMapper,
-			BuildArtifactMapper& artifactMapper, TransformPropertyInjector* transformPropertyInjector)
+			BuildArtifactMapper& artifactMapper, TransformPropertyInjector* transformPropertyInjector,
+			ArtifactStageMapper* stageMapper)
 			: directoryMapper(directoryMapper), artifactMapper(artifactMapper),
-			transformPropertyInjector(transformPropertyInjector) {}
+			transformPropertyInjector(transformPropertyInjector), stageMapper(stageMapper) {}
 
 	ComponentRuleBuilder::ComponentRuleBuilder(const ComponentRuleBuilder& builder)
 			: RuleBuilder(builder), directoryMapper(builder.directoryMapper),
-			artifactMapper(builder.artifactMapper), transformPropertyInjector(builder.transformPropertyInjector) {}
+			artifactMapper(builder.artifactMapper), transformPropertyInjector(builder.transformPropertyInjector),
+			stageMapper(builder.stageMapper) {}
 
 	struct PendingHeaderScan {
 
@@ -182,6 +185,11 @@ namespace build {
 			if(*target) {
 				perComponent.component.addExposedHeader(language,
 						Pathname::tidy(Pathname::stripPrefix(target->getPath(), exposeDirectory)), **target);
+				ArtifactStageMapper* stageMapper = perComponent.builder.getArtifactStageMapper();
+				AbstractArtifact* abstractTarget = dynamic_cast<AbstractArtifact*>(*target);
+				if(stageMapper && abstractTarget)
+					abstractTarget->setStage(stageMapper->getArtifactStage(perComponent.component, language,
+							Flavor::HEADER, targetFlavor));
 				Transform* transform = target->getGeneratingTransform();
 				if(transform)
 					perComponent.getTransformPropertyInjector().injectTransformProperties(perComponent.component,
@@ -225,6 +233,11 @@ namespace build {
 			perComponent.singleTransforms[&language] = manyTransform;
 			manyTransform->ref();
 		}
+		ArtifactStageMapper* stageMapper = perComponent.builder.getArtifactStageMapper();
+		AbstractArtifact* abstractTarget = dynamic_cast<AbstractArtifact*>(*target);
+		if(stageMapper && abstractTarget)
+			abstractTarget->setStage(stageMapper->getArtifactStage(perComponent.component, language,
+					transformFlavor, targetFlavor));
 		Transform* generatingTransform = target->getGeneratingTransform();
 		if(generatingTransform) {
 			perComponent.pendingHeaderScans.push_back(PendingHeaderScan(language,
