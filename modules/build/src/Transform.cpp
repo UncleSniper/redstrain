@@ -14,12 +14,12 @@ using redengine::io::operator<<;
 namespace redengine {
 namespace build {
 
-	Transform::Transform() {}
+	Transform::Transform() : uiMinor(false) {}
 
 	Transform::Transform(const Transform& transform)
 			: ReferenceCounted(transform), prerequisites(transform.prerequisites),
 			componentType(transform.componentType), componentName(transform.componentName),
-			componentBase(transform.componentBase) {
+			componentBase(transform.componentBase), uiMinor(transform.uiMinor) {
 		PrerequisiteIterator pqbegin(prerequisites.begin()), pqend(prerequisites.end());
 		for(; pqbegin != pqend; ++pqbegin)
 			(*pqbegin)->ref();

@@ -25,6 +25,7 @@ namespace build {
 	  private:
 		Prerequisites prerequisites;
 		std::string componentType, componentName, componentBase;
+		bool uiMinor;
 
 	  protected:
 		void dumpTransformAspects(io::DefaultConfiguredOutputStream<char>::Stream&) const;
@@ -38,17 +39,27 @@ namespace build {
 			return componentType;
 		}
 
+		void setComponentType(const std::string&);
+
 		inline const std::string& getComponentName() const {
 			return componentName;
 		}
+
+		void setComponentName(const std::string&);
 
 		inline const std::string& getComponentBaseDirectory() const {
 			return componentBase;
 		}
 
-		void setComponentType(const std::string&);
-		void setComponentName(const std::string&);
 		void setComponentBaseDirectory(const std::string&);
+
+		inline bool isUIMinor() const {
+			return uiMinor;
+		}
+
+		inline void setUIMinor(bool isMinor) {
+			uiMinor = isMinor;
+		}
 
 		bool addPrerequisite(Artifact&);
 		bool removePrerequisite(Artifact&);
