@@ -4,7 +4,9 @@
 #include <redstrain/platform/Filesystem.hpp>
 #include <redstrain/io/FileOutputStream.hpp>
 
+#include "BuildUI.hpp"
 #include "Artifact.hpp"
+#include "BuildContext.hpp"
 #include "ArtifactStage.hpp"
 
 using std::string;
@@ -37,7 +39,12 @@ namespace build {
 
 	void ArtifactStage::stage(Artifact& artifact, const string& suffix, bool withContents, BuildContext& context) {
 		string fullPath(Pathname::join(directory, suffix));
-		Filesystem::mkdirRecursive(Pathname::dirname(fullPath, Pathname::LOGICAL));
+		string dirpath(Pathname::dirname(fullPath, Pathname::LOGICAL));
+		if(!Filesystem::access(dirpath, Filesystem::FILE_EXISTS)) {
+			context.getUI().willPerformAction(BuildUI::ActionDescriptor("", "",
+					"creating directory", "", Pathname::stripPrefix(dirpath, label)), true);
+			Filesystem::mkdirRecursive(dirpath);
+		}
 		if(withContents) {
 			Delete<InputStream<char> > in(artifact.getInputStream(context));
 			StreamCloser inCloser(*in);
