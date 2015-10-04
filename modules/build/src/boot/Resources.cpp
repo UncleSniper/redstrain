@@ -92,6 +92,7 @@ namespace boot {
 		"generated.source.directory",
 		"data.tag",
 		"blob.tag",
+		"stage.directory",
 		"linux.external.libraries",
 		"windows.external.libraries"
 	};

@@ -9,6 +9,7 @@
 #include <redstrain/error/UnsupportedOperationError.hpp>
 #include <redstrain/build/boot/XakeDependencyResolver.hpp>
 #include <redstrain/build/boot/XakeBuildArtifactMapper.hpp>
+#include <redstrain/build/boot/XakeArtifactStageMapper.hpp>
 #include <redstrain/build/boot/XakeBuildDirectoryMapper.hpp>
 #include <redstrain/build/DefaultTransformPropertyInjector.hpp>
 #include <redstrain/build/boot/XakeComponentTypeStringifier.hpp>
@@ -29,6 +30,7 @@ using redengine::error::UnsupportedOperationError;
 using redengine::build::boot::XakeComponentFactory;
 using redengine::build::boot::XakeDependencyResolver;
 using redengine::build::boot::XakeBuildArtifactMapper;
+using redengine::build::boot::XakeArtifactStageMapper;
 using redengine::build::boot::XakeBuildDirectoryMapper;
 using redengine::build::DefaultTransformPropertyInjector;
 using redengine::cmdline::ConfigurationObjectOptionLogic;
@@ -69,7 +71,9 @@ int bootstrap(const string&, const Options& options) {
 	XakeBuildArtifactMapper artifactMapper(xproject);
 	XakeComponentTypeStringifier componentTypeStringifier(xproject);
 	DefaultTransformPropertyInjector transformPropertyInjector(&componentTypeStringifier);
-	ComponentRuleBuilder ruleBuilder(directoryMapper, artifactMapper, &transformPropertyInjector);
+	XakeArtifactStageMapper artifactStageMapper;
+	ComponentRuleBuilder ruleBuilder(directoryMapper, artifactMapper,
+			&transformPropertyInjector, &artifactStageMapper);
 	ComponentGoalBuilder goalBuilder;
 	ProjectBuilder projectBuilder(projectFactory, componentFinder, componentFactory,
 			dependencyResolver, ruleBuilder, goalBuilder);

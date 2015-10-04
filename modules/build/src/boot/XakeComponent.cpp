@@ -5,6 +5,7 @@
 #include "XakeUtils.hpp"
 #include "XakeProject.hpp"
 #include "XakeComponent.hpp"
+#include "XakeArtifactStageMapper.hpp"
 
 using std::map;
 using std::string;
@@ -23,7 +24,7 @@ namespace boot {
 	XakeComponent::XakeComponent(XakeProject& project, const string& baseDirectory, Component::Type type)
 			: Component(type, "", baseDirectory), project(project),
 			compilerConfiguration(*this), staticLinkerConfiguration(*this, true),
-			dynamicLinkerConfiguration(*this, false) {
+			dynamicLinkerConfiguration(*this, false), artifactStage("") {
 		Resources::ID typeres;
 		const char* typedefault;
 		switch(type) {
@@ -68,11 +69,18 @@ namespace boot {
 			setName(Pathname::basename(Pathname::tidy(baseDirectory)));
 		else
 			setName(name);
+		string stagedir(prjconf.getProperty(Resources::RES_RSB_STAGE_DIRECTORY));
+		if(stagedir.empty())
+			stagedir = XakeArtifactStageMapper::DEFAULT_STAGE_DIRECTORY;
+		stagedir = Pathname::tidy(Pathname::join(baseDirectory, stagedir));
+		artifactStage.setDirectory(stagedir);
+		artifactStage.setLabel(Pathname::stripPrefix(stagedir, Pathname::tidy(baseDirectory)));
 	}
 
 	XakeComponent::XakeComponent(const XakeComponent& component) : Component(component),
 			project(component.project), configuration(component.configuration), compilerConfiguration(*this),
-			staticLinkerConfiguration(*this, true), dynamicLinkerConfiguration(*this, false) {}
+			staticLinkerConfiguration(*this, true), dynamicLinkerConfiguration(*this, false),
+			artifactStage(component.artifactStage) {}
 
 	string XakeComponent::getComponentGuard() const {
 		string guard(configuration.getProperty(Resources::RES_COMPONENT_GUARD));

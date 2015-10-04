@@ -3,6 +3,7 @@
 
 #include "Resources.hpp"
 #include "../Component.hpp"
+#include "../ArtifactStage.hpp"
 #include "XakeLinkerConfiguration.hpp"
 #include "XakeCompilerConfiguration.hpp"
 
@@ -24,6 +25,7 @@ namespace boot {
 		Resources configuration;
 		XakeCompilerConfiguration compilerConfiguration;
 		XakeLinkerConfiguration staticLinkerConfiguration, dynamicLinkerConfiguration;
+		ArtifactStage artifactStage;
 
 	  public:
 		XakeComponent(XakeProject&, const std::string&, Component::Type);
@@ -55,6 +57,10 @@ namespace boot {
 
 		inline LinkerConfiguration& getDynamicLinkerConfiguration() const {
 			return const_cast<XakeLinkerConfiguration&>(dynamicLinkerConfiguration);
+		}
+
+		inline ArtifactStage& getArtifactStage() const {
+			return const_cast<ArtifactStage&>(artifactStage);
 		}
 
 		std::string getComponentGuard() const;
