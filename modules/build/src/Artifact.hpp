@@ -77,7 +77,8 @@ namespace build {
 
 		enum REDSTRAIN_BUILD_API ReferenceDirection {
 			FOR_INPUT,
-			FOR_OUTPUT
+			FOR_OUTPUT,
+			FOR_PREDICTION
 		};
 
 	  private:

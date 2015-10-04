@@ -43,6 +43,7 @@ namespace build {
 		}
 
 		virtual void perform(BuildContext&, Artifact&);
+		virtual void wouldPerform(BuildContext&, Artifact&);
 
 		virtual void dumpTransform(io::DefaultConfiguredOutputStream<char>::Stream&) const;
 

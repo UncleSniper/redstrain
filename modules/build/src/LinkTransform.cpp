@@ -1,12 +1,16 @@
 #include <redstrain/util/Delete.hpp>
+#include <redstrain/platform/Pathname.hpp>
 
 #include "Linker.hpp"
+#include "BuildUI.hpp"
+#include "BuildContext.hpp"
 #include "LinkTransform.hpp"
 #include "LinkerConfiguration.hpp"
 
 using std::string;
 using redengine::util::Delete;
 using redengine::util::Appender;
+using redengine::platform::Pathname;
 using redengine::io::DefaultConfiguredOutputStream;
 using redengine::io::endln;
 using redengine::io::shift;
@@ -48,6 +52,9 @@ namespace build {
 	};
 
 	void LinkXformTargetSink::append(const string& targetPath) {
+		context.getUI().willPerformAction(BuildUI::ActionDescriptor(transform.getComponentType(),
+				transform.getComponentName(), "linking", "",
+				Pathname::stripPrefix(targetPath, transform.getComponentBaseDirectory())), false);
 		Delete<Linkage> linkage(transform.getLinker().newLinkage(targetPath, transform.getLinkMode()));
 		LinkXformSourceSink sink(**linkage);
 		ManyToOneTransform<FileArtifact>::SourceIterator sbegin, send;

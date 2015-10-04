@@ -1,12 +1,16 @@
 #include <redstrain/util/Delete.hpp>
+#include <redstrain/platform/Pathname.hpp>
 
+#include "BuildUI.hpp"
 #include "Compiler.hpp"
+#include "BuildContext.hpp"
 #include "CompileTransform.hpp"
 #include "CompilerConfiguration.hpp"
 
 using std::string;
 using redengine::util::Delete;
 using redengine::util::Appender;
+using redengine::platform::Pathname;
 using redengine::io::DefaultConfiguredOutputStream;
 using redengine::io::endln;
 using redengine::io::shift;
@@ -61,12 +65,46 @@ namespace build {
 	}
 
 	void CompileXformTargetSink::append(const string& targetPath) {
+		sourceSink.context.getUI().willPerformAction(BuildUI::ActionDescriptor(
+				sourceSink.transform.getComponentType(), sourceSink.transform.getComponentName(),
+				"compiling", Pathname::stripPrefix(sourcePath, sourceSink.transform.getComponentBaseDirectory()),
+				Pathname::stripPrefix(targetPath, sourceSink.transform.getComponentBaseDirectory())), false);
 		Delete<Compilation> compilation(sourceSink.transform.getCompiler().newCompilation(sourcePath,
 				sourceSink.transform.getCompileMode()));
 		compilation->setTarget(targetPath);
 		sourceSink.transform.getCompilerConfiguration().applyConfiguration(**compilation);
 		compilation->invoke();
 		sourceSink.target.notifyModified(sourceSink.context);
+	}
+
+	struct PredictiveCompileXformSourceSink : Appender<string> {
+
+		CompileTransform& transform;
+		BuildContext& context;
+		Artifact& target;
+
+		PredictiveCompileXformSourceSink(CompileTransform& transform, BuildContext& context, Artifact& target)
+				: transform(transform), context(context), target(target) {}
+
+		virtual void append(const string&);
+
+	};
+
+	struct PredictiveCompileXformTargetSink : Appender<string> {
+
+		PredictiveCompileXformSourceSink& sourceSink;
+		const string& sourcePath;
+
+		PredictiveCompileXformTargetSink(PredictiveCompileXformSourceSink& sourceSink, const string& sourcePath)
+				: sourceSink(sourceSink), sourcePath(sourcePath) {}
+
+		virtual void append(const string&);
+
+	};
+
+	void CompileTransform::wouldPerform(BuildContext& context, Artifact& target) {
+		PredictiveCompileXformSourceSink sink(*this, context, target);
+		getSource().getFileReference("", sink, Artifact::FOR_INPUT, context);
 	}
 
 	void CompileTransform::dumpTransform(DefaultConfiguredOutputStream<char>::Stream& stream) const {
