@@ -90,6 +90,8 @@ namespace boot {
 		"blob.include",
 		"guard.macro",
 		"generated.source.directory",
+		"data.tag",
+		"blob.tag",
 		"linux.external.libraries",
 		"windows.external.libraries"
 	};
