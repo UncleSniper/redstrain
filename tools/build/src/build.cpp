@@ -10,6 +10,8 @@
 #include <redstrain/build/boot/XakeDependencyResolver.hpp>
 #include <redstrain/build/boot/XakeBuildArtifactMapper.hpp>
 #include <redstrain/build/boot/XakeBuildDirectoryMapper.hpp>
+#include <redstrain/build/DefaultTransformPropertyInjector.hpp>
+#include <redstrain/build/boot/XakeComponentTypeStringifier.hpp>
 #include <redstrain/cmdline/parseopt.hpp>
 
 #include "Options.hpp"
@@ -28,7 +30,9 @@ using redengine::build::boot::XakeComponentFactory;
 using redengine::build::boot::XakeDependencyResolver;
 using redengine::build::boot::XakeBuildArtifactMapper;
 using redengine::build::boot::XakeBuildDirectoryMapper;
+using redengine::build::DefaultTransformPropertyInjector;
 using redengine::cmdline::ConfigurationObjectOptionLogic;
+using redengine::build::boot::XakeComponentTypeStringifier;
 using redengine::cmdline::runWithOptions;
 
 int run(const string&, const Options&);
@@ -63,7 +67,9 @@ int bootstrap(const string&, const Options& options) {
 	XakeDependencyResolver dependencyResolver;
 	XakeBuildDirectoryMapper directoryMapper(xproject);
 	XakeBuildArtifactMapper artifactMapper(xproject);
-	ComponentRuleBuilder ruleBuilder(directoryMapper, artifactMapper);
+	XakeComponentTypeStringifier componentTypeStringifier(xproject);
+	DefaultTransformPropertyInjector transformPropertyInjector(&componentTypeStringifier);
+	ComponentRuleBuilder ruleBuilder(directoryMapper, artifactMapper, &transformPropertyInjector);
 	ComponentGoalBuilder goalBuilder;
 	ProjectBuilder projectBuilder(projectFactory, componentFinder, componentFactory,
 			dependencyResolver, ruleBuilder, goalBuilder);
