@@ -3,6 +3,7 @@
 #include "Artifact.hpp"
 #include "Transform.hpp"
 
+using std::string;
 using redengine::io::DefaultConfiguredOutputStream;
 using redengine::io::endln;
 using redengine::io::shift;
@@ -16,7 +17,9 @@ namespace build {
 	Transform::Transform() {}
 
 	Transform::Transform(const Transform& transform)
-			: ReferenceCounted(transform), prerequisites(transform.prerequisites) {
+			: ReferenceCounted(transform), prerequisites(transform.prerequisites),
+			componentType(transform.componentType), componentName(transform.componentName),
+			componentBase(transform.componentBase) {
 		PrerequisiteIterator pqbegin(prerequisites.begin()), pqend(prerequisites.end());
 		for(; pqbegin != pqend; ++pqbegin)
 			(*pqbegin)->ref();
@@ -26,6 +29,18 @@ namespace build {
 		PrerequisiteIterator pqbegin(prerequisites.begin()), pqend(prerequisites.end());
 		for(; pqbegin != pqend; ++pqbegin)
 			(*pqbegin)->unref();
+	}
+
+	void Transform::setComponentType(const string& type) {
+		componentType = type;
+	}
+
+	void Transform::setComponentName(const string& name) {
+		componentName = name;
+	}
+
+	void Transform::setComponentBaseDirectory(const string& directory) {
+		componentBase = directory;
 	}
 
 	bool Transform::addPrerequisite(Artifact& artifact) {

@@ -1,6 +1,7 @@
 #ifndef REDSTRAIN_MOD_BUILD_TRANSFORM_HPP
 #define REDSTRAIN_MOD_BUILD_TRANSFORM_HPP
 
+#include <string>
 #include <redstrain/util/UniqueList.hpp>
 #include <redstrain/util/ReferenceCounted.hpp>
 #include <redstrain/io/streamtypes.hpp>
@@ -23,6 +24,7 @@ namespace build {
 
 	  private:
 		Prerequisites prerequisites;
+		std::string componentType, componentName, componentBase;
 
 	  protected:
 		void dumpTransformAspects(io::DefaultConfiguredOutputStream<char>::Stream&) const;
@@ -31,6 +33,22 @@ namespace build {
 		Transform();
 		Transform(const Transform&);
 		virtual ~Transform();
+
+		inline const std::string& getComponentType() const {
+			return componentType;
+		}
+
+		inline const std::string& getComponentName() const {
+			return componentName;
+		}
+
+		inline const std::string& getComponentBaseDirectory() const {
+			return componentBase;
+		}
+
+		void setComponentType(const std::string&);
+		void setComponentName(const std::string&);
+		void setComponentBaseDirectory(const std::string&);
 
 		bool addPrerequisite(Artifact&);
 		bool removePrerequisite(Artifact&);

@@ -6,11 +6,24 @@
 namespace redengine {
 namespace build {
 
+	class ComponentTypeStringifier;
+
 	class REDSTRAIN_BUILD_API DefaultTransformPropertyInjector : public TransformPropertyInjector {
 
+	  private:
+		ComponentTypeStringifier* typeStringifier;
+
 	  public:
-		DefaultTransformPropertyInjector();
+		DefaultTransformPropertyInjector(ComponentTypeStringifier* = NULL);
 		DefaultTransformPropertyInjector(const DefaultTransformPropertyInjector&);
+
+		inline ComponentTypeStringifier* getComponentTypeStringifier() const {
+			return typeStringifier;
+		}
+
+		inline void setComponentTypeStringifier(ComponentTypeStringifier* typeStringifier) {
+			this->typeStringifier = typeStringifier;
+		}
 
 		virtual void injectTransformProperties(Component&, const Language&, const Flavor&, Transform&);
 
