@@ -11,6 +11,7 @@
 #include "ArtifactStageMapper.hpp"
 #include "ComponentRuleBuilder.hpp"
 #include "BuildDirectoryMapper.hpp"
+#include "DefaultGoalPropertyInjector.hpp"
 #include "DefaultTransformPropertyInjector.hpp"
 
 using std::map;
@@ -27,17 +28,19 @@ namespace redengine {
 namespace build {
 
 	static DefaultTransformPropertyInjector defaultTransformPropertyInjector;
+	static DefaultGoalPropertyInjector defaultGoalPropertyInjector;
 
 	ComponentRuleBuilder::ComponentRuleBuilder(BuildDirectoryMapper& directoryMapper,
 			BuildArtifactMapper& artifactMapper, TransformPropertyInjector* transformPropertyInjector,
-			ArtifactStageMapper* stageMapper)
+			ArtifactStageMapper* stageMapper, GoalPropertyInjector* goalPropertyInjector)
 			: directoryMapper(directoryMapper), artifactMapper(artifactMapper),
-			transformPropertyInjector(transformPropertyInjector), stageMapper(stageMapper) {}
+			transformPropertyInjector(transformPropertyInjector), stageMapper(stageMapper),
+			goalPropertyInjector(goalPropertyInjector) {}
 
 	ComponentRuleBuilder::ComponentRuleBuilder(const ComponentRuleBuilder& builder)
 			: RuleBuilder(builder), directoryMapper(builder.directoryMapper),
 			artifactMapper(builder.artifactMapper), transformPropertyInjector(builder.transformPropertyInjector),
-			stageMapper(builder.stageMapper) {}
+			stageMapper(builder.stageMapper), goalPropertyInjector(builder.goalPropertyInjector) {}
 
 	struct PendingHeaderScan {
 
@@ -83,6 +86,11 @@ namespace build {
 		TransformPropertyInjector& getTransformPropertyInjector() const {
 			TransformPropertyInjector* injector = builder.getTransformPropertyInjector();
 			return injector ? *injector : defaultTransformPropertyInjector;
+		}
+
+		GoalPropertyInjector& getGoalPropertyInjector() const {
+			GoalPropertyInjector* injector = builder.getGoalPropertyInjector();
+			return injector ? *injector : defaultGoalPropertyInjector;
 		}
 
 	};
@@ -320,6 +328,7 @@ namespace build {
 			ArtifactGoal* fgoal;
 			if(it == flavorGoals.end()) {
 				Unref<ArtifactGoal> goal(new ArtifactGoal);
+				perComponent.getGoalPropertyInjector().injectGoalProperties(component, **goal);
 				string name(component.getGoalName() + ':' + fabegin->getFlavor().getName());
 				if(context.addGoal(name, **goal)) {
 					fgoal = *goal;
@@ -336,12 +345,14 @@ namespace build {
 		}
 		context.addGoal(component.getGoalName(), **allGoal);
 		context.addGoal(component.getGoalName() + ":build", **allGoal);
+		perComponent.getGoalPropertyInjector().injectGoalProperties(component, **allGoal);
 		Unref<RemoveGoal> cleanGoal(new RemoveGoal);
 		UniqueList<FileArtifact*>::Iterator bdbegin(perComponent.buildDirectories.begin()),
 				bdend(perComponent.buildDirectories.end());
 		for(; bdbegin != bdend; ++bdbegin)
 			cleanGoal->addArtifact(**bdbegin);
 		context.addGoal(component.getGoalName() + ":clean", **cleanGoal);
+		perComponent.getGoalPropertyInjector().injectGoalProperties(component, **cleanGoal);
 	}
 
 	void ReferencedHeaderAppender::append(const Language::ReferencedHeader& header) {
