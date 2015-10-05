@@ -5,6 +5,7 @@
 #include <redstrain/platform/Filesystem.hpp>
 #include <redstrain/io/streamoperators.hpp>
 
+#include "BuildUI.hpp"
 #include "FileArtifact.hpp"
 #include "BuildContext.hpp"
 #include "ArtifactStage.hpp"
@@ -92,26 +93,39 @@ namespace build {
 		return new FileInputStream(path);
 	}
 
-	OutputStream<char>* FileArtifact::getOutputStream(BuildContext& context) {
-		Filesystem::mkdirRecursive(Pathname::dirname(path, Pathname::LOGICAL));
-		notifyIntermediateDirectoriesCreated(DefinitiveMood::instance, context);
-		return new FileOutputStream(path);
+	OutputStream<char>* FileArtifact::getOutputStream(BuildContext& context, ReferenceMood mood) {
+		getFileReferenceForOutput(mood, context);
+		return mood == FOR_USE ? new FileOutputStream(path) : NULL;
+	}
+
+	void FileArtifact::getFileReferenceForOutput(ReferenceMood mood, BuildContext& context) const {
+		string lbase(Pathname::stripSuffix(path, label));
+		string dirpath(Pathname::dirname(path, Pathname::LOGICAL));
+		if(mood == FOR_USE) {
+			if(!Filesystem::access(dirpath, Filesystem::FILE_EXISTS)) {
+				context.getUI().willPerformAction(BuildUI::ActionDescriptor("", "",
+						"creating directory", "", Pathname::stripPrefix(dirpath, lbase)), true);
+				Filesystem::mkdirRecursive(dirpath);
+				notifyIntermediateDirectoriesCreated(DefinitiveMood::instance, context);
+			}
+		}
+		else {
+			context.getUI().wouldPerformAction(BuildUI::ActionDescriptor("", "",
+					"would create directory", "", Pathname::stripPrefix(dirpath, lbase)), true);
+			notifyIntermediateDirectoriesCreated(PredictiveMood::instance, context);
+		}
 	}
 
 	void FileArtifact::getFileReference(const string& suffix, Appender<string>& sink, ReferenceDirection direction,
-			BuildContext& context) {
+			ReferenceMood mood, BuildContext& context) {
 		if(suffix.empty()) {
-			if(direction == FOR_OUTPUT) {
-				Filesystem::mkdirRecursive(Pathname::dirname(path, Pathname::LOGICAL));
-				notifyIntermediateDirectoriesCreated(DefinitiveMood::instance, context);
-			}
+			if(direction == FOR_OUTPUT)
+				getFileReferenceForOutput(mood, context);
 			sink.append(path);
 		}
 		else if(Pathname::endsWith(Pathname::tidy(path), Pathname::tidy(suffix))) {
-			if(direction == FOR_OUTPUT) {
-				Filesystem::mkdirRecursive(Pathname::dirname(path, Pathname::LOGICAL));
-				notifyIntermediateDirectoriesCreated(DefinitiveMood::instance, context);
-			}
+			if(direction == FOR_OUTPUT)
+				getFileReferenceForOutput(mood, context);
 			sink.append(Pathname::stripSuffix(path, suffix));
 		}
 		else {

@@ -2,6 +2,8 @@
 #include <redstrain/io/StreamCloser.hpp>
 #include <redstrain/io/streamoperators.hpp>
 
+#include "BuildUI.hpp"
+#include "BuildContext.hpp"
 #include "CopyTransform.hpp"
 
 using redengine::util::Delete;
@@ -23,14 +25,23 @@ namespace build {
 	CopyTransform::CopyTransform(const CopyTransform& transform) : OneToOneTransform<FileArtifact>(transform) {}
 
 	void CopyTransform::perform(BuildContext& context, Artifact& target) {
+		context.getUI().willPerformAction(BuildUI::ActionDescriptor(getComponentType(), getComponentName(),
+				"copying", getSource().getLabel(), target.getLabel()), true);
 		Delete<InputStream<char> > in(getSource().getInputStream(context));
 		StreamCloser inCloser(*in);
-		Delete<OutputStream<char> > out(target.getOutputStream(context));
+		Delete<OutputStream<char> > out(target.getOutputStream(context, Artifact::FOR_USE));
 		StreamCloser outCloser(*out);
 		in->copyTo(**out);
 		inCloser.close();
 		outCloser.close();
 		target.notifyModified(context);
+	}
+
+	void CopyTransform::wouldPerform(BuildContext& context, Artifact& target) {
+		context.getUI().wouldPerformAction(BuildUI::ActionDescriptor(getComponentType(), getComponentName(),
+				"would copy", getSource().getLabel(), target.getLabel()), true);
+		target.getOutputStream(context, Artifact::FOR_PREDICTION);
+		target.wouldModify(context);
 	}
 
 	void CopyTransform::dumpTransform(DefaultConfiguredOutputStream<char>::Stream& stream) const {

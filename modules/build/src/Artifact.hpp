@@ -77,7 +77,11 @@ namespace build {
 
 		enum REDSTRAIN_BUILD_API ReferenceDirection {
 			FOR_INPUT,
-			FOR_OUTPUT,
+			FOR_OUTPUT
+		};
+
+		enum REDSTRAIN_BUILD_API ReferenceMood {
+			FOR_USE,
 			FOR_PREDICTION
 		};
 
@@ -118,9 +122,9 @@ namespace build {
 		virtual void remove() = 0;
 
 		virtual io::InputStream<char>* getInputStream(BuildContext&) = 0;
-		virtual io::OutputStream<char>* getOutputStream(BuildContext&) = 0;
+		virtual io::OutputStream<char>* getOutputStream(BuildContext&, ReferenceMood) = 0;
 		virtual void getFileReference(const std::string&, util::Appender<std::string>&, ReferenceDirection,
-				BuildContext&) = 0;
+				ReferenceMood, BuildContext&) = 0;
 
 		virtual bool isTransformable() = 0;
 		virtual std::string getName() = 0;

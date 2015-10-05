@@ -137,17 +137,17 @@ namespace build {
 		return checkSingleChild("obtain input stream").getInputStream(context);
 	}
 
-	OutputStream<char>* MultiArtifact::getOutputStream(BuildContext& context) {
-		return checkSingleChild("obtain output stream").getOutputStream(context);
+	OutputStream<char>* MultiArtifact::getOutputStream(BuildContext& context, ReferenceMood mood) {
+		return checkSingleChild("obtain output stream").getOutputStream(context, mood);
 	}
 
 	void MultiArtifact::getFileReference(const string& suffix, Appender<string>& sink,
-			ReferenceDirection direction, BuildContext& context) {
+			ReferenceDirection direction, ReferenceMood mood, BuildContext& context) {
 		if(!suffix.empty())
 			checkSingleChild("obtain file reference with non-empty suffix");
 		ArtifactIterator begin(artifacts.begin()), end(artifacts.end());
 		for(; begin != end; ++begin)
-			(*begin)->getFileReference(suffix, sink, direction, context);
+			(*begin)->getFileReference(suffix, sink, direction, mood, context);
 	}
 
 	bool MultiArtifact::isTransformable() {

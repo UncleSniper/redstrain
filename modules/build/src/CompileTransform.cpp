@@ -56,12 +56,12 @@ namespace build {
 
 	void CompileTransform::perform(BuildContext& context, Artifact& target) {
 		CompileXformSourceSink sink(*this, context, target);
-		getSource().getFileReference("", sink, Artifact::FOR_INPUT, context);
+		getSource().getFileReference("", sink, Artifact::FOR_INPUT, Artifact::FOR_USE, context);
 	}
 
 	void CompileXformSourceSink::append(const string& source) {
 		CompileXformTargetSink sink(*this, source);
-		target.getFileReference("", sink, Artifact::FOR_OUTPUT, context);
+		target.getFileReference("", sink, Artifact::FOR_OUTPUT, Artifact::FOR_USE, context);
 	}
 
 	void CompileXformTargetSink::append(const string& targetPath) {
@@ -104,7 +104,20 @@ namespace build {
 
 	void CompileTransform::wouldPerform(BuildContext& context, Artifact& target) {
 		PredictiveCompileXformSourceSink sink(*this, context, target);
-		getSource().getFileReference("", sink, Artifact::FOR_INPUT, context);
+		getSource().getFileReference("", sink, Artifact::FOR_INPUT, Artifact::FOR_PREDICTION, context);
+	}
+
+	void PredictiveCompileXformSourceSink::append(const string& source) {
+		PredictiveCompileXformTargetSink sink(*this, source);
+		target.getFileReference("", sink, Artifact::FOR_OUTPUT, Artifact::FOR_PREDICTION, context);
+	}
+
+	void PredictiveCompileXformTargetSink::append(const string& targetPath) {
+		sourceSink.context.getUI().wouldPerformAction(BuildUI::ActionDescriptor(
+				sourceSink.transform.getComponentType(), sourceSink.transform.getComponentName(),
+				"would compile", Pathname::stripPrefix(sourcePath, sourceSink.transform.getComponentBaseDirectory()),
+				Pathname::stripPrefix(targetPath, sourceSink.transform.getComponentBaseDirectory())), false);
+		sourceSink.target.wouldModify(sourceSink.context);
 	}
 
 	void CompileTransform::dumpTransform(DefaultConfiguredOutputStream<char>::Stream& stream) const {

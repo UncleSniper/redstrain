@@ -1,4 +1,5 @@
 #include <redstrain/util/Delete.hpp>
+#include <redstrain/util/NullAppender.hpp>
 #include <redstrain/platform/Pathname.hpp>
 
 #include "Linker.hpp"
@@ -10,6 +11,7 @@
 using std::string;
 using redengine::util::Delete;
 using redengine::util::Appender;
+using redengine::util::NullAppender;
 using redengine::platform::Pathname;
 using redengine::io::DefaultConfiguredOutputStream;
 using redengine::io::endln;
@@ -51,6 +53,11 @@ namespace build {
 
 	};
 
+	void LinkTransform::perform(BuildContext& context, Artifact& target) {
+		LinkXformTargetSink sink(*this, context, target);
+		target.getFileReference("", sink, Artifact::FOR_OUTPUT, Artifact::FOR_USE, context);
+	}
+
 	void LinkXformTargetSink::append(const string& targetPath) {
 		context.getUI().willPerformAction(BuildUI::ActionDescriptor(transform.getComponentType(),
 				transform.getComponentName(), "linking", "",
@@ -60,7 +67,7 @@ namespace build {
 		ManyToOneTransform<FileArtifact>::SourceIterator sbegin, send;
 		transform.getSources(sbegin, send);
 		for(; sbegin != send; ++sbegin)
-			(*sbegin)->getFileReference("", sink, Artifact::FOR_INPUT, context);
+			(*sbegin)->getFileReference("", sink, Artifact::FOR_INPUT, Artifact::FOR_USE, context);
 		transform.getLinkerConfiguration().applyConfiguration(**linkage);
 		linkage->invoke();
 		target.notifyModified(context);
@@ -70,9 +77,34 @@ namespace build {
 		linkage.addSource(sourcePath);
 	}
 
-	void LinkTransform::perform(BuildContext& context, Artifact& target) {
-		LinkXformTargetSink sink(*this, context, target);
-		target.getFileReference("", sink, Artifact::FOR_OUTPUT, context);
+	struct PredictiveLinkXformTargetSink : Appender<string> {
+
+		LinkTransform& transform;
+		BuildContext& context;
+		Artifact& target;
+
+		PredictiveLinkXformTargetSink(LinkTransform& transform, BuildContext& context, Artifact& target)
+				: transform(transform), context(context), target(target) {}
+
+		virtual void append(const string&);
+
+	};
+
+	void LinkTransform::wouldPerform(BuildContext& context, Artifact& target) {
+		PredictiveLinkXformTargetSink sink(*this, context, target);
+		target.getFileReference("", sink, Artifact::FOR_OUTPUT, Artifact::FOR_PREDICTION, context);
+	}
+
+	void PredictiveLinkXformTargetSink::append(const string& targetPath) {
+		context.getUI().wouldPerformAction(BuildUI::ActionDescriptor(transform.getComponentType(),
+				transform.getComponentName(), "would link", "",
+				Pathname::stripPrefix(targetPath, transform.getComponentBaseDirectory())), false);
+		NullAppender<string> sink;
+		ManyToOneTransform<FileArtifact>::SourceIterator sbegin, send;
+		transform.getSources(sbegin, send);
+		for(; sbegin != send; ++sbegin)
+			(*sbegin)->getFileReference("", sink, Artifact::FOR_INPUT, Artifact::FOR_PREDICTION, context);
+		target.wouldModify(context);
 	}
 
 	void LinkTransform::dumpTransform(DefaultConfiguredOutputStream<char>::Stream& stream) const {

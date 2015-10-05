@@ -38,11 +38,12 @@ namespace build {
 	}
 
 	void ArtifactStage::stage(Artifact& artifact, const string& suffix, bool withContents, BuildContext& context) {
+		string lbase(Pathname::stripSuffix(directory, label));
 		string fullPath(Pathname::join(directory, suffix));
 		string dirpath(Pathname::dirname(fullPath, Pathname::LOGICAL));
 		if(!Filesystem::access(dirpath, Filesystem::FILE_EXISTS)) {
 			context.getUI().willPerformAction(BuildUI::ActionDescriptor("", "",
-					"creating directory", "", Pathname::stripPrefix(dirpath, label)), true);
+					"creating directory", "", Pathname::stripPrefix(dirpath, lbase)), true);
 			Filesystem::mkdirRecursive(dirpath);
 		}
 		if(withContents) {
