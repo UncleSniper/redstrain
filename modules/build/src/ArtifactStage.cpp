@@ -8,6 +8,7 @@
 #include "Artifact.hpp"
 #include "BuildContext.hpp"
 #include "ArtifactStage.hpp"
+#include "ComponentUIInfo.hpp"
 
 using std::string;
 using redengine::util::Delete;
@@ -37,12 +38,18 @@ namespace build {
 		this->label = label;
 	}
 
-	void ArtifactStage::stage(Artifact& artifact, const string& suffix, bool withContents, BuildContext& context) {
-		string lbase(Pathname::stripSuffix(directory, label));
+	void ArtifactStage::stage(Artifact& artifact, const string& suffix, bool withContents, BuildContext& context,
+			const ComponentUIInfo* component) {
+		string lbase;
+		if(component)
+			lbase = component->getComponentBaseDirectory();
+		if(lbase.empty())
+			lbase = Pathname::stripSuffix(directory, label);
 		string fullPath(Pathname::join(directory, suffix));
 		string dirpath(Pathname::dirname(fullPath, Pathname::LOGICAL));
 		if(!Filesystem::access(dirpath, Filesystem::FILE_EXISTS)) {
-			context.getUI().willPerformAction(BuildUI::ActionDescriptor("", "",
+			context.getUI().willPerformAction(BuildUI::ActionDescriptor(component ?
+					component->getComponentType() : "", component ? component->getComponentName() : "",
 					"creating directory", "", Pathname::stripPrefix(dirpath, lbase)), true);
 			Filesystem::mkdirRecursive(dirpath);
 		}

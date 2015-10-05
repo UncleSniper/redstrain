@@ -20,7 +20,7 @@ namespace build {
 
 	  private:
 		void notifyIntermediateDirectoriesCreated(const Mood&, BuildContext&) const;
-		void getFileReferenceForOutput(ReferenceMood, BuildContext&) const;
+		void getFileReferenceForOutput(ReferenceMood, BuildContext&, const ComponentUIInfo*) const;
 
 	  public:
 		FileArtifact(const std::string&, const std::string&);
@@ -41,9 +41,9 @@ namespace build {
 		virtual void remove();
 
 		virtual io::InputStream<char>* getInputStream(BuildContext&);
-		virtual io::OutputStream<char>* getOutputStream(BuildContext&, ReferenceMood);
+		virtual io::OutputStream<char>* getOutputStream(BuildContext&, ReferenceMood, const ComponentUIInfo*);
 		virtual void getFileReference(const std::string&, util::Appender<std::string>&, ReferenceDirection,
-				ReferenceMood, BuildContext&);
+				ReferenceMood, BuildContext&, const ComponentUIInfo*);
 
 		virtual bool isTransformable();
 		virtual std::string getName();

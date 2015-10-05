@@ -56,12 +56,12 @@ namespace build {
 
 	void CompileTransform::perform(BuildContext& context, Artifact& target) {
 		CompileXformSourceSink sink(*this, context, target);
-		getSource().getFileReference("", sink, Artifact::FOR_INPUT, Artifact::FOR_USE, context);
+		getSource().getFileReference("", sink, Artifact::FOR_INPUT, Artifact::FOR_USE, context, this);
 	}
 
 	void CompileXformSourceSink::append(const string& source) {
 		CompileXformTargetSink sink(*this, source);
-		target.getFileReference("", sink, Artifact::FOR_OUTPUT, Artifact::FOR_USE, context);
+		target.getFileReference("", sink, Artifact::FOR_OUTPUT, Artifact::FOR_USE, context, &transform);
 	}
 
 	void CompileXformTargetSink::append(const string& targetPath) {
@@ -104,12 +104,12 @@ namespace build {
 
 	void CompileTransform::wouldPerform(BuildContext& context, Artifact& target) {
 		PredictiveCompileXformSourceSink sink(*this, context, target);
-		getSource().getFileReference("", sink, Artifact::FOR_INPUT, Artifact::FOR_PREDICTION, context);
+		getSource().getFileReference("", sink, Artifact::FOR_INPUT, Artifact::FOR_PREDICTION, context, this);
 	}
 
 	void PredictiveCompileXformSourceSink::append(const string& source) {
 		PredictiveCompileXformTargetSink sink(*this, source);
-		target.getFileReference("", sink, Artifact::FOR_OUTPUT, Artifact::FOR_PREDICTION, context);
+		target.getFileReference("", sink, Artifact::FOR_OUTPUT, Artifact::FOR_PREDICTION, context, &transform);
 	}
 
 	void PredictiveCompileXformTargetSink::append(const string& targetPath) {

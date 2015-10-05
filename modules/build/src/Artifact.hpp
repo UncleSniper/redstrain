@@ -16,6 +16,7 @@ namespace build {
 
 	class Transform;
 	class BuildContext;
+	class ComponentUIInfo;
 
 	class REDSTRAIN_BUILD_API Artifact : public util::ReferenceCounted {
 
@@ -122,9 +123,9 @@ namespace build {
 		virtual void remove() = 0;
 
 		virtual io::InputStream<char>* getInputStream(BuildContext&) = 0;
-		virtual io::OutputStream<char>* getOutputStream(BuildContext&, ReferenceMood) = 0;
+		virtual io::OutputStream<char>* getOutputStream(BuildContext&, ReferenceMood, const ComponentUIInfo*) = 0;
 		virtual void getFileReference(const std::string&, util::Appender<std::string>&, ReferenceDirection,
-				ReferenceMood, BuildContext&) = 0;
+				ReferenceMood, BuildContext&, const ComponentUIInfo*) = 0;
 
 		virtual bool isTransformable() = 0;
 		virtual std::string getName() = 0;

@@ -29,7 +29,7 @@ namespace build {
 				"copying", getSource().getLabel(), target.getLabel()), true);
 		Delete<InputStream<char> > in(getSource().getInputStream(context));
 		StreamCloser inCloser(*in);
-		Delete<OutputStream<char> > out(target.getOutputStream(context, Artifact::FOR_USE));
+		Delete<OutputStream<char> > out(target.getOutputStream(context, Artifact::FOR_USE, this));
 		StreamCloser outCloser(*out);
 		in->copyTo(**out);
 		inCloser.close();
@@ -40,7 +40,7 @@ namespace build {
 	void CopyTransform::wouldPerform(BuildContext& context, Artifact& target) {
 		context.getUI().wouldPerformAction(BuildUI::ActionDescriptor(getComponentType(), getComponentName(),
 				"would copy", getSource().getLabel(), target.getLabel()), true);
-		target.getOutputStream(context, Artifact::FOR_PREDICTION);
+		target.getOutputStream(context, Artifact::FOR_PREDICTION, this);
 		target.wouldModify(context);
 	}
 

@@ -55,7 +55,7 @@ namespace build {
 
 	void LinkTransform::perform(BuildContext& context, Artifact& target) {
 		LinkXformTargetSink sink(*this, context, target);
-		target.getFileReference("", sink, Artifact::FOR_OUTPUT, Artifact::FOR_USE, context);
+		target.getFileReference("", sink, Artifact::FOR_OUTPUT, Artifact::FOR_USE, context, this);
 	}
 
 	void LinkXformTargetSink::append(const string& targetPath) {
@@ -67,7 +67,7 @@ namespace build {
 		ManyToOneTransform<FileArtifact>::SourceIterator sbegin, send;
 		transform.getSources(sbegin, send);
 		for(; sbegin != send; ++sbegin)
-			(*sbegin)->getFileReference("", sink, Artifact::FOR_INPUT, Artifact::FOR_USE, context);
+			(*sbegin)->getFileReference("", sink, Artifact::FOR_INPUT, Artifact::FOR_USE, context, &transform);
 		transform.getLinkerConfiguration().applyConfiguration(**linkage);
 		linkage->invoke();
 		target.notifyModified(context);
@@ -92,7 +92,7 @@ namespace build {
 
 	void LinkTransform::wouldPerform(BuildContext& context, Artifact& target) {
 		PredictiveLinkXformTargetSink sink(*this, context, target);
-		target.getFileReference("", sink, Artifact::FOR_OUTPUT, Artifact::FOR_PREDICTION, context);
+		target.getFileReference("", sink, Artifact::FOR_OUTPUT, Artifact::FOR_PREDICTION, context, this);
 	}
 
 	void PredictiveLinkXformTargetSink::append(const string& targetPath) {
@@ -103,7 +103,7 @@ namespace build {
 		ManyToOneTransform<FileArtifact>::SourceIterator sbegin, send;
 		transform.getSources(sbegin, send);
 		for(; sbegin != send; ++sbegin)
-			(*sbegin)->getFileReference("", sink, Artifact::FOR_INPUT, Artifact::FOR_PREDICTION, context);
+			(*sbegin)->getFileReference("", sink, Artifact::FOR_INPUT, Artifact::FOR_PREDICTION, context, &transform);
 		target.wouldModify(context);
 	}
 

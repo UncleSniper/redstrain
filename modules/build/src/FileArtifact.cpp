@@ -9,6 +9,7 @@
 #include "FileArtifact.hpp"
 #include "BuildContext.hpp"
 #include "ArtifactStage.hpp"
+#include "ComponentUIInfo.hpp"
 
 using std::string;
 using redengine::util::Appender;
@@ -93,49 +94,57 @@ namespace build {
 		return new FileInputStream(path);
 	}
 
-	OutputStream<char>* FileArtifact::getOutputStream(BuildContext& context, ReferenceMood mood) {
-		getFileReferenceForOutput(mood, context);
+	OutputStream<char>* FileArtifact::getOutputStream(BuildContext& context, ReferenceMood mood,
+			const ComponentUIInfo* component) {
+		getFileReferenceForOutput(mood, context, component);
 		return mood == FOR_USE ? new FileOutputStream(path) : NULL;
 	}
 
-	void FileArtifact::getFileReferenceForOutput(ReferenceMood mood, BuildContext& context) const {
-		string lbase(Pathname::stripSuffix(path, label));
+	void FileArtifact::getFileReferenceForOutput(ReferenceMood mood, BuildContext& context,
+			const ComponentUIInfo* component) const {
+		string lbase;
+		if(component)
+			lbase = component->getComponentBaseDirectory();
+		if(lbase.empty())
+			lbase = Pathname::stripSuffix(path, label);
 		string dirpath(Pathname::dirname(path, Pathname::LOGICAL));
 		if(mood == FOR_USE) {
 			if(!Filesystem::access(dirpath, Filesystem::FILE_EXISTS)) {
-				context.getUI().willPerformAction(BuildUI::ActionDescriptor("", "",
+				context.getUI().willPerformAction(BuildUI::ActionDescriptor(component
+						? component->getComponentType() : "", component ? component->getComponentName() : "",
 						"creating directory", "", Pathname::stripPrefix(dirpath, lbase)), true);
 				Filesystem::mkdirRecursive(dirpath);
 				notifyIntermediateDirectoriesCreated(DefinitiveMood::instance, context);
 			}
 		}
 		else {
-			context.getUI().wouldPerformAction(BuildUI::ActionDescriptor("", "",
+			context.getUI().wouldPerformAction(BuildUI::ActionDescriptor(component
+					? component->getComponentType() : "", component ? component->getComponentName() : "",
 					"would create directory", "", Pathname::stripPrefix(dirpath, lbase)), true);
 			notifyIntermediateDirectoriesCreated(PredictiveMood::instance, context);
 		}
 	}
 
 	void FileArtifact::getFileReference(const string& suffix, Appender<string>& sink, ReferenceDirection direction,
-			ReferenceMood mood, BuildContext& context) {
+			ReferenceMood mood, BuildContext& context, const ComponentUIInfo* component) {
 		if(suffix.empty()) {
 			if(direction == FOR_OUTPUT)
-				getFileReferenceForOutput(mood, context);
+				getFileReferenceForOutput(mood, context, component);
 			sink.append(path);
 		}
 		else if(Pathname::endsWith(Pathname::tidy(path), Pathname::tidy(suffix))) {
 			if(direction == FOR_OUTPUT)
-				getFileReferenceForOutput(mood, context);
+				getFileReferenceForOutput(mood, context, component);
 			sink.append(Pathname::stripSuffix(path, suffix));
 		}
 		else {
 			ArtifactStage& stage = getEffectiveArtifactStage();
 			if(direction == FOR_INPUT) {
 				if(Filesystem::access(path, Filesystem::FILE_EXISTS))
-					stage.stage(*this, suffix, true, context);
+					stage.stage(*this, suffix, true, context, component);
 			}
 			else {
-				stage.stage(*this, suffix, false, context);
+				stage.stage(*this, suffix, false, context, component);
 				notifyIntermediateDirectoriesCreated(DefinitiveMood::instance, context);
 			}
 			sink.append(stage.getDirectory());
