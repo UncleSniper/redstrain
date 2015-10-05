@@ -1,7 +1,6 @@
 #ifndef REDSTRAIN_MOD_BUILD_TRANSFORM_HPP
 #define REDSTRAIN_MOD_BUILD_TRANSFORM_HPP
 
-#include <string>
 #include <redstrain/util/UniqueList.hpp>
 #include <redstrain/util/ReferenceCounted.hpp>
 
@@ -13,7 +12,7 @@ namespace build {
 	class Artifact;
 	class BuildContext;
 
-	class REDSTRAIN_BUILD_API Transform : public util::ReferenceCounted, ComponentUIInfo {
+	class REDSTRAIN_BUILD_API Transform : public util::ReferenceCounted, public ComponentUIInfo {
 
 	  private:
 		typedef util::UniqueList<Artifact*> Prerequisites;

@@ -2,16 +2,18 @@
 #define REDSTRAIN_MOD_BUILD_GOAL_HPP
 
 #include <redstrain/util/ReferenceCounted.hpp>
-#include <redstrain/io/streamtypes.hpp>
 
-#include "api.hpp"
+#include "ComponentUIInfo.hpp"
 
 namespace redengine {
 namespace build {
 
 	class BuildContext;
 
-	class REDSTRAIN_BUILD_API Goal : public util::ReferenceCounted {
+	class REDSTRAIN_BUILD_API Goal : public util::ReferenceCounted, public ComponentUIInfo {
+
+	  protected:
+		void dumpGoalAspects(io::DefaultConfiguredOutputStream<char>::Stream&) const;
 
 	  public:
 		Goal();

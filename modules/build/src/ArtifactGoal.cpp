@@ -72,6 +72,7 @@ namespace build {
 		for(; abegin != aend; ++abegin)
 			(*abegin)->dumpArtifact(stream);
 		stream << unshift << indent << '}' << endln;
+		dumpGoalAspects(stream);
 		stream << unshift << indent << '}' << endln;
 	}
 

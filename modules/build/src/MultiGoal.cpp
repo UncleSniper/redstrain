@@ -71,6 +71,7 @@ namespace build {
 		for(; gbegin != gend; ++gbegin)
 			(*gbegin)->dumpGoal(stream);
 		stream << unshift << indent << '}' << endln;
+		dumpGoalAspects(stream);
 		stream << unshift << indent << '}' << endln;
 	}
 
