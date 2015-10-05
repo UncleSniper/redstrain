@@ -15,6 +15,7 @@ namespace build {
 	class Language;
 	class Artifact;
 	class FileArtifact;
+	class ComponentTypeStringifier;
 
 	class REDSTRAIN_BUILD_API Component : public util::ReferenceCounted {
 
@@ -148,6 +149,8 @@ namespace build {
 		void clearHeaderExposeDirectories(const Language&);
 		void clearHeaderExposeDirectories();
 		void getHeaderExposeDirectories(const Language&, ExposeDirectoryIterator&, ExposeDirectoryIterator&) const;
+
+		static std::string::size_type getMaximalComponentTypeWidth(ComponentTypeStringifier&);
 
 	};
 

@@ -1,5 +1,6 @@
 #include "Component.hpp"
 #include "FileArtifact.hpp"
+#include "ComponentTypeStringifier.hpp"
 
 using std::set;
 using std::map;
@@ -432,6 +433,24 @@ namespace build {
 			begin = it->second.begin();
 			end = it->second.end();
 		}
+	}
+
+	string::size_type Component::getMaximalComponentTypeWidth(ComponentTypeStringifier& typeStringifier) {
+		string type(typeStringifier.stringifyComponentType(Component::LIBRARY));
+		string::size_type max = type.length(), cur;
+		type = typeStringifier.stringifyComponentType(Component::EXECUTABLE);
+		cur = type.length();
+		if(cur > max)
+			max = cur;
+		type = typeStringifier.stringifyComponentType(Component::DATA);
+		cur = type.length();
+		if(cur > max)
+			max = cur;
+		type = typeStringifier.stringifyComponentType(Component::BLOB);
+		cur = type.length();
+		if(cur > max)
+			max = cur;
+		return max;
 	}
 
 }}

@@ -1,5 +1,11 @@
+#include <redstrain/util/Delete.hpp>
+#include <redstrain/build/Project.hpp>
+#include <redstrain/platform/Console.hpp>
 #include <redstrain/platform/Pathname.hpp>
+#include <redstrain/build/BuildContext.hpp>
+#include <redstrain/io/FileOutputStream.hpp>
 #include <redstrain/build/ProjectBuilder.hpp>
+#include <redstrain/build/ConsoleBuildUI.hpp>
 #include <redstrain/build/boot/XakeProject.hpp>
 #include <redstrain/build/ComponentRuleBuilder.hpp>
 #include <redstrain/build/ComponentGoalBuilder.hpp>
@@ -15,19 +21,27 @@
 #include <redstrain/build/DefaultTransformPropertyInjector.hpp>
 #include <redstrain/build/boot/XakeComponentTypeStringifier.hpp>
 #include <redstrain/cmdline/parseopt.hpp>
+#include <redstrain/io/streamoperators.hpp>
 
 #include "Options.hpp"
 
 using std::string;
+using redengine::util::Delete;
+using redengine::build::Component;
+using redengine::platform::Console;
 using redengine::platform::Pathname;
+using redengine::build::BuildContext;
 using redengine::cmdline::OptionLogic;
+using redengine::io::FileOutputStream;
 using redengine::build::ProjectBuilder;
+using redengine::build::ConsoleBuildUI;
 using redengine::build::boot::XakeProject;
 using redengine::build::ComponentRuleBuilder;
 using redengine::build::ComponentGoalBuilder;
 using redengine::build::boot::XakeProjectFactory;
 using redengine::build::boot::XakeComponentFinder;
 using redengine::error::UnsupportedOperationError;
+using redengine::io::DefaultConfiguredOutputStream;
 using redengine::build::boot::XakeComponentFactory;
 using redengine::build::DefaultGoalPropertyInjector;
 using redengine::build::boot::XakeDependencyResolver;
@@ -37,6 +51,8 @@ using redengine::build::boot::XakeBuildDirectoryMapper;
 using redengine::build::DefaultTransformPropertyInjector;
 using redengine::cmdline::ConfigurationObjectOptionLogic;
 using redengine::build::boot::XakeComponentTypeStringifier;
+using redengine::io::operator<<;
+using redengine::io::config::tabulation;
 using redengine::cmdline::runWithOptions;
 
 int run(const string&, const Options&);
@@ -81,7 +97,21 @@ int bootstrap(const string&, const Options& options) {
 	ProjectBuilder projectBuilder(projectFactory, componentFinder, componentFactory,
 			dependencyResolver, ruleBuilder, goalBuilder);
 	projectBuilder.buildProject(base);
-	//TODO: create build context...
+	ConsoleBuildUI ui;
+	ui.setMinimalComponentTypeWidth(static_cast<unsigned>(
+			Component::getMaximalComponentTypeWidth(componentTypeStringifier)));
+	ui.setMinimalComponentNameWidth(static_cast<unsigned>(
+			projectBuilder.getProject()->getMaximalComponentNameWidth()));
+	Delete<BuildContext> context(projectBuilder.newBuildContext(ui));
+	//TODO: gather requested goals
+	if(options.isDumpContext()) {
+		FileOutputStream sout(Console::getStandardHandle(Console::STANDARD_OUTPUT));
+		DefaultConfiguredOutputStream<char>::Stream formatted(sout);
+		formatted << tabulation<char>("    ");
+		context->dumpContext(formatted);
+		return 0;
+	}
+	//TODO: perform run
 	return 0;
 }
 
