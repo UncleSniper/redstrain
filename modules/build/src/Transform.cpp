@@ -74,6 +74,9 @@ namespace build {
 	}
 
 	void Transform::dumpTransformAspects(DefaultConfiguredOutputStream<char>::Stream& stream) const {
+		stream << indent << "componentType = '" << componentType << '\'' << endln;
+		stream << indent << "componentName = '" << componentName << '\'' << endln;
+		stream << indent << "componentBase = '" << componentBase << '\'' << endln;
 		stream << indent << "prerequisites = {" << endln << shift;
 		PrerequisiteIterator pqbegin(prerequisites.begin()), pqend(prerequisites.end());
 		for(; pqbegin != pqend; ++pqbegin)
