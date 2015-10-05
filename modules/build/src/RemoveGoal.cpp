@@ -1,7 +1,9 @@
 #include <redstrain/io/streamoperators.hpp>
 
+#include "BuildUI.hpp"
 #include "Artifact.hpp"
 #include "RemoveGoal.hpp"
+#include "BuildContext.hpp"
 
 using redengine::io::DefaultConfiguredOutputStream;
 using redengine::io::endln;
@@ -53,16 +55,26 @@ namespace build {
 		end = artifacts.end();
 	}
 
-	void RemoveGoal::attain(BuildContext&) {
+	void RemoveGoal::attain(BuildContext& context) {
 		ArtifactIterator begin(artifacts.begin()), end(artifacts.end());
-		for(; begin != end; ++begin)
-			(*begin)->remove();
+		for(; begin != end; ++begin) {
+			if((*begin)->isPresent()) {
+				context.getUI().willPerformAction(BuildUI::ActionDescriptor("", "",
+						"removing", (*begin)->getLabel(), ""), false);
+				(*begin)->remove();
+			}
+		}
 	}
 
-	void RemoveGoal::wouldAttain(BuildContext&) {
+	void RemoveGoal::wouldAttain(BuildContext& context) {
 		ArtifactIterator begin(artifacts.begin()), end(artifacts.end());
-		for(; begin != end; ++begin)
-			(*begin)->wouldRemove();
+		for(; begin != end; ++begin) {
+			if((*begin)->wouldBePresent()) {
+				context.getUI().wouldPerformAction(BuildUI::ActionDescriptor("", "",
+						"would remove", (*begin)->getLabel(), ""), false);
+				(*begin)->wouldRemove();
+			}
+		}
 	}
 
 	void RemoveGoal::dumpGoal(DefaultConfiguredOutputStream<char>::Stream& stream) const {
