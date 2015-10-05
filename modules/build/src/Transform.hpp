@@ -4,9 +4,8 @@
 #include <string>
 #include <redstrain/util/UniqueList.hpp>
 #include <redstrain/util/ReferenceCounted.hpp>
-#include <redstrain/io/streamtypes.hpp>
 
-#include "api.hpp"
+#include "ComponentUIInfo.hpp"
 
 namespace redengine {
 namespace build {
@@ -14,7 +13,7 @@ namespace build {
 	class Artifact;
 	class BuildContext;
 
-	class REDSTRAIN_BUILD_API Transform : public util::ReferenceCounted {
+	class REDSTRAIN_BUILD_API Transform : public util::ReferenceCounted, ComponentUIInfo {
 
 	  private:
 		typedef util::UniqueList<Artifact*> Prerequisites;
@@ -24,7 +23,6 @@ namespace build {
 
 	  private:
 		Prerequisites prerequisites;
-		std::string componentType, componentName, componentBase;
 		bool uiMinor;
 
 	  protected:
@@ -34,24 +32,6 @@ namespace build {
 		Transform();
 		Transform(const Transform&);
 		virtual ~Transform();
-
-		inline const std::string& getComponentType() const {
-			return componentType;
-		}
-
-		void setComponentType(const std::string&);
-
-		inline const std::string& getComponentName() const {
-			return componentName;
-		}
-
-		void setComponentName(const std::string&);
-
-		inline const std::string& getComponentBaseDirectory() const {
-			return componentBase;
-		}
-
-		void setComponentBaseDirectory(const std::string&);
 
 		inline bool isUIMinor() const {
 			return uiMinor;
