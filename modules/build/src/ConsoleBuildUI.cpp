@@ -15,19 +15,35 @@ namespace build {
 
 	ConsoleBuildUI::ConsoleBuildUI()
 			: output(Console::getStandardHandle(Console::STANDARD_OUTPUT)), formatted(output),
-			componentTypeWidth(0u), componentNameWidth(0u), flags(DEFAULT_FLAGS) {}
+			componentTypeWidth(0u), componentNameWidth(0u), flags(DEFAULT_FLAGS), console(NULL),
+			deleteConsole(false) {}
 
 	ConsoleBuildUI::ConsoleBuildUI(const File::Handle& handle)
 			: output(handle), formatted(output), componentTypeWidth(0u), componentNameWidth(0u),
-			flags(DEFAULT_FLAGS) {}
+			flags(DEFAULT_FLAGS), console(NULL), deleteConsole(false) {}
 
 	ConsoleBuildUI::ConsoleBuildUI(Console::StandardHandle handle)
 			: output(Console::getStandardHandle(handle)), formatted(output), componentTypeWidth(0u),
-			componentNameWidth(0u), flags(DEFAULT_FLAGS) {}
+			componentNameWidth(0u), flags(DEFAULT_FLAGS), console(NULL), deleteConsole(false) {}
 
 	ConsoleBuildUI::ConsoleBuildUI(const ConsoleBuildUI& ui) : AbstractBuildUI(ui),
 			output(ui.output.getFile().getHandle()), formatted(output), componentTypeWidth(ui.componentTypeWidth),
-			componentNameWidth(ui.componentNameWidth), flags(ui.flags) {}
+			componentNameWidth(ui.componentNameWidth), flags(ui.flags),
+			console(ui.deleteConsole ? NULL : ui.console), deleteConsole(false) {}
+
+	ConsoleBuildUI::~ConsoleBuildUI() {
+		if(console && deleteConsole)
+			delete console;
+	}
+
+	void ConsoleBuildUI::detectConsole() {
+		if(console)
+			return;
+		if(Console::isConsole(output.getFile().getHandle())) {
+			console = new Console(output.getFile());
+			deleteConsole = true;
+		}
+	}
 
 	void ConsoleBuildUI::indent(unsigned level) {
 		for(; level; --level)
@@ -61,10 +77,16 @@ namespace build {
 			if(isMinor)
 				indent(countDigits(needCount) * 2u + 11u);
 			else {
+				if(console) {
+					console->setForeground(ConsoleBuildUI::PROGRESS_COLOR);
+					console->setIntensity(ConsoleBuildUI::PROGRESS_INTENSITY);
+				}
 				formatted << '[' << pad<char>(countDigits(needCount), ' ');
 				formatted << (haveCount + 1u) << '/' << needCount << " = ";
 				unsigned percent = needCount > 1u ? haveCount * 100u / (needCount - 1u) : 100u;
 				formatted << pad<char>(3u, ' ') << percent << "%] ";
+				if(console)
+					console->resetAttributes();
 			}
 		}
 		const string& componentType = action.getComponentType();
@@ -72,6 +94,10 @@ namespace build {
 		const string& componentName = action.getComponentName();
 		string::size_type cnlen = componentName.length();
 		if(ctlen && cnlen) {
+			if(console) {
+				console->setForeground(ConsoleBuildUI::COMPONENT_TAG_COLOR);
+				console->setIntensity(ConsoleBuildUI::COMPONENT_TAG_INTENSITY);
+			}
 			formatted << '[' << componentType;
 			if(ctlen < static_cast<string::size_type>(componentTypeWidth))
 				indent(static_cast<unsigned>(static_cast<string::size_type>(componentTypeWidth) - ctlen));
@@ -79,6 +105,8 @@ namespace build {
 			if(cnlen < static_cast<string::size_type>(componentNameWidth))
 				indent(static_cast<unsigned>(static_cast<string::size_type>(componentNameWidth) - cnlen));
 			formatted << "] ";
+			if(console)
+				console->resetAttributes();
 		}
 		else
 			indent(componentTypeWidth + componentNameWidth + 4u);
@@ -116,10 +144,16 @@ namespace build {
 		delta /= 60u;
 		unsigned min = delta % 60;
 		unsigned hrs = delta / 60u;
+		if(console) {
+			console->setForeground(ConsoleBuildUI::SUCCESS_COLOR);
+			console->setIntensity(ConsoleBuildUI::SUCCESS_INTENSITY);
+		}
 		formatted << pad<char>(2u) << "Build successful in ";
 		if(hrs)
 			formatted << hrs << ':';
 		formatted << min << ':' << sec << endln;
+		if(console)
+			console->resetAttributes();
 	}
 
 }}

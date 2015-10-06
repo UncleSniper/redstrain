@@ -109,6 +109,7 @@ int bootstrap(const string&, const Options& options) {
 			dependencyResolver, ruleBuilder, goalBuilder);
 	projectBuilder.buildProject(base);
 	ConsoleBuildUI ui;
+	ui.detectConsole();
 	ui.setMinimalComponentTypeWidth(static_cast<unsigned>(
 			Component::getMaximalComponentTypeWidth(componentTypeStringifier)));
 	ui.setMinimalComponentNameWidth(static_cast<unsigned>(

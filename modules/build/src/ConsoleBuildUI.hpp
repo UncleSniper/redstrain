@@ -20,12 +20,20 @@ namespace build {
 
 	  public:
 		static const int DEFAULT_FLAGS = PRINT_PREDICTIVE | PRINT_DEFINITIVE;
+		static const platform::Console::Color COMPONENT_TAG_COLOR = platform::Console::MAGENTA;
+		static const platform::Console::Intensity COMPONENT_TAG_INTENSITY = platform::Console::BRIGHT;
+		static const platform::Console::Color PROGRESS_COLOR = platform::Console::CYAN;
+		static const platform::Console::Intensity PROGRESS_INTENSITY = platform::Console::BRIGHT;
+		static const platform::Console::Color SUCCESS_COLOR = platform::Console::GREEN;
+		static const platform::Console::Intensity SUCCESS_INTENSITY = platform::Console::BRIGHT;
 
 	  private:
 		io::FileOutputStream output;
 		io::DefaultConfiguredOutputStream<char>::Stream formatted;
 		unsigned componentTypeWidth, componentNameWidth;
 		int flags;
+		platform::Console* console;
+		bool deleteConsole;
 
 	  private:
 		void indent(unsigned);
@@ -36,6 +44,7 @@ namespace build {
 		ConsoleBuildUI(const platform::File::Handle&);
 		ConsoleBuildUI(platform::Console::StandardHandle);
 		ConsoleBuildUI(const ConsoleBuildUI&);
+		virtual ~ConsoleBuildUI();
 
 		inline io::FileOutputStream& getOutputStream() {
 			return output;
@@ -76,6 +85,17 @@ namespace build {
 		inline void setFlags(int flags) {
 			this->flags = flags;
 		}
+
+		inline platform::Console* getConsole() const {
+			return console;
+		}
+
+		inline void setConsole(platform::Console* console) {
+			this->console = console;
+			deleteConsole = false;
+		}
+
+		void detectConsole();
 
 		virtual void willPerformAction(const ActionDescriptor&, bool);
 		virtual void wouldPerformAction(const ActionDescriptor&, bool);
