@@ -118,8 +118,11 @@ namespace build {
 		stream << indent << "BuildContext " << this << " {" << endln << shift;
 		stream << indent << "goals = {" << endln << shift;
 		ConstGoalIterator gbegin(goals.begin()), gend(goals.end());
-		for(; gbegin != gend; ++gbegin)
+		for(; gbegin != gend; ++gbegin) {
+			stream << indent << gbegin->first << " ->" << endln << shift;
 			gbegin->second->dumpGoal(stream);
+			stream << unshift;
+		}
 		stream << unshift << indent << '}' << endln;
 		stream << unshift << indent << '}' << endln;
 	}
