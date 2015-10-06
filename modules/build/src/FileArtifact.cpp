@@ -50,7 +50,7 @@ namespace build {
 		if(!intermediateDirectories.empty())
 			return;
 		string lbase(Pathname::tidy(labelBase));
-		string current(Pathname::tidy(path));
+		string current(Pathname::dirname(Pathname::tidy(path), Pathname::LOGICAL));
 		while(current != lbase) {
 			FileArtifact& idir = context.internFileArtifact(current, Pathname::stripPrefix(current, lbase));
 			if(intermediateDirectories.append(&idir))
