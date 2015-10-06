@@ -1,3 +1,5 @@
+#include <list>
+#include <redstrain/build/Goal.hpp>
 #include <redstrain/util/Delete.hpp>
 #include <redstrain/build/Project.hpp>
 #include <redstrain/platform/Console.hpp>
@@ -6,7 +8,9 @@
 #include <redstrain/io/FileOutputStream.hpp>
 #include <redstrain/build/ProjectBuilder.hpp>
 #include <redstrain/build/ConsoleBuildUI.hpp>
+#include <redstrain/build/NoSuchGoalError.hpp>
 #include <redstrain/build/boot/XakeProject.hpp>
+#include <redstrain/build/NoDefaultGoalError.hpp>
 #include <redstrain/build/ComponentRuleBuilder.hpp>
 #include <redstrain/build/ComponentGoalBuilder.hpp>
 #include <redstrain/build/boot/XakeProjectFactory.hpp>
@@ -25,7 +29,9 @@
 
 #include "Options.hpp"
 
+using std::list;
 using std::string;
+using redengine::build::Goal;
 using redengine::util::Delete;
 using redengine::build::Component;
 using redengine::platform::Console;
@@ -35,7 +41,9 @@ using redengine::cmdline::OptionLogic;
 using redengine::io::FileOutputStream;
 using redengine::build::ProjectBuilder;
 using redengine::build::ConsoleBuildUI;
+using redengine::build::NoSuchGoalError;
 using redengine::build::boot::XakeProject;
+using redengine::build::NoDefaultGoalError;
 using redengine::build::ComponentRuleBuilder;
 using redengine::build::ComponentGoalBuilder;
 using redengine::build::boot::XakeProjectFactory;
@@ -103,7 +111,23 @@ int bootstrap(const string&, const Options& options) {
 	ui.setMinimalComponentNameWidth(static_cast<unsigned>(
 			projectBuilder.getProject()->getMaximalComponentNameWidth()));
 	Delete<BuildContext> context(projectBuilder.newBuildContext(ui));
-	//TODO: gather requested goals
+	list<Goal*> goals;
+	Options::GoalNameIterator gnbegin, gnend;
+	options.getGoals(gnbegin, gnend);
+	if(gnbegin == gnend) {
+		Goal* defaultGoal = context->getDefaultGoal();
+		if(!defaultGoal)
+			throw NoDefaultGoalError();
+		goals.push_back(defaultGoal);
+	}
+	else {
+		for(; gnbegin != gnend; ++gnbegin) {
+			Goal* goal = context->getGoal(*gnbegin);
+			if(!goal)
+				throw NoSuchGoalError(*gnbegin);
+			goals.push_back(goal);
+		}
+	}
 	if(options.isDumpContext()) {
 		FileOutputStream sout(Console::getStandardHandle(Console::STANDARD_OUTPUT));
 		DefaultConfiguredOutputStream<char>::Stream formatted(sout);
@@ -111,7 +135,24 @@ int bootstrap(const string&, const Options& options) {
 		context->dumpContext(formatted);
 		return 0;
 	}
-	//TODO: perform run
+	list<Goal*>::const_iterator gbegin, gend;
+	if(options.isDry()) {
+		ui.startPredictiveRun();
+		for(gbegin = goals.begin(), gend = goals.end(); gbegin != gend; ++gbegin)
+			(*gbegin)->wouldAttain(**context);
+		ui.endPredictiveRun();
+	}
+	else {
+		ui.setFlags(ConsoleBuildUI::PRINT_DEFINITIVE);
+		ui.startPredictiveRun();
+		for(gbegin = goals.begin(), gend = goals.end(); gbegin != gend; ++gbegin)
+			(*gbegin)->wouldAttain(**context);
+		ui.endPredictiveRun();
+		ui.startDefinitiveRun();
+		for(gbegin = goals.begin(), gend = goals.end(); gbegin != gend; ++gbegin)
+			(*gbegin)->attain(**context);
+		ui.endDefinitiveRun();
+	}
 	return 0;
 }
 
