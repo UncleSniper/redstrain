@@ -47,6 +47,11 @@ namespace build {
 		else
 			return NULL;
 		string targetBasename(artifactMapper.getTargetFileName(component, *this, transformFlavor));
+		string tbnDir(Pathname::dirname(targetBasename, Pathname::LOGICAL));
+		string tbnBase(Pathname::basename(targetBasename));
+		if(tbnBase == targetBasename)
+			tbnDir.clear();
+		targetBasename = Pathname::join(tbnDir, linker.decorateBinaryFileName(tbnBase, mode));
 		FileArtifact& targetArtifact = context.internFileArtifact(Pathname::tidy(Pathname::join(targetDirectory,
 				targetBasename)), targetBasename);
 		Unref<LinkTransform> transform(new LinkTransform(linker, mode,
