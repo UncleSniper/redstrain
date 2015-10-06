@@ -59,7 +59,7 @@ namespace build {
 		ArtifactIterator begin(artifacts.begin()), end(artifacts.end());
 		for(; begin != end; ++begin) {
 			if((*begin)->isPresent()) {
-				context.getUI().willPerformAction(BuildUI::ActionDescriptor("", "",
+				context.getUI().willPerformAction(BuildUI::ActionDescriptor(getComponentType(), getComponentName(),
 						"removing", (*begin)->getLabel(), ""), false);
 				(*begin)->remove();
 			}
@@ -70,7 +70,7 @@ namespace build {
 		ArtifactIterator begin(artifacts.begin()), end(artifacts.end());
 		for(; begin != end; ++begin) {
 			if((*begin)->wouldBePresent()) {
-				context.getUI().wouldPerformAction(BuildUI::ActionDescriptor("", "",
+				context.getUI().wouldPerformAction(BuildUI::ActionDescriptor(getComponentType(), getComponentName(),
 						"would remove", (*begin)->getLabel(), ""), false);
 				(*begin)->wouldRemove();
 			}
