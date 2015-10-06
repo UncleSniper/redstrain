@@ -101,7 +101,7 @@ namespace build {
 
 	// ======== Artifact ========
 
-	Artifact::Artifact() {}
+	Artifact::Artifact() : generatingTransform(NULL) {}
 
 	Artifact::Artifact(const Artifact& artifact) : ReferenceCounted(artifact),
 			generatingTransform(artifact.generatingTransform) {
