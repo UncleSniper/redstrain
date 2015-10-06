@@ -10,10 +10,10 @@ using redengine::cmdline::StopExecution;
 
 Options::Options(const Options& options)
 		: progname(options.progname), goals(options.goals), bootstrap(options.bootstrap), dry(options.dry),
-		dumpContext(options.dumpContext), base(options.base) {}
+		dumpContext(options.dumpContext), showGoals(options.showGoals), base(options.base) {}
 
 Options::Options(const char* progname)
-		: progname(progname), bootstrap(false), dry(false), dumpContext(false), base(".") {}
+		: progname(progname), bootstrap(false), dry(false), dumpContext(false), showGoals(false), base(".") {}
 
 void Options::getGoals(GoalNameIterator& begin, GoalNameIterator& end) const {
 	begin = goals.begin();
