@@ -61,7 +61,7 @@ namespace build {
 		Component& component;
 		BuildContext& context;
 		ComponentRuleBuilder& builder;
-		map<const Language*, ManyToOneTransform<FileArtifact>*> singleTransforms;
+		map<const Language*, map<Flavor, ManyToOneTransform<FileArtifact>*> > singleTransforms;
 		list<PendingHeaderScan> pendingHeaderScans;
 		UniqueList<FileArtifact*> buildDirectories;
 
@@ -69,10 +69,14 @@ namespace build {
 				: component(component), context(context), builder(builder) {}
 
 		~PerComponentSetupInfo() {
-			map<const Language*, ManyToOneTransform<FileArtifact>*>::const_iterator
-					stbegin(singleTransforms.begin()), stend(singleTransforms.end());
-			for(; stbegin != stend; ++stbegin)
-				stbegin->second->unref();
+			map<const Language*, map<Flavor, ManyToOneTransform<FileArtifact>*> >::const_iterator
+					st0begin(singleTransforms.begin()), st0end(singleTransforms.end());
+			for(; st0begin != st0end; ++st0begin) {
+				map<Flavor, ManyToOneTransform<FileArtifact>*>::const_iterator
+						st1begin(st0begin->second.begin()), st1end(st0begin->second.end());
+				for(; st1begin != st1end; ++st1begin)
+					st1begin->second->unref();
+			}
 			list<PendingHeaderScan>::iterator phsbegin(pendingHeaderScans.begin()), phsend(pendingHeaderScans.end());
 			for(; phsbegin != phsend; ++phsbegin) {
 				phsbegin->transform.unref();
@@ -218,15 +222,20 @@ namespace build {
 		bool is121 = language.isOneToOne(transformFlavor);
 		bool cleanArtifact = buildDirectory == Pathname::tidy(cbase);
 		if(!is121) {
-			map<const Language*, ManyToOneTransform<FileArtifact>*>::const_iterator it
+			map<const Language*, map<Flavor, ManyToOneTransform<FileArtifact>*> >::const_iterator it0
 					= perComponent.singleTransforms.find(&language);
-			if(it != perComponent.singleTransforms.end()) {
-				it->second->addPrerequisite(sourceArtifact);
-				it->second->addSource(sourceArtifact);
-				perComponent.pendingHeaderScans.push_back(PendingHeaderScan(language, *it->second, sourceArtifact));
-				it->second->ref();
-				sourceArtifact.ref();
-				return;
+			if(it0 != perComponent.singleTransforms.end()) {
+				map<Flavor, ManyToOneTransform<FileArtifact>*>::const_iterator it1
+						= it0->second.find(transformFlavor);
+				if(it1 != it0->second.end()) {
+					it1->second->addPrerequisite(sourceArtifact);
+					it1->second->addSource(sourceArtifact);
+					perComponent.pendingHeaderScans.push_back(PendingHeaderScan(language,
+							*it1->second, sourceArtifact));
+					it1->second->ref();
+					sourceArtifact.ref();
+					return;
+				}
 			}
 		}
 		ManyToOneTransform<FileArtifact>* manyTransform = NULL;
@@ -238,7 +247,13 @@ namespace build {
 		if(!*target)
 			return;
 		if(!is121 && manyTransform) {
-			perComponent.singleTransforms[&language] = manyTransform;
+			map<const Language*, map<Flavor, ManyToOneTransform<FileArtifact>*> >::iterator it
+					= perComponent.singleTransforms.find(&language);
+			if(it == perComponent.singleTransforms.end())
+				(perComponent.singleTransforms[&language]
+						= map<Flavor, ManyToOneTransform<FileArtifact>*>())[transformFlavor] = manyTransform;
+			else
+				it->second[transformFlavor] = manyTransform;
 			manyTransform->ref();
 		}
 		ArtifactStageMapper* stageMapper = perComponent.builder.getArtifactStageMapper();
