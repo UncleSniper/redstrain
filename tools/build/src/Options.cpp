@@ -31,6 +31,8 @@ void Options::usage() {
 		<< "    --dry          perform dry run: print only what would be done, without" << endl
 		<< "                   actually performing the actions" << endl
 		<< "    -y             same as --dry" << endl
+		<< "    --list-goals   list defined goals and quit" << endl
+		<< "    -l             same as --list-goals" << endl
 		<< "    --help         print this helpful message and quit" << endl;
 	throw StopExecution(0);
 }
@@ -49,6 +51,10 @@ void Options::setBase(const string& base) {
 
 void Options::setDumpContext(bool dumpContext) {
 	this->dumpContext = dumpContext;
+}
+
+void Options::setShowGoals(bool showGoals) {
+	this->showGoals = showGoals;
 }
 
 void Options::addBareword(const string& word) {

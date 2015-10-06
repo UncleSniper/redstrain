@@ -59,6 +59,7 @@ using redengine::build::boot::XakeBuildDirectoryMapper;
 using redengine::build::DefaultTransformPropertyInjector;
 using redengine::cmdline::ConfigurationObjectOptionLogic;
 using redengine::build::boot::XakeComponentTypeStringifier;
+using redengine::io::endln;
 using redengine::io::operator<<;
 using redengine::io::config::tabulation;
 using redengine::cmdline::runWithOptions;
@@ -76,6 +77,8 @@ int main(int argc, char** argv) {
 	logic.addShortOption('y', &Options::setDry);
 	logic.addLongOption("base", &Options::setBase, OptionLogic::REQUIRED_ARGUMENT);
 	logic.addLongOption("dump-context", &Options::setDumpContext);
+	logic.addLongOption("list-goals", &Options::setShowGoals);
+	logic.addShortOption('l', &Options::setShowGoals);
 	return runWithOptions(argv, argc, logic, &Options::addBareword, &Options::checkBarewords, run);
 }
 
@@ -133,6 +136,13 @@ int bootstrap(const string&, const Options& options) {
 		DefaultConfiguredOutputStream<char>::Stream formatted(sout);
 		formatted << tabulation<char>("    ");
 		context->dumpContext(formatted);
+		return 0;
+	}
+	if(options.isShowGoals()) {
+		BuildContext::GoalNameIterator cgnbegin, cgnend;
+		context->getGoals(cgnbegin, cgnend);
+		for(; cgnbegin != cgnend; ++cgnbegin)
+			ui.getFormattedOutputStream() << *cgnbegin << endln;
 		return 0;
 	}
 	list<Goal*>::const_iterator gbegin, gend;

@@ -45,6 +45,14 @@ namespace build {
 			return output;
 		}
 
+		inline io::DefaultConfiguredOutputStream<char>::Stream& getFormattedOutputStream() {
+			return formatted;
+		}
+
+		inline const io::DefaultConfiguredOutputStream<char>::Stream& getFormattedOutputStream() const {
+			return formatted;
+		}
+
 		inline unsigned getMinimalComponentTypeWidth() const {
 			return componentTypeWidth;
 		}

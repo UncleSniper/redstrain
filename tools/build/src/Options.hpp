@@ -15,7 +15,7 @@ class Options {
   private:
 	const std::string progname;
 	GoalNames goals;
-	bool bootstrap, dry, dumpContext;
+	bool bootstrap, dry, dumpContext, showGoals;
 	std::string base;
 
   private:
@@ -36,6 +36,10 @@ class Options {
 		return dumpContext;
 	}
 
+	inline bool isShowGoals() const {
+		return showGoals;
+	}
+
 	inline const std::string& getBase() const {
 		return base;
 	}
@@ -46,6 +50,7 @@ class Options {
 	void setBootstrap(bool);
 	void setDry(bool);
 	void setDumpContext(bool);
+	void setShowGoals(bool);
 	void setBase(const std::string&);
 	void addBareword(const std::string&);
 	void checkBarewords();
