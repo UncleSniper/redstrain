@@ -124,10 +124,13 @@ namespace build {
 			}
 		}
 		else {
-			context.getUI().wouldPerformAction(BuildUI::ActionDescriptor(component
-					? component->getComponentType() : "", component ? component->getComponentName() : "",
-					"would create directory", "", Pathname::stripPrefix(dirpath, lbase)), true);
-			notifyIntermediateDirectoriesCreated(PredictiveMood::instance, context);
+			string plabel(Pathname::stripPrefix(dirpath, lbase));
+			if(!context.internFileArtifact(dirpath, plabel).wouldBePresent()) {
+				context.getUI().wouldPerformAction(BuildUI::ActionDescriptor(component
+						? component->getComponentType() : "", component ? component->getComponentName() : "",
+						"would create directory", "", plabel), true);
+				notifyIntermediateDirectoriesCreated(PredictiveMood::instance, context);
+			}
 		}
 	}
 
