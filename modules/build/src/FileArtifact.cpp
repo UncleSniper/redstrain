@@ -30,7 +30,13 @@ using redengine::io::operator<<;
 namespace redengine {
 namespace build {
 
-	FileArtifact::FileArtifact(const string& path, const string& label) : path(path), label(label) {}
+	FileArtifact::FileArtifact(const string& path, const string& label) : path(path), label(label) {
+		if(Filesystem::access(path, Filesystem::FILE_EXISTS)) {
+			Stat stat;
+			Filesystem::stat(path, stat);
+			setPredictedModificationTimestamp(stat.getModificationTimestamp());
+		}
+	}
 
 	FileArtifact::FileArtifact(const FileArtifact& artifact)
 			: AbstractArtifact(artifact), path(artifact.path), label(artifact.label),
