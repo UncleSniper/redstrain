@@ -81,7 +81,7 @@ namespace build {
 			formatted << "] ";
 		}
 		else
-			indent(componentTypeWidth + componentNameWidth + 3u);
+			indent(componentTypeWidth + componentNameWidth + 4u);
 		formatted << action.getActionName();
 		const string& source = action.getSource();
 		const string& target = action.getTarget();
