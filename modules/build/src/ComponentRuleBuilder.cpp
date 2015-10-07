@@ -158,7 +158,7 @@ namespace build {
 
 	struct ReferencedHeaderAppender : Appender<Language::ReferencedHeader> {
 
-		const string& source;
+		const string source;
 		Component& component;
 		bool allowPrivate;
 		Language& language;
@@ -197,6 +197,8 @@ namespace build {
 			if(*target) {
 				perComponent.component.addExposedHeader(language,
 						Pathname::tidy(Pathname::stripPrefix(target->getPath(), exposeDirectory)), **target);
+				perComponent.component.addUnexposedHeader(**target, header);
+				perComponent.component.addReverseUnexposedHeader(header, **target);
 				ArtifactStageMapper* stageMapper = perComponent.builder.getArtifactStageMapper();
 				AbstractArtifact* abstractTarget = dynamic_cast<AbstractArtifact*>(*target);
 				if(stageMapper && abstractTarget)
@@ -371,20 +373,23 @@ namespace build {
 	}
 
 	void ReferencedHeaderAppender::append(const Language::ReferencedHeader& header) {
-		if(header.isLocal() && allowPrivate) {
+		if(header.isLocal()) {
 			string lref(Pathname::tidy(Pathname::join(Pathname::dirname(source, Pathname::LOGICAL),
 					header.getPath())));
 			if(!Pathname::startsWith(lref, Pathname::PARENT_DIRECTORY)) {
 				FileArtifact* pheader = component.getPrivateHeader(language, lref);
 				if(pheader) {
-					transform.addPrerequisite(*pheader);
-					if(scanned.find(pheader) == scanned.end()) {
-						scanned.insert(pheader);
-						ReferencedHeaderAppender sink(pheader->getLabel(), component, true,
-								language, transform, scanned);
-						language.getReferencedHeaders(pheader->getPath(), sink);
+					FileArtifact* eheader = component.getReverseUnexposedHeader(*pheader);
+					if(allowPrivate || eheader) {
+						transform.addPrerequisite(allowPrivate ? *pheader : *eheader);
+						if(scanned.find(pheader) == scanned.end()) {
+							scanned.insert(pheader);
+							ReferencedHeaderAppender sink(pheader->getLabel(), component, true,
+									language, transform, scanned);
+							language.getReferencedHeaders(pheader->getPath(), sink);
+						}
+						return;
 					}
-					return;
 				}
 			}
 		}

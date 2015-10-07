@@ -59,7 +59,9 @@ namespace build {
 			: ReferenceCounted(component), type(component.type), name(component.name),
 			baseDirectory(component.baseDirectory), sourceDirectories(component.sourceDirectories),
 			privateHeaders(component.privateHeaders), exposedHeaders(component.exposedHeaders),
-			finalArtifacts(component.finalArtifacts), exposeDirectories(component.exposeDirectories) {
+			finalArtifacts(component.finalArtifacts), unexposedHeaders(component.unexposedHeaders),
+			reverseUnexposedHeaders(component.reverseUnexposedHeaders),
+			exposeDirectories(component.exposeDirectories) {
 		ComponentIterator depbegin(dependencies.begin()), depend(dependencies.end());
 		for(; depbegin != depend; ++depbegin)
 			(*depbegin)->ref();
@@ -80,6 +82,10 @@ namespace build {
 				h1begin->second->ref();
 		}
 		ConstUnexposedHeaderIterator uebegin(unexposedHeaders.begin()), ueend(unexposedHeaders.end());
+		for(; uebegin != ueend; ++uebegin)
+			uebegin->second->ref();
+		uebegin = reverseUnexposedHeaders.begin();
+		ueend = reverseUnexposedHeaders.end();
 		for(; uebegin != ueend; ++uebegin)
 			uebegin->second->ref();
 	}
@@ -105,6 +111,10 @@ namespace build {
 				h1begin->second->unref();
 		}
 		ConstUnexposedHeaderIterator uebegin(unexposedHeaders.begin()), ueend(unexposedHeaders.end());
+		for(; uebegin != ueend; ++uebegin)
+			uebegin->second->unref();
+		uebegin = reverseUnexposedHeaders.begin();
+		ueend = reverseUnexposedHeaders.end();
 		for(; uebegin != ueend; ++uebegin)
 			uebegin->second->unref();
 	}
@@ -391,6 +401,42 @@ namespace build {
 	FileArtifact* Component::getUnexposedHeader(const Artifact& exposed) const {
 		ConstUnexposedHeaderIterator it = unexposedHeaders.find(&exposed);
 		return it == unexposedHeaders.end() ? NULL : it->second;
+	}
+
+	bool Component::addReverseUnexposedHeader(const Artifact& unexposed, FileArtifact& exposed) {
+		UnexposedHeaderIterator it = reverseUnexposedHeaders.find(&unexposed);
+		if(it == reverseUnexposedHeaders.end()) {
+			reverseUnexposedHeaders[&unexposed] = &exposed;
+			exposed.ref();
+			return true;
+		}
+		if(it->second == &exposed)
+			return false;
+		exposed.ref();
+		it->second->unref();
+		it->second = &exposed;
+		return true;
+	}
+
+	bool Component::removeReverseUnexposedHeader(const Artifact& unexposed) {
+		UnexposedHeaderIterator it = reverseUnexposedHeaders.find(&unexposed);
+		if(it == reverseUnexposedHeaders.end())
+			return false;
+		it->second->unref();
+		reverseUnexposedHeaders.erase(it);
+		return true;
+	}
+
+	void Component::clearReverseUnexposedHeaders() {
+		ConstUnexposedHeaderIterator uebegin(reverseUnexposedHeaders.begin()), ueend(reverseUnexposedHeaders.end());
+		for(; uebegin != ueend; ++uebegin)
+			uebegin->second->unref();
+		reverseUnexposedHeaders.clear();
+	}
+
+	FileArtifact* Component::getReverseUnexposedHeader(const Artifact& unexposed) const {
+		ConstUnexposedHeaderIterator it = reverseUnexposedHeaders.find(&unexposed);
+		return it == reverseUnexposedHeaders.end() ? NULL : it->second;
 	}
 
 	bool Component::addHeaderExposeDirectory(const Language& language, const string& directory) {

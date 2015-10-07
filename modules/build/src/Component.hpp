@@ -81,7 +81,7 @@ namespace build {
 		Components dependencies;
 		Headers privateHeaders, exposedHeaders;
 		FlavoredArtifacts finalArtifacts;
-		UnexposedHeaders unexposedHeaders;
+		UnexposedHeaders unexposedHeaders, reverseUnexposedHeaders;
 		ExposeDirectories exposeDirectories;
 
 	  protected:
@@ -143,6 +143,11 @@ namespace build {
 		bool removeUnexposedHeader(const Artifact&);
 		void clearUnexposedHeaders();
 		FileArtifact* getUnexposedHeader(const Artifact&) const;
+
+		bool addReverseUnexposedHeader(const Artifact&, FileArtifact&);
+		bool removeReverseUnexposedHeader(const Artifact&);
+		void clearReverseUnexposedHeaders();
+		FileArtifact* getReverseUnexposedHeader(const Artifact&) const;
 
 		bool addHeaderExposeDirectory(const Language&, const std::string&);
 		bool removeHeaderExposeDirectory(const Language&, const std::string&);
