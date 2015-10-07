@@ -384,7 +384,7 @@ namespace build {
 						transform.addPrerequisite(allowPrivate ? *pheader : *eheader);
 						if(scanned.find(pheader) == scanned.end()) {
 							scanned.insert(pheader);
-							ReferencedHeaderAppender sink(pheader->getLabel(), component, true,
+							ReferencedHeaderAppender sink(pheader->getLabel(), component, allowPrivate,
 									language, transform, scanned);
 							language.getReferencedHeaders(pheader->getPath(), sink);
 						}
