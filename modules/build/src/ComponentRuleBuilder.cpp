@@ -273,7 +273,7 @@ namespace build {
 					language, transformFlavor, *generatingTransform);
 		}
 		if(isFinal)
-			perComponent.component.addFinalArtifact(**target, targetFlavor);
+			perComponent.component.addFinalArtifact(**target, targetFlavor, language);
 		if(cleanArtifact) {
 			if(perComponent.buildDirectories.append(*target))
 				target->ref();

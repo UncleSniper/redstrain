@@ -32,9 +32,10 @@ namespace build {
 		  private:
 			Artifact* artifact;
 			Flavor flavor;
+			const Language* language;
 
 		  public:
-			FlavoredArtifact(Artifact&, const Flavor&);
+			FlavoredArtifact(Artifact&, const Flavor&, const Language&);
 			FlavoredArtifact(const FlavoredArtifact&);
 			~FlavoredArtifact();
 
@@ -46,11 +47,16 @@ namespace build {
 				return flavor;
 			}
 
+			inline const Language& getLanguage() const {
+				return *language;
+			}
+
 			FlavoredArtifact& operator=(const FlavoredArtifact&);
 
 			bool operator==(const FlavoredArtifact&) const;
 			bool operator!=(const FlavoredArtifact&) const;
 			bool operator<(const FlavoredArtifact&) const;
+			bool operator>(const FlavoredArtifact&) const;
 
 		};
 
@@ -134,8 +140,8 @@ namespace build {
 		void clearExposedHeaders();
 		FileArtifact* getExposedHeader(const Language&, const std::string&) const;
 
-		bool addFinalArtifact(Artifact&, const Flavor&);
-		bool removeFinalArtifact(Artifact&, const Flavor&);
+		bool addFinalArtifact(Artifact&, const Flavor&, const Language&);
+		bool removeFinalArtifact(Artifact&, const Flavor&, const Language&);
 		void clearFinalArtifacts();
 		void getFinalArtifacts(FlavoredArtifactIterator&, FlavoredArtifactIterator&) const;
 

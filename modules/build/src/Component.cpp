@@ -12,13 +12,13 @@ namespace build {
 
 	// ======== FlavoredArtifact ========
 
-	Component::FlavoredArtifact::FlavoredArtifact(Artifact& artifact, const Flavor& flavor)
-			: artifact(&artifact), flavor(flavor) {
+	Component::FlavoredArtifact::FlavoredArtifact(Artifact& artifact, const Flavor& flavor, const Language& language)
+			: artifact(&artifact), flavor(flavor), language(&language) {
 		artifact.ref();
 	}
 
 	Component::FlavoredArtifact::FlavoredArtifact(const FlavoredArtifact& other)
-			: artifact(other.artifact), flavor(other.flavor) {
+			: artifact(other.artifact), flavor(other.flavor), language(other.language) {
 		artifact->ref();
 	}
 
@@ -31,15 +31,16 @@ namespace build {
 		artifact->unref();
 		artifact = other.artifact;
 		flavor = other.flavor;
+		language = other.language;
 		return *this;
 	}
 
 	bool Component::FlavoredArtifact::operator==(const FlavoredArtifact& other) const {
-		return artifact == other.artifact && flavor == other.flavor;
+		return artifact == other.artifact && flavor == other.flavor && language == other.language;
 	}
 
 	bool Component::FlavoredArtifact::operator!=(const FlavoredArtifact& other) const {
-		return artifact != other.artifact || flavor != other.flavor;
+		return artifact != other.artifact || flavor != other.flavor || language != other.language;
 	}
 
 	bool Component::FlavoredArtifact::operator<(const FlavoredArtifact& other) const {
@@ -47,7 +48,23 @@ namespace build {
 			return true;
 		if(artifact > other.artifact)
 			return false;
-		return flavor < other.flavor;
+		if(flavor < other.flavor)
+			return true;
+		if(flavor > other.flavor)
+			return false;
+		return language < other.language;
+	}
+
+	bool Component::FlavoredArtifact::operator>(const FlavoredArtifact& other) const {
+		if(artifact > other.artifact)
+			return true;
+		if(artifact < other.artifact)
+			return false;
+		if(flavor > other.flavor)
+			return true;
+		if(flavor < other.flavor)
+			return false;
+		return language > other.language;
 	}
 
 	// ======== Component ========
@@ -350,12 +367,12 @@ namespace build {
 		return it1 == it0->second.end() ? NULL : it1->second;
 	}
 
-	bool Component::addFinalArtifact(Artifact& artifact, const Flavor& flavor) {
-		return finalArtifacts.append(FlavoredArtifact(artifact, flavor));
+	bool Component::addFinalArtifact(Artifact& artifact, const Flavor& flavor, const Language& language) {
+		return finalArtifacts.append(FlavoredArtifact(artifact, flavor, language));
 	}
 
-	bool Component::removeFinalArtifact(Artifact& artifact, const Flavor& flavor) {
-		return finalArtifacts.erase(FlavoredArtifact(artifact, flavor));
+	bool Component::removeFinalArtifact(Artifact& artifact, const Flavor& flavor, const Language& language) {
+		return finalArtifacts.erase(FlavoredArtifact(artifact, flavor, language));
 	}
 
 	void Component::clearFinalArtifacts() {

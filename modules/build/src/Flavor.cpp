@@ -34,4 +34,8 @@ namespace build {
 		return name < flavor.name;
 	}
 
+	bool Flavor::operator>(const Flavor& flavor) const {
+		return name > flavor.name;
+	}
+
 }}

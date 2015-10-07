@@ -8,6 +8,7 @@
 #include "BuildArtifactMapper.hpp"
 #include "EmptyLinkerConfiguration.hpp"
 
+using std::list;
 using std::string;
 using redengine::util::Unref;
 using redengine::platform::Pathname;
@@ -58,6 +59,17 @@ namespace build {
 				getLinkerConfiguration(transformFlavor, component)));
 		transform->addSource(sourceArtifact);
 		transform->addPrerequisite(sourceArtifact);
+		list<Component*> compdeps;
+		component.getTransitiveDependencies(compdeps);
+		list<Component*>::const_iterator depbegin(compdeps.begin()), depend(compdeps.end());
+		for(; depbegin != depend; ++depbegin) {
+			Component::FlavoredArtifactIterator fabegin, faend;
+			(*depbegin)->getFinalArtifacts(fabegin, faend);
+			for(; fabegin != faend; ++fabegin) {
+				if(fabegin->getFlavor() == transformFlavor && &fabegin->getLanguage() == this)
+					transform->addPrerequisite(fabegin->getArtifact());
+			}
+		}
 		targetArtifact.setGeneratingTransform(*transform);
 		targetArtifact.addIntermediateDirectories(context, component.getBaseDirectory());
 		manyTransform = *transform;
