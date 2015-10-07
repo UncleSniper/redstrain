@@ -1,5 +1,5 @@
-#ifndef REDSTRAIN_MOD_BUILD_CODETABLEDEFINITIONLANGUAGE_HPP
-#define REDSTRAIN_MOD_BUILD_CODETABLEDEFINITIONLANGUAGE_HPP
+#ifndef REDSTRAIN_MOD_BUILD_FILECONVERSIONLANGUAGE_HPP
+#define REDSTRAIN_MOD_BUILD_FILECONVERSIONLANGUAGE_HPP
 
 #include "Language.hpp"
 
@@ -24,7 +24,7 @@ namespace build {
 		virtual bool isOneToOne(const Flavor&);
 		virtual FileArtifact* getSourceTransform(BuildContext&, const std::string&, FileArtifact&,
 				const Flavor&, const std::string&, const Flavor&, Component&, BuildArtifactMapper&,
-				ManyToOneTransform<FileArtifact>*&, Flavor&, bool&) = 0;
+				ManyToOneTransform<FileArtifact>*&, Flavor&, bool&);
 		virtual FileArtifact* getHeaderExposeTransform(BuildContext&, const std::string&, FileArtifact&,
 				const Flavor&, const std::string&, Component&, BuildArtifactMapper&, Flavor&);
 
@@ -32,4 +32,4 @@ namespace build {
 
 }}
 
-#endif /* REDSTRAIN_MOD_BUILD_CODETABLEDEFINITIONLANGUAGE_HPP */
+#endif /* REDSTRAIN_MOD_BUILD_FILECONVERSIONLANGUAGE_HPP */
