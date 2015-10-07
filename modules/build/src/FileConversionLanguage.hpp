@@ -10,7 +10,8 @@ namespace build {
 
 	  protected:
 		virtual std::string getTargetBasename(const std::string&, const Flavor&, const Flavor&, Component&) = 0;
-		virtual Transform* getConversionTransform(FileArtifact&, const Flavor&, const Flavor&, Component&) = 0;
+		virtual Transform* getConversionTransform(FileArtifact&, const Flavor&,
+				FileArtifact&, const Flavor&, const Flavor&, Component&) = 0;
 		virtual Flavor getTargetFlavor(const Flavor&, const Flavor&);
 		virtual bool isTargetFinal(FileArtifact&, const Flavor&, const Flavor&,
 				FileArtifact&, const Flavor&, Component&);

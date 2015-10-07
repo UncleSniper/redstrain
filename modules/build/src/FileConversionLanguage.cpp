@@ -51,12 +51,13 @@ namespace build {
 				sourceFlavor, transformFlavor, component));
 		string targetTail(Pathname::join(Pathname::dirname(sourceTail, Pathname::LOGICAL), targetBasename));
 		FileArtifact& target = context.internFileArtifact(Pathname::join(targetDirectory, targetTail), targetTail);
-		Unref<Transform> transform(getConversionTransform(sourceArtifact, sourceFlavor, transformFlavor, component));
+		targetFlavor = getTargetFlavor(sourceFlavor, transformFlavor);
+		Unref<Transform> transform(getConversionTransform(sourceArtifact, sourceFlavor,
+				target, targetFlavor, transformFlavor, component));
 		transform->addPrerequisite(sourceArtifact);
 		target.setGeneratingTransform(*transform);
 		target.addIntermediateDirectories(context, component.getBaseDirectory());
 		manyTransform = NULL;
-		targetFlavor = getTargetFlavor(sourceFlavor, transformFlavor);
 		isFinal = isTargetFinal(sourceArtifact, sourceFlavor, transformFlavor, target, targetFlavor, component);
 		target.ref();
 		return &target;

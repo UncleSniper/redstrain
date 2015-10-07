@@ -24,7 +24,7 @@ namespace build {
 	}
 
 	Transform* CodeTableDefinitionLanguage::getConversionTransform(FileArtifact& sourceArtifact,
-			const Flavor&, const Flavor&, Component&) {
+			const Flavor&, FileArtifact&, const Flavor&, const Flavor&, Component&) {
 		return new CodeTableCompileTransform(sourceArtifact);
 	}
 

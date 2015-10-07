@@ -8,6 +8,7 @@
 #include "XakeUtils.hpp"
 #include "XakeProject.hpp"
 #include "XakeCPPLanguage.hpp"
+#include "XakeBlobLanguage.hpp"
 #include "XakeObjectFileLanguage.hpp"
 #include "../UnsupportedToolchainError.hpp"
 
@@ -28,7 +29,8 @@ namespace boot {
 
 	XakeProject::XakeProject(const string& baseDirectory)
 			: baseDirectory(Pathname::tidy(Pathname::join(Pathname::getWorkingDirectory(), baseDirectory))),
-			compiler(NULL), linker(NULL), cppLanguage(NULL), objectFileLanguage(NULL) {
+			compiler(NULL), linker(NULL), cppLanguage(NULL), objectFileLanguage(NULL), codeTableLanguage(NULL),
+			blobLanguage(NULL) {
 		configuration.load(Resources::DFL_DEFAULTS);
 		switch(buildTargetOS) {
 			case OS_LINUX:
@@ -56,7 +58,8 @@ namespace boot {
 	}
 
 	XakeProject::XakeProject(const XakeProject& project) : configuration(project.configuration), compiler(NULL),
-			linker(NULL), cppLanguage(NULL), objectFileLanguage(NULL) {}
+			linker(NULL), cppLanguage(NULL), objectFileLanguage(NULL), codeTableLanguage(NULL),
+			blobLanguage(NULL) {}
 
 	XakeProject::~XakeProject() {
 		if(compiler)
@@ -66,6 +69,10 @@ namespace boot {
 			delete cppLanguage;
 		if(objectFileLanguage)
 			delete objectFileLanguage;
+		if(codeTableLanguage)
+			delete codeTableLanguage;
+		if(blobLanguage)
+			delete blobLanguage;
 	}
 
 	string XakeProject::getProjectName() const {
@@ -126,6 +133,18 @@ namespace boot {
 		if(!objectFileLanguage)
 			objectFileLanguage = new XakeObjectFileLanguage(*this);
 		return *objectFileLanguage;
+	}
+
+	Language* XakeProject::getCodeTableDefinitionLanguage() {
+		if(!codeTableLanguage)
+			codeTableLanguage = new CodeTableDefinitionLanguage();
+		return codeTableLanguage;
+	}
+
+	Language* XakeProject::getBlobLanguage() {
+		if(!blobLanguage)
+			blobLanguage = new XakeBlobLanguage(*this);
+		return blobLanguage;
 	}
 
 	const string& XakeProject::getCompilerName() {

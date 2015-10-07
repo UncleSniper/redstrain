@@ -5,12 +5,14 @@
 #include "../Linker.hpp"
 #include "../Compiler.hpp"
 #include "../Language.hpp"
+#include "../CodeTableDefinitionLanguage.hpp"
 
 namespace redengine {
 namespace build {
 namespace boot {
 
 	class XakeCPPLanguage;
+	class XakeBlobLanguage;
 	class XakeObjectFileLanguage;
 
 	class REDSTRAIN_BUILD_API XakeProject {
@@ -22,6 +24,8 @@ namespace boot {
 		Linker* linker;
 		XakeCPPLanguage* cppLanguage;
 		XakeObjectFileLanguage* objectFileLanguage;
+		CodeTableDefinitionLanguage* codeTableLanguage;
+		XakeBlobLanguage* blobLanguage;
 		std::string compilerName;
 
 	  private:
@@ -52,6 +56,8 @@ namespace boot {
 		Linker& getLinker();
 		Language& getCPPLanguage();
 		Language& getObjectFileLanguage();
+		Language* getCodeTableDefinitionLanguage();
+		Language* getBlobLanguage();
 		const std::string& getCompilerName();
 
 	};

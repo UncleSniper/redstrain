@@ -22,10 +22,56 @@ namespace build {
 
 		};
 
+		class REDSTRAIN_BUILD_API GenericBlobConfiguration : public BlobConfiguration {
+
+		  private:
+			std::string variable, exportMacro, blobPath, extraInclude, guardMacro;
+
+		  public:
+			GenericBlobConfiguration(const std::string&, const std::string&,
+					const std::string&, const std::string&, const std::string&);
+			GenericBlobConfiguration(const GenericBlobConfiguration&);
+
+			inline const std::string& getVariableName() const {
+				return variable;
+			}
+
+			void setVariableName(const std::string&);
+
+			inline const std::string& getExportMacro() const {
+				return exportMacro;
+			}
+
+			void setExportMacro(const std::string&);
+
+			inline const std::string& getBlobPath() const {
+				return blobPath;
+			}
+
+			void setBlobPath(const std::string&);
+
+			inline const std::string& getExtraInclude() const {
+				return extraInclude;
+			}
+
+			void setExtraInclude(const std::string&);
+
+			inline const std::string& getGuardMacro() const {
+				return guardMacro;
+			}
+
+			void setGuardMacro(const std::string&);
+
+			virtual void applyConfiguration(io::CPPArrayOutputStream&);
+
+		};
+
 	  protected:
 		virtual std::string getTargetBasename(const std::string&, const Flavor&, const Flavor&, Component&);
-		virtual Transform* getConversionTransform(FileArtifact&, const Flavor&, const Flavor&, Component&);
-		virtual BlobConfiguration* getBlobConfiguration(FileArtifact&, const Flavor&, const Flavor&, Component&);
+		virtual Transform* getConversionTransform(FileArtifact&, const Flavor&,
+				FileArtifact&, const Flavor&, const Flavor&, Component&);
+		virtual BlobConfiguration* getBlobConfiguration(FileArtifact&, const Flavor&,
+				FileArtifact&, const Flavor&, const Flavor&, Component&);
 
 	  public:
 		BlobLanguage();
