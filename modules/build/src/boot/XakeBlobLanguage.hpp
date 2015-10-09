@@ -12,15 +12,21 @@ namespace boot {
 	class REDSTRAIN_BUILD_API XakeBlobLanguage : public BlobLanguage {
 
 	  private:
-		const XakeProject& project;
+		XakeProject& project;
 
 	  protected:
+		virtual Transform* getConversionTransform(FileArtifact&, const Flavor&,
+				FileArtifact&, const Flavor&, const Flavor&, Component&);
 		virtual BlobConfiguration* getBlobConfiguration(FileArtifact&, const Flavor&,
 				FileArtifact&, const Flavor&, const Flavor&, Component&);
 
 	  public:
-		XakeBlobLanguage(const XakeProject&);
+		XakeBlobLanguage(XakeProject&);
 		XakeBlobLanguage(const XakeBlobLanguage&);
+
+		inline XakeProject& getProject() {
+			return project;
+		}
 
 		inline const XakeProject& getProject() const {
 			return project;

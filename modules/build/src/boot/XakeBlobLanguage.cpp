@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <redstrain/util/Unref.hpp>
 #include <redstrain/util/StringUtils.hpp>
 #include <redstrain/platform/Pathname.hpp>
 
@@ -8,8 +9,10 @@
 #include "XakeBlobLanguage.hpp"
 
 using std::map;
+using std::list;
 using std::string;
 using std::transform;
+using redengine::util::Unref;
 using redengine::util::StringUtils;
 using redengine::platform::Pathname;
 
@@ -17,10 +20,29 @@ namespace redengine {
 namespace build {
 namespace boot {
 
-	XakeBlobLanguage::XakeBlobLanguage(const XakeProject& project) : project(project) {}
+	XakeBlobLanguage::XakeBlobLanguage(XakeProject& project) : project(project) {}
 
 	XakeBlobLanguage::XakeBlobLanguage(const XakeBlobLanguage& language)
 			: BlobLanguage(language), project(language.project) {}
+
+	Transform* XakeBlobLanguage::getConversionTransform(FileArtifact& sourceArtifact,
+			const Flavor& sourceFlavor, FileArtifact& targetArtifact, const Flavor& targetFlavor,
+			const Flavor& transformFlavor, Component& component) {
+		Unref<Transform> transform(BlobLanguage::getConversionTransform(sourceArtifact, sourceFlavor,
+				targetArtifact, targetFlavor, transformFlavor, component));
+		list<Component*> deps;
+		component.getTransitiveDependencies(deps);
+		list<Component*>::const_iterator depbegin(deps.begin()), depend(deps.end());
+		for(; depbegin != depend; ++depbegin) {
+			FileArtifact* eheader = (*depbegin)->getExposedHeader(project.getCPPLanguage(),
+					"redstrain/vfs/BlobVFS.hpp");
+			if(eheader) {
+				transform->addPrerequisite(*eheader);
+				break;
+			}
+		}
+		return transform.set();
+	}
 
 	static char slugify(char c) {
 		if(
