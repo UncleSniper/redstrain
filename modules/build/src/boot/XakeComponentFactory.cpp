@@ -23,10 +23,10 @@ namespace boot {
 		component->addLanguage(project.getCPPLanguage());
 		component->addLanguage(project.getObjectFileLanguage());
 		switch(type) {
-			case Component::DATA:
-				component->addLanguage(project.getCodeTableDefinitionLanguage());
 			case Component::BLOB:
 				component->addLanguage(project.getBlobLanguage());
+			case Component::DATA:
+				component->addLanguage(project.getCodeTableDefinitionLanguage());
 				break;
 			default:
 				break;
