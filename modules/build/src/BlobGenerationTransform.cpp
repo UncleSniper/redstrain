@@ -49,7 +49,6 @@ namespace build {
 		StreamCloser inCloser(*in);
 		Delete<OutputStream<char> > out(target.getOutputStream(context, Artifact::FOR_USE, this));
 		StreamCloser outCloser(*out);
-		outCloser.close();
 		CPPArrayOutputStream gen(**out);
 		if(configuration)
 			configuration->applyConfiguration(gen);
