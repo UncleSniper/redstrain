@@ -181,6 +181,8 @@ namespace boot {
 		"generated.namespace=%project%::%module%",
 		"export.macro=%project%_%module%_API",
 		"blob.path=/%project%/%module%/%srctail%",
+		"data.tag=data",
+		"blob.tag=blob",
 		"guard.macro=%project%_%module%_%file%",
 		NULL
 	};
