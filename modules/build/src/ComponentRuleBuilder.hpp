@@ -1,6 +1,7 @@
 #ifndef REDSTRAIN_MOD_BUILD_COMPONENTRULEBUILDER_HPP
 #define REDSTRAIN_MOD_BUILD_COMPONENTRULEBUILDER_HPP
 
+#include "Language.hpp"
 #include "RuleBuilder.hpp"
 
 namespace redengine {
@@ -70,6 +71,9 @@ namespace build {
 		}
 
 		virtual void setupRules(const Project&, Component&, BuildContext&);
+
+		static void announceSourceReferencesHeader(FileArtifact&, const Component&, Language&,
+				Transform&, const Language::ReferencedHeader&);
 
 	};
 

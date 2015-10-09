@@ -1,6 +1,7 @@
 #ifndef REDSTRAIN_MOD_BUILD_ARTIFACT_HPP
 #define REDSTRAIN_MOD_BUILD_ARTIFACT_HPP
 
+#include <set>
 #include <ctime>
 #include <string>
 #include <redstrain/util/Appender.hpp>
@@ -14,6 +15,9 @@
 namespace redengine {
 namespace build {
 
+	class Flavor;
+	class Language;
+	class Component;
 	class Transform;
 	class BuildContext;
 	class ComponentUIInfo;
@@ -86,8 +90,26 @@ namespace build {
 			FOR_PREDICTION
 		};
 
+		class REDSTRAIN_BUILD_API FollowupTransformPropertyInjector : public util::ReferenceCounted {
+
+		  public:
+			FollowupTransformPropertyInjector();
+			FollowupTransformPropertyInjector(const FollowupTransformPropertyInjector&);
+
+			virtual void injectFollowupTransformProperties(Component&, Language&,
+					Artifact&, const Flavor&, const Flavor&, Transform&) = 0;
+
+		};
+
+	  private:
+		typedef std::set<FollowupTransformPropertyInjector*> FollowupTransformPropertyInjectors;
+
+	  public:
+		typedef FollowupTransformPropertyInjectors::const_iterator FollowupTransformPropertyInjectorIterator;
+
 	  private:
 		Transform* generatingTransform;
+		FollowupTransformPropertyInjectors followupTransformPropertyInjectors;
 
 	  private:
 		void require(const Mood&, BuildContext&);
@@ -106,6 +128,13 @@ namespace build {
 		}
 
 		void setGeneratingTransform(Transform*);
+
+		bool addFollowupTransformPropertyInjector(FollowupTransformPropertyInjector&);
+		bool removeFollowupTransformPropertyInjector(FollowupTransformPropertyInjector&);
+		void clearFollowupTransformPropertyInjectors();
+		void getFollowupTransformPropertyInjectors(FollowupTransformPropertyInjectorIterator&,
+				FollowupTransformPropertyInjectorIterator&) const;
+		void injectFollowupTransformProperties(Component&, Language&, const Flavor&, const Flavor&, Transform&);
 
 		void require(BuildContext&);
 		void wouldRequire(BuildContext&);

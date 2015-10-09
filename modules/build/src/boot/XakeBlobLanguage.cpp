@@ -7,9 +7,9 @@
 #include "XakeProject.hpp"
 #include "XakeComponent.hpp"
 #include "XakeBlobLanguage.hpp"
+#include "../ComponentRuleBuilder.hpp"
 
 using std::map;
-using std::list;
 using std::string;
 using std::transform;
 using redengine::util::Unref;
@@ -25,22 +25,31 @@ namespace boot {
 	XakeBlobLanguage::XakeBlobLanguage(const XakeBlobLanguage& language)
 			: BlobLanguage(language), project(language.project) {}
 
+	struct XakeBlobTransformPropertyInjector : public Artifact::FollowupTransformPropertyInjector {
+
+		XakeBlobTransformPropertyInjector() {}
+
+		virtual void injectFollowupTransformProperties(Component&, Language&,
+				Artifact&, const Flavor&, const Flavor&, Transform&);
+
+	};
+
+	void XakeBlobTransformPropertyInjector::injectFollowupTransformProperties(Component& component,
+			Language& language, Artifact& sourceArtifact, const Flavor&, const Flavor&, Transform& transform) {
+		FileArtifact* file = dynamic_cast<FileArtifact*>(&sourceArtifact);
+		if(file)
+			ComponentRuleBuilder::announceSourceReferencesHeader(*file, component, language, transform,
+					Language::ReferencedHeader("redstrain/vfs/BlobVFS.hpp", false));
+	}
+
+	static XakeBlobTransformPropertyInjector followupTransformPropertyInjector;
+
 	Transform* XakeBlobLanguage::getConversionTransform(FileArtifact& sourceArtifact,
 			const Flavor& sourceFlavor, FileArtifact& targetArtifact, const Flavor& targetFlavor,
 			const Flavor& transformFlavor, Component& component) {
 		Unref<Transform> transform(BlobLanguage::getConversionTransform(sourceArtifact, sourceFlavor,
 				targetArtifact, targetFlavor, transformFlavor, component));
-		list<Component*> deps;
-		component.getTransitiveDependencies(deps);
-		list<Component*>::const_iterator depbegin(deps.begin()), depend(deps.end());
-		for(; depbegin != depend; ++depbegin) {
-			FileArtifact* eheader = (*depbegin)->getExposedHeader(project.getCPPLanguage(),
-					"redstrain/vfs/BlobVFS.hpp");
-			if(eheader) {
-				transform->addPrerequisite(*eheader);
-				break;
-			}
-		}
+		targetArtifact.addFollowupTransformPropertyInjector(followupTransformPropertyInjector);
 		return transform.set();
 	}
 

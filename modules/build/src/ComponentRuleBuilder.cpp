@@ -159,13 +159,13 @@ namespace build {
 	struct ReferencedHeaderAppender : Appender<Language::ReferencedHeader> {
 
 		const string source;
-		Component& component;
+		const Component& component;
 		bool allowPrivate;
 		Language& language;
 		Transform& transform;
 		set<const FileArtifact*>& scanned;
 
-		ReferencedHeaderAppender(const string& source, Component& component, bool allowPrivate,
+		ReferencedHeaderAppender(const string& source, const Component& component, bool allowPrivate,
 				Language& language, Transform& transform, set<const FileArtifact*>& scanned)
 				: source(source), component(component), allowPrivate(allowPrivate), language(language),
 				transform(transform), scanned(scanned) {}
@@ -236,6 +236,8 @@ namespace build {
 							*it1->second, sourceArtifact));
 					it1->second->ref();
 					sourceArtifact.ref();
+					sourceArtifact.injectFollowupTransformProperties(perComponent.component, language,
+							sourceFlavor, transformFlavor, *it1->second);
 					return;
 				}
 			}
@@ -271,6 +273,8 @@ namespace build {
 			sourceArtifact.ref();
 			perComponent.getTransformPropertyInjector().injectTransformProperties(perComponent.component,
 					language, transformFlavor, *generatingTransform);
+			sourceArtifact.injectFollowupTransformProperties(perComponent.component, language,
+					sourceFlavor, transformFlavor, *generatingTransform);
 		}
 		if(isFinal)
 			perComponent.component.addFinalArtifact(**target, targetFlavor, language);
@@ -413,6 +417,14 @@ namespace build {
 				return;
 			}
 		}
+	}
+
+	void ComponentRuleBuilder::announceSourceReferencesHeader(FileArtifact& source, const Component& component,
+			Language& language, Transform& transform, const Language::ReferencedHeader& header) {
+		set<const FileArtifact*> scanned;
+		ReferencedHeaderAppender sink(source.getLabel(), component, true, language, transform, scanned);
+		sink.append(header);
+		sink.doneAppending();
 	}
 
 }}

@@ -99,19 +99,35 @@ namespace build {
 		transform.wouldPerform(context, target);
 	}
 
+	// ======== FollowupTransformPropertyInjector ========
+
+	Artifact::FollowupTransformPropertyInjector::FollowupTransformPropertyInjector() {}
+
+	Artifact::FollowupTransformPropertyInjector::FollowupTransformPropertyInjector(const
+			FollowupTransformPropertyInjector& injector) : ReferenceCounted(injector) {}
+
 	// ======== Artifact ========
 
 	Artifact::Artifact() : generatingTransform(NULL) {}
 
 	Artifact::Artifact(const Artifact& artifact) : ReferenceCounted(artifact),
-			generatingTransform(artifact.generatingTransform) {
+			generatingTransform(artifact.generatingTransform),
+			followupTransformPropertyInjectors(artifact.followupTransformPropertyInjectors) {
 		if(generatingTransform)
 			generatingTransform->ref();
+		FollowupTransformPropertyInjectorIterator ftpibegin(followupTransformPropertyInjectors.begin()),
+				ftpiend(followupTransformPropertyInjectors.end());
+		for(; ftpibegin != ftpiend; ++ftpibegin)
+			(*ftpibegin)->ref();
 	}
 
 	Artifact::~Artifact() {
 		if(generatingTransform)
 			generatingTransform->unref();
+		FollowupTransformPropertyInjectorIterator ftpibegin(followupTransformPropertyInjectors.begin()),
+				ftpiend(followupTransformPropertyInjectors.end());
+		for(; ftpibegin != ftpiend; ++ftpibegin)
+			(*ftpibegin)->unref();
 	}
 
 	void Artifact::setGeneratingTransform(Transform* transform) {
@@ -120,6 +136,43 @@ namespace build {
 		if(generatingTransform)
 			generatingTransform->unref();
 		generatingTransform = transform;
+	}
+
+	bool Artifact::addFollowupTransformPropertyInjector(FollowupTransformPropertyInjector& injector) {
+		if(!followupTransformPropertyInjectors.insert(&injector).second)
+			return false;
+		injector.ref();
+		return true;
+	}
+
+	bool Artifact::removeFollowupTransformPropertyInjector(FollowupTransformPropertyInjector& injector) {
+		if(!followupTransformPropertyInjectors.erase(&injector))
+			return false;
+		injector.unref();
+		return true;
+	}
+
+	void Artifact::clearFollowupTransformPropertyInjectors() {
+		FollowupTransformPropertyInjectorIterator ftpibegin(followupTransformPropertyInjectors.begin()),
+				ftpiend(followupTransformPropertyInjectors.end());
+		for(; ftpibegin != ftpiend; ++ftpibegin)
+			(*ftpibegin)->unref();
+		followupTransformPropertyInjectors.clear();
+	}
+
+	void Artifact::getFollowupTransformPropertyInjectors(FollowupTransformPropertyInjectorIterator& begin,
+			FollowupTransformPropertyInjectorIterator& end) const {
+		begin = followupTransformPropertyInjectors.begin();
+		end = followupTransformPropertyInjectors.end();
+	}
+
+	void Artifact::injectFollowupTransformProperties(Component& component, Language& language,
+			const Flavor& sourceFlavor, const Flavor& transformFlavor, Transform& transform) {
+		FollowupTransformPropertyInjectorIterator ftpibegin(followupTransformPropertyInjectors.begin()),
+				ftpiend(followupTransformPropertyInjectors.end());
+		for(; ftpibegin != ftpiend; ++ftpibegin)
+			(*ftpibegin)->injectFollowupTransformProperties(component, language,
+					*this, sourceFlavor, transformFlavor, transform);
 	}
 
 	void Artifact::require(const Mood& mood, BuildContext& context) {
