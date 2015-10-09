@@ -135,16 +135,16 @@ namespace boot {
 		return *objectFileLanguage;
 	}
 
-	Language* XakeProject::getCodeTableDefinitionLanguage() {
+	Language& XakeProject::getCodeTableDefinitionLanguage() {
 		if(!codeTableLanguage)
 			codeTableLanguage = new CodeTableDefinitionLanguage();
-		return codeTableLanguage;
+		return *codeTableLanguage;
 	}
 
-	Language* XakeProject::getBlobLanguage() {
+	Language& XakeProject::getBlobLanguage() {
 		if(!blobLanguage)
 			blobLanguage = new XakeBlobLanguage(*this);
-		return blobLanguage;
+		return *blobLanguage;
 	}
 
 	const string& XakeProject::getCompilerName() {

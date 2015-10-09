@@ -23,8 +23,8 @@ namespace boot {
 
 	void XakeBuildDirectoryMapper::getBuildDirectory(const Component&, const Language& language,
 			const Flavor& flavor, string& directory, string& basename) {
+		const Resources& configuration = project.getProjectConfiguration();
 		if(&language == &project.getCPPLanguage()) {
-			const Resources& configuration = project.getProjectConfiguration();
 			directory = configuration.getProperty(Resources::RES_BUILD_DIRECTORY);
 			if(directory.empty())
 				directory = XakeBuildDirectoryMapper::DEFAULT_BUILD_DIRECTORY;
@@ -45,6 +45,16 @@ namespace boot {
 			basename = configuration.getProperty(id);
 			if(basename.empty())
 				basename = fdirDefault;
+		}
+		else if(&language == &project.getCodeTableDefinitionLanguage()) {
+			directory = configuration.getProperty(Resources::RES_BUILD_DIRECTORY);
+			if(directory.empty())
+				directory = XakeBuildDirectoryMapper::DEFAULT_BUILD_DIRECTORY;
+		}
+		else if(&language == &project.getBlobLanguage()) {
+			directory = configuration.getProperty(Resources::RES_RSB_GENERATED_SOURCE_DIRECTORY);
+			if(directory.empty())
+				directory = XakeBuildDirectoryMapper::DEFAULT_GENERATED_SOURCE_DIRECTORY;
 		}
 		else {
 			directory.clear();

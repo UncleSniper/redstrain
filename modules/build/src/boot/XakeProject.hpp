@@ -56,8 +56,8 @@ namespace boot {
 		Linker& getLinker();
 		Language& getCPPLanguage();
 		Language& getObjectFileLanguage();
-		Language* getCodeTableDefinitionLanguage();
-		Language* getBlobLanguage();
+		Language& getCodeTableDefinitionLanguage();
+		Language& getBlobLanguage();
 		const std::string& getCompilerName();
 
 	};

@@ -22,6 +22,15 @@ namespace boot {
 		component->addSourceDirectory(project.getProjectConfiguration().getProperty(Resources::RES_SOURCE_DIRECTORY));
 		component->addLanguage(project.getCPPLanguage());
 		component->addLanguage(project.getObjectFileLanguage());
+		switch(type) {
+			case Component::DATA:
+				component->addLanguage(project.getCodeTableDefinitionLanguage());
+			case Component::BLOB:
+				component->addLanguage(project.getBlobLanguage());
+				break;
+			default:
+				break;
+		}
 		return component.set();
 	}
 
