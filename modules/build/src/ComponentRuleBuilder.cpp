@@ -372,6 +372,15 @@ namespace build {
 				bdend(perComponent.buildDirectories.end());
 		for(; bdbegin != bdend; ++bdbegin)
 			cleanGoal->addArtifact(**bdbegin);
+		Component::LanguageIterator lbegin, lend;
+		component.getLanguages(lbegin, lend);
+		for(; lbegin != lend; ++lbegin) {
+			Component::ExposeDirectoryIterator hedbegin, hedend;
+			component.getHeaderExposeDirectories(**lbegin, hedbegin, hedend);
+			for(; hedbegin != hedend; ++hedbegin)
+				cleanGoal->addArtifact(context.internFileArtifact(*hedbegin,
+						Pathname::stripPrefix(*hedbegin, baseDirectory)));
+		}
 		context.addGoal(component.getGoalName() + ":clean", **cleanGoal);
 		perComponent.getGoalPropertyInjector().injectGoalProperties(component, **cleanGoal);
 	}
