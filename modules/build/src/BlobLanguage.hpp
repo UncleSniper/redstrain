@@ -28,6 +28,7 @@ namespace build {
 			std::string variable, exportMacro, blobPath, extraInclude, guardMacro;
 
 		  public:
+			GenericBlobConfiguration();
 			GenericBlobConfiguration(const std::string&, const std::string&,
 					const std::string&, const std::string&, const std::string&);
 			GenericBlobConfiguration(const GenericBlobConfiguration&);

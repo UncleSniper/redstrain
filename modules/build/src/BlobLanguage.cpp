@@ -22,6 +22,8 @@ namespace build {
 
 	// ======== GenericBlobConfiguration ========
 
+	BlobLanguage::GenericBlobConfiguration::GenericBlobConfiguration() {}
+
 	BlobLanguage::GenericBlobConfiguration::GenericBlobConfiguration(const string& variable,
 			const string& exportMacro, const string& blobPath, const string& extraInclude,
 			const string& guardMacro) : variable(variable), exportMacro(exportMacro), blobPath(blobPath),
