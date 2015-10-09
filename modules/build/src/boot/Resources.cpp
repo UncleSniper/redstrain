@@ -93,6 +93,8 @@ namespace boot {
 		"data.tag",
 		"blob.tag",
 		"stage.directory",
+		"blob.alias.path.prefix",
+		"blob.alias.file.suffix",
 		"linux.external.libraries",
 		"windows.external.libraries"
 	};
