@@ -49,7 +49,8 @@ namespace build {
 		string sourceTail(Pathname::stripPrefix(sourceArtifact.getPath(), sourceDirectory));
 		string targetBasename(getTargetBasename(Pathname::basename(sourceTail),
 				sourceFlavor, transformFlavor, component));
-		string targetTail(Pathname::join(Pathname::dirname(sourceTail, Pathname::LOGICAL), targetBasename));
+		string targetTail(Pathname::tidy(Pathname::join(Pathname::dirname(sourceTail, Pathname::LOGICAL),
+				targetBasename)));
 		FileArtifact& target = context.internFileArtifact(Pathname::join(targetDirectory, targetTail), targetTail);
 		targetFlavor = getTargetFlavor(sourceFlavor, transformFlavor);
 		Unref<Transform> transform(getConversionTransform(sourceArtifact, sourceFlavor,
