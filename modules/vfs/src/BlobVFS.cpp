@@ -93,43 +93,6 @@ namespace vfs {
 		vfs.aliasBlob(oldPath, newPath);
 	}
 
-	void BlobVFS::BlobLinker::generateLinkers(InputStream<char>& input, io::OutputStream<char>& output,
-			const string& pathPrefix, const string& fileSuffix) {
-		FormattedInputStream<char> fin(input);
-		FormattedOutputStream<char> fout(output);
-		fout.println("#include <redstrain/vfs/BlobVFS.hpp>");
-		fout.endLine();
-		string line, prefix(pathPrefix);
-		if(!prefix.empty()) {
-			if(prefix[prefix.length() - static_cast<string::size_type>(1u)] != '/')
-				prefix += '/';
-		}
-		unsigned lno = 0u, id = 0u;
-		while(fin.readLine(line)) {
-			++lno;
-			string::size_type pos = line.find('#');
-			if(pos != string::npos)
-				line.erase(pos);
-			line = StringUtils::trim(line);
-			if(line.empty())
-				continue;
-			pos = line.find('=');
-			if(pos == string::npos)
-				throw MissingInputSeparatorError("=", lno);
-			fout.print("static ::redengine::vfs::BlobVFS::BlobLinker alias");
-			fout.print(StringUtils::toString(id++));
-			fout.print("(\"");
-			fout.print(line.substr(pos + static_cast<string::size_type>(1u)));
-			fout.print(fileSuffix);
-			fout.print("\", \"");
-			fout.print(prefix);
-			fout.print(line.substr(static_cast<string::size_type>(0u), pos));
-			fout.print(fileSuffix);
-			fout.println("\");");
-			line.clear();
-		}
-	}
-
 	// ======== BlobVFS ========
 
 	BlobVFS::BlobEmitters BlobVFS::emitters;

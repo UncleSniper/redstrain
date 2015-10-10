@@ -5,6 +5,7 @@
 
 using std::string;
 using redengine::util::Unref;
+using redengine::vfs::BlobLinkerDefinitionGenerator;
 
 namespace redengine {
 namespace build {
@@ -13,21 +14,35 @@ namespace build {
 
 	BlobAliasLanguage::AliasConfiguration::AliasConfiguration() {}
 
-	BlobAliasLanguage::AliasConfiguration::AliasConfiguration(const string& pathPrefix, const string& fileSuffix)
-			: pathPrefix(pathPrefix), fileSuffix(fileSuffix) {}
-
 	BlobAliasLanguage::AliasConfiguration::AliasConfiguration(const AliasConfiguration& configuration)
-			: ReferenceCounted(configuration), pathPrefix(configuration.pathPrefix),
-			fileSuffix(configuration.fileSuffix) {}
+			: ReferenceCounted(configuration) {}
 
 	BlobAliasLanguage::AliasConfiguration::~AliasConfiguration() {}
 
-	void BlobAliasLanguage::AliasConfiguration::setPathPrefix(const string& prefix) {
+	// ======== GenericAliasConfiguration ========
+
+	BlobAliasLanguage::GenericAliasConfiguration::GenericAliasConfiguration() {}
+
+	BlobAliasLanguage::GenericAliasConfiguration::GenericAliasConfiguration(const string& pathPrefix,
+			const string& fileSuffix) : pathPrefix(pathPrefix), fileSuffix(fileSuffix) {}
+
+	BlobAliasLanguage::GenericAliasConfiguration::GenericAliasConfiguration(const
+			GenericAliasConfiguration& configuration) : AliasConfiguration(configuration),
+			pathPrefix(configuration.pathPrefix), fileSuffix(configuration.fileSuffix) {}
+
+	BlobAliasLanguage::GenericAliasConfiguration::~GenericAliasConfiguration() {}
+
+	void BlobAliasLanguage::GenericAliasConfiguration::setPathPrefix(const string& prefix) {
 		pathPrefix = prefix;
 	}
 
-	void BlobAliasLanguage::AliasConfiguration::setFileSuffix(const string& suffix) {
+	void BlobAliasLanguage::GenericAliasConfiguration::setFileSuffix(const string& suffix) {
 		fileSuffix = suffix;
+	}
+
+	void BlobAliasLanguage::GenericAliasConfiguration::applyConfiguration(BlobLinkerDefinitionGenerator& generator) {
+		generator.setPathPrefix(pathPrefix);
+		generator.setFileSuffix(fileSuffix);
 	}
 
 	// ======== BlobAliasLanguage ========

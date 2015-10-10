@@ -1,6 +1,8 @@
 #ifndef REDSTRAIN_MOD_BUILD_BLOBALIASLANGUAGE_HPP
 #define REDSTRAIN_MOD_BUILD_BLOBALIASLANGUAGE_HPP
 
+#include <redstrain/vfs/BlobLinkerDefinitionGenerator.hpp>
+
 #include "FileConversionLanguage.hpp"
 
 namespace redengine {
@@ -11,14 +13,25 @@ namespace build {
 	  public:
 		class REDSTRAIN_BUILD_API AliasConfiguration : public util::ReferenceCounted {
 
+		  public:
+			AliasConfiguration();
+			AliasConfiguration(const AliasConfiguration&);
+			virtual ~AliasConfiguration();
+
+			virtual void applyConfiguration(vfs::BlobLinkerDefinitionGenerator&) = 0;
+
+		};
+
+		class REDSTRAIN_BUILD_API GenericAliasConfiguration : public AliasConfiguration {
+
 		  private:
 			std::string pathPrefix, fileSuffix;
 
 		  public:
-			AliasConfiguration();
-			AliasConfiguration(const std::string&, const std::string&);
-			AliasConfiguration(const AliasConfiguration&);
-			virtual ~AliasConfiguration();
+			GenericAliasConfiguration();
+			GenericAliasConfiguration(const std::string&, const std::string&);
+			GenericAliasConfiguration(const GenericAliasConfiguration&);
+			virtual ~GenericAliasConfiguration();
 
 			inline const std::string& getPathPrefix() const {
 				return pathPrefix;
@@ -31,6 +44,8 @@ namespace build {
 			}
 
 			void setFileSuffix(const std::string&);
+
+			virtual void applyConfiguration(vfs::BlobLinkerDefinitionGenerator&);
 
 		};
 

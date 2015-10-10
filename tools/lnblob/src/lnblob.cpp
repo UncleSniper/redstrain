@@ -1,22 +1,26 @@
 #include <redstrain/util/Delete.hpp>
-#include <redstrain/vfs/BlobVFS.hpp>
-#include <redstrain/cmdline/parseopt.hpp>
+#include <redstrain/io/StreamCloser.hpp>
 #include <redstrain/platform/Console.hpp>
+#include <redstrain/platform/Pathname.hpp>
 #include <redstrain/io/FileInputStream.hpp>
 #include <redstrain/io/FileOutputStream.hpp>
+#include <redstrain/vfs/BlobLinkerDefinitionGenerator.hpp>
+#include <redstrain/cmdline/parseopt.hpp>
 
 #include "Options.hpp"
 
 using std::string;
 using redengine::util::Delete;
-using redengine::vfs::BlobVFS;
 using redengine::io::InputStream;
 using redengine::io::OutputStream;
+using redengine::io::StreamCloser;
 using redengine::platform::Console;
+using redengine::platform::Pathname;
 using redengine::io::FileInputStream;
 using redengine::io::FileOutputStream;
 using redengine::cmdline::OptionLogic;
 using redengine::cmdline::runWithOptions;
+using redengine::vfs::BlobLinkerDefinitionGenerator;
 using redengine::cmdline::ConfigurationObjectOptionLogic;
 
 int run(const string&, const Options&);
@@ -35,17 +39,28 @@ int main(int argc, char** argv) {
 int run(const string&, const Options& options) {
 	string infile(options.getInputFile()), outfile(options.getOutputFile());
 	Delete<InputStream<char> > in;
+	StreamCloser inCloser;
 	if(infile == "-")
 		in = new FileInputStream(Console::getStandardHandle(Console::STANDARD_INPUT));
-	else
+	else {
 		in = new FileInputStream(infile);
+		inCloser = *in;
+	}
 	Delete<OutputStream<char> > out;
+	StreamCloser outCloser;
 	if(outfile == "-")
 		out = new FileOutputStream(Console::getStandardHandle(Console::STANDARD_OUTPUT));
-	else
+	else {
 		out = new FileOutputStream(outfile);
-	BlobVFS::BlobLinker::generateLinkers(**in, **out, options.getPathPrefix(), options.getFileSuffix());
-	out->close();
-	in->close();
+		outCloser = *out;
+	}
+	BlobLinkerDefinitionGenerator::FileIncludeResolver
+			includeResolver(Pathname::dirname(options.getInputFile(), Pathname::LOGICAL));
+	BlobLinkerDefinitionGenerator generator(**in, options.getInputFile(), **out, includeResolver);
+	generator.setPathPrefix(options.getPathPrefix());
+	generator.setFileSuffix(options.getFileSuffix());
+	generator.defineBlobLinkers();
+	outCloser.close();
+	inCloser.close();
 	return 0;
 }

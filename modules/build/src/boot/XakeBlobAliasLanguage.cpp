@@ -67,12 +67,15 @@ namespace boot {
 		variables["srcpath"] = sourceArtifact.getPath();
 		string pathPrefix, fileSuffix;
 		if(xcomponent) {
-			pathPrefix = XakeUtils::subst(xcomponent->getComponentConfiguration()
-					.getProperty(Resources::RES_RSB_BLOB_ALIAS_PATH_PREFIX), variables);
+			string tpl(xcomponent->getComponentConfiguration()
+					.getProperty(Resources::RES_RSB_BLOB_ALIAS_PATH_PREFIX));
+			if(tpl.empty())
+				tpl = project.getProjectConfiguration().getProperty(Resources::RES_RSB_BLOB_ALIAS_PATH_PREFIX);
+			pathPrefix = XakeUtils::subst(tpl, variables);
 			fileSuffix = XakeUtils::subst(xcomponent->getComponentConfiguration()
 					.getProperty(Resources::RES_RSB_BLOB_ALIAS_FILE_SUFFIX), variables);
 		}
-		return new AliasConfiguration(pathPrefix, fileSuffix);
+		return new GenericAliasConfiguration(pathPrefix, fileSuffix);
 	}
 
 }}}

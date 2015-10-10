@@ -1,18 +1,20 @@
 #include <redstrain/util/Delete.hpp>
-#include <redstrain/vfs/BlobVFS.hpp>
 #include <redstrain/io/StreamCloser.hpp>
+#include <redstrain/platform/Pathname.hpp>
 #include <redstrain/io/streamoperators.hpp>
 
 #include "BuildUI.hpp"
 #include "BuildContext.hpp"
 #include "BlobAliasGenerationTransform.hpp"
 
+using std::string;
 using redengine::util::Delete;
-using redengine::vfs::BlobVFS;
 using redengine::io::InputStream;
 using redengine::io::OutputStream;
 using redengine::io::StreamCloser;
+using redengine::platform::Pathname;
 using redengine::io::DefaultConfiguredOutputStream;
+using redengine::vfs::BlobLinkerDefinitionGenerator;
 using redengine::io::endln;
 using redengine::io::shift;
 using redengine::io::indent;
@@ -47,11 +49,13 @@ namespace build {
 		StreamCloser inCloser(*in);
 		Delete<OutputStream<char> > out(target.getOutputStream(context, Artifact::FOR_USE, this));
 		StreamCloser outCloser(*out);
+		string path(getSource().getPath());
+		BlobLinkerDefinitionGenerator::FileIncludeResolver
+				includeResolver(Pathname::dirname(path, Pathname::LOGICAL));
+		BlobLinkerDefinitionGenerator generator(**in, path, **out, includeResolver);
 		if(configuration)
-			BlobVFS::BlobLinker::generateLinkers(**in, **out,
-					configuration->getPathPrefix(), configuration->getFileSuffix());
-		else
-			BlobVFS::BlobLinker::generateLinkers(**in, **out);
+			configuration->applyConfiguration(generator);
+		generator.defineBlobLinkers();
 		outCloser.close();
 		inCloser.close();
 	}

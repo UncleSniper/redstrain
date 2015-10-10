@@ -5,14 +5,18 @@ using std::string;
 namespace redengine {
 namespace vfs {
 
-	MissingInputSeparatorError::MissingInputSeparatorError(const string& separator, unsigned lineNumber)
-			: separator(separator), lineNumber(lineNumber) {}
+	MissingInputSeparatorError::MissingInputSeparatorError(const string& separator, const string& file,
+			unsigned lineNumber) : separator(separator), file(file), lineNumber(lineNumber) {}
 
 	MissingInputSeparatorError::MissingInputSeparatorError(const MissingInputSeparatorError& error)
-			: Error(error), separator(error.separator), lineNumber(error.lineNumber) {}
+			: Error(error), separator(error.separator), file(error.file), lineNumber(error.lineNumber) {}
 
 	REDSTRAIN_DEFINE_ERROR(MissingInputSeparatorError) {
-		out << "Missing '" << separator << "' separator in line " << lineNumber;
+		out << "Missing '" << separator << "' separator";
+		if(!file.empty())
+			out << " in '" << file << '\'';
+		if(lineNumber)
+			out << " line " << lineNumber;
 	}
 
 }}

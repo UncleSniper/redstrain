@@ -186,6 +186,7 @@ namespace boot {
 		"data.tag=data",
 		"blob.tag=blob",
 		"guard.macro=%project%_%module%_%file%",
+		"blob.alias.path.prefix=/%module%/",
 		NULL
 	};
 
