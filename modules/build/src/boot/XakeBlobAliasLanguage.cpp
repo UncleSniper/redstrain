@@ -50,7 +50,7 @@ namespace boot {
 	}
 
 	BlobAliasLanguage::AliasConfiguration* XakeBlobAliasLanguage::getAliasConfiguration(FileArtifact& sourceArtifact,
-			const Flavor&, FileArtifact& targetArtifact, const Flavor&, const Flavor&, Component& component) {
+			const Flavor&, FileArtifact&, const Flavor&, const Flavor&, Component& component) {
 		map<string, string> variables, mvariables;
 		variables["project"] = project.getProjectName();
 		variables["module"] = component.getName();
