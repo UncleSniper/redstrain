@@ -4,13 +4,13 @@
 #include <redstrain/platform/ObjectLocker.hpp>
 #include <redstrain/io/FormattedInputStream.hpp>
 #include <redstrain/io/FormattedOutputStream.hpp>
+#include <redstrain/io/MissingInputSeparatorError.hpp>
 #include <redstrain/platform/SynchronizedSingleton.hpp>
 
 #include "BlobVFS.hpp"
 #include "NotADirectoryError.hpp"
 #include "FileAlreadyExistsError.hpp"
 #include "ReadOnlyFilesystemError.hpp"
-#include "MissingInputSeparatorError.hpp"
 
 using std::string;
 using redengine::util::Ref;
@@ -24,6 +24,7 @@ using redengine::platform::ObjectLocker;
 using redengine::io::BidirectionalStream;
 using redengine::io::FormattedInputStream;
 using redengine::io::FormattedOutputStream;
+using redengine::io::MissingInputSeparatorError;
 using redengine::platform::SynchronizedSingleton;
 
 namespace redengine {
