@@ -56,7 +56,7 @@ namespace platform {
 			flags |= O_CREAT;
 		handle = ::open(path.c_str(), flags, static_cast<mode_t>(0644));
 		if(handle == INVALID_HANDLE)
-			throw FileOpenError(dir, errno);
+			throw FileOpenError(path, dir, errno);
 	}
 
 	void File::close() {
@@ -154,7 +154,7 @@ namespace platform {
 		handle = CreateFile(path.c_str(), access, static_cast<DWORD>(0u), NULL, disposition,
 				FILE_ATTRIBUTE_NORMAL, static_cast<DWORD>(0u));
 		if(handle == INVALID_HANDLE)
-			throw FileOpenError(dir, GetLastError());
+			throw FileOpenError(path, dir, GetLastError());
 	}
 
 	void File::close() {

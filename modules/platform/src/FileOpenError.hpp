@@ -8,9 +8,16 @@ namespace platform {
 
 	class REDSTRAIN_PLATFORM_API FileOpenError : public FileError {
 
+	  private:
+		const std::string path;
+
 	  public:
-		FileOpenError(File::Direction, File::ErrorCode);
+		FileOpenError(const std::string&, File::Direction, File::ErrorCode);
 		FileOpenError(const FileOpenError&);
+
+		inline const std::string& getPath() const {
+			return path;
+		}
 
 		REDSTRAIN_DECLARE_ERROR(FileOpenError)
 
