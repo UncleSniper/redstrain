@@ -6,9 +6,9 @@
 #include "api.hpp"
 
 namespace redengine {
-namespace vfs {
+namespace io {
 
-	class REDSTRAIN_VFS_API MissingInputSeparatorError : public redengine::error::Error {
+	class REDSTRAIN_IO_API MissingInputSeparatorError : public redengine::error::Error {
 
 	  private:
 		const std::string separator, file;

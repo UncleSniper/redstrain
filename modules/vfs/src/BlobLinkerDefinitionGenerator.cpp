@@ -3,8 +3,8 @@
 #include <redstrain/util/StringUtils.hpp>
 #include <redstrain/platform/Pathname.hpp>
 #include <redstrain/io/FileInputStream.hpp>
+#include <redstrain/io/MissingInputSeparatorError.hpp>
 
-#include "MissingInputSeparatorError.hpp"
 #include "BlobLinkerDefinitionGenerator.hpp"
 
 using std::string;
@@ -15,6 +15,7 @@ using redengine::io::StreamCloser;
 using redengine::util::StringUtils;
 using redengine::platform::Pathname;
 using redengine::io::FileInputStream;
+using redengine::io::MissingInputSeparatorError;
 
 namespace redengine {
 namespace vfs {

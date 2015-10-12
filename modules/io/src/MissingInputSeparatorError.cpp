@@ -3,7 +3,7 @@
 using std::string;
 
 namespace redengine {
-namespace vfs {
+namespace io {
 
 	MissingInputSeparatorError::MissingInputSeparatorError(const string& separator, const string& file,
 			unsigned lineNumber) : separator(separator), file(file), lineNumber(lineNumber) {}
