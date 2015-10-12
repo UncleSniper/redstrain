@@ -28,10 +28,11 @@ namespace vfs {
 	BlobLinkerDefinitionGenerator::IncludeResolver::~IncludeResolver() {}
 
 	void BlobLinkerDefinitionGenerator::IncludeResolver::includeAliasesFrom(InputStream<char>& input,
-			const string& inputStreamName, const BlobLinkerDefinitionGenerator& outerGenerator,
+			const string& inputStreamName, BlobLinkerDefinitionGenerator& outerGenerator,
 			IncludeResolver& innerIncludeResolver) {
 		BlobLinkerDefinitionGenerator innerGenerator(input, inputStreamName, outerGenerator, innerIncludeResolver);
 		innerGenerator.defineBlobLinkers();
+		outerGenerator.setNextID(innerGenerator.getNextID());
 	}
 
 	// ======== FileIncludeResolver ========
@@ -59,18 +60,21 @@ namespace vfs {
 	BlobLinkerDefinitionGenerator::BlobLinkerDefinitionGenerator(InputStream<char>& input,
 			const string& inputStreamName, OutputStream<char>& output, IncludeResolver& includeResolver)
 			: inputStreamName(inputStreamName), input(input), formattedInput(this->input),
-			output(output), formattedOutput(this->output), includeResolver(includeResolver) {}
+			output(output), formattedOutput(this->output), includeResolver(includeResolver), nextID(0u),
+			needsHeader(true) {}
 
 	BlobLinkerDefinitionGenerator::BlobLinkerDefinitionGenerator(InputStream<char>& input,
 			const string& inputStreamName, const BlobLinkerDefinitionGenerator& generator,
 			IncludeResolver& includeResolver) : inputStreamName(inputStreamName), pathPrefix(generator.pathPrefix),
 			fileSuffix(generator.fileSuffix), input(input), formattedInput(this->input), output(generator.output),
-			formattedOutput(this->output), includeResolver(includeResolver) {}
+			formattedOutput(this->output), includeResolver(includeResolver), nextID(generator.nextID),
+			needsHeader(false) {}
 
 	BlobLinkerDefinitionGenerator::BlobLinkerDefinitionGenerator(const BlobLinkerDefinitionGenerator& generator)
 			: inputStreamName(generator.inputStreamName), pathPrefix(generator.pathPrefix),
 			fileSuffix(generator.fileSuffix), input(generator.input), formattedInput(this->input),
-			output(generator.output), formattedOutput(this->output), includeResolver(generator.includeResolver) {}
+			output(generator.output), formattedOutput(this->output), includeResolver(generator.includeResolver),
+			nextID(generator.nextID), needsHeader(generator.needsHeader) {}
 
 	void BlobLinkerDefinitionGenerator::setPathPrefix(const string& prefix) {
 		pathPrefix = prefix;
@@ -81,14 +85,16 @@ namespace vfs {
 	}
 
 	void BlobLinkerDefinitionGenerator::defineBlobLinkers() {
-		formattedOutput.println("#include <redstrain/vfs/BlobVFS.hpp>");
-		formattedOutput.endLine();
+		if(needsHeader) {
+			formattedOutput.println("#include <redstrain/vfs/BlobVFS.hpp>");
+			formattedOutput.endLine();
+		}
 		string line, prefix(pathPrefix);
 		if(!prefix.empty()) {
 			if(prefix[prefix.length() - static_cast<string::size_type>(1u)] != '/')
 				prefix += '/';
 		}
-		unsigned lno = 0u, id = 0u;
+		unsigned lno = 0u;
 		while(formattedInput.readLine(line)) {
 			++lno;
 			string::size_type pos = line.find('#');
@@ -105,6 +111,7 @@ namespace vfs {
 							string reference(StringUtils::trim(line.substr(static_cast<string::size_type>(9u))));
 							if(!reference.empty()) {
 								includeResolver.includeAliases(reference, *this);
+								line.clear();
 								continue;
 							}
 						}
@@ -117,7 +124,7 @@ namespace vfs {
 			if(pos == string::npos)
 				throw MissingInputSeparatorError("=", inputStreamName, lno);
 			formattedOutput.print("static ::redengine::vfs::BlobVFS::BlobLinker alias");
-			formattedOutput.print(StringUtils::toString(id++));
+			formattedOutput.print(StringUtils::toString(nextID++));
 			formattedOutput.print("(\"");
 			formattedOutput.print(CPPUtils::escapeString(line.substr(pos + static_cast<string::size_type>(1u))
 					+ fileSuffix, false));

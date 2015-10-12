@@ -22,7 +22,7 @@ namespace vfs {
 			virtual void includeAliases(const std::string&, BlobLinkerDefinitionGenerator&) = 0;
 
 			static void includeAliasesFrom(io::InputStream<char>&, const std::string&,
-					const BlobLinkerDefinitionGenerator&, IncludeResolver&);
+					BlobLinkerDefinitionGenerator&, IncludeResolver&);
 
 		};
 
@@ -48,6 +48,8 @@ namespace vfs {
 		io::OutputStream<char>& output;
 		io::DefaultConfiguredOutputStream<char>::Stream formattedOutput;
 		IncludeResolver& includeResolver;
+		unsigned nextID;
+		bool needsHeader;
 
 	  public:
 		BlobLinkerDefinitionGenerator(io::InputStream<char>&, const std::string&,
@@ -90,6 +92,22 @@ namespace vfs {
 
 		inline const IncludeResolver& getIncludeResolver() const {
 			return includeResolver;
+		}
+
+		inline unsigned getNextID() const {
+			return nextID;
+		}
+
+		inline void setNextID(unsigned id) {
+			nextID = id;
+		}
+
+		inline bool isNeedsHeader() const {
+			return needsHeader;
+		}
+
+		inline bool setNeedsHeader(bool needsHeader) {
+			this->needsHeader = needsHeader;
 		}
 
 		void defineBlobLinkers();
