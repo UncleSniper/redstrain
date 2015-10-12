@@ -16,6 +16,15 @@ namespace text {
 	  public:
 		TableCodec16(CodeTable<Char16>&);
 		TableCodec16(const TableCodec16&);
+		virtual ~TableCodec16();
+
+		inline CodeTable<Char16>& getCodeTable() {
+			return table;
+		}
+
+		inline const CodeTable<Char16>& getCodeTable() const {
+			return table;
+		}
 
 		virtual size_t encodeBlock(const Char16*, size_t, char*, size_t, size_t&);
 		virtual size_t decodeBlock(const char*, size_t, Char16*, size_t, size_t&);

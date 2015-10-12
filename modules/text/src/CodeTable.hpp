@@ -1,11 +1,13 @@
 #ifndef REDSTRAIN_MOD_TEXT_CODETABLE_HPP
 #define REDSTRAIN_MOD_TEXT_CODETABLE_HPP
 
+#include <redstrain/util/ReferenceCounted.hpp>
+
 namespace redengine {
 namespace text {
 
 	template<typename CharT>
-	class CodeTable {
+	class CodeTable : public util::ReferenceCounted {
 
 	  public:
 		typedef CharT Char;

@@ -7,9 +7,22 @@ using redengine::platform::ObjectLocker;
 namespace redengine {
 namespace text {
 
-	TableCodec16::TableCodec16(CodeTable<Char16>& table) : table(table) {}
+	TableCodec16::TableCodec16(CodeTable<Char16>& table) : table(table) {
+		ObjectLocker<CodeTable<Char16> > locker(&table);
+		table.ref();
+		locker.release();
+	}
 
-	TableCodec16::TableCodec16(const TableCodec16& codec) : Encoder16(codec), Decoder16(codec), table(codec.table) {}
+	TableCodec16::TableCodec16(const TableCodec16& codec) : Encoder16(codec), Decoder16(codec), table(codec.table) {
+		ObjectLocker<CodeTable<Char16> > locker(&table);
+		table.ref();
+		locker.release();
+	}
+
+	TableCodec16::~TableCodec16() {
+		ObjectLocker<CodeTable<Char16> > locker(&table);
+		table.unref();
+	}
 
 	size_t TableCodec16::encodeBlock(const Char16* input, size_t insize, char* output, size_t outsize,
 			size_t& outcount) {
