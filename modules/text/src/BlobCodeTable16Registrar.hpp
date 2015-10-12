@@ -8,10 +8,14 @@
 namespace redengine {
 namespace text {
 
+	class CodecManager;
+
 	class REDSTRAIN_TEXT_API BlobCodeTable16Registrar {
 
 	  public:
 		BlobCodeTable16Registrar(const char*, size_t, const char *const*);
+
+		static void registerCodecs(CodecManager&);
 
 	};
 

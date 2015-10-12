@@ -2,6 +2,7 @@
 #include <redstrain/util/Unref.hpp>
 
 #include "TableCodec16.hpp"
+#include "CodecManager.hpp"
 #include "BlobTableCodecFactory.hpp"
 #include "BlobCodeTable16Registrar.hpp"
 
@@ -46,6 +47,19 @@ namespace text {
 				it->second = *decoder;
 			}
 			decoder->ref();
+		}
+	}
+
+	void BlobCodeTable16Registrar::registerCodecs(CodecManager& manager) {
+		if(encoderFactories) {
+			EncoderFactories::const_iterator begin(encoderFactories->begin()), end(encoderFactories->end());
+			for(; begin != end; ++begin)
+				manager.setEncoder16Factory(begin->first, begin->second);
+		}
+		if(decoderFactories) {
+			DecoderFactories::const_iterator begin(decoderFactories->begin()), end(decoderFactories->end());
+			for(; begin != end; ++begin)
+				manager.setDecoder16Factory(begin->first, begin->second);
 		}
 	}
 

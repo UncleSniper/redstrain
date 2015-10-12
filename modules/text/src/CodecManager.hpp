@@ -50,6 +50,7 @@ namespace text {
 		void getEncoder16Factories(Encoder16Iterator&, Encoder16Iterator&) const;
 		void getDecoder16Factories(Decoder16Iterator&, Decoder16Iterator&) const;
 		void registerBuiltins();
+		void registerBlobs();
 		void purge();
 		void getEncoder16Resolvers(Encoder16ResolverIterator&, Encoder16ResolverIterator&) const;
 		void getDecoder16Resolvers(Decoder16ResolverIterator&, Decoder16ResolverIterator&) const;

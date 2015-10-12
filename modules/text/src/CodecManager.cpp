@@ -6,6 +6,7 @@
 #include "NoSuchEncoderError.hpp"
 #include "NoSuchDecoderError.hpp"
 #include "DefaultCodecFactory.hpp"
+#include "BlobCodeTable16Registrar.hpp"
 
 using std::set;
 using std::string;
@@ -153,6 +154,10 @@ namespace text {
 		Unref<Decoder16Factory> dec16factory(new DefaultCodecFactory<Decoder16, UTF8Decoder16>);
 		setDecoder16Factory("UTF-8", *dec16factory);
 		dec16factory.set()->unref();
+	}
+
+	void CodecManager::registerBlobs() {
+		BlobCodeTable16Registrar::registerCodecs(*this);
 	}
 
 	void CodecManager::purge() {
