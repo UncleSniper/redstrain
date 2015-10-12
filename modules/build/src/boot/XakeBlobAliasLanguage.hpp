@@ -7,6 +7,8 @@ namespace redengine {
 namespace build {
 namespace boot {
 
+	class XakeProject;
+
 	class REDSTRAIN_BUILD_API XakeBlobAliasLanguage : public BlobAliasLanguage {
 
 	  private:
