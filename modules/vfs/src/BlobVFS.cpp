@@ -96,7 +96,7 @@ namespace vfs {
 
 	// ======== BlobVFS ========
 
-	BlobVFS::BlobEmitters BlobVFS::emitters;
+	BlobVFS::BlobEmitters* BlobVFS::emitters = NULL;
 
 	BlobVFS::BlobVFS(MemoryDirectory* root, int baseFlags)
 			: MemoryBase(root, baseFlags | MemoryBase::BFL_READONLY),
@@ -223,7 +223,9 @@ namespace vfs {
 	}
 
 	void BlobVFS::putEmittedBlobs() {
-		BlobEmitters::const_iterator begin(BlobVFS::emitters.begin()), end(BlobVFS::emitters.end());
+		if(!BlobVFS::emitters)
+			return;
+		BlobEmitters::const_iterator begin(BlobVFS::emitters->begin()), end(BlobVFS::emitters->end());
 		for(; begin != end; ++begin)
 			(*begin)->emitBlobs(*this);
 	}
@@ -235,17 +237,19 @@ namespace vfs {
 	void BlobVFS::addBlobEmitter(BlobEmitter* emitter) {
 		if(!emitter)
 			return;
-		if(BlobVFS::emitters.insert(emitter).second)
+		if(!BlobVFS::emitters)
+			BlobVFS::emitters = new BlobEmitters;
+		if(BlobVFS::emitters->insert(emitter).second)
 			emitter->ref();
 	}
 
 	void BlobVFS::removeBlobEmitter(BlobEmitter* emitter) {
-		if(!emitter)
+		if(!emitter || !BlobVFS::emitters)
 			return;
-		BlobEmitters::iterator it = BlobVFS::emitters.find(emitter);
-		if(it == BlobVFS::emitters.end())
+		BlobEmitters::iterator it = BlobVFS::emitters->find(emitter);
+		if(it == BlobVFS::emitters->end())
 			return;
-		BlobVFS::emitters.erase(it);
+		BlobVFS::emitters->erase(it);
 		emitter->unref();
 	}
 

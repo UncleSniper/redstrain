@@ -102,7 +102,7 @@ namespace vfs {
 		typedef std::set<BlobEmitter*> BlobEmitters;
 
 	  private:
-		static BlobEmitters emitters;
+		static BlobEmitters* emitters;
 
 	  public:
 		static const int DEFAULT_BASE_FLAGS = MemoryBase::BFL_READONLY;
