@@ -1,6 +1,1 @@
-iso-ir-100=ISO-8859-1
-csISOLatin1=ISO-8859-1
-latin1=ISO-8859-1
-l1=ISO-8859-1
-IBM819=ISO-8859-1
-CP819=ISO-8859-1
+$include codetables.ctrg2
