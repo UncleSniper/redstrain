@@ -241,13 +241,16 @@ namespace text {
 			formattedOutput << "#include <redstrain/text/BlobCodeTable16Registrar.hpp>" << endln << endln;
 			needsHeader = false;
 		}
+		else
+			formattedOutput << endln;
 		string symbol(blobSymbolMapper ? blobSymbolMapper->mapBlobSymbol(blob) : blob);
 		BlobCodeTable16RegistrarBlobDeclarer declarer(formattedOutput);
 		StringUtils::split(symbol, "::", declarer);
 		formattedOutput << indent << "static const char *const names" << nextID << "[] = {" << endln << shift;
+		formattedOutput << indent << CPPUtils::escapeString(blob, true) << ',' << endln;
 		for(; namesBegin != namesEnd; ++namesBegin)
 			formattedOutput << indent << CPPUtils::escapeString(*namesBegin, true) << ',' << endln;
-		formattedOutput << indent << "NULL," << endln;
+		formattedOutput << indent << "NULL" << endln;
 		formattedOutput << unshift << indent << "};" << endln << endln;
 		formattedOutput
 				<< indent << "static ::redengine::text::BlobCodeTable16Registrar register" << nextID
