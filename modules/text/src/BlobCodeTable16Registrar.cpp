@@ -252,9 +252,13 @@ namespace text {
 			formattedOutput << indent << CPPUtils::escapeString(*namesBegin, true) << ',' << endln;
 		formattedOutput << indent << "NULL" << endln;
 		formattedOutput << unshift << indent << "};" << endln << endln;
-		formattedOutput
-				<< indent << "static ::redengine::text::BlobCodeTable16Registrar register" << nextID
-				<< "(::" << symbol << ", ::" << symbol << "_size, names" << nextID << ");" << endln;
+		formattedOutput << indent << "static ::redengine::text::BlobCodeTable16Registrar register" << nextID
+				<< '(' << endln << shift;
+		formattedOutput << indent << "::" << symbol << ',' << endln;
+		formattedOutput << indent << "::" << symbol << "_size," << endln;
+		formattedOutput << indent << "names" << nextID << ',' << endln;
+		formattedOutput << indent << CPPUtils::escapeString(blob, true) << endln << unshift;
+		formattedOutput << indent << ");" << endln;
 		++nextID;
 	}
 
@@ -264,14 +268,20 @@ namespace text {
 	typedef BlobTableCodecFactory<Char16, Decoder16, TableCodec16> DecoderFactory;
 	typedef map<string, EncoderFactory*> EncoderFactories;
 	typedef map<string, DecoderFactory*> DecoderFactories;
+	typedef map<string, string> CanonicalNames;
 
 	static EncoderFactories* encoderFactories = NULL;
 	static DecoderFactories* decoderFactories = NULL;
+	static CanonicalNames* encoderNames = NULL;
+	static CanonicalNames* decoderNames = NULL;
 
-	BlobCodeTable16Registrar::BlobCodeTable16Registrar(const char* data, size_t size, const char *const* names) {
+	BlobCodeTable16Registrar::BlobCodeTable16Registrar(const char* data, size_t size,
+			const char *const* names, const char* canonicalName) {
 		const char *const* name;
 		if(!encoderFactories)
 			encoderFactories = new EncoderFactories;
+		if(!encoderNames)
+			encoderNames = new CanonicalNames;
 		Unref<EncoderFactory> encoder(new EncoderFactory(data, size));
 		for(name = names; *name; ++name) {
 			EncoderFactories::iterator it = encoderFactories->find(*name);
@@ -282,9 +292,13 @@ namespace text {
 				it->second = *encoder;
 			}
 			encoder->ref();
+			if(canonicalName)
+				(*encoderNames)[*name] = canonicalName;
 		}
 		if(!decoderFactories)
 			decoderFactories = new DecoderFactories;
+		if(!decoderNames)
+			decoderNames = new CanonicalNames;
 		Unref<DecoderFactory> decoder(new DecoderFactory(data, size));
 		for(name = names; *name; ++name) {
 			DecoderFactories::iterator it = decoderFactories->find(*name);
@@ -295,6 +309,8 @@ namespace text {
 				it->second = *decoder;
 			}
 			decoder->ref();
+			if(canonicalName)
+				(*decoderNames)[*name] = canonicalName;
 		}
 	}
 
@@ -308,6 +324,16 @@ namespace text {
 			DecoderFactories::const_iterator begin(decoderFactories->begin()), end(decoderFactories->end());
 			for(; begin != end; ++begin)
 				manager.setDecoder16Factory(begin->first, begin->second);
+		}
+		if(encoderNames) {
+			CanonicalNames::const_iterator begin(encoderNames->begin()), end(encoderNames->end());
+			for(; begin != end; ++begin)
+				manager.setEncoder16CanonicalName(begin->first, begin->second);
+		}
+		if(decoderNames) {
+			CanonicalNames::const_iterator begin(decoderNames->begin()), end(decoderNames->end());
+			for(; begin != end; ++begin)
+				manager.setDecoder16CanonicalName(begin->first, begin->second);
 		}
 	}
 

@@ -101,57 +101,38 @@ int listCodecs(CodecManager& codecs) {
 		else
 			it->second |= CAN_DECODE;
 	}
-	map<CodecManager::Encoder16Factory*, string> sameEncoder;
-	map<CodecManager::Encoder16Factory*, string>::const_iterator sencit;
-	map<CodecManager::Decoder16Factory*, string> sameDecoder;
-	map<CodecManager::Decoder16Factory*, string>::const_iterator sdecit;
 	map<string, int>::const_iterator kbegin(known.begin()), kend(known.end());
-	bool isSame;
+	string enccname, deccname;
 	for(; kbegin != kend; ++kbegin) {
 		cout << kbegin->first;
-		isSame = false;
-		CodecManager::Encoder16Factory* encFac;
-		CodecManager::Decoder16Factory* decFac;
 		switch(kbegin->second & CAN_XCODE) {
 			case CAN_ENCODE:
-				encFac = codecs.getEncoder16Factory(kbegin->first);
-				if(encFac) {
-					sencit = sameEncoder.find(encFac);
-					if(sencit != sameEncoder.end()) {
-						cout << " (same as " << sencit->second << ", encode only)";
-						isSame = true;
-					}
-					else
-						sameEncoder[encFac] = kbegin->first;
-				}
-				if(!isSame)
+				enccname = codecs.getEncoder16CanonicalName(kbegin->first);
+				if(enccname == kbegin->first)
+					enccname.clear();
+				if(enccname.empty())
 					cout << " (encode only)";
+				else
+					cout << " (same as " << enccname << ", encode only)";
 				break;
 			case CAN_DECODE:
-				decFac = codecs.getDecoder16Factory(kbegin->first);
-				if(decFac) {
-					sdecit = sameDecoder.find(decFac);
-					if(sdecit != sameDecoder.end()) {
-						cout << " (same as " << sdecit->second << ", decode only)";
-						isSame = true;
-					}
-					else
-						sameDecoder[decFac] = kbegin->first;
-				}
-				if(!isSame)
+				deccname = codecs.getDecoder16CanonicalName(kbegin->first);
+				if(deccname == kbegin->first)
+					deccname.clear();
+				if(deccname.empty())
 					cout << " (decode only)";
+				else
+					cout << " (same as " << deccname << ", decode only)";
 				break;
 			case CAN_XCODE:
-				encFac = codecs.getEncoder16Factory(kbegin->first);
-				decFac = codecs.getDecoder16Factory(kbegin->first);
-				sencit = sameEncoder.find(encFac);
-				sdecit = sameDecoder.find(decFac);
-				if(sencit != sameEncoder.end() && sdecit != sameDecoder.end() && sencit->second == sdecit->second)
-					cout << " (same as " << sencit->second << ')';
-				if(encFac && sencit == sameEncoder.end())
-					sameEncoder[encFac] = kbegin->first;
-				if(decFac && sdecit == sameDecoder.end())
-					sameDecoder[decFac] = kbegin->first;
+				enccname = codecs.getEncoder16CanonicalName(kbegin->first);
+				if(enccname == kbegin->first)
+					enccname.clear();
+				deccname = codecs.getDecoder16CanonicalName(kbegin->first);
+				if(deccname == kbegin->first)
+					deccname.clear();
+				if(!enccname.empty() && enccname == deccname)
+					cout << " (same as " << enccname << ')';
 				break;
 			default:
 				break;

@@ -18,7 +18,8 @@ namespace text {
 	CodecManager::CodecManager() {}
 
 	CodecManager::CodecManager(const CodecManager& manager) : enc16reg(manager.enc16reg),
-			dec16reg(manager.dec16reg), enc16resolv(manager.enc16resolv), dec16resolv(manager.dec16resolv) {
+			dec16reg(manager.dec16reg), enc16resolv(manager.enc16resolv), dec16resolv(manager.dec16resolv),
+			enc16cnames(manager.enc16cnames), dec16cnames(manager.dec16cnames) {
 		Encoder16Iterator enc16begin(enc16reg.begin()), enc16end(enc16reg.end());
 		for(; enc16begin != enc16end; ++enc16begin)
 			enc16begin->second->ref();
@@ -239,6 +240,24 @@ namespace text {
 		Decoder16ResolverIterator dec16resbegin(dec16resolv.begin()), dec16resend(dec16resolv.end());
 		for(; dec16resbegin != dec16resend; ++dec16resbegin)
 			(*dec16resbegin)->listKnownCodecs(list);
+	}
+
+	void CodecManager::setEncoder16CanonicalName(const string& alias, const string& canonical) {
+		enc16cnames[alias] = canonical;
+	}
+
+	void CodecManager::setDecoder16CanonicalName(const string& alias, const string& canonical) {
+		dec16cnames[alias] = canonical;
+	}
+
+	string CodecManager::getEncoder16CanonicalName(const string& alias) const {
+		CanonicalNameIterator it = enc16cnames.find(alias);
+		return it == enc16cnames.end() ? "" : it->second;
+	}
+
+	string CodecManager::getDecoder16CanonicalName(const string& alias) const {
+		CanonicalNameIterator it = dec16cnames.find(alias);
+		return it == dec16cnames.end() ? "" : it->second;
 	}
 
 }}

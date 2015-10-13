@@ -27,12 +27,15 @@ namespace text {
 		typedef Encoder16Resolvers::const_iterator Encoder16ResolverIterator;
 		typedef std::set<Decoder16Resolver*> Decoder16Resolvers;
 		typedef Decoder16Resolvers::const_iterator Decoder16ResolverIterator;
+		typedef std::map<std::string, std::string> CanonicalNames;
+		typedef CanonicalNames::const_iterator CanonicalNameIterator;
 
 	  private:
 		Encoder16Registry enc16reg;
 		Decoder16Registry dec16reg;
 		Encoder16Resolvers enc16resolv;
 		Decoder16Resolvers dec16resolv;
+		CanonicalNames enc16cnames, dec16cnames;
 
 	  public:
 		CodecManager();
@@ -41,25 +44,35 @@ namespace text {
 
 		Encoder16Factory* getEncoder16Factory(const std::string&) const;
 		Decoder16Factory* getDecoder16Factory(const std::string&) const;
+
 		Encoder16* getEncoder16(const std::string&) const;
 		Decoder16* getDecoder16(const std::string&) const;
 		Encoder16* newEncoder16(const std::string&);
 		Decoder16* newDecoder16(const std::string&);
+
 		void setEncoder16Factory(const std::string&, Encoder16Factory*);
 		void setDecoder16Factory(const std::string&, Decoder16Factory*);
 		void getEncoder16Factories(Encoder16Iterator&, Encoder16Iterator&) const;
 		void getDecoder16Factories(Decoder16Iterator&, Decoder16Iterator&) const;
+
 		void registerBuiltins();
 		void registerBlobs();
 		void purge();
+
 		void getEncoder16Resolvers(Encoder16ResolverIterator&, Encoder16ResolverIterator&) const;
 		void getDecoder16Resolvers(Decoder16ResolverIterator&, Decoder16ResolverIterator&) const;
 		bool addEncoder16Resolver(Encoder16Resolver*);
 		bool addDecoder16Resolver(Decoder16Resolver*);
 		bool removeEncoder16Resolver(Encoder16Resolver*);
 		bool removeDecoder16Resolver(Decoder16Resolver*);
+
 		void listKnownEncoders16(std::set<std::string>&) const;
 		void listKnownDecoders16(std::set<std::string>&) const;
+
+		void setEncoder16CanonicalName(const std::string&, const std::string&);
+		void setDecoder16CanonicalName(const std::string&, const std::string&);
+		std::string getEncoder16CanonicalName(const std::string&) const;
+		std::string getDecoder16CanonicalName(const std::string&) const;
 
 	};
 

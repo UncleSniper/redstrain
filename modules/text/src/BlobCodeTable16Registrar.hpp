@@ -165,7 +165,7 @@ namespace text {
 		};
 
 	  public:
-		BlobCodeTable16Registrar(const char*, size_t, const char *const*);
+		BlobCodeTable16Registrar(const char*, size_t, const char *const*, const char*);
 
 		static void registerCodecs(CodecManager&);
 
