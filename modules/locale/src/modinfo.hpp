@@ -1,0 +1,18 @@
+#ifndef REDSTRAIN_MOD_LOCALE_MODINFO_HPP
+#define REDSTRAIN_MOD_LOCALE_MODINFO_HPP
+
+#include <redstrain/redmond/LibraryDependency.hpp>
+
+#include "api.hpp"
+
+#define REDSTRAIN_MOD_LOCALE_STATIC_VERSION_MAJOR 0u
+#define REDSTRAIN_MOD_LOCALE_STATIC_VERSION_MINOR 1u
+
+namespace redengine {
+namespace locale {
+
+	REDSTRAIN_DECLARE_MODULE_VERSION(REDSTRAIN_LOCALE_API)
+
+}}
+
+#endif /* REDSTRAIN_MOD_LOCALE_MODINFO_HPP */
