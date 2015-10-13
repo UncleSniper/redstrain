@@ -95,6 +95,7 @@ namespace boot {
 		"stage.directory",
 		"blob.alias.path.prefix",
 		"blob.alias.file.suffix",
+		"blobful.depend.modules",
 		"linux.external.libraries",
 		"windows.external.libraries"
 	};

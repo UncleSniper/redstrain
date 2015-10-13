@@ -42,11 +42,13 @@ namespace boot {
 		const XakeComponent* xcomponent = dynamic_cast<const XakeComponent*>(&component);
 		if(!xcomponent)
 			return;
-		string deps(xcomponent->getComponentConfiguration().getProperty(Resources::RES_DEPEND_MODULES));
-		if(deps.empty())
-			return;
 		DependencyAppender sink(project, component);
-		StringUtils::split(deps, ",", sink);
+		string deps(xcomponent->getComponentConfiguration().getProperty(Resources::RES_DEPEND_MODULES));
+		if(!deps.empty())
+			StringUtils::split(deps, ",", sink);
+		deps = xcomponent->getComponentConfiguration().getProperty(Resources::RES_RSB_BLOBFUL_DEPEND_MODULES);
+		if(!deps.empty())
+			StringUtils::split(deps, ",", sink);
 	}
 
 }}}
