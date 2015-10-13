@@ -66,7 +66,7 @@ namespace boot {
 
 	struct XakeCodeTable16RegistrarTransformPropertyInjector : public Artifact::FollowupTransformPropertyInjector {
 
-		XakeCodeTable16RegistrarTransformPropertyInjector();
+		XakeCodeTable16RegistrarTransformPropertyInjector() {}
 
 		virtual void injectFollowupTransformProperties(Component&, Language&,
 				Artifact&, const Flavor&, const Flavor&, Transform&);

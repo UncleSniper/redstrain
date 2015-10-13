@@ -26,6 +26,7 @@ namespace boot {
 			case Component::BLOB:
 				component->addLanguage(project.getBlobLanguage());
 				component->addLanguage(project.getBlobAliasLanguage());
+				component->addLanguage(project.getCodeTable16RegisterLanguage());
 			case Component::DATA:
 				component->addLanguage(project.getCodeTableDefinitionLanguage());
 				break;

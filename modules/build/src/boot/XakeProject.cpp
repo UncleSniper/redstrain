@@ -11,6 +11,7 @@
 #include "XakeBlobLanguage.hpp"
 #include "XakeBlobAliasLanguage.hpp"
 #include "XakeObjectFileLanguage.hpp"
+#include "XakeCodeTable16RegisterLanguage.hpp"
 #include "../UnsupportedToolchainError.hpp"
 
 using std::string;
@@ -31,7 +32,7 @@ namespace boot {
 	XakeProject::XakeProject(const string& baseDirectory)
 			: baseDirectory(Pathname::tidy(Pathname::join(Pathname::getWorkingDirectory(), baseDirectory))),
 			compiler(NULL), linker(NULL), cppLanguage(NULL), objectFileLanguage(NULL), codeTableLanguage(NULL),
-			blobLanguage(NULL), blobAliasLanguage(NULL) {
+			blobLanguage(NULL), blobAliasLanguage(NULL), ct16RegisterLanguage(NULL) {
 		configuration.load(Resources::DFL_DEFAULTS);
 		switch(buildTargetOS) {
 			case OS_LINUX:
@@ -60,7 +61,7 @@ namespace boot {
 
 	XakeProject::XakeProject(const XakeProject& project) : configuration(project.configuration), compiler(NULL),
 			linker(NULL), cppLanguage(NULL), objectFileLanguage(NULL), codeTableLanguage(NULL),
-			blobLanguage(NULL), blobAliasLanguage(NULL) {}
+			blobLanguage(NULL), blobAliasLanguage(NULL), ct16RegisterLanguage(NULL) {}
 
 	XakeProject::~XakeProject() {
 		if(compiler)
@@ -76,6 +77,8 @@ namespace boot {
 			delete blobLanguage;
 		if(blobAliasLanguage)
 			delete blobAliasLanguage;
+		if(ct16RegisterLanguage)
+			delete ct16RegisterLanguage;
 	}
 
 	string XakeProject::getProjectName() const {
@@ -154,6 +157,12 @@ namespace boot {
 		if(!blobAliasLanguage)
 			blobAliasLanguage = new XakeBlobAliasLanguage(*this);
 		return *blobAliasLanguage;
+	}
+
+	Language& XakeProject::getCodeTable16RegisterLanguage() {
+		if(!ct16RegisterLanguage)
+			ct16RegisterLanguage = new XakeCodeTable16RegisterLanguage(*this);
+		return *ct16RegisterLanguage;
 	}
 
 	const string& XakeProject::getCompilerName() {

@@ -51,7 +51,11 @@ namespace boot {
 			if(directory.empty())
 				directory = XakeBuildDirectoryMapper::DEFAULT_BUILD_DIRECTORY;
 		}
-		else if(&language == &project.getBlobLanguage() || &language == &project.getBlobAliasLanguage()) {
+		else if(
+			&language == &project.getBlobLanguage()
+			|| &language == &project.getBlobAliasLanguage()
+			|| &language == &project.getCodeTable16RegisterLanguage()
+		) {
 			directory = configuration.getProperty(Resources::RES_RSB_GENERATED_SOURCE_DIRECTORY);
 			if(directory.empty())
 				directory = XakeBuildDirectoryMapper::DEFAULT_GENERATED_SOURCE_DIRECTORY;
