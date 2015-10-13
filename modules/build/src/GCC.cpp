@@ -161,8 +161,12 @@ namespace build {
 				command.addArgument(*begin);
 			}
 			for(begin = libraries.begin(), end = libraries.end(); begin != end; ++begin) {
+				if(getLinkMode() == STATIC_EXECUTABLE)
+					command.addArgument("-Wl,--whole-archive");
 				command.addArgument("-l");
 				command.addArgument(*begin);
+				if(getLinkMode() == STATIC_EXECUTABLE)
+					command.addArgument("-Wl,--no-whole-archive");
 			}
 		}
 		ExternalLinkage::invoke();
