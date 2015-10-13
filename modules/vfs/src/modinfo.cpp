@@ -4,6 +4,7 @@
 #include <redstrain/error/modinfo.hpp>
 #include <redstrain/redmond/modinfo.hpp>
 #include <redstrain/platform/modinfo.hpp>
+#include <redstrain/algorithm/modinfo.hpp>
 
 #include "modinfo.hpp"
 
@@ -18,6 +19,8 @@ namespace vfs {
 			RedStrain/VFS, RedStrain/Error, REDSTRAIN_MOD_ERROR, ::redengine::error)
 	REDSTRAIN_DEPEND_MODULE(Util,
 			RedStrain/VFS, RedStrain/Util, REDSTRAIN_MOD_UTIL, ::redengine::util)
+	REDSTRAIN_DEPEND_MODULE(Algorithm,
+			RedStrain/VFS, RedStrain/Algorithm, REDSTRAIN_MOD_ALGORITHM, ::redengine::algorithm)
 	REDSTRAIN_DEPEND_MODULE(Platform,
 			RedStrain/VFS, RedStrain/Platform, REDSTRAIN_MOD_PLATFORM, ::redengine::platform)
 	REDSTRAIN_DEPEND_MODULE(IO,
