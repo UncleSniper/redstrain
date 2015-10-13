@@ -269,13 +269,14 @@ namespace text {
 	static DecoderFactories* decoderFactories = NULL;
 
 	BlobCodeTable16Registrar::BlobCodeTable16Registrar(const char* data, size_t size, const char *const* names) {
+		const char *const* name;
 		if(!encoderFactories)
 			encoderFactories = new EncoderFactories;
 		Unref<EncoderFactory> encoder(new EncoderFactory(data, size));
-		for(; *names; ++names) {
-			EncoderFactories::iterator it = encoderFactories->find(*names);
+		for(name = names; *name; ++name) {
+			EncoderFactories::iterator it = encoderFactories->find(*name);
 			if(it == encoderFactories->end())
-				(*encoderFactories)[*names] = *encoder;
+				(*encoderFactories)[*name] = *encoder;
 			else {
 				it->second->unref();
 				it->second = *encoder;
@@ -285,10 +286,10 @@ namespace text {
 		if(!decoderFactories)
 			decoderFactories = new DecoderFactories;
 		Unref<DecoderFactory> decoder(new DecoderFactory(data, size));
-		for(; *names; ++names) {
-			DecoderFactories::iterator it = decoderFactories->find(*names);
+		for(name = names; *name; ++name) {
+			DecoderFactories::iterator it = decoderFactories->find(*name);
 			if(it == decoderFactories->end())
-				(*decoderFactories)[*names] = *decoder;
+				(*decoderFactories)[*name] = *decoder;
 			else {
 				it->second->unref();
 				it->second = *decoder;
