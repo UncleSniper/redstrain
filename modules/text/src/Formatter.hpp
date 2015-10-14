@@ -78,6 +78,50 @@ namespace text {
 			this->value.string = new String(value);
 		}
 
+		#define REDSTRAIN_FORMATTABLE_UNKNOWN_TYPE \
+			default: \
+				throw error::ProgrammingError("Unrecognized formattable type: " \
+						+ util::StringUtils::toString(static_cast<int>(type)));
+
+		Formattable(const Formattable& formattable) : type(formattable.type) {
+			switch(type) {
+				case INT8:
+					value.int8 = formattable.value.int8;
+					break;
+				case UINT8:
+					value.uint8 = formattable.value.uint8;
+					break;
+				case INT16:
+					value.int16 = formattable.value.int16;
+					break;
+				case UINT16:
+					value.uint16 = formattable.value.uint16;
+					break;
+				case INT32:
+					value.int32 = formattable.value.int32;
+					break;
+				case UINT32:
+					value.uint32 = formattable.value.uint32;
+					break;
+				case INT64:
+					value.int64 = formattable.value.int64;
+					break;
+				case UINT64:
+					value.uint64 = formattable.value.uint64;
+					break;
+				case FLOAT:
+					value.float32 = formattable.value.float32;
+					break;
+				case DOUBLE:
+					value.float64 = formattable.value.float64;
+					break;
+				case STRING:
+					value.string = new String(*formattable.value.string);
+					break;
+				REDSTRAIN_FORMATTABLE_UNKNOWN_TYPE
+			}
+		}
+
 		~Formattable() {
 			if(type == STRING)
 				delete value.string;
@@ -116,10 +160,6 @@ namespace text {
 		#define REDSTRAIN_FORMATTABLE_CAST_CONVERSION(vtconst, rettype, field) \
 			case vtconst: \
 				return static_cast<rettype>(value.field);
-		#define REDSTRAIN_FORMATTABLE_UNKNOWN_TYPE \
-			default: \
-				throw error::ProgrammingError("Unrecognized formattable type: " \
-						+ util::StringUtils::toString(static_cast<int>(type)));
 
 		int8_t asInt8() const {
 			switch(type) {
@@ -172,10 +212,58 @@ namespace text {
 			}
 		}
 
+		uint16_t asUInt16() const {
+			switch(type) {
+				REDSTRAIN_FORMATTABLE_INT_CONVERSION(INT8, uint16_t, int8_t, int8)
+				REDSTRAIN_FORMATTABLE_CAST_CONVERSION(UINT8, uint16_t, uint8)
+				REDSTRAIN_FORMATTABLE_INT_CONVERSION(INT16, uint16_t, int16_t, int16)
+				case UINT16: return value.uint16;
+				REDSTRAIN_FORMATTABLE_INT_CONVERSION(INT32, uint16_t, int32_t, int32)
+				REDSTRAIN_FORMATTABLE_INT_CONVERSION(UINT32, uint16_t, uint32_t, uint32)
+				REDSTRAIN_FORMATTABLE_INT_CONVERSION(INT64, uint16_t, int64_t, int64)
+				REDSTRAIN_FORMATTABLE_INT_CONVERSION(UINT64, uint16_t, uint64_t, uint64)
+				REDSTRAIN_FORMATTABLE_CAST_CONVERSION(FLOAT, uint16_t, float32)
+				REDSTRAIN_FORMATTABLE_CAST_CONVERSION(DOUBLE, uint16_t, float64)
+				case STRING: throw ValueNotFormattableAsNumberError();
+				REDSTRAIN_FORMATTABLE_UNKNOWN_TYPE
+			}
+		}
+
+		int32_t asInt32() const {
+			switch(type) {
+				REDSTRAIN_FORMATTABLE_CAST_CONVERSION(INT8, int32_t, int8)
+				REDSTRAIN_FORMATTABLE_CAST_CONVERSION(UINT8, int32_t, uint8)
+				REDSTRAIN_FORMATTABLE_CAST_CONVERSION(INT16, int32_t, int16)
+				REDSTRAIN_FORMATTABLE_CAST_CONVERSION(UINT16, int32_t, uint16)
+				case INT32: return value.int32;
+				REDSTRAIN_FORMATTABLE_INT_CONVERSION(UINT32, int32_t, uint32_t, uint32)
+				REDSTRAIN_FORMATTABLE_INT_CONVERSION(INT64, int32_t, int64_t, int64)
+				REDSTRAIN_FORMATTABLE_INT_CONVERSION(UINT64, int32_t, uint64_t, uint64)
+				REDSTRAIN_FORMATTABLE_CAST_CONVERSION(FLOAT, int32_t, float32)
+				REDSTRAIN_FORMATTABLE_CAST_CONVERSION(DOUBLE, int32_t, float64)
+				case STRING: throw ValueNotFormattableAsNumberError();
+				REDSTRAIN_FORMATTABLE_UNKNOWN_TYPE
+			}
+		}
+
+		uint32_t asUInt32() const {
+			switch(type) {
+				REDSTRAIN_FORMATTABLE_INT_CONVERSION(INT8, uint32_t, int8_t, int8)
+				REDSTRAIN_FORMATTABLE_CAST_CONVERSION(UINT8, uint32_t, uint8)
+				REDSTRAIN_FORMATTABLE_INT_CONVERSION(INT16, uint32_t, int16_t, int16)
+				REDSTRAIN_FORMATTABLE_CAST_CONVERSION(UINT16, uint32_t, uint16)
+				REDSTRAIN_FORMATTABLE_INT_CONVERSION(INT32, uint32_t, int32_t, int32)
+				case UINT32: return value.uint32;
+				REDSTRAIN_FORMATTABLE_INT_CONVERSION(INT64, uint32_t, int64_t, int64)
+				REDSTRAIN_FORMATTABLE_INT_CONVERSION(UINT64, uint32_t, uint64_t, uint64)
+				REDSTRAIN_FORMATTABLE_CAST_CONVERSION(FLOAT, int32_t, float32)
+				REDSTRAIN_FORMATTABLE_CAST_CONVERSION(DOUBLE, int32_t, float64)
+				case STRING: throw ValueNotFormattableAsNumberError();
+				REDSTRAIN_FORMATTABLE_UNKNOWN_TYPE
+			}
+		}
+
 		/*TODO
-		uint16_t asUInt16() const;
-		int32_t asInt32() const;
-		uint32_t asUInt32() const;
 		int64_t asInt64() const;
 		uint64_t asUInt64() const;
 		float asFloat() const;
