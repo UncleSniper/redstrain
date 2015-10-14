@@ -1,7 +1,7 @@
 #ifndef REDSTRAIN_MOD_UTIL_INTEGERBITS_HPP
 #define REDSTRAIN_MOD_UTIL_INTEGERBITS_HPP
 
-#include <stdint.h>
+#include "StandardIntegerMapping.hpp"
 
 /**
  * @file
@@ -49,16 +49,14 @@ namespace util {
 			typedef unsig AsUnsigned; \
 		};
 
-		REDSTRAIN_UTIL_INTEGERBITS_IMPL(char, char, unsigned char)
-		REDSTRAIN_UTIL_INTEGERBITS_IMPL(unsigned char, char, unsigned char)
-		REDSTRAIN_UTIL_INTEGERBITS_IMPL(short, short, unsigned short)
-		REDSTRAIN_UTIL_INTEGERBITS_IMPL(unsigned short, short, unsigned short)
-		REDSTRAIN_UTIL_INTEGERBITS_IMPL(int, int, unsigned)
-		REDSTRAIN_UTIL_INTEGERBITS_IMPL(unsigned, int, unsigned)
-		REDSTRAIN_UTIL_INTEGERBITS_IMPL(long, long, unsigned long)
-		REDSTRAIN_UTIL_INTEGERBITS_IMPL(unsigned long, long, unsigned long)
-		REDSTRAIN_UTIL_INTEGERBITS_IMPL(long long, long long, unsigned long long)
-		REDSTRAIN_UTIL_INTEGERBITS_IMPL(unsigned long long, long long, unsigned long long)
+		REDSTRAIN_UTIL_INTEGERBITS_IMPL(int8_t, int8_t, uint8_t)
+		REDSTRAIN_UTIL_INTEGERBITS_IMPL(uint8_t, int8_t, uint8_t)
+		REDSTRAIN_UTIL_INTEGERBITS_IMPL(int16_t, int16_t, uint16_t)
+		REDSTRAIN_UTIL_INTEGERBITS_IMPL(uint16_t, int16_t, uint16_t)
+		REDSTRAIN_UTIL_INTEGERBITS_IMPL(int32_t, int32_t, uint32_t)
+		REDSTRAIN_UTIL_INTEGERBITS_IMPL(uint32_t, int32_t, uint32_t)
+		REDSTRAIN_UTIL_INTEGERBITS_IMPL(int64_t, int64_t, uint64_t)
+		REDSTRAIN_UTIL_INTEGERBITS_IMPL(uint64_t, int64_t, uint64_t)
 
 		template<typename IntT, bool Signed>
 		struct NegativityImpl {
@@ -81,18 +79,18 @@ namespace util {
 		template<typename IntT, bool Signed>
 		struct WithSignednessImpl {
 
-			typedef typename BitsImpl<0, IntT>::AsUnsigned As;
+			typedef typename BitsImpl<0, typename StandardIntegerMapping<IntT>::StandardType>::AsUnsigned As;
 
 		};
 
 		template<typename IntT>
 		struct WithSignednessImpl<IntT, true> {
 
-			typedef typename BitsImpl<0, IntT>::AsSigned As;
+			typedef typename BitsImpl<0, typename StandardIntegerMapping<IntT>::StandardType>::AsSigned As;
 
 		};
 
-		typedef BitsImpl<0, IntegerT> Bits;
+		typedef BitsImpl<0, typename StandardIntegerMapping<IntegerT>::StandardType> Bits;
 		static const bool SIGNED = static_cast<IntegerT>(-1) < static_cast<IntegerT>(0);
 		typedef NegativityImpl<IntegerT, SIGNED> Negativity;
 
