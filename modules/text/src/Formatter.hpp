@@ -2,8 +2,11 @@
 #define REDSTRAIN_MOD_TEXT_FORMATTER_HPP
 
 #include <stdint.h>
+#include <redstrain/util/IntegerLog.hpp>
 #include <redstrain/util/StringUtils.hpp>
+#include <redstrain/util/IntegerBits.hpp>
 #include <redstrain/util/AddressSpace.hpp>
+#include <redstrain/util/IntegerBounds.hpp>
 #include <redstrain/error/ProgrammingError.hpp>
 
 #include "ValueNotFormattableAsNumberError.hpp"
@@ -54,6 +57,53 @@ namespace text {
 			double float64;
 			String* string;
 		} value;
+
+	  public:
+		template<typename IntegerT, typename RenditionT>
+		static String formatInteger(IntegerT value, unsigned base = 10u, unsigned width = 0u,
+				bool forcePlus = false, CharT padChar = RenditionT::digit(0u, false), bool upperCase = false) {
+			const unsigned maxDigits = static_cast<unsigned>(util::integerLog<IntegerT>(
+				static_cast<IntegerT>(base),
+				util::IntegerBounds<IntegerT>::MAX
+			)) + 1u;
+			String result;
+			result.reserve(static_cast<typename String::size_type>(width > maxDigits ? width : maxDigits));
+			bool negative = util::IntegerBits<IntegerT>::isNegative(value);
+			unsigned length;
+			if(negative) {
+				value = -value;
+				result += RenditionT::NEGATIVE_SIGN;
+				length = 1u;
+			}
+			else if(forcePlus) {
+				result += RenditionT::POSITIVE_SIGN;
+				length = 1u;
+			}
+			else
+				length = 0u;
+			unsigned digits = static_cast<unsigned>(util::integerLog<IntegerT>(
+				static_cast<IntegerT>(base),
+				value
+			));
+			if(!digits)
+				++digits;
+			for(; width > length + digits; ++length)
+				result += padChar;
+			CharT buffer[digits];
+			CharT* insert = buffer + digits;
+			if(value) {
+				for(; value; value /= static_cast<IntegerT>(base)) {
+					*--insert = RenditionT::digit(
+						static_cast<unsigned>(value % static_cast<IntegerT>(base)),
+						upperCase
+					);
+				}
+			}
+			else
+				*--insert = RenditionT::digit(0u, upperCase);
+			result.append(insert, static_cast<typename String::size_type>(digits));
+			return result;
+		}
 
 	  public:
 		#define REDSTRAIN_FORMATTABLE_CTOR(vtype, vtconst, field) \
@@ -263,21 +313,123 @@ namespace text {
 			}
 		}
 
-		/*TODO
-		int64_t asInt64() const;
-		uint64_t asUInt64() const;
-		float asFloat() const;
-		double asDouble() const;
-		String asString() const;
-		*/
+		int64_t asInt64() const {
+			switch(type) {
+				REDSTRAIN_FORMATTABLE_CAST_CONVERSION(INT8, int64_t, int8)
+				REDSTRAIN_FORMATTABLE_CAST_CONVERSION(UINT8, int64_t, uint8)
+				REDSTRAIN_FORMATTABLE_CAST_CONVERSION(INT16, int64_t, int16)
+				REDSTRAIN_FORMATTABLE_CAST_CONVERSION(UINT16, int64_t, uint16)
+				REDSTRAIN_FORMATTABLE_CAST_CONVERSION(INT32, int64_t, int32)
+				REDSTRAIN_FORMATTABLE_CAST_CONVERSION(UINT32, int64_t, uint32)
+				case INT64: return value.int64;
+				REDSTRAIN_FORMATTABLE_INT_CONVERSION(UINT64, int64_t, uint64_t, uint64)
+				REDSTRAIN_FORMATTABLE_CAST_CONVERSION(FLOAT, int64_t, float32)
+				REDSTRAIN_FORMATTABLE_CAST_CONVERSION(DOUBLE, int64_t, float64)
+				case STRING: throw ValueNotFormattableAsNumberError();
+				REDSTRAIN_FORMATTABLE_UNKNOWN_TYPE
+			}
+		}
+
+		uint64_t asUInt64() const {
+			switch(type) {
+				REDSTRAIN_FORMATTABLE_INT_CONVERSION(INT8, uint64_t, int8_t, int8)
+				REDSTRAIN_FORMATTABLE_CAST_CONVERSION(UINT8, uint64_t, uint8)
+				REDSTRAIN_FORMATTABLE_INT_CONVERSION(INT16, uint64_t, int16_t, int16)
+				REDSTRAIN_FORMATTABLE_CAST_CONVERSION(UINT16, uint64_t, uint16)
+				REDSTRAIN_FORMATTABLE_INT_CONVERSION(INT32, uint64_t, int32_t, int32)
+				REDSTRAIN_FORMATTABLE_CAST_CONVERSION(UINT32, uint64_t, uint32)
+				REDSTRAIN_FORMATTABLE_INT_CONVERSION(INT64, uint64_t, int64_t, int64)
+				case UINT64: return value.uint64;
+				REDSTRAIN_FORMATTABLE_CAST_CONVERSION(FLOAT, uint64_t, float32)
+				REDSTRAIN_FORMATTABLE_CAST_CONVERSION(DOUBLE, uint64_t, float64)
+				case STRING: throw ValueNotFormattableAsNumberError();
+				REDSTRAIN_FORMATTABLE_UNKNOWN_TYPE
+			}
+		}
+
+		float asFloat() const {
+			switch(type) {
+				REDSTRAIN_FORMATTABLE_CAST_CONVERSION(INT8, float, int8)
+				REDSTRAIN_FORMATTABLE_CAST_CONVERSION(UINT8, float, uint8)
+				REDSTRAIN_FORMATTABLE_CAST_CONVERSION(INT16, float, int16)
+				REDSTRAIN_FORMATTABLE_CAST_CONVERSION(UINT16, float, uint16)
+				REDSTRAIN_FORMATTABLE_CAST_CONVERSION(INT32, float, int32)
+				REDSTRAIN_FORMATTABLE_CAST_CONVERSION(UINT32, float, uint32)
+				REDSTRAIN_FORMATTABLE_CAST_CONVERSION(INT64, float, int64)
+				REDSTRAIN_FORMATTABLE_CAST_CONVERSION(UINT64, float, uint64)
+				case FLOAT: return value.float32;
+				REDSTRAIN_FORMATTABLE_CAST_CONVERSION(DOUBLE, float, float64)
+				case STRING: throw ValueNotFormattableAsNumberError();
+				REDSTRAIN_FORMATTABLE_UNKNOWN_TYPE
+			}
+		}
+
+		double asDouble() const {
+			switch(type) {
+				REDSTRAIN_FORMATTABLE_CAST_CONVERSION(INT8, double, int8)
+				REDSTRAIN_FORMATTABLE_CAST_CONVERSION(UINT8, double, uint8)
+				REDSTRAIN_FORMATTABLE_CAST_CONVERSION(INT16, double, int16)
+				REDSTRAIN_FORMATTABLE_CAST_CONVERSION(UINT16, double, uint16)
+				REDSTRAIN_FORMATTABLE_CAST_CONVERSION(INT32, double, int32)
+				REDSTRAIN_FORMATTABLE_CAST_CONVERSION(UINT32, double, uint32)
+				REDSTRAIN_FORMATTABLE_CAST_CONVERSION(INT64, double, int64)
+				REDSTRAIN_FORMATTABLE_CAST_CONVERSION(UINT64, double, uint64)
+				REDSTRAIN_FORMATTABLE_CAST_CONVERSION(FLOAT, double, float32)
+				case DOUBLE: return value.float64;
+				case STRING: throw ValueNotFormattableAsNumberError();
+				REDSTRAIN_FORMATTABLE_UNKNOWN_TYPE
+			}
+		}
+
+		#define REDSTRAIN_FORMATTABLE_STRING_INT_CONVERSION(vtconst, vtype, field) \
+			case vtconst: \
+				return formatInteger<vtype, RenditionT>(value.field, base, width, forcePlus, padChar, upperCase);
+
+		template<typename RenditionT>
+		String asString(unsigned base = 10u, unsigned width = 0u, bool forcePlus = false,
+				CharT padChar = RenditionT::digit(0u, false), bool upperCase = false) const {
+			switch(type) {
+				REDSTRAIN_FORMATTABLE_STRING_INT_CONVERSION(INT8, int8_t, int8)
+				REDSTRAIN_FORMATTABLE_STRING_INT_CONVERSION(UINT8, uint8_t, uint8)
+				REDSTRAIN_FORMATTABLE_STRING_INT_CONVERSION(INT16, int16_t, int16)
+				REDSTRAIN_FORMATTABLE_STRING_INT_CONVERSION(UINT16, uint16_t, uint16)
+				REDSTRAIN_FORMATTABLE_STRING_INT_CONVERSION(INT32, int32_t, int32)
+				REDSTRAIN_FORMATTABLE_STRING_INT_CONVERSION(UINT32, uint32_t, uint32)
+				REDSTRAIN_FORMATTABLE_STRING_INT_CONVERSION(INT64, int64_t, int64)
+				REDSTRAIN_FORMATTABLE_STRING_INT_CONVERSION(UINT64, uint64_t, uint64)
+				case FLOAT: return String();  // TODO
+				case DOUBLE: return String(); // TODO
+				case STRING: return *value.string;
+				REDSTRAIN_FORMATTABLE_UNKNOWN_TYPE
+			}
+		}
 
 		#undef REDSTRAIN_FORMATTABLE_INT_CONVERSION
 		#undef REDSTRAIN_FORMATTABLE_CAST_CONVERSION
 		#undef REDSTRAIN_FORMATTABLE_UNKNOWN_TYPE
+		#undef REDSTRAIN_FORMATTABLE_STRING_INT_CONVERSION
 
 	};
 
 	template<typename CharT>
+	class DefaultFormattingRendition {
+
+	  public:
+		static const CharT POSITIVE_SIGN = static_cast<CharT>('+');
+		static const CharT NEGATIVE_SIGN = static_cast<CharT>('-');
+
+	  public:
+		static inline CharT digit(unsigned value, bool upperCase) {
+			return static_cast<CharT>((upperCase
+					? "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ" : "0123456789abcdefghijklmnopqrstuvwxyz")[value]);
+		}
+
+	};
+
+	template<
+		typename CharT,
+		typename NumericRenditionT = DefaultFormattingRendition<CharT>
+	>
 	class Formatter {
 
 	  public:
