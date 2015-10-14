@@ -16,9 +16,64 @@ namespace redengine {
 namespace text {
 
 	template<typename CharT>
+	class DefaultFormattingRendition {
+
+	  public:
+		typedef CharT Char;
+
+	  public:
+		static const CharT POSITIVE_SIGN = static_cast<CharT>('+');
+		static const CharT NEGATIVE_SIGN = static_cast<CharT>('-');
+		static const CharT DECIMAL_POINT = static_cast<CharT>('.');
+		static const CharT GROUP_SEPARATOR = static_cast<CharT>(',');
+
+	  public:
+		static inline CharT digit(unsigned value, bool upperCase) {
+			return static_cast<CharT>((upperCase
+					? "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ" : "0123456789abcdefghijklmnopqrstuvwxyz")[value]);
+		}
+
+	};
+
+	template<
+		typename CharT,
+		typename RenditionT = DefaultFormattingRendition<CharT>
+	>
+	class FormattingOptions {
+
+	  public:
+		typedef CharT Char;
+		typedef RenditionT Rendition;
+
+	  public:
+		unsigned base, mantissaWidth, fractionWidth, groupSize;
+		bool forcePlus, upperCase;
+		CharT padChar, decimalPoint, groupSeparator;
+
+	  public:
+		FormattingOptions() : base(10u), mantissaWidth(0u), fractionWidth(1u), groupSize(3u),
+				forcePlus(false), upperCase(true), padChar(RenditionT::digit(0u, false)),
+				decimalPoint(RenditionT::DECIMAL_POINT), groupSeparator(RenditionT::GROUP_SEPARATOR) {}
+		FormattingOptions(unsigned base, unsigned mantissaWidth = 0u, unsigned fractionWidth = 1u,
+				bool forcePlus = false, CharT padChar = RenditionT::digit(0u, false), bool upperCase = true,
+				CharT decimalPoint = RenditionT::DECIMAL_POINT, CharT groupSeparator = RenditionT::GROUP_SEPARATOR,
+				unsigned groupSize = 3u)
+				: base(base), mantissaWidth(mantissaWidth), fractionWidth(fractionWidth), groupSize(groupSize),
+				forcePlus(forcePlus), upperCase(upperCase), padChar(padChar), decimalPoint(decimalPoint),
+				groupSeparator(groupSeparator) {}
+		FormattingOptions(const FormattingOptions& options) : base(options.base),
+				mantissaWidth(options.mantissaWidth), fractionWidth(options.fractionWidth),
+				groupSize(options.groupSize), forcePlus(options.forcePlus), upperCase(options.upperCase),
+				padChar(options.padChar), decimalPoint(options.decimalPoint),
+				groupSeparator(options.groupSeparator) {}
+
+	};
+
+	template<typename CharT>
 	class Formattable {
 
 	  public:
+		typedef CharT Char;
 		typedef std::basic_string<CharT> String;
 
 		enum Type {
@@ -60,14 +115,15 @@ namespace text {
 
 	  public:
 		template<typename IntegerT, typename RenditionT>
-		static String formatInteger(IntegerT value, unsigned base = 10u, unsigned width = 0u,
-				bool forcePlus = false, CharT padChar = RenditionT::digit(0u, false), bool upperCase = false) {
+		static String formatInteger(IntegerT value,
+				const FormattingOptions<CharT, RenditionT>& options = FormattingOptions<CharT, RenditionT>()) {
 			const unsigned maxDigits = static_cast<unsigned>(util::integerLog<IntegerT>(
-				static_cast<IntegerT>(base),
+				static_cast<IntegerT>(options.base),
 				util::IntegerBounds<IntegerT>::MAX
 			)) + 1u;
 			String result;
-			result.reserve(static_cast<typename String::size_type>(width > maxDigits ? width : maxDigits));
+			result.reserve(static_cast<typename String::size_type>(options.mantissaWidth > maxDigits
+					? options.mantissaWidth : maxDigits));
 			bool negative = util::IntegerBits<IntegerT>::isNegative(value);
 			unsigned length;
 			if(negative) {
@@ -75,35 +131,43 @@ namespace text {
 				result += RenditionT::NEGATIVE_SIGN;
 				length = 1u;
 			}
-			else if(forcePlus) {
+			else if(options.forcePlus) {
 				result += RenditionT::POSITIVE_SIGN;
 				length = 1u;
 			}
 			else
 				length = 0u;
 			unsigned digits = static_cast<unsigned>(util::integerLog<IntegerT>(
-				static_cast<IntegerT>(base),
+				static_cast<IntegerT>(options.base),
 				value
 			));
 			if(!digits)
 				++digits;
-			for(; width > length + digits; ++length)
-				result += padChar;
+			for(; options.mantissaWidth > length + digits; ++length)
+				result += options.padChar;
 			CharT buffer[digits];
 			CharT* insert = buffer + digits;
 			if(value) {
-				for(; value; value /= static_cast<IntegerT>(base)) {
+				for(; value; value /= static_cast<IntegerT>(options.base)) {
 					*--insert = RenditionT::digit(
-						static_cast<unsigned>(value % static_cast<IntegerT>(base)),
-						upperCase
+						static_cast<unsigned>(value % static_cast<IntegerT>(options.base)),
+						options.upperCase
 					);
 				}
 			}
 			else
-				*--insert = RenditionT::digit(0u, upperCase);
+				*--insert = RenditionT::digit(0u, options.upperCase);
 			result.append(insert, static_cast<typename String::size_type>(digits));
 			return result;
 		}
+
+		/*
+		template<typename FloatT, typename RenditionT>
+		static String formatFloat(FloatT value,
+				const FormattingOptions<CharT, RenditionT>& options = FormattingOptions<CharT, RenditionT>()) {
+			//TODO
+		}
+		*/
 
 	  public:
 		#define REDSTRAIN_FORMATTABLE_CTOR(vtype, vtconst, field) \
@@ -383,11 +447,11 @@ namespace text {
 
 		#define REDSTRAIN_FORMATTABLE_STRING_INT_CONVERSION(vtconst, vtype, field) \
 			case vtconst: \
-				return formatInteger<vtype, RenditionT>(value.field, base, width, forcePlus, padChar, upperCase);
+				return formatInteger<vtype, RenditionT>(value.field, options);
 
 		template<typename RenditionT>
-		String asString(unsigned base = 10u, unsigned width = 0u, bool forcePlus = false,
-				CharT padChar = RenditionT::digit(0u, false), bool upperCase = false) const {
+		String asString(const FormattingOptions<CharT, RenditionT>& options
+				= FormattingOptions<CharT, RenditionT>()) const {
 			switch(type) {
 				REDSTRAIN_FORMATTABLE_STRING_INT_CONVERSION(INT8, int8_t, int8)
 				REDSTRAIN_FORMATTABLE_STRING_INT_CONVERSION(UINT8, uint8_t, uint8)
@@ -411,21 +475,6 @@ namespace text {
 
 	};
 
-	template<typename CharT>
-	class DefaultFormattingRendition {
-
-	  public:
-		static const CharT POSITIVE_SIGN = static_cast<CharT>('+');
-		static const CharT NEGATIVE_SIGN = static_cast<CharT>('-');
-
-	  public:
-		static inline CharT digit(unsigned value, bool upperCase) {
-			return static_cast<CharT>((upperCase
-					? "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ" : "0123456789abcdefghijklmnopqrstuvwxyz")[value]);
-		}
-
-	};
-
 	template<
 		typename CharT,
 		typename NumericRenditionT = DefaultFormattingRendition<CharT>
@@ -433,9 +482,25 @@ namespace text {
 	class Formatter {
 
 	  public:
+		typedef CharT Char;
+		typedef NumericRenditionT NumericRendition;
 		typedef std::basic_string<CharT> String;
+		typedef FormattingOptions<CharT, NumericRenditionT> Options;
 
-		//TODO
+	  private:
+		Options defaultOptions;
+
+	  public:
+		Formatter() {}
+		Formatter(const Formatter& formatter) : defaultOptions(formatter.defaultOptions) {}
+
+		inline Options& getDefaultFormattingOptions() {
+			return defaultOptions;
+		}
+
+		inline const Options& getDefaultFormattingOptions() const {
+			return defaultOptions;
+		}
 
 	};
 
