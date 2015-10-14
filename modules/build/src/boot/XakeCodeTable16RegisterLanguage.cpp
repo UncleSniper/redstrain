@@ -93,7 +93,7 @@ namespace boot {
 	}
 
 	CodeTable16RegisterLanguage::RegistrarConfiguration* XakeCodeTable16RegisterLanguage::getRegistrarConfiguration(
-			FileArtifact& sourceArtifact, const Flavor&, FileArtifact&, const Flavor&, const Flavor&,
+			FileArtifact&, const Flavor&, FileArtifact&, const Flavor&, const Flavor&,
 			Component& component) {
 		map<string, string> variables, mvariables;
 		variables["project"] = project.getProjectName();

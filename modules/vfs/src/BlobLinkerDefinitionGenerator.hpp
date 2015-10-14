@@ -106,7 +106,7 @@ namespace vfs {
 			return needsHeader;
 		}
 
-		inline bool setNeedsHeader(bool needsHeader) {
+		inline void setNeedsHeader(bool needsHeader) {
 			this->needsHeader = needsHeader;
 		}
 

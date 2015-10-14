@@ -12,7 +12,8 @@ namespace build {
 
 	CodeTable16RegisterLanguage::RegistrarConfiguration::RegistrarConfiguration() {}
 
-	CodeTable16RegisterLanguage::RegistrarConfiguration::RegistrarConfiguration(const RegistrarConfiguration&) {}
+	CodeTable16RegisterLanguage::RegistrarConfiguration::RegistrarConfiguration(const
+			RegistrarConfiguration& configuration) : ReferenceCounted(configuration) {}
 
 	CodeTable16RegisterLanguage::RegistrarConfiguration::~RegistrarConfiguration() {}
 
