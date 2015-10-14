@@ -110,6 +110,16 @@ namespace util {
 
 	};
 
+	template<typename IntegerT>
+	IntegerT integerLog(IntegerT base, IntegerT power) {
+		IntegerT exponent = static_cast<IntegerT>(0);
+		while(power) {
+			power /= base;
+			++exponent;
+		}
+		return exponent;
+	}
+
 }}
 
 #endif /* REDSTRAIN_MOD_UTIL_INTEGERLOG_HPP */
