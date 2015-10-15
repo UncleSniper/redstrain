@@ -1,6 +1,7 @@
 #ifndef REDSTRAIN_MOD_TEXT_FORMATTER_HPP
 #define REDSTRAIN_MOD_TEXT_FORMATTER_HPP
 
+#include <cmath>
 #include <stdint.h>
 #include <redstrain/util/IntegerLog.hpp>
 #include <redstrain/util/StringUtils.hpp>
@@ -14,6 +15,62 @@
 
 namespace redengine {
 namespace text {
+
+	// ======== DefaultFormattingRendition ========
+
+	template<typename FloatT>
+	class FloatingPointIntrospector;
+
+	template<>
+	class FloatingPointIntrospector<float> {
+
+	  public:
+		typedef int32_t Mantissa;
+		typedef int8_t Exponent;
+
+	  public:
+		static const unsigned MANTISSA_BITS = 23u;
+
+	  public:
+		static void dissect(float value, Mantissa& mantissa, Exponent& exponent) {
+			int exp;
+			float frc = frexpf(value, &exp);
+			// Now we have in 'frc' the plain mantissa of 'value',
+			// i.e. a number with the same mantissa, but an exponent
+			// of zero. If we just raise that exponent to the number
+			// of mantissa bits, this will yield a number that is
+			// numerically equal to the value of the actual mantissa
+			// bits of 'value'. Hopefully, the system will be smart
+			// enough to convert this to an integer by simply copying
+			// those bits...
+			mantissa = static_cast<Mantissa>(ldexpf(frc, static_cast<int>(MANTISSA_BITS)));
+			exponent = static_cast<Exponent>(exp);
+		}
+
+	};
+
+	template<>
+	class FloatingPointIntrospector<double> {
+
+	  public:
+		typedef int64_t Mantissa;
+		typedef int16_t Exponent;
+
+	  public:
+		static const unsigned MANTISSA_BITS = 52u;
+
+	  public:
+		static void dissect(float value, Mantissa& mantissa, Exponent& exponent) {
+			// see float version for how this works
+			int exp;
+			double frc = frexp(value, &exp);
+			mantissa = static_cast<Mantissa>(ldexp(frc, static_cast<int>(MANTISSA_BITS)));
+			exponent = static_cast<Exponent>(exp);
+		}
+
+	};
+
+	// ======== DefaultFormattingRendition ========
 
 	template<typename CharT>
 	class DefaultFormattingRendition {
@@ -34,6 +91,8 @@ namespace text {
 		}
 
 	};
+
+	// ======== FormattingOptions ========
 
 	template<
 		typename CharT,
@@ -68,6 +127,8 @@ namespace text {
 				groupSeparator(options.groupSeparator) {}
 
 	};
+
+	// ======== Formattable ========
 
 	template<typename CharT>
 	class Formattable {
@@ -161,13 +222,19 @@ namespace text {
 			return result;
 		}
 
-		/*
 		template<typename FloatT, typename RenditionT>
 		static String formatFloat(FloatT value,
 				const FormattingOptions<CharT, RenditionT>& options = FormattingOptions<CharT, RenditionT>()) {
+			typedef FloatingPointIntrospector<FloatT> Introspector;
+			typedef typename Introspector::Mantissa Mantissa;
+			typedef typename Introspector::Exponent Exponent;
+			Mantissa mantissa;
+			Exponent exponent;
+			Introspector::dissect(value, mantissa, exponent);
+			String result;
 			//TODO
+			return result;
 		}
-		*/
 
 	  public:
 		#define REDSTRAIN_FORMATTABLE_CTOR(vtype, vtconst, field) \
@@ -448,6 +515,9 @@ namespace text {
 		#define REDSTRAIN_FORMATTABLE_STRING_INT_CONVERSION(vtconst, vtype, field) \
 			case vtconst: \
 				return formatInteger<vtype, RenditionT>(value.field, options);
+		#define REDSTRAIN_FORMATTABLE_STRING_FLOAT_CONVERSION(vtconst, vtype, field) \
+			case vtconst: \
+				return formatFloat<vtype, RenditionT>(value.field, options);
 
 		template<typename RenditionT>
 		String asString(const FormattingOptions<CharT, RenditionT>& options
@@ -461,8 +531,8 @@ namespace text {
 				REDSTRAIN_FORMATTABLE_STRING_INT_CONVERSION(UINT32, uint32_t, uint32)
 				REDSTRAIN_FORMATTABLE_STRING_INT_CONVERSION(INT64, int64_t, int64)
 				REDSTRAIN_FORMATTABLE_STRING_INT_CONVERSION(UINT64, uint64_t, uint64)
-				case FLOAT: return String();  // TODO
-				case DOUBLE: return String(); // TODO
+				REDSTRAIN_FORMATTABLE_STRING_FLOAT_CONVERSION(FLOAT, float, float32)
+				REDSTRAIN_FORMATTABLE_STRING_FLOAT_CONVERSION(DOUBLE, double, float64)
 				case STRING: return *value.string;
 				REDSTRAIN_FORMATTABLE_UNKNOWN_TYPE
 			}
@@ -474,6 +544,8 @@ namespace text {
 		#undef REDSTRAIN_FORMATTABLE_STRING_INT_CONVERSION
 
 	};
+
+	// ======== Formatter ========
 
 	template<
 		typename CharT,
