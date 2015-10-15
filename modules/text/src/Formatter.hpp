@@ -6,6 +6,7 @@
 #include <redstrain/util/IntegerLog.hpp>
 #include <redstrain/util/StringUtils.hpp>
 #include <redstrain/util/IntegerBits.hpp>
+#include <redstrain/util/FloatTraits.hpp>
 #include <redstrain/util/AddressSpace.hpp>
 #include <redstrain/util/IntegerBounds.hpp>
 #include <redstrain/error/ProgrammingError.hpp>
@@ -15,60 +16,6 @@
 
 namespace redengine {
 namespace text {
-
-	// ======== DefaultFormattingRendition ========
-
-	template<typename FloatT>
-	class FloatingPointIntrospector;
-
-	template<>
-	class FloatingPointIntrospector<float> {
-
-	  public:
-		typedef int32_t Mantissa;
-		typedef int8_t Exponent;
-
-	  public:
-		static const unsigned MANTISSA_BITS = 23u;
-
-	  public:
-		static void dissect(float value, Mantissa& mantissa, Exponent& exponent) {
-			int exp;
-			float frc = frexpf(value, &exp);
-			// Now we have in 'frc' the plain mantissa of 'value',
-			// i.e. a number with the same mantissa, but an exponent
-			// of zero. If we just raise that exponent to the number
-			// of mantissa bits, this will yield a number that is
-			// numerically equal to the value of the actual mantissa
-			// bits of 'value'. Hopefully, the system will be smart
-			// enough to convert this to an integer by simply copying
-			// those bits...
-			mantissa = static_cast<Mantissa>(ldexpf(frc, static_cast<int>(MANTISSA_BITS)));
-			exponent = static_cast<Exponent>(exp);
-		}
-
-	};
-
-	template<>
-	class FloatingPointIntrospector<double> {
-
-	  public:
-		typedef int64_t Mantissa;
-		typedef int16_t Exponent;
-
-	  public:
-		static const unsigned MANTISSA_BITS = 52u;
-
-	  public:
-		static void dissect(float value, Mantissa& mantissa, Exponent& exponent) {
-			// see float version for how this works
-			int exp;
-			double frc = frexp(value, &exp);
-			mantissa = static_cast<Mantissa>(ldexp(frc, static_cast<int>(MANTISSA_BITS)));
-			exponent = static_cast<Exponent>(exp);
-		}
-
-	};
 
 	// ======== DefaultFormattingRendition ========
 
@@ -225,12 +172,12 @@ namespace text {
 		template<typename FloatT, typename RenditionT>
 		static String formatFloat(FloatT value,
 				const FormattingOptions<CharT, RenditionT>& options = FormattingOptions<CharT, RenditionT>()) {
-			typedef FloatingPointIntrospector<FloatT> Introspector;
-			typedef typename Introspector::Mantissa Mantissa;
-			typedef typename Introspector::Exponent Exponent;
+			typedef util::FloatTraits<FloatT> Traits;
+			typedef typename Traits::Mantissa Mantissa;
+			typedef typename Traits::Exponent Exponent;
 			Mantissa mantissa;
 			Exponent exponent;
-			Introspector::dissect(value, mantissa, exponent);
+			Traits::mantissaAndExponent(value, mantissa, exponent);
 			String result;
 			//TODO
 			return result;
