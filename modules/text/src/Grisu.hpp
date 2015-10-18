@@ -56,11 +56,14 @@ namespace text {
 
 		};
 
+		typedef std::basic_string<unsigned char> DigitSequence;
+
 	  public:
 		static const int32_t K_MIN = static_cast<int32_t>(-289);
 		static const int32_t K_MAX = static_cast<int32_t>(342);
 		static const int32_t Q = static_cast<int32_t>(64);
 		static const int32_t ALPHA = static_cast<int32_t>(0);
+		static const int32_t ALPHA2 = static_cast<int32_t>(-59);
 
 	  private:
 		static const uint64_t CACHED_SIGNIFICANTS[];
@@ -72,11 +75,13 @@ namespace text {
 		static int32_t kComp(int32_t, int32_t);
 		static FakeFloat cachedPower(int32_t);
 		static DecimalRepresentation cutGrisu(const FakeFloat&, int32_t);
+		static void digitGen(const FakeFloat&, FakeFloat, int32_t&, DigitSequence&);
 
 	  public:
 		static void generateCacheSource(io::OutputStream<char>&,
 				const std::string&, const std::string&, const std::string&, const std::string&);
 		static DecimalRepresentation grisu(const FakeFloat&);
+		static int32_t grisu2(const FakeFloat&, DigitSequence&);
 
 	};
 

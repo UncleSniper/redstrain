@@ -1,4 +1,5 @@
 #include <cmath>
+#include <redstrain/util/IntegerLog.hpp>
 #include <redstrain/util/DeleteArray.hpp>
 #include <redstrain/util/StringUtils.hpp>
 #include <redstrain/error/IllegalArgumentError.hpp>
@@ -10,8 +11,10 @@
 using std::string;
 using redengine::util::Appender;
 using redengine::io::OutputStream;
+using redengine::util::IntegerLog;
 using redengine::util::DeleteArray;
 using redengine::util::StringUtils;
+using redengine::util::IntegerBounds;
 using redengine::error::IllegalArgumentError;
 using redengine::io::DefaultConfiguredOutputStream;
 using redengine::io::endln;
@@ -245,7 +248,8 @@ namespace text {
 	static const double M_1_LD_10 = 1.0 / log2(10.0);
 
 	int32_t Grisu::kComp(int32_t e, int32_t alpha) {
-		return static_cast<int32_t>(ceil(static_cast<double>(alpha - e + static_cast<int32_t>(63)) * M_1_LD_10));
+		return static_cast<int32_t>(ceil(static_cast<double>(alpha - e
+				+ Grisu::Q - static_cast<int32_t>(1)) * M_1_LD_10));
 	}
 
 	Grisu::FakeFloat Grisu::cachedPower(int32_t k) {
@@ -271,6 +275,76 @@ namespace text {
 		uint32_t middle = static_cast<uint32_t>(tmp % TEN7);
 		uint32_t high = static_cast<uint32_t>(tmp / TEN7);
 		return DecimalRepresentation(high, middle, low, -mk);
+	}
+
+	int32_t Grisu::grisu2(const FakeFloat& value, DigitSequence& sink) {
+		// Since the idea is that we grok double precision floats,
+		// we have plenty of bits left after putting the 52+1 bit
+		// mantissa into a uint64_t, so we can easily invest one
+		// of them to add the extra binary place we need to get
+		// the mean between neighbors.
+		FakeFloat wPlus(value.f, value.e - static_cast<int32_t>(1));
+		FakeFloat wMinus(wPlus);
+		wPlus.f = (wPlus.f << 1) + static_cast<uint64_t>(1u);
+		wMinus.f = (wMinus.f << 1) - static_cast<uint64_t>(1u);
+		int32_t originalE = wPlus.e;
+		wPlus.normalize();
+		int32_t deltaE = originalE - wPlus.e;
+		wMinus.f <<= deltaE;
+		wMinus.e -= deltaE;
+		int32_t mk = Grisu::kComp(wPlus.e + Grisu::Q, Grisu::ALPHA2);
+		FakeFloat c_mk(Grisu::cachedPower(mk));
+		FakeFloat mMinus(wMinus * c_mk), mPlus(wPlus * c_mk);
+		++mMinus.f;
+		--mPlus.f;
+		mk = -mk;
+		Grisu::digitGen(mPlus, mPlus - mMinus, mk, sink);
+		return mk;
+	}
+
+	static const uint32_t TEN9_32 = static_cast<uint32_t>(1000000000u);
+	static const uint64_t TEN1 = static_cast<uint64_t>(10ul);
+	static const uint32_t TEN1_32 = static_cast<uint32_t>(10u);
+
+	void Grisu::digitGen(const FakeFloat& mPlus, FakeFloat delta, int32_t& k, DigitSequence& sink) {
+		sink.clear();
+		sink.reserve(static_cast<DigitSequence::size_type>(IntegerLog<
+			uint64_t,
+			static_cast<uint64_t>(10u),
+			IntegerBounds<uint64_t>::MAX
+		>::EXPONENT) * static_cast<DigitSequence::size_type>(2u));
+		FakeFloat one(static_cast<uint64_t>(1u) << -mPlus.e, mPlus.e);
+		uint32_t p1 = static_cast<uint32_t>(mPlus.f >> -one.e);
+		uint64_t p2 = mPlus.f & (one.f - static_cast<uint64_t>(1u));
+		int32_t kappa = static_cast<int32_t>(10);
+		uint32_t div = TEN9_32, d;
+		unsigned len = 0u;
+		while(kappa > static_cast<int32_t>(0)) {
+			d = p1 / div;
+			if(d || len) {
+				sink += static_cast<unsigned char>(d);
+				++len;
+			}
+			p1 %= div;
+			--kappa;
+			div /= TEN1_32;
+			if((static_cast<uint64_t>(p1) << -one.e) + p2 <= delta.f) {
+				k += kappa;
+				return;
+			}
+		}
+		do {
+			p2 *= TEN1;
+			d = static_cast<uint32_t>(p2 >> -one.e);
+			if(d || len) {
+				sink += static_cast<unsigned char>(d);
+				++len;
+			}
+			p2 &= one.f - static_cast<uint64_t>(1u);
+			--kappa;
+			delta.f *= TEN1;
+		} while(p2 > delta.f);
+		k += kappa;
 	}
 
 }}
