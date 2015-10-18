@@ -92,6 +92,14 @@ namespace util {
 			return this->object = pointer.object;
 		}
 
+		inline SubjectT& operator[](unsigned index) {
+			return this->object[index];
+		}
+
+		inline const SubjectT& operator[](unsigned index) const {
+			return this->object[index];
+		}
+
 	};
 
 }}

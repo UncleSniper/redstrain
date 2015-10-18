@@ -117,8 +117,8 @@ namespace util {
 			} \
 			static void mantissaAndExponent(type value, Mantissa& mantissa, Exponent& exponent) { \
 				int exp; \
-				type src = frexp(value, &exp); \
-				mantissa = static_cast<Mantissa>(ldexp(src, static_cast<int>(MANTISSA_BITS))); \
+				type frc = frexp(value, &exp); \
+				mantissa = static_cast<Mantissa>(ldexp(frc, static_cast<int>(MANTISSA_BITS + 1u))); \
 				exponent = static_cast<Exponent>(exp); \
 			} \
 		};

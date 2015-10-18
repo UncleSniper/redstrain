@@ -138,6 +138,10 @@ namespace util {
 			return object = newObject;
 		}
 
+		inline SubjectT*& pointerLocation() {
+			return object;
+		}
+
 	};
 
 }}
