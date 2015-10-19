@@ -4,8 +4,8 @@
 #include <redstrain/util/IntegerLog.hpp>
 #include <redstrain/util/FloatTraits.hpp>
 #include <redstrain/util/StringUtils.hpp>
-#include <redstrain/util/mathwrap.hpp>
 #include <redstrain/error/ProgrammingError.hpp>
+#include <redstrain/util/mathwrap.hpp>
 
 #include "Grisu.hpp"
 #include "FormattingOptions.hpp"
@@ -212,10 +212,11 @@ namespace text {
 					? static_cast<StringLength>(fracDigits) : static_cast<StringLength>(options.fractionWidth)))
 					: static_cast<StringLength>(0u);
 			StringLength expSpace;
+			unsigned expDigits;
 			if(options.floatStyle == FFS_PLAIN)
 				expSpace = static_cast<StringLength>(0u);
 			else {
-				unsigned expDigits = static_cast<unsigned>(util::integerLog<int32_t>(static_cast<int32_t>(10),
+				expDigits = static_cast<unsigned>(util::integerLog<int32_t>(static_cast<int32_t>(10),
 						expExp));
 				expSpace = static_cast<StringLength>(2u + (expDigits > 2u ? expDigits : 2u));
 			}
@@ -223,7 +224,118 @@ namespace text {
 					? static_cast<StringLength>(-options.integralWidth
 					- static_cast<int32_t>(signSpace + intSpace)) : static_cast<StringLength>(0u);
 			result.reserve(signSpace + intSpace + dotSpace + fracSpace + expSpace + fillSpace);
-			//TODO
+			unsigned length;
+			if(negative)
+				result += RenditionT::NEGATIVE_SIGN;
+			else {
+				switch(options.signStyle) {
+					case SFS_OMIT:
+						length = 0u;
+						break;
+					case SFS_PLUS:
+						result += RenditionT::POSITIVE_SIGN;
+						length = 1u;
+						break;
+					case SFS_FILL:
+						result += options.fillChar;
+						length = 1u;
+						break;
+					default:
+						throw error::ProgrammingError("Unrecognized sign format style in "
+								"Grisu2FloatFormatter::formatFloat(): "
+								+ util::StringUtils::toString(static_cast<int>(options.fillChar)));
+				}
+			}
+			for(; options.integralWidth > static_cast<int32_t>(length + intDigits); ++length)
+				result += options.integerPadChar;
+			Grisu::DigitSequence::const_iterator dbegin(dseq.begin());
+			for(; intDrawn; --intDrawn, ++dbegin)
+				result += RenditionT::digit(static_cast<unsigned>(*dbegin), options.upperCase);
+			CharT zero(RenditionT::digit(0u, options.upperCase));
+			for(; intPadded; --intPadded)
+				result += zero;
+			if(options.fractionWidth) {
+				result += options.decimalPoint;
+				length = 0u;
+				for(; fracPadded; --fracPadded) {
+					if(++length == static_cast<unsigned>(options.fractionWidth)) {
+						// this is the last printed decimal place => round
+						if(fracPadded > 1u)  // next digit would be zero due to padding
+							result += zero;
+						else if(static_cast<unsigned>(*dbegin) >= 5u)  // round up
+							result += RenditionT::digit(1u, options.upperCase);
+						else  // round down
+							result += zero;
+						break;
+					}
+					result += zero;
+				}
+				if(length < static_cast<unsigned>(options.fractionWidth)) {
+					for(; fracDrawn; --fracDrawn, ++dbegin) {
+						if(++length == static_cast<unsigned>(options.fractionWidth)) {
+							// this is the last printed decimal place => round
+							unsigned thisPlace = static_cast<unsigned>(*dbegin);
+							if(fracDrawn == 1u)  // no more digits; next would be zero
+								result += RenditionT::digit(thisPlace, options.upperCase);
+							else if(static_cast<unsigned>(*++dbegin) < 5u)  // round down
+								result += RenditionT::digit(thisPlace, options.upperCase);
+							else {  // round up
+								if(thisPlace < 9u)
+									++thisPlace;
+								else {
+									// Now we are, of course, royally screwed. We would
+									// have move back through the already printed parts
+									// as the carry propagates, cutting the whole thing
+									// off somewhere and re-filling with zeroes... This
+									// might actually affect the integral part, yadda
+									// yadda. There's just no way in <insert preferred
+									// place of eternal damnation> we're doing that;
+									// the user will just have to live with an implicit
+									// round-down here. Who's gonna know, anyway...? :P
+								}
+								result += RenditionT::digit(thisPlace, options.upperCase);
+							}
+							break;
+						}
+						result += RenditionT::digit(static_cast<unsigned>(*dbegin), options.upperCase);
+					}
+				}
+				if(options.expandFraction) {
+					for(; length < static_cast<unsigned>(options.expandFraction); ++length)
+						result += options.fractionPadChar;
+				}
+			}
+			if(options.floatStyle == FFS_SCIENTIFIC) {
+				if(options.exponentUpperCase)
+					result += RenditionT::UPPERCASE_EXPONENT;
+				else
+					result += RenditionT::LOWERCASE_EXPONENT;
+				if(expExp < static_cast<int32_t>(0)) {
+					expExp = -expExp;
+					result += RenditionT::NEGATIVE_SIGN;
+				}
+				else
+					result += RenditionT::POSITIVE_SIGN;
+				if(!expDigits)
+					++expDigits;
+				CharT buffer[expDigits];
+				CharT* insert = buffer + expDigits;
+				if(expExp) {
+					for(; expExp; expExp /= static_cast<int32_t>(10)) {
+						*--insert = RenditionT::digit(
+							static_cast<unsigned>(expExp % static_cast<int32_t>(10)),
+							options.upperCase
+						);
+					}
+				}
+				else
+					*--insert = zero;
+				result.append(insert, static_cast<StringLength>(expDigits));
+				for(; expDigits < 2u; ++expDigits)
+					result += zero;
+			}
+			for(; fillSpace; --fillSpace)
+				result += options.fillChar;
 			return result;
 		}
 
