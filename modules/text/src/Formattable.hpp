@@ -1,12 +1,9 @@
 #ifndef REDSTRAIN_MOD_TEXT_FORMATTABLE_HPP
 #define REDSTRAIN_MOD_TEXT_FORMATTABLE_HPP
 
-#include <redstrain/util/IntegerLog.hpp>
+#include <stdint.h>
 #include <redstrain/util/StringUtils.hpp>
-#include <redstrain/util/IntegerBits.hpp>
-#include <redstrain/util/FloatTraits.hpp>
 #include <redstrain/util/AddressSpace.hpp>
-#include <redstrain/util/IntegerBounds.hpp>
 #include <redstrain/error/ProgrammingError.hpp>
 
 #include "FormattingOptions.hpp"
@@ -59,68 +56,6 @@ namespace text {
 			double float64;
 			String* string;
 		} value;
-
-	  public:
-		template<typename IntegerT, typename RenditionT>
-		static String formatInteger(IntegerT value,
-				const FormattingOptions<CharT, RenditionT>& options = FormattingOptions<CharT, RenditionT>()) {
-			const unsigned maxDigits = static_cast<unsigned>(util::integerLog<IntegerT>(
-				static_cast<IntegerT>(options.base),
-				util::IntegerBounds<IntegerT>::MAX
-			)) + 1u;
-			String result;
-			result.reserve(static_cast<typename String::size_type>(options.mantissaWidth > maxDigits
-					? options.mantissaWidth : maxDigits));
-			bool negative = util::IntegerBits<IntegerT>::isNegative(value);
-			unsigned length;
-			if(negative) {
-				value = -value;
-				result += RenditionT::NEGATIVE_SIGN;
-				length = 1u;
-			}
-			else if(options.forcePlus) {
-				result += RenditionT::POSITIVE_SIGN;
-				length = 1u;
-			}
-			else
-				length = 0u;
-			unsigned digits = static_cast<unsigned>(util::integerLog<IntegerT>(
-				static_cast<IntegerT>(options.base),
-				value
-			));
-			if(!digits)
-				++digits;
-			for(; options.mantissaWidth > length + digits; ++length)
-				result += options.padChar;
-			CharT buffer[digits];
-			CharT* insert = buffer + digits;
-			if(value) {
-				for(; value; value /= static_cast<IntegerT>(options.base)) {
-					*--insert = RenditionT::digit(
-						static_cast<unsigned>(value % static_cast<IntegerT>(options.base)),
-						options.upperCase
-					);
-				}
-			}
-			else
-				*--insert = RenditionT::digit(0u, options.upperCase);
-			result.append(insert, static_cast<typename String::size_type>(digits));
-			return result;
-		}
-
-		template<typename FloatT, typename RenditionT>
-		static String formatFloat(FloatT value,
-				const FormattingOptions<CharT, RenditionT>& options = FormattingOptions<CharT, RenditionT>()) {
-			typedef util::FloatTraits<FloatT> Traits;
-			typedef typename Traits::Mantissa Mantissa;
-			typedef typename Traits::Exponent Exponent;
-			Mantissa mantissa;
-			Exponent exponent;
-			Traits::mantissaAndExponent(value, mantissa, exponent);
-			String result;
-			//TODO
-			return result;
-		}
 
 	  public:
 		#define REDSTRAIN_FORMATTABLE_CTOR(vtype, vtconst, field) \
@@ -400,12 +335,12 @@ namespace text {
 
 		#define REDSTRAIN_FORMATTABLE_STRING_INT_CONVERSION(vtconst, vtype, field) \
 			case vtconst: \
-				return formatInteger<vtype, RenditionT>(value.field, options);
+				return IntegerFormatterT::template formatInteger<vtype, RenditionT>(value.field, options);
 		#define REDSTRAIN_FORMATTABLE_STRING_FLOAT_CONVERSION(vtconst, vtype, field) \
 			case vtconst: \
-				return formatFloat<vtype, RenditionT>(value.field, options);
+				return FloatFormatterT::template formatFloat<vtype, RenditionT>(value.field, options);
 
-		template<typename RenditionT>
+		template<typename RenditionT, typename IntegerFormatterT, typename FloatFormatterT>
 		String asString(const FormattingOptions<CharT, RenditionT>& options
 				= FormattingOptions<CharT, RenditionT>()) const {
 			switch(type) {

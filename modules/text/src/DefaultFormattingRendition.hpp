@@ -15,6 +15,7 @@ namespace text {
 		static const CharT NEGATIVE_SIGN = static_cast<CharT>('-');
 		static const CharT DECIMAL_POINT = static_cast<CharT>('.');
 		static const CharT GROUP_SEPARATOR = static_cast<CharT>(',');
+		static const CharT FILL_CHARACTER = static_cast<CharT>(' ');
 
 	  public:
 		static inline CharT digit(unsigned value, bool upperCase) {
