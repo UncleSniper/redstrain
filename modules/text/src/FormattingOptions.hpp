@@ -3,7 +3,9 @@
 
 #include <stdint.h>
 
+#include "FormattingStringOption.hpp"
 #include "DefaultFormattingRendition.hpp"
+#include "DefaultFormattingOptionStringEmitter.hpp"
 
 namespace redengine {
 namespace text {
@@ -11,6 +13,12 @@ namespace text {
 	enum FloatFormatStyle {
 		FFS_PLAIN,
 		FFS_SCIENTIFIC
+	};
+
+	enum SignFormatStyle {
+		SFS_OMIT,
+		SFS_PLUS,
+		SFS_FILL
 	};
 
 	template<
@@ -22,41 +30,51 @@ namespace text {
 	  public:
 		typedef CharT Char;
 		typedef RenditionT Rendition;
+		typedef const CharT* (*StringEmitter)(FormattingStringOption);
 
 	  public:
 		uint8_t base;
 		int32_t integralWidth;
 		uint32_t fractionWidth, groupSize;
-		bool forcePlus, upperCase, exponentUpperCase;
+		bool upperCase, exponentUpperCase, expandFraction;
 		CharT integerPadChar, fractionPadChar, fillChar, decimalPoint, groupSeparator;
 		FloatFormatStyle floatStyle;
+		SignFormatStyle signStyle;
+		StringEmitter stringEmitter;
 
 	  public:
-		FormattingOptions() : base(static_cast<uint8_t>(10u)), integralWidth(static_cast<int32_t>(0u)),
-				fractionWidth(static_cast<uint32_t>(1u)), groupSize(static_cast<uint32_t>(3u)),
-				forcePlus(false), upperCase(true), exponentUpperCase(false),
+		FormattingOptions() : base(static_cast<uint8_t>(10u)), integralWidth(static_cast<int32_t>(0)),
+				fractionWidth(static_cast<uint32_t>(6u)), groupSize(static_cast<uint32_t>(3u)),
+				upperCase(true), exponentUpperCase(false), expandFraction(false),
 				integerPadChar(RenditionT::digit(0u, false)), fractionPadChar(integerPadChar),
 				fillChar(RenditionT::FILL_CHARACTER), decimalPoint(RenditionT::DECIMAL_POINT),
-				groupSeparator(RenditionT::GROUP_SEPARATOR), floatStyle(FFS_PLAIN) {}
+				groupSeparator(RenditionT::GROUP_SEPARATOR), floatStyle(FFS_PLAIN), signStyle(SFS_OMIT),
+				stringEmitter(NULL) {}
 
-		FormattingOptions(uint8_t base, int32_t integralWidth = 0u, uint32_t fractionWidth = 1u,
-				bool forcePlus = false, CharT integerPadChar = RenditionT::digit(0u, false),
+		FormattingOptions(uint8_t base, int32_t integralWidth = static_cast<int32_t>(0),
+				uint32_t fractionWidth = static_cast<uint32_t>(6u), SignFormatStyle signStyle = SFS_OMIT,
+				CharT integerPadChar = RenditionT::digit(0u, false), bool expandFraction = false,
 				CharT fractionPadChar = RenditionT::digit(0u, false), CharT fillChar = RenditionT::FILL_CHARACTER,
 				bool upperCase = true, CharT decimalPoint = RenditionT::DECIMAL_POINT,
 				FloatFormatStyle floatStyle = FFS_PLAIN, bool exponentUpperCase = false,
 				CharT groupSeparator = RenditionT::GROUP_SEPARATOR, uint32_t groupSize = 3u)
 				: base(base), integralWidth(integralWidth), fractionWidth(fractionWidth), groupSize(groupSize),
-				forcePlus(forcePlus), upperCase(upperCase), exponentUpperCase(exponentUpperCase),
+				upperCase(upperCase), exponentUpperCase(exponentUpperCase), expandFraction(expandFraction),
 				integerPadChar(integerPadChar), decimalPoint(decimalPoint), groupSeparator(groupSeparator),
-				floatStyle(floatStyle) {}
+				floatStyle(floatStyle), signStyle(SFS_OMIT), stringEmitter(NULL) {}
 
 		FormattingOptions(const FormattingOptions& options) : base(options.base),
 				integralWidth(options.integralWidth), fractionWidth(options.fractionWidth),
-				groupSize(options.groupSize), forcePlus(options.forcePlus), upperCase(options.upperCase),
-				exponentUpperCase(options.exponentUpperCase), integerPadChar(options.integerPadChar),
-				fractionPadChar(options.fractionPadChar), fillChar(options.fillChar),
-				decimalPoint(options.decimalPoint), groupSeparator(options.groupSeparator),
-				floatStyle(options.floatStyle) {}
+				groupSize(options.groupSize), upperCase(options.upperCase),
+				exponentUpperCase(options.exponentUpperCase), expandFraction(options.expandFraction),
+				integerPadChar(options.integerPadChar), fractionPadChar(options.fractionPadChar),
+				fillChar(options.fillChar), decimalPoint(options.decimalPoint),
+				groupSeparator(options.groupSeparator), floatStyle(options.floatStyle), signStyle(options.signStyle),
+				stringEmitter(options.stringEmitter) {}
+
+		inline StringEmitter getStringEmitter() const {
+			return stringEmitter ? stringEmitter : DefaultFormattingOptionStringEmitter<CharT>::emitString;
+		}
 
 	};
 

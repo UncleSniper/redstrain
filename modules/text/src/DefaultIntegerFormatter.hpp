@@ -2,8 +2,10 @@
 #define REDSTRAIN_MOD_TEXT_DEFAULTINTEGERFORMATTER_HPP
 
 #include <redstrain/util/IntegerLog.hpp>
+#include <redstrain/util/StringUtils.hpp>
 #include <redstrain/util/IntegerBits.hpp>
 #include <redstrain/util/IntegerBounds.hpp>
+#include <redstrain/error/ProgrammingError.hpp>
 
 #include "FormattingOptions.hpp"
 
@@ -21,13 +23,19 @@ namespace text {
 		template<typename IntegerT, typename RenditionT>
 		static String formatInteger(IntegerT value,
 				const FormattingOptions<CharT, RenditionT>& options = FormattingOptions<CharT, RenditionT>()) {
+			typedef typename String::size_type StringLength;
 			const unsigned maxDigits = static_cast<unsigned>(util::integerLog<IntegerT>(
 				static_cast<IntegerT>(options.base),
 				util::IntegerBounds<IntegerT>::MAX
 			)) + 1u;
 			String result;
-			result.reserve(static_cast<typename String::size_type>(options.integralWidth > maxDigits
-					? options.integralWidth : maxDigits));
+			const StringLength signSpace = static_cast<StringLength>(options.integralWidth
+					> static_cast<int32_t>(maxDigits) ? 0u : 1u);
+			const StringLength digitSpace = options.integralWidth > static_cast<int32_t>(maxDigits)
+					? static_cast<StringLength>(options.integralWidth) : static_cast<StringLength>(maxDigits);
+			StringLength fillSpace = options.integralWidth < static_cast<int32_t>(0)
+					? static_cast<StringLength>(-options.integralWidth) : static_cast<StringLength>(0u);
+			result.reserve(signSpace + digitSpace + fillSpace);
 			bool negative = util::IntegerBits<IntegerT>::isNegative(value);
 			unsigned length;
 			if(negative) {
@@ -35,19 +43,32 @@ namespace text {
 				result += RenditionT::NEGATIVE_SIGN;
 				length = 1u;
 			}
-			else if(options.forcePlus) {
-				result += RenditionT::POSITIVE_SIGN;
-				length = 1u;
+			else {
+				switch(options.signStyle) {
+					case SFS_OMIT:
+						length = 0u;
+						break;
+					case SFS_PLUS:
+						result += RenditionT::POSITIVE_SIGN;
+						length = 1u;
+						break;
+					case SFS_FILL:
+						result += options.fillChar;
+						length = 1u;
+						break;
+					default:
+						throw error::ProgrammingError("Unrecognized sign format style in "
+								"DefaultIntegerFormatter::formatInteger(): "
+								+ util::StringUtils::toString(static_cast<int>(options.fillChar)));
+				}
 			}
-			else
-				length = 0u;
 			unsigned digits = static_cast<unsigned>(util::integerLog<IntegerT>(
 				static_cast<IntegerT>(options.base),
 				value
 			));
 			if(!digits)
 				++digits;
-			for(; options.integralWidth > length + digits; ++length)
+			for(; options.integralWidth > static_cast<int32_t>(length + digits); ++length)
 				result += options.integerPadChar;
 			CharT buffer[digits];
 			CharT* insert = buffer + digits;
@@ -62,6 +83,8 @@ namespace text {
 			else
 				*--insert = RenditionT::digit(0u, options.upperCase);
 			result.append(insert, static_cast<typename String::size_type>(digits));
+			for(; fillSpace; --fillSpace)
+				result += options.fillChar;
 			return result;
 		}
 

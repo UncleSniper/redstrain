@@ -16,6 +16,8 @@ namespace text {
 		static const CharT DECIMAL_POINT = static_cast<CharT>('.');
 		static const CharT GROUP_SEPARATOR = static_cast<CharT>(',');
 		static const CharT FILL_CHARACTER = static_cast<CharT>(' ');
+		static const CharT LOWERCASE_EXPONENT = static_cast<CharT>('e');
+		static const CharT UPPERCASE_EXPONENT = static_cast<CharT>('E');
 
 	  public:
 		static inline CharT digit(unsigned value, bool upperCase) {
