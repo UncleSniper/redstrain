@@ -97,13 +97,15 @@ namespace text {
 					+ (options.integralWidth < static_cast<int32_t>(0)
 					? static_cast<unsigned>(-options.integralWidth) : 0u)
 					+ (options.floatStyle == FFS_PLAIN ? 0u : 4u);
+			FormattingOptionStringEmitter<CharT>& stringEmitter
+					= const_cast<FormattingOptionStringEmitter<CharT>&>(options.stringEmitter);
 			String name;
 			switch(fpclass) {
 				case util::FPC_NAN:
-					name = options.getStringEmitter()(FSO_NAN);
+					name = stringEmitter.emitString(FSO_NAN);
 					break;
 				case util::FPC_INFINITE:
-					name = options.getStringEmitter()(value < static_cast<FloatT>(0)
+					name = stringEmitter.emitString(value < static_cast<FloatT>(0)
 							? FSO_NEGATIVE_INFINITY : FSO_POSITIVE_INFINITY);
 					break;
 				case util::FPC_ZERO:
@@ -128,8 +130,7 @@ namespace text {
 
 	  public:
 		template<typename FloatT, typename RenditionT>
-		static String formatFloat(FloatT value,
-				const FormattingOptions<CharT, RenditionT>& options = FormattingOptions<CharT, RenditionT>()) {
+		static String formatFloat(FloatT value, const FormattingOptions<CharT, RenditionT>& options) {
 			typedef typename String::size_type StringLength;
 			typedef util::FloatTraits<FloatT> Traits;
 			typedef typename Traits::Mantissa Mantissa;

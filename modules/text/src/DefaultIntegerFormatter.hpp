@@ -21,8 +21,7 @@ namespace text {
 
 	  public:
 		template<typename IntegerT, typename RenditionT>
-		static String formatInteger(IntegerT value,
-				const FormattingOptions<CharT, RenditionT>& options = FormattingOptions<CharT, RenditionT>()) {
+		static String formatInteger(IntegerT value, const FormattingOptions<CharT, RenditionT>& options) {
 			typedef typename String::size_type StringLength;
 			const unsigned maxDigits = static_cast<unsigned>(util::integerLog<IntegerT>(
 				static_cast<IntegerT>(options.base),

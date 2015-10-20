@@ -345,8 +345,7 @@ namespace text {
 				return FloatFormatterT::template formatFloat<vtype, RenditionT>(value.field, options);
 
 		template<typename RenditionT, typename IntegerFormatterT, typename FloatFormatterT>
-		String asString(const FormattingOptions<CharT, RenditionT>& options
-				= FormattingOptions<CharT, RenditionT>()) const {
+		String asString(const FormattingOptions<CharT, RenditionT>& options) const {
 			switch(type) {
 				REDSTRAIN_FORMATTABLE_STRING_INT_CONVERSION(INT8, int8_t, int8)
 				REDSTRAIN_FORMATTABLE_STRING_INT_CONVERSION(UINT8, uint8_t, uint8)
