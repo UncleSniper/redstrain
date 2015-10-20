@@ -32,7 +32,7 @@ namespace text {
 				const StringLength intSpace = options.integralWidth > static_cast<int32_t>(1)
 						? static_cast<StringLength>(options.integralWidth) : static_cast<StringLength>(1u);
 				const StringLength dotSpace = static_cast<StringLength>(options.fractionWidth ? 1u : 0u);
-				const StringLength fracSpace = options.fractionWidth ? (options.expandFraction
+				const StringLength fracSpace = options.fractionWidth ? (options.flags & FOF_EXPAND_FRACTION
 						? static_cast<StringLength>(options.fractionWidth) : static_cast<StringLength>(1u))
 						: static_cast<StringLength>(0u);
 				const StringLength expSpace = static_cast<StringLength>(options.floatStyle == FFS_PLAIN ? 0u : 4u);
@@ -66,23 +66,24 @@ namespace text {
 				}
 				for(; options.integralWidth > static_cast<int32_t>(length + 1u); ++length)
 					result += options.integerPadChar;
-				result += RenditionT::digit(0u, options.upperCase);
+				bool upperCase = !!(options.flags & FOF_UPPERCASE_DIGITS);
+				result += RenditionT::digit(0u, upperCase);
 				if(options.fractionWidth) {
 					result += options.decimalPoint;
-					result += RenditionT::digit(0u, options.upperCase);
-					if(options.expandFraction) {
+					result += RenditionT::digit(0u, upperCase);
+					if(options.flags & FOF_EXPAND_FRACTION) {
 						uint32_t u;
 						for(u = static_cast<uint32_t>(1u); u < options.fractionWidth; ++u)
 							result += options.fractionPadChar;
 					}
 				}
 				if(options.floatStyle == FFS_SCIENTIFIC) {
-					if(options.exponentUpperCase)
+					if(options.flags & FOF_UPPERCASE_EXPONENT)
 						result += RenditionT::UPPERCASE_EXPONENT;
 					else
 						result += RenditionT::LOWERCASE_EXPONENT;
 					result += RenditionT::POSITIVE_SIGN;
-					CharT zero = RenditionT::digit(0u, options.upperCase);
+					CharT zero = RenditionT::digit(0u, upperCase);
 					result += zero;
 					result += zero;
 				}
@@ -207,7 +208,7 @@ namespace text {
 			const StringLength intSpace = options.integralWidth > static_cast<int32_t>(intDigits)
 					? static_cast<StringLength>(options.integralWidth) : static_cast<StringLength>(intDigits);
 			const StringLength dotSpace = static_cast<StringLength>(options.fractionWidth ? 1u : 0u);
-			const StringLength fracSpace = options.fractionWidth ? (options.expandFraction
+			const StringLength fracSpace = options.fractionWidth ? (options.flags & FOF_EXPAND_FRACTION
 					? static_cast<StringLength>(options.fractionWidth)
 					: (fracDigits < static_cast<unsigned>(options.fractionWidth)
 					? static_cast<StringLength>(fracDigits) : static_cast<StringLength>(options.fractionWidth)))
@@ -250,9 +251,10 @@ namespace text {
 			for(; options.integralWidth > static_cast<int32_t>(length + intDigits); ++length)
 				result += options.integerPadChar;
 			Grisu::DigitSequence::const_iterator dbegin(dseq.begin());
+			bool upperCase = !!(options.flags & FOF_UPPERCASE_DIGITS);
 			for(; intDrawn; --intDrawn, ++dbegin)
-				result += RenditionT::digit(static_cast<unsigned>(*dbegin), options.upperCase);
-			CharT zero(RenditionT::digit(0u, options.upperCase));
+				result += RenditionT::digit(static_cast<unsigned>(*dbegin), upperCase);
+			CharT zero(RenditionT::digit(0u, upperCase));
 			for(; intPadded; --intPadded)
 				result += zero;
 			if(options.fractionWidth) {
@@ -264,7 +266,7 @@ namespace text {
 						if(fracPadded > 1u)  // next digit would be zero due to padding
 							result += zero;
 						else if(static_cast<unsigned>(*dbegin) >= 5u)  // round up
-							result += RenditionT::digit(1u, options.upperCase);
+							result += RenditionT::digit(1u, upperCase);
 						else  // round down
 							result += zero;
 						break;
@@ -277,9 +279,9 @@ namespace text {
 							// this is the last printed decimal place => round
 							unsigned thisPlace = static_cast<unsigned>(*dbegin);
 							if(fracDrawn == 1u)  // no more digits; next would be zero
-								result += RenditionT::digit(thisPlace, options.upperCase);
+								result += RenditionT::digit(thisPlace, upperCase);
 							else if(static_cast<unsigned>(*++dbegin) < 5u)  // round down
-								result += RenditionT::digit(thisPlace, options.upperCase);
+								result += RenditionT::digit(thisPlace, upperCase);
 							else {  // round up
 								if(thisPlace < 9u)
 									++thisPlace;
@@ -294,20 +296,20 @@ namespace text {
 									// the user will just have to live with an implicit
 									// round-down here. Who's gonna know, anyway...? :P
 								}
-								result += RenditionT::digit(thisPlace, options.upperCase);
+								result += RenditionT::digit(thisPlace, upperCase);
 							}
 							break;
 						}
-						result += RenditionT::digit(static_cast<unsigned>(*dbegin), options.upperCase);
+						result += RenditionT::digit(static_cast<unsigned>(*dbegin), upperCase);
 					}
 				}
-				if(options.expandFraction) {
-					for(; length < static_cast<unsigned>(options.expandFraction); ++length)
+				if(options.flags & FOF_EXPAND_FRACTION) {
+					for(; length < static_cast<unsigned>(options.fractionWidth); ++length)
 						result += options.fractionPadChar;
 				}
 			}
 			if(options.floatStyle == FFS_SCIENTIFIC) {
-				if(options.exponentUpperCase)
+				if(options.flags & FOF_UPPERCASE_EXPONENT)
 					result += RenditionT::UPPERCASE_EXPONENT;
 				else
 					result += RenditionT::LOWERCASE_EXPONENT;
@@ -325,7 +327,7 @@ namespace text {
 					for(; expExp; expExp /= static_cast<int32_t>(10)) {
 						*--insert = RenditionT::digit(
 							static_cast<unsigned>(expExp % static_cast<int32_t>(10)),
-							options.upperCase
+							upperCase
 						);
 					}
 				}

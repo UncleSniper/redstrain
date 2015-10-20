@@ -75,12 +75,12 @@ namespace text {
 				for(; value; value /= static_cast<IntegerT>(options.base)) {
 					*--insert = RenditionT::digit(
 						static_cast<unsigned>(value % static_cast<IntegerT>(options.base)),
-						options.upperCase
+						!!(options.flags & FOF_UPPERCASE_DIGITS)
 					);
 				}
 			}
 			else
-				*--insert = RenditionT::digit(0u, options.upperCase);
+				*--insert = RenditionT::digit(0u, !!(options.flags & FOF_UPPERCASE_DIGITS));
 			result.append(insert, static_cast<typename String::size_type>(digits));
 			for(; fillSpace; --fillSpace)
 				result += options.fillChar;
