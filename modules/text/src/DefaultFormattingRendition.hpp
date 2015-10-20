@@ -19,6 +19,8 @@ namespace text {
 		static const CharT LOWERCASE_EXPONENT = static_cast<CharT>('e');
 		static const CharT UPPERCASE_EXPONENT = static_cast<CharT>('E');
 
+		static const unsigned NORMAL_GROUP_SIZE = 3u;
+
 	  public:
 		static inline CharT digit(unsigned value, bool upperCase) {
 			return static_cast<CharT>((upperCase

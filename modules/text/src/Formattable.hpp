@@ -57,6 +57,30 @@ namespace text {
 			String* string;
 		} value;
 
+		template<int Dummy, typename TargetT>
+		struct ParameterizedConversion;
+
+		#define REDSTRAIN_FORMATTABLE_PARAM_CONVERSION(type, getter) \
+			template<int Dummy> \
+			struct ParameterizedConversion<Dummy, type> { \
+				static inline type asRequestedType(const Formattable& formattable) { \
+					return formattable.getter(); \
+				} \
+			};
+
+		REDSTRAIN_FORMATTABLE_PARAM_CONVERSION(int8_t, asInt8)
+		REDSTRAIN_FORMATTABLE_PARAM_CONVERSION(uint8_t, asUInt8)
+		REDSTRAIN_FORMATTABLE_PARAM_CONVERSION(int16_t, asInt16)
+		REDSTRAIN_FORMATTABLE_PARAM_CONVERSION(uint16_t, asUInt16)
+		REDSTRAIN_FORMATTABLE_PARAM_CONVERSION(int32_t, asInt32)
+		REDSTRAIN_FORMATTABLE_PARAM_CONVERSION(uint32_t, asUInt32)
+		REDSTRAIN_FORMATTABLE_PARAM_CONVERSION(int64_t, asInt64)
+		REDSTRAIN_FORMATTABLE_PARAM_CONVERSION(uint64_t, asUInt64)
+		REDSTRAIN_FORMATTABLE_PARAM_CONVERSION(float, asFloat)
+		REDSTRAIN_FORMATTABLE_PARAM_CONVERSION(double, asDouble)
+
+		#undef REDSTRAIN_FORMATTABLE_PARAM_CONVERSION
+
 	  public:
 		#define REDSTRAIN_FORMATTABLE_CTOR(vtype, vtconst, field) \
 			Formattable(vtype value) : type(vtconst) { \
@@ -366,6 +390,11 @@ namespace text {
 		#undef REDSTRAIN_FORMATTABLE_CAST_CONVERSION
 		#undef REDSTRAIN_FORMATTABLE_UNKNOWN_TYPE
 		#undef REDSTRAIN_FORMATTABLE_STRING_INT_CONVERSION
+
+		template<typename TargetT>
+		TargetT as() const {
+			return ParameterizedConversion<0, TargetT>::asRequestedType(*this);
+		}
 
 	};
 
