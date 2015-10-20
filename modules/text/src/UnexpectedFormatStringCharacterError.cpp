@@ -25,6 +25,27 @@ namespace text {
 			case EXP_TERMINATOR:
 				out << "terminator symbol";
 				break;
+			case EXP_EXPLICIT_MODIFIER:
+				out << "explicit modifier";
+				break;
+			case EXP_SIGN_STYLE:
+				out << "sign style";
+				break;
+			case EXP_CONDITION:
+				out << "condition";
+				break;
+			case EXP_CONVERSION:
+				out << "conversion";
+				break;
+			case EXP_CONDITION_OPERAND_SEPARATOR:
+				out << "condition operand separator";
+				break;
+			case EXP_SUBGROUP_INITIATOR:
+				out << "subgroup initiator";
+				break;
+			case EXP_SUBGROUP_TERMINATOR:
+				out << "subgroup terminator";
+				break;
 			default:
 				out << "<Uh oh, unrecognized enum constant...>";
 				break;
