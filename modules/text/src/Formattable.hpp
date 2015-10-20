@@ -80,6 +80,10 @@ namespace text {
 			this->value.string = new String(value);
 		}
 
+		Formattable(const CharT* value) : type(STRING) {
+			this->value.string = new String(value);
+		}
+
 		#define REDSTRAIN_FORMATTABLE_UNKNOWN_TYPE \
 			default: \
 				throw error::ProgrammingError("Unrecognized formattable type: " \

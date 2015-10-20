@@ -8,6 +8,48 @@
 namespace redengine {
 namespace text {
 
+	/* format_string       ::= (verbatim_text | formatting)*
+	 * verbatim_text       ::= NON_PERCENT_CHAR+
+	 * formatting          ::= '%' ('%' | modifier* directive | construct)
+	 * modifier            ::= integral_modifier
+	 *                         | fractional_modifier
+	 *                         | ',' | '+' | '#'
+	 *                         | reference
+	 *                         | '!' explicit_modifier
+	 *                         | 'd' | 'o' | 'x' | 'X'
+	 *                         | '^' width ':'
+	 *                         | '_' width ':'
+	 *                         | 'e' | 'E'
+	 * integral_modifier   ::= ' ' '-'? width? | '-' width? | width
+	 * width               ::= INT | '@' item
+	 * item                ::= ('+' | '-')? INT
+	 * fractional_modifier ::= '.' integral_modifier
+	 * reference           ::= '=' item ':'
+	 * explicit_modifier   ::= 'a' | 'A'
+	 *                         | 'e' | 'E'
+	 *                         | 'x' | 'X'
+	 *                         | ('<' | '>' | '#' | '.' | ',') CHAR
+	 *                         | 's' | 'S'
+	 *                         | '+' ('-' | '+' | '#')
+	 * directive           ::= conversion | generator
+	 * conversion          ::= 'b' | 'B' | 't' | 'T' | 'i' | 'I' | 'l' | 'L'
+	 *                         | 'f' | 'p'
+	 *                         | 's'
+	 * generator           ::= '|' ('<' | '>' | '#' | ':' CHAR)
+	 * construct           ::= if_construct
+	 * if_construct        ::= '?' condition '{' format_string '}'
+	 *                         ('|' condition '{' format_string '}')*
+	 *                         ':'?
+	 * condition           ::= '0' | '1'
+	 *                         | unary_predicate item? conversion
+	 *                         | binary_predicate item? conversion '/' item?
+	 *                         | '!' condition
+	 * unary_predicate     ::= 'f' | 't' | 'n' | 'N' | 'p' | 'p'
+	 *                         | 'e' | 'o'
+	 * binary_predicate    ::= '=' | '/' | '<' | '>' | '<=' | '>='
+	 *                         | '%' | '+' | '-'
+	 */
+
 	template<
 		typename CharT,
 		typename NumericRenditionT = DefaultFormattingRendition<CharT>,
