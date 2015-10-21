@@ -18,6 +18,10 @@ namespace platform {
 				object->lockByPolicy();
 		}
 
+		PolicyLocker(SubjectT& object) : object(&object) {
+			object.lockByPolicy();
+		}
+
 		PolicyLocker(const PolicyLocker& locker) : object(locker.object) {
 			if(object)
 				object->lockByPolicy();
