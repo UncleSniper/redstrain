@@ -974,19 +974,140 @@ namespace text {
 			return formatIter<const Item**>(format, NULL, static_cast<size_t>(0u));
 		}
 
-		String format(const String& format, const Item& item0) const {
+		String format(
+			const String& format,
+			const Item& item0
+		) const {
 			const Item* array[] = {
 				&item0
 			};
 			return formatIter<const Item**>(format, array, static_cast<size_t>(1u));
 		}
 
-		String format(const String& format, const Item& item0, const Item& item1) const {
+		String format(
+			const String& format,
+			const Item& item0,
+			const Item& item1
+		) const {
 			const Item* array[] = {
 				&item0,
 				&item1
 			};
 			return formatIter<const Item**>(format, array, static_cast<size_t>(2u));
+		}
+
+		String format(
+			const String& format,
+			const Item& item0,
+			const Item& item1,
+			const Item& item2
+		) const {
+			const Item* array[] = {
+				&item0,
+				&item1,
+				&item2
+			};
+			return formatIter<const Item**>(format, array, static_cast<size_t>(3u));
+		}
+
+		String format(
+			const String& format,
+			const Item& item0,
+			const Item& item1,
+			const Item& item2,
+			const Item& item3
+		) const {
+			const Item* array[] = {
+				&item0,
+				&item1,
+				&item2,
+				&item3
+			};
+			return formatIter<const Item**>(format, array, static_cast<size_t>(4u));
+		}
+
+		String format(
+			const String& format,
+			const Item& item0,
+			const Item& item1,
+			const Item& item2,
+			const Item& item3,
+			const Item& item4
+		) const {
+			const Item* array[] = {
+				&item0,
+				&item1,
+				&item2,
+				&item3,
+				&item4
+			};
+			return formatIter<const Item**>(format, array, static_cast<size_t>(5u));
+		}
+
+		String format(
+			const String& format,
+			const Item& item0,
+			const Item& item1,
+			const Item& item2,
+			const Item& item3,
+			const Item& item4,
+			const Item& item5
+		) const {
+			const Item* array[] = {
+				&item0,
+				&item1,
+				&item2,
+				&item3,
+				&item4,
+				&item5
+			};
+			return formatIter<const Item**>(format, array, static_cast<size_t>(6u));
+		}
+
+		String format(
+			const String& format,
+			const Item& item0,
+			const Item& item1,
+			const Item& item2,
+			const Item& item3,
+			const Item& item4,
+			const Item& item5,
+			const Item& item6
+		) const {
+			const Item* array[] = {
+				&item0,
+				&item1,
+				&item2,
+				&item3,
+				&item4,
+				&item5,
+				&item6
+			};
+			return formatIter<const Item**>(format, array, static_cast<size_t>(7u));
+		}
+
+		String format(
+			const String& format,
+			const Item& item0,
+			const Item& item1,
+			const Item& item2,
+			const Item& item3,
+			const Item& item4,
+			const Item& item5,
+			const Item& item6,
+			const Item& item7
+		) const {
+			const Item* array[] = {
+				&item0,
+				&item1,
+				&item2,
+				&item3,
+				&item4,
+				&item5,
+				&item6,
+				&item7
+			};
+			return formatIter<const Item**>(format, array, static_cast<size_t>(8u));
 		}
 
 	};
