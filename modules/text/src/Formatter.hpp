@@ -228,6 +228,7 @@ namespace text {
 			uint32_t unsignedWidth;
 			CharT* setCharTarget;
 			bool startsWithZero;
+			CharT genChar;
 			for(;;) {
 				switch(*state.format) {
 					case FormatRenditionT::WIDTH_FILL_MODIFIER:
@@ -423,9 +424,62 @@ namespace text {
 					#undef REDSTRAIN_FORMATTER_INT_CONVERSION
 					#undef REDSTRAIN_FORMATTER_FLOAT_CONVERSION
 					case FormatRenditionT::CONVERSION_STRING:
-						//TODO
+						if(state.itemIndex >= state.itemCount)
+							throw InvalidFormattingItemReferenceError(state.itemIndex, state.fmtindex);
+						if(emit) {
+							String str((*(state.items + state.itemIndex))->template asString<NumericRenditionT,
+									IntegerFormatterT, FloatFormatterT>(options));
+							typename String::size_type slen = str.length();
+							if(options.integralWidth > static_cast<int32_t>(0)) {
+								while(static_cast<typename String::size_type>(options.integralWidth) > slen) {
+									state.stream << options.fillChar;
+									--options.integralWidth;
+								}
+							}
+							state.stream << str;
+							if(options.integralWidth < static_cast<int32_t>(0)) {
+								options.integralWidth = -options.integralWidth;
+								while(static_cast<typename String::size_type>(options.integralWidth) > slen) {
+									state.stream << options.fillChar;
+									--options.integralWidth;
+								}
+							}
+						}
+						++state.format;
+						++state.fmtindex;
+						return;
 					case FormatRenditionT::GENERATOR_INITIATOR:
-						//TODO
+						++state.fmtindex;
+						if(++state.format == state.endfmt)
+							throw UnexpectedEndOfFormatStringError(state.fmtindex);
+						switch(*state.format) {
+							case FormatRenditionT::GENERATOR_FILL_INTEGER_PAD_CHAR:
+								genChar = options.integerPadChar;
+							  genFillChar:
+								if(emit) {
+									for(; options.integralWidth > static_cast<int32_t>(0); --options.integralWidth)
+										state.stream << genChar;
+								}
+								++state.format;
+								++state.fmtindex;
+								return;
+							case FormatRenditionT::GENERATOR_FILL_FRACTION_PAD_CHAR:
+								genChar = options.fractionPadChar;
+								goto genFillChar;
+							case FormatRenditionT::GENERATOR_FILL_FILL_CHAR:
+								genChar = options.fillChar;
+								goto genFillChar;
+							case FormatRenditionT::GENERATOR_FILL_NEXT_CHAR:
+								++state.fmtindex;
+								if(++state.format == state.endfmt)
+									throw UnexpectedEndOfFormatStringError(state.fmtindex);
+								genChar = *state.format;
+								goto genFillChar;
+							default:
+								throw UnexpectedFormatStringCharacterError(
+										UnexpectedFormatStringCharacterError::EXP_GENERATOR_TYPE, state.fmtindex);
+						}
+						break;
 					default:
 						if(FormatRenditionT::decodeDigit(*state.format) >= 0)
 							goto intWidthMod;

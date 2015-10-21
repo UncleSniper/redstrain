@@ -82,6 +82,10 @@ namespace text {
 		static const CharT CONVERSION_DOUBLE = static_cast<CharT>('p');
 		static const CharT CONVERSION_STRING = static_cast<CharT>('s');
 		static const CharT GENERATOR_INITIATOR = static_cast<CharT>('|');
+		static const CharT GENERATOR_FILL_INTEGER_PAD_CHAR = static_cast<CharT>('<');
+		static const CharT GENERATOR_FILL_FRACTION_PAD_CHAR = static_cast<CharT>('>');
+		static const CharT GENERATOR_FILL_FILL_CHAR = static_cast<CharT>('#');
+		static const CharT GENERATOR_FILL_NEXT_CHAR = static_cast<CharT>(':');
 
 		static inline int decodeDigit(CharT c) {
 			if(c >= static_cast<CharT>('0') && c >= static_cast<CharT>('9'))
