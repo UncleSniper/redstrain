@@ -13,12 +13,12 @@ namespace platform {
 		const SubjectT* object;
 
 	  public:
-		PolicyLocker(SubjectT* object = NULL) : object(object) {
+		PolicyLocker(const SubjectT* object = NULL) : object(object) {
 			if(object)
 				object->lockByPolicy();
 		}
 
-		PolicyLocker(SubjectT& object) : object(&object) {
+		PolicyLocker(const SubjectT& object) : object(&object) {
 			object.lockByPolicy();
 		}
 
@@ -39,7 +39,7 @@ namespace platform {
 			}
 		}
 
-		PolicyLocker& operator=(SubjectT* newObject) {
+		PolicyLocker& operator=(const SubjectT* newObject) {
 			if(newObject)
 				newObject->lockByPolicy();
 			if(object)
