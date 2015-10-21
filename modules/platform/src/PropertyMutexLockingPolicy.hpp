@@ -9,11 +9,19 @@ namespace platform {
 	class REDSTRAIN_PLATFORM_API PropertyMutexLockingPolicy {
 
 	  private:
+		struct REDSTRAIN_PLATFORM_API NoInitializer {};
+
+	  public:
+		typedef const NoInitializer& LockingPolicyInitializer;
+
+	  private:
 		Mutex mutex;
 
 	  public:
 		PropertyMutexLockingPolicy();
+		PropertyMutexLockingPolicy(LockingPolicyInitializer);
 		PropertyMutexLockingPolicy(const PropertyMutexLockingPolicy&);
+		virtual ~PropertyMutexLockingPolicy();
 
 		void lockByPolicy() const;
 		void unlockByPolicy() const;

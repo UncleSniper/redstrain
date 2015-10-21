@@ -5,7 +5,11 @@ namespace platform {
 
 	PropertyMutexLockingPolicy::PropertyMutexLockingPolicy() {}
 
+	PropertyMutexLockingPolicy::PropertyMutexLockingPolicy(LockingPolicyInitializer) {}
+
 	PropertyMutexLockingPolicy::PropertyMutexLockingPolicy(const PropertyMutexLockingPolicy&) {}
+
+	PropertyMutexLockingPolicy::~PropertyMutexLockingPolicy() {}
 
 	void PropertyMutexLockingPolicy::lockByPolicy() const {
 		const_cast<Mutex&>(mutex).lock();
