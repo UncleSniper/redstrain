@@ -27,7 +27,7 @@ namespace error {
 			: IllegalArgumentError(makeMessage(message, index)), index(index) {}
 
 	IndexOutOfBoundsError::IndexOutOfBoundsError(const IndexOutOfBoundsError& error)
-			: IllegalArgumentError(error), index(error.index) {}
+			: Error(error), IllegalArgumentError(error), index(error.index) {}
 
 	REDSTRAIN_DEFINE_ERROR(IndexOutOfBoundsError) {
 		out << getRawMessage();

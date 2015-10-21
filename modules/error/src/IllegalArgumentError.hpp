@@ -6,7 +6,7 @@
 namespace redengine {
 namespace error {
 
-	class REDSTRAIN_ERROR_API IllegalArgumentError : public Error {
+	class REDSTRAIN_ERROR_API IllegalArgumentError : public virtual Error {
 
 	  private:
 		const std::string message;
