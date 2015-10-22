@@ -244,10 +244,12 @@ namespace text {
 	void BlobCodeTable16RegistrarBlobDeclarer::doneAppending() {
 		if(lastSegment.empty())
 			return;
-		output << shift << indent << "extern const char " << lastSegment << "[];" << endln;
-		output << indent << "extern const size_t " << lastSegment << "_size;" << endln << unshift;
+		if(level)
+			output << shift;
+		output << indent << "extern const char " << lastSegment << "[];" << endln;
+		output << indent << "extern const size_t " << lastSegment << "_size;" << endln;
 		if(level) {
-			output << indent;
+			output << unshift << indent;
 			for(; level; --level)
 				output << '}';
 			output << endln;
