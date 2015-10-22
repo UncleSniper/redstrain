@@ -2,6 +2,7 @@
 #define REDSTRAIN_MOD_LOCALE_MESSAGEBLOBREGISTRAR_HPP
 
 #include <string>
+#include <redstrain/io/OutputStream.hpp>
 
 #include "api.hpp"
 
@@ -14,6 +15,9 @@ namespace locale {
 
 	  public:
 		MessageBlobRegistrar(BlobMessageMapping*&, const std::string&, const std::string&, const char*, size_t);
+
+		static void generateBlobRegistrar(io::OutputStream<char>&, const std::string&, const std::string&,
+				const std::string&, const std::string&);
 
 	};
 
