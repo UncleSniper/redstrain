@@ -71,23 +71,13 @@ namespace locale {
 	}
 
 	template<typename CharT>
-	void getMessageKeyOrder(const std::string& inputStreamName, io::InputStream<CharT>& stream,
-			std::map<std::basic_string<CharT>, size_t>* mapOrder, std::list<std::basic_string<CharT> >* listOrder) {
-		MessageCache<CharT> cache;
-		readMessages<CharT>(inputStreamName, stream, cache, NULL);
-		if(mapOrder)
-			mapOrder->clear();
-		if(listOrder)
-			listOrder->clear();
+	void getMessageKeyOrder(const MessageCache<CharT>& cache, std::map<std::basic_string<CharT>, size_t>& mapOrder) {
+		mapOrder.clear();
 		typename MessageCache<CharT>::ItemIterator begin, end;
 		cache.getMessages(begin, end);
 		for(; begin != end; ++begin) {
-			if(mapOrder) {
-				size_t index = static_cast<size_t>(mapOrder->size());
-				(*mapOrder)[begin->getKey()] = index;
-			}
-			if(listOrder)
-				listOrder->push_back(begin->getKey());
+			size_t index = static_cast<size_t>(mapOrder.size());
+			mapOrder[begin->getKey()] = index;
 		}
 	}
 
