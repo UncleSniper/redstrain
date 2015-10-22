@@ -17,8 +17,8 @@ namespace locale {
 		BlobMessageMapping& mapping;
 
 	  public:
-		BlobMessageLoader(BlobMessageMapping& mapping);
-		BlobMessageLoader(const BlobMessageLoader&);
+		BlobMessageLoader(BlobMessageMapping& mapping) : mapping(mapping) {}
+		BlobMessageLoader(const BlobMessageLoader& loader) : MessageLoader<CharT>(loader), mapping(loader.mapping) {}
 
 		inline BlobMessageMapping& getMapping() {
 			return mapping;
