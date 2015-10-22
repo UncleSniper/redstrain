@@ -1,5 +1,5 @@
-#include <algorithm>
 #include <redstrain/util/Unref.hpp>
+#include <redstrain/util/CPPUtils.hpp>
 #include <redstrain/util/StringUtils.hpp>
 
 #include "XakeUtils.hpp"
@@ -10,8 +10,8 @@
 
 using std::map;
 using std::string;
-using std::transform;
 using redengine::util::Unref;
+using redengine::util::CPPUtils;
 using redengine::util::StringUtils;
 using redengine::text::BlobCodeTable16Registrar;
 
@@ -39,21 +39,8 @@ namespace boot {
 		writer.setBlobSymbolMapper(this);
 	}
 
-	static char slugify(char c) {
-		if(
-			(c >= 'a' && c <= 'z')
-			|| (c >= 'A' && c <= 'Z')
-			|| (c >= '0' && c <= '9')
-		)
-			return c;
-		else
-			return '_';
-	}
-
 	string XakeCodeTable16RegisterLanguage::XakeRegistrarConfiguration::mapBlobSymbol(const string& symbol) {
-		string s(symbol);
-		transform(s.begin(), s.end(), s.begin(), slugify);
-		return nsPrefix + s;
+		return nsPrefix + CPPUtils::slugifySymbol(symbol);
 	}
 
 	// ======== XakeCodeTable16RegisterLanguage ========

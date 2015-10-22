@@ -1,5 +1,5 @@
-#include <algorithm>
 #include <redstrain/util/Unref.hpp>
+#include <redstrain/util/CPPUtils.hpp>
 #include <redstrain/util/StringUtils.hpp>
 #include <redstrain/platform/Pathname.hpp>
 
@@ -11,8 +11,8 @@
 
 using std::map;
 using std::string;
-using std::transform;
 using redengine::util::Unref;
+using redengine::util::CPPUtils;
 using redengine::util::StringUtils;
 using redengine::platform::Pathname;
 
@@ -53,17 +53,6 @@ namespace boot {
 		return transform.set();
 	}
 
-	static char slugify(char c) {
-		if(
-			(c >= 'a' && c <= 'z')
-			|| (c >= 'A' && c <= 'Z')
-			|| (c >= '0' && c <= '9')
-		)
-			return c;
-		else
-			return '_';
-	}
-
 	BlobLanguage::BlobConfiguration* XakeBlobLanguage::getBlobConfiguration(FileArtifact& sourceArtifact,
 			const Flavor&, FileArtifact& targetArtifact, const Flavor&, const Flavor&, Component& component) {
 		map<string, string> variables, mvariables;
@@ -73,7 +62,7 @@ namespace boot {
 		string::size_type pos = sourceBasename.rfind('.');
 		if(pos != string::npos && pos)
 			sourceBasename = sourceBasename.substr(static_cast<string::size_type>(0u), pos);
-		transform(sourceBasename.begin(), sourceBasename.end(), sourceBasename.begin(), slugify);
+		sourceBasename = CPPUtils::slugifySymbol(sourceBasename);
 		string ns;
 		const XakeComponent* xcomponent = dynamic_cast<const XakeComponent*>(&component);
 		if(xcomponent)

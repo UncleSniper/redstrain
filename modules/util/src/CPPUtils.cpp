@@ -1,6 +1,9 @@
+#include <algorithm>
+
 #include "CPPUtils.hpp"
 
 using std::string;
+using std::transform;
 
 namespace redengine {
 namespace util {
@@ -92,6 +95,23 @@ namespace util {
 		if(withQuotes)
 			r += '"';
 		return r;
+	}
+
+	static char slugify(char c) {
+		if(
+			(c >= 'a' && c <= 'z')
+			|| (c >= 'A' && c <= 'Z')
+			|| (c >= '0' && c <= '9')
+		)
+			return c;
+		else
+			return '_';
+	}
+
+	string CPPUtils::slugifySymbol(const string& symbol) {
+		string s(symbol);
+		transform(s.begin(), s.end(), s.begin(), slugify);
+		return s.empty() || (s[0] >= '0' && s[0] <= '9') ? '_' + s : s;
 	}
 
 }}

@@ -16,6 +16,7 @@ namespace util {
 	  public:
 		static std::string escapeChar(char, bool);
 		static std::string escapeString(const std::string&, bool);
+		static std::string slugifySymbol(const std::string&);
 
 	};
 
