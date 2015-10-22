@@ -22,12 +22,11 @@ namespace boot {
 	// ======== XakeRegistrarConfiguration ========
 
 	XakeCodeTable16RegisterLanguage::XakeRegistrarConfiguration::XakeRegistrarConfiguration(const string& nsPrefix)
-			: nsPrefix(nsPrefix) {}
+			: blobSymbolMapper(nsPrefix) {}
 
 	XakeCodeTable16RegisterLanguage::XakeRegistrarConfiguration::XakeRegistrarConfiguration(const
 			XakeRegistrarConfiguration& configuration)
-			: RegistrarConfiguration(configuration), BlobSymbolMapper(configuration),
-			nsPrefix(configuration.nsPrefix) {}
+			: RegistrarConfiguration(configuration), blobSymbolMapper(configuration.blobSymbolMapper) {}
 
 	XakeCodeTable16RegisterLanguage::XakeRegistrarConfiguration::~XakeRegistrarConfiguration() {}
 
@@ -36,11 +35,7 @@ namespace boot {
 
 	void XakeCodeTable16RegisterLanguage::XakeRegistrarConfiguration::applyConfiguration(
 			BlobCodeTable16Registrar::GeneratorWriter& writer) {
-		writer.setBlobSymbolMapper(this);
-	}
-
-	string XakeCodeTable16RegisterLanguage::XakeRegistrarConfiguration::mapBlobSymbol(const string& symbol) {
-		return nsPrefix + CPPUtils::slugifySymbol(symbol);
+		writer.setBlobSymbolMapper(&blobSymbolMapper);
 	}
 
 	// ======== XakeCodeTable16RegisterLanguage ========

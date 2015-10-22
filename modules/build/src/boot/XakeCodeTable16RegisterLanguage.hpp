@@ -12,14 +12,10 @@ namespace boot {
 	class REDSTRAIN_BUILD_API XakeCodeTable16RegisterLanguage : public CodeTable16RegisterLanguage {
 
 	  public:
-		class REDSTRAIN_BUILD_API XakeRegistrarConfiguration
-				: public RegistrarConfiguration, text::BlobCodeTable16Registrar::GeneratorWriter::BlobSymbolMapper {
+		class REDSTRAIN_BUILD_API XakeRegistrarConfiguration : public RegistrarConfiguration {
 
 		  private:
-			const std::string nsPrefix;
-
-		  private:
-			virtual std::string mapBlobSymbol(const std::string&);
+			text::BlobCodeTable16Registrar::GeneratorWriter::DefaultBlobSymbolMapper blobSymbolMapper;
 
 		  public:
 			XakeRegistrarConfiguration(const std::string&);
