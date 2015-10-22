@@ -133,6 +133,27 @@ namespace text {
 
 			};
 
+			class REDSTRAIN_TEXT_API DefaultBlobSymbolMapper : public BlobSymbolMapper {
+
+			  private:
+				std::string nsPrefix;
+
+			  public:
+				DefaultBlobSymbolMapper();
+				DefaultBlobSymbolMapper(const std::string&);
+				DefaultBlobSymbolMapper(const DefaultBlobSymbolMapper&);
+				virtual ~DefaultBlobSymbolMapper();
+
+				inline const std::string& getNamespace() const {
+					return nsPrefix;
+				}
+
+				void setNamespace(const std::string&);
+
+				virtual std::string mapBlobSymbol(const std::string&);
+
+			};
+
 		  private:
 			io::OutputStream<char>& output;
 			io::DefaultConfiguredOutputStream<char>::Stream formattedOutput;

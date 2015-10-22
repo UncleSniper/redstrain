@@ -185,6 +185,26 @@ namespace text {
 
 	BlobCodeTable16Registrar::GeneratorWriter::BlobSymbolMapper::~BlobSymbolMapper() {}
 
+	// ======== DefaultBlobSymbolMapper ========
+
+	BlobCodeTable16Registrar::GeneratorWriter::DefaultBlobSymbolMapper::DefaultBlobSymbolMapper() {}
+
+	BlobCodeTable16Registrar::GeneratorWriter::DefaultBlobSymbolMapper::DefaultBlobSymbolMapper(const
+			string& nsPrefix) : nsPrefix(nsPrefix) {}
+
+	BlobCodeTable16Registrar::GeneratorWriter::DefaultBlobSymbolMapper::DefaultBlobSymbolMapper(const
+			DefaultBlobSymbolMapper& mapper) : BlobSymbolMapper(mapper), nsPrefix(mapper.nsPrefix) {}
+
+	BlobCodeTable16Registrar::GeneratorWriter::DefaultBlobSymbolMapper::~DefaultBlobSymbolMapper() {}
+
+	void BlobCodeTable16Registrar::GeneratorWriter::DefaultBlobSymbolMapper::setNamespace(const string& nsPrefix) {
+		this->nsPrefix = nsPrefix;
+	}
+
+	string BlobCodeTable16Registrar::GeneratorWriter::DefaultBlobSymbolMapper::mapBlobSymbol(const string& symbol) {
+		return nsPrefix + CPPUtils::slugifySymbol(symbol);
+	}
+
 	// ======== GeneratorWriter ========
 
 	BlobCodeTable16Registrar::GeneratorWriter::GeneratorWriter(OutputStream<char>& output,
