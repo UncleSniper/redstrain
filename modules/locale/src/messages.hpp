@@ -18,53 +18,8 @@ namespace redengine {
 namespace locale {
 
 	template<typename CharT>
-	void getMessageKeyOrder(const std::string& inputStreamName, io::InputStream<CharT>& stream,
-			std::map<std::basic_string<CharT>, size_t>* mapOrder, std::list<std::basic_string<CharT> >* listOrder) {
-		typedef std::basic_string<CharT> String;
-		typedef typename String::size_type StringLength;
-		if(mapOrder)
-			mapOrder->clear();
-		if(listOrder)
-			listOrder->clear();
-		io::FormattedInputStream<CharT> formattedInput(stream);
-		String line;
-		unsigned lno = 0u;
-		std::set<std::basic_string<CharT> > knownKeys;
-		while(formattedInput.readLine(line)) {
-			++lno;
-			line = text::StringUtils<CharT>::trim(line, text::StringUtils<CharT>::TRIM_FRONT);
-			if(line.empty())
-				continue;
-			if(line[0] == static_cast<CharT>('#')) {
-				line.clear();
-				continue;
-			}
-			StringLength pos = line.find(static_cast<CharT>('#'));
-			if(pos == String::npos)
-				throw io::MissingInputSeparatorError("=", inputStreamName, lno);
-			String key(line.substr(static_cast<StringLength>(0u), pos));
-			if(mapOrder) {
-				if(mapOrder->find(key) != mapOrder->end())
-					throw DuplicateMessageKeyError(text::TranscodeForError<CharT>::toCharString(key),
-							inputStreamName, lno);
-				size_t index = static_cast<size_t>(mapOrder->size());
-				(*mapOrder)[key] = index;
-			}
-			else {
-				if(knownKeys.find(key) != knownKeys.end())
-					throw DuplicateMessageKeyError(text::TranscodeForError<CharT>::toCharString(key),
-							inputStreamName, lno);
-				knownKeys.insert(key);
-			}
-			if(listOrder)
-				listOrder->push_back(key);
-			line.clear();
-		}
-	}
-
-	template<typename CharT>
-	void compileMessages(const std::string& inputStreamName, io::InputStream<CharT>& inputStream,
-			io::OutputStream<CharT>& outputStream, const std::list<std::basic_string<CharT> >* order) {
+	void readMessages(const std::string& inputStreamName, io::InputStream<CharT>& inputStream,
+			MessageCache<CharT>& cache, const std::list<std::basic_string<CharT> >* order) {
 		typedef std::basic_string<CharT> String;
 		typedef typename String::size_type StringLength;
 		typedef std::pair<String, unsigned> PrecachePair;
@@ -73,7 +28,7 @@ namespace locale {
 		String line;
 		unsigned lno = 0u;
 		Precache precache;
-		MessageCache<CharT> cache;
+		cache.clear();
 		while(formattedInput.readLine(line)) {
 			++lno;
 			line = text::StringUtils<CharT>::trim(line, text::StringUtils<CharT>::TRIM_FRONT);
@@ -113,7 +68,27 @@ namespace locale {
 						inputStreamName, front->second.second);
 			}
 		}
-		cache.saveTo(outputStream);
+	}
+
+	template<typename CharT>
+	void getMessageKeyOrder(const std::string& inputStreamName, io::InputStream<CharT>& stream,
+			std::map<std::basic_string<CharT>, size_t>* mapOrder, std::list<std::basic_string<CharT> >* listOrder) {
+		MessageCache<CharT> cache;
+		readMessages<CharT>(inputStreamName, stream, cache, NULL);
+		if(mapOrder)
+			mapOrder->clear();
+		if(listOrder)
+			listOrder->clear();
+		typename MessageCache<CharT>::ItemIterator begin, end;
+		cache.getMessages(begin, end);
+		for(; begin != end; ++begin) {
+			if(mapOrder) {
+				size_t index = static_cast<size_t>(mapOrder->size());
+				(*mapOrder)[begin->getKey()] = index;
+			}
+			if(listOrder)
+				listOrder->push_back(begin->getKey());
+		}
 	}
 
 }}
