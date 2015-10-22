@@ -20,6 +20,14 @@ namespace locale {
 		BlobMessageLoader(BlobMessageMapping& mapping);
 		BlobMessageLoader(const BlobMessageLoader&);
 
+		inline BlobMessageMapping& getMapping() {
+			return mapping;
+		}
+
+		inline const BlobMessageMapping& getMapping() const {
+			return mapping;
+		}
+
 		virtual MessageCache<CharT>* loadMessages(const Locale& locale) {
 			const BlobMessageMapping::Blob* blob = mapping.getBlob(locale.getLanguage(), locale.getCountry());
 			if(!blob)
