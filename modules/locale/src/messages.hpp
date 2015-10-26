@@ -38,7 +38,7 @@ namespace locale {
 				line.clear();
 				continue;
 			}
-			StringLength pos = line.find(static_cast<CharT>('#'));
+			StringLength pos = line.find(static_cast<CharT>('='));
 			if(pos == String::npos)
 				throw io::MissingInputSeparatorError("=", inputStreamName, lno);
 			String key(line.substr(static_cast<StringLength>(0u), pos));
