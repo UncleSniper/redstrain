@@ -77,6 +77,7 @@ namespace build {
 		typedef Components::const_iterator ComponentIterator;
 		typedef FlavoredArtifacts::Iterator FlavoredArtifactIterator;
 		typedef std::set<std::string>::const_iterator ExposeDirectoryIterator;
+		typedef std::map<std::string, FileArtifact*>::const_iterator ExposedHeaderIterator;
 
 	  private:
 		const Type type;
@@ -139,6 +140,7 @@ namespace build {
 		void clearExposedHeaders(const Language&);
 		void clearExposedHeaders();
 		FileArtifact* getExposedHeader(const Language&, const std::string&) const;
+		void getExposedHeaders(const Language&, ExposedHeaderIterator&, ExposedHeaderIterator&) const;
 
 		bool addFinalArtifact(Artifact&, const Flavor&, const Language&);
 		bool removeFinalArtifact(Artifact&, const Flavor&, const Language&);

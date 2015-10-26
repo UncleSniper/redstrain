@@ -341,6 +341,7 @@ namespace build {
 		}
 		// add goals
 		Unref<MultiGoal> allGoal(new MultiGoal);
+		// ...final artifacts
 		map<Flavor, ArtifactGoal*> flavorGoals;
 		Component::FlavoredArtifactIterator fabegin, faend;
 		component.getFinalArtifacts(fabegin, faend);
@@ -364,6 +365,18 @@ namespace build {
 			if(fgoal)
 				fgoal->addArtifact(fabegin->getArtifact());
 		}
+		// ...exposed headers
+		Component::LanguageIterator lbegin, lend;
+		Component::ExposedHeaderIterator ehbegin, ehend;
+		component.getLanguages(lbegin, lend);
+		for(; lbegin != lend; ++lbegin) {
+			component.getExposedHeaders(**lbegin, ehbegin, ehend);
+			for(; ehbegin != ehend; ++ehbegin) {
+				map<Flavor, ArtifactGoal*>::const_iterator fgbegin(flavorGoals.begin()), fgend(flavorGoals.end());
+				for(; fgbegin != fgend; ++fgbegin)
+					fgbegin->second->addArtifact(*ehbegin->second);
+			}
+		}
 		context.addGoal(component.getGoalName(), **allGoal);
 		context.addGoal(component.getGoalName() + ":build", **allGoal);
 		perComponent.getGoalPropertyInjector().injectGoalProperties(component, **allGoal);
@@ -372,7 +385,6 @@ namespace build {
 				bdend(perComponent.buildDirectories.end());
 		for(; bdbegin != bdend; ++bdbegin)
 			cleanGoal->addArtifact(**bdbegin);
-		Component::LanguageIterator lbegin, lend;
 		component.getLanguages(lbegin, lend);
 		for(; lbegin != lend; ++lbegin) {
 			Component::ExposeDirectoryIterator hedbegin, hedend;

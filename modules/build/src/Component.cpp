@@ -367,6 +367,21 @@ namespace build {
 		return it1 == it0->second.end() ? NULL : it1->second;
 	}
 
+	static map<string, FileArtifact*> emptyExposedHeaderMap;
+
+	void Component::getExposedHeaders(const Language& language,
+			ExposedHeaderIterator& begin, ExposedHeaderIterator& end) const {
+		Headers::const_iterator it = exposedHeaders.find(&language);
+		if(it == exposedHeaders.end()) {
+			begin = emptyExposedHeaderMap.begin();
+			end = emptyExposedHeaderMap.end();
+		}
+		else {
+			begin = it->second.begin();
+			end = it->second.end();
+		}
+	}
+
 	bool Component::addFinalArtifact(Artifact& artifact, const Flavor& flavor, const Language& language) {
 		return finalArtifacts.append(FlavoredArtifact(artifact, flavor, language));
 	}
