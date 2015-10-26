@@ -129,7 +129,8 @@ namespace cmdline {
 				switch(shortOption->getArity()) {
 					case OptionLogic::OPTIONAL_ARGUMENT:
 						restIsArg = true;
-						restIsOptions = areRemainingShortOptionsValid(word);
+						restIsOptions = areRemainingShortOptionsValid(word
+								.substr(static_cast<string::size_type>(2u)));
 						break;
 					case OptionLogic::REQUIRED_ARGUMENT:
 						restIsArg = true;
@@ -137,7 +138,8 @@ namespace cmdline {
 						break;
 					default:
 						restIsArg = false;
-						restIsOptions = areRemainingShortOptionsValid(word);
+						restIsOptions = areRemainingShortOptionsValid(word
+								.substr(static_cast<string::size_type>(2u)));
 						break;
 				}
 			}
@@ -199,7 +201,7 @@ namespace cmdline {
 		else {
 			option->getAction()->wordEncountered(word.substr(static_cast<string::size_type>(1u),
 					static_cast<string::size_type>(1u)), "");
-			parseRemainingShortOptions(word);
+			parseRemainingShortOptions(word.substr(static_cast<string::size_type>(2u)));
 		}
 	}
 
