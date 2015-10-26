@@ -73,7 +73,7 @@ namespace build {
 
 	void ConsoleBuildUI::printAction(unsigned haveCount, unsigned needCount, const ActionDescriptor& action,
 			bool isMinor) {
-		if(needCount && haveCount < needCount) {
+		if(needCount && (isMinor ? haveCount <= needCount : haveCount < needCount)) {
 			if(isMinor)
 				indent(countDigits(needCount) * 2u + 11u);
 			else {
