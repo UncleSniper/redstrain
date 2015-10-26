@@ -78,7 +78,7 @@ int run(const string&, const Options& options) {
 	readMessages<Char16>(options.getSpecificationFile(), decSpecIn, specCache, NULL);
 	closeSpecIn.close();
 	map<String16, size_t> specOrder;
-	getMessageKeyOrder<Char16>(specCache, specOrder);
+	getMessageKeyOrder<Char16>(specCache, &specOrder, NULL);
 	// read messages
 	list<String16> retainedLines;
 	set<String16> presentKeys;
@@ -136,7 +136,7 @@ int run(const string&, const Options& options) {
 		Decoder16InputStream decRefIn(refIn, **decoder);
 		readMessages<Char16>(options.getReferenceFile(), decRefIn, refCache, NULL);
 		closeRefIn.close();
-		getMessageKeyOrder<Char16>(refCache, refOrder);
+		getMessageKeyOrder<Char16>(refCache, &refOrder, NULL);
 	}
 	// write messages
 	if(!msgFilePresent && options.isVerbose())
