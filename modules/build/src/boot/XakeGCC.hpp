@@ -27,6 +27,9 @@ namespace boot {
 			return project;
 		}
 
+		virtual Compilation* newCompilation(const std::string&, Compilation::CompileMode);
+		virtual Linkage* newLinkage(const std::string&, Linkage::LinkMode);
+
 	};
 
 }}}

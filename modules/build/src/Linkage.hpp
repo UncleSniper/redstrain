@@ -29,6 +29,7 @@ namespace build {
 		Paths sources;
 		const std::string target;
 		const LinkMode mode;
+		bool debug;
 
 	  public:
 		Linkage(const std::string&, LinkMode);
@@ -45,6 +46,14 @@ namespace build {
 		void addSource(const std::string&);
 		void clearSources();
 		void getSources(PathIterator&, PathIterator&) const;
+
+		inline bool isDebug() const {
+			return debug;
+		}
+
+		inline void setDebug(bool debug) {
+			this->debug = debug;
+		}
 
 		virtual void addLibraryDirectory(const std::string&) = 0;
 		virtual void addLibrary(const std::string&) = 0;

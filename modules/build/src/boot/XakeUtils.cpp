@@ -54,4 +54,18 @@ namespace boot {
 		return sm;
 	}
 
+	static char toLowerCase(char c) {
+		return static_cast<char>(static_cast<unsigned char>(static_cast<unsigned>(tolower(
+			static_cast<int>(static_cast<unsigned int>(static_cast<unsigned char>(c)))
+		))));
+	}
+
+	bool XakeUtils::parseBoolean(const string& value) {
+		if(value.empty())
+			return false;
+		string spec(value);
+		transform(spec.begin(), spec.end(), spec.begin(), toLowerCase);
+		return spec != "false" && spec != "off" && spec != "no" && spec != "0";
+	}
+
 }}}

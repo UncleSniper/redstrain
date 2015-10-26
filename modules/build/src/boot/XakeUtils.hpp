@@ -15,6 +15,7 @@ namespace boot {
 	  public:
 		static std::string subst(const std::string&, const std::map<std::string, std::string>&);
 		static std::string slugifyMacro(const std::string&);
+		static bool parseBoolean(const std::string&);
 
 	};
 

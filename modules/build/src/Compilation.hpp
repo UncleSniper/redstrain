@@ -22,6 +22,7 @@ namespace build {
 		const std::string source;
 		const CompileMode mode;
 		std::string target;
+		bool debug;
 
 	  public:
 		Compilation(const std::string&, CompileMode);
@@ -41,6 +42,14 @@ namespace build {
 
 		void setTarget(const std::string&);
 		void clearTarget();
+
+		inline bool isDebug() const {
+			return debug;
+		}
+
+		inline void setDebug(bool debug) {
+			this->debug = debug;
+		}
 
 		virtual void defineMacro(const std::string&) = 0;
 		virtual void defineMacro(const std::string&, const std::string&) = 0;

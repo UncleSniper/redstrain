@@ -81,6 +81,7 @@ namespace boot {
 		"component.name",
 		"component.guard",
 		"depend.modules",
+		"include.debug.symbols",
 		"target.architecture",
 		"target.os",
 		"blobs.directory",
@@ -188,6 +189,7 @@ namespace boot {
 		"blob.tag=blob",
 		"guard.macro=%project%_%module%_%file%",
 		"blob.alias.path.prefix=/%module%/",
+		"include.debug.symbols=false",
 		NULL
 	};
 

@@ -86,6 +86,8 @@ namespace build {
 	}
 
 	void GCC::GCCCompilation::invoke() {
+		if(isDebug())
+			command.addArgument("-g");
 		command.addArgument("-o");
 		command.addArgument(getTarget());
 		command.addArgument(getSource());
@@ -155,6 +157,8 @@ namespace build {
 			}
 		}
 		else {
+			if(isDebug())
+				command.addArgument("-g");
 			list<string>::const_iterator begin(libraryDirectories.begin()), end(libraryDirectories.end());
 			for(; begin != end; ++begin) {
 				command.addArgument("-L");
