@@ -1,0 +1,5 @@
+DECIMAL_POINT=The decimal point symbol, as a single character.
+GROUP_SEPARATOR=The integer group separator, as a single character.
+FLOAT_NAN=How to represent the floating-point value "not a number" (NaN).
+FLOAT_POSITIVE_INFINITY=How to represent the floating-point value "positive infinity".
+FLOAT_NEGATIVE_INFINITY=How to represent the floating-point value "negative infinity".
