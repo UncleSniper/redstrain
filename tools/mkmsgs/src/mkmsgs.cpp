@@ -1,4 +1,3 @@
-#include <iostream>
 #include <redstrain/util/Delete.hpp>
 #include <redstrain/text/Decoder16.hpp>
 #include <redstrain/io/StreamCloser.hpp>
