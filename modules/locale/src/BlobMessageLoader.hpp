@@ -5,6 +5,7 @@
 #include <redstrain/io/MemoryInputStream.hpp>
 
 #include "Locale.hpp"
+#include "MessageLoader.hpp"
 #include "BlobMessageMapping.hpp"
 
 namespace redengine {
