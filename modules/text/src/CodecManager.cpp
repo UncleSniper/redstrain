@@ -1,4 +1,6 @@
 #include <redstrain/util/Unref.hpp>
+#include <redstrain/util/Delete.hpp>
+#include <redstrain/platform/SynchronizedSingleton.hpp>
 
 #include "CodecManager.hpp"
 #include "UTF8Encoder16.hpp"
@@ -11,6 +13,8 @@
 using std::set;
 using std::string;
 using redengine::util::Unref;
+using redengine::util::Delete;
+using redengine::platform::SynchronizedSingleton;
 
 namespace redengine {
 namespace text {
@@ -258,6 +262,27 @@ namespace text {
 	string CodecManager::getDecoder16CanonicalName(const string& alias) const {
 		CanonicalNameIterator it = dec16cnames.find(alias);
 		return it == dec16cnames.end() ? "" : it->second;
+	}
+
+	class DefaultCodecManagerSynchronizedSingleton : public SynchronizedSingleton<CodecManager> {
+
+	  protected:
+		virtual CodecManager* newInstance() {
+			Delete<CodecManager> manager(new CodecManager);
+			manager->registerBuiltins();
+			manager->registerBlobs();
+			return manager.set();
+		}
+
+	  public:
+		DefaultCodecManagerSynchronizedSingleton() {}
+
+	};
+
+	static DefaultCodecManagerSynchronizedSingleton singleton;
+
+	CodecManager& CodecManager::getDefaultCodecManager() {
+		return singleton.get();
 	}
 
 }}

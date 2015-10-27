@@ -74,6 +74,8 @@ namespace text {
 		std::string getEncoder16CanonicalName(const std::string&) const;
 		std::string getDecoder16CanonicalName(const std::string&) const;
 
+		static CodecManager& getDefaultCodecManager();
+
 	};
 
 }}
