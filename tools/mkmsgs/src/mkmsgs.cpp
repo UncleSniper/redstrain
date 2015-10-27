@@ -2,6 +2,7 @@
 #include <redstrain/util/Delete.hpp>
 #include <redstrain/text/Decoder16.hpp>
 #include <redstrain/io/StreamCloser.hpp>
+#include <redstrain/platform/Console.hpp>
 #include <redstrain/text/CodecManager.hpp>
 #include <redstrain/io/FileInputStream.hpp>
 #include <redstrain/io/FileOutputStream.hpp>
@@ -17,7 +18,10 @@ using redengine::util::Delete;
 using redengine::text::Char16;
 using redengine::text::String16;
 using redengine::text::Decoder16;
+using redengine::io::InputStream;
+using redengine::io::OutputStream;
 using redengine::io::StreamCloser;
+using redengine::platform::Console;
 using redengine::text::CodecManager;
 using redengine::io::FileInputStream;
 using redengine::io::FileOutputStream;
@@ -64,17 +68,29 @@ int run(const string&, const Options& options) {
 		getMessageKeyOrder<Char16>(specCache, NULL, *order);
 	}
 	// read messages
-	FileInputStream in(options.getInputFile()); //TODO: handle "-"
-	StreamCloser closeIn(in);
+	Delete<InputStream<char> > in;
+	StreamCloser inCloser;
+	if(options.getInputFile() == "-")
+		in = new FileInputStream(Console::getStandardHandle(Console::STANDARD_INPUT));
+	else {
+		in = new FileInputStream(options.getInputFile());
+		inCloser = *in;
+	}
 	decoder = codecs.newDecoder16(options.getInputFileEncoding());
-	Decoder16InputStream decIn(in, **decoder);
+	Decoder16InputStream decIn(**in, **decoder);
 	MessageCache<Char16> cache;
 	readMessages<Char16>(options.getInputFile(), decIn, cache, *order);
-	closeIn.close();
+	inCloser.close();
 	// write messages
-	FileOutputStream out(options.getOutputFile()); //TODO: handle "-"
-	StreamCloser closeOut(out);
-	cache.saveTo(out);
-	closeOut.close();
+	Delete<OutputStream<char> > out;
+	StreamCloser outCloser;
+	if(options.getOutputFile() == "-")
+		out = new FileOutputStream(Console::getStandardHandle(Console::STANDARD_OUTPUT));
+	else {
+		out = new FileOutputStream(options.getOutputFile());
+		outCloser = *out;
+	}
+	cache.saveTo(**out);
+	outCloser.close();
 	return 0;
 }
