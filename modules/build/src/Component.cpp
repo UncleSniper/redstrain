@@ -1,11 +1,17 @@
+#include <redstrain/platform/Pathname.hpp>
+#include <redstrain/platform/Filesystem.hpp>
+
 #include "Component.hpp"
 #include "FileArtifact.hpp"
+#include "BuildContext.hpp"
 #include "ComponentTypeStringifier.hpp"
 
 using std::set;
 using std::map;
 using std::list;
 using std::string;
+using redengine::platform::Pathname;
+using redengine::platform::Filesystem;
 
 namespace redengine {
 namespace build {
@@ -159,6 +165,16 @@ namespace build {
 	void Component::getSourceDirectories(PathIterator& begin, PathIterator& end) const {
 		begin = sourceDirectories.begin();
 		end = sourceDirectories.end();
+	}
+
+	FileArtifact* Component::getSourceFile(const string& basename, BuildContext& context) const {
+		PathIterator begin(sourceDirectories.begin()), end(sourceDirectories.end());
+		for(; begin != end; ++begin) {
+			string path(Pathname::join(*begin, basename));
+			if(Filesystem::access(path, Filesystem::FILE_EXISTS))
+				return &context.internFileArtifact(path, basename);
+		}
+		return NULL;
 	}
 
 	bool Component::addLanguage(Language& language) {

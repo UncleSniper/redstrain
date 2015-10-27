@@ -16,7 +16,7 @@ namespace boot {
 
 	  protected:
 		virtual Transform* getConversionTransform(FileArtifact&, const Flavor&,
-				FileArtifact&, const Flavor&, const Flavor&, Component&);
+				FileArtifact&, const Flavor&, const Flavor&, Component&, BuildContext&);
 		virtual AliasConfiguration* getAliasConfiguration(FileArtifact&, const Flavor&,
 				FileArtifact&, const Flavor&, const Flavor&, Component&);
 

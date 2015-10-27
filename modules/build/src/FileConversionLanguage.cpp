@@ -54,7 +54,7 @@ namespace build {
 		FileArtifact& target = context.internFileArtifact(Pathname::join(targetDirectory, targetTail), targetTail);
 		targetFlavor = getTargetFlavor(sourceFlavor, transformFlavor);
 		Unref<Transform> transform(getConversionTransform(sourceArtifact, sourceFlavor,
-				target, targetFlavor, transformFlavor, component));
+				target, targetFlavor, transformFlavor, component, context));
 		transform->addPrerequisite(sourceArtifact);
 		target.setGeneratingTransform(*transform);
 		target.addIntermediateDirectories(context, component.getBaseDirectory());

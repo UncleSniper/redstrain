@@ -46,9 +46,9 @@ namespace boot {
 
 	Transform* XakeBlobLanguage::getConversionTransform(FileArtifact& sourceArtifact,
 			const Flavor& sourceFlavor, FileArtifact& targetArtifact, const Flavor& targetFlavor,
-			const Flavor& transformFlavor, Component& component) {
+			const Flavor& transformFlavor, Component& component, BuildContext& context) {
 		Unref<Transform> transform(BlobLanguage::getConversionTransform(sourceArtifact, sourceFlavor,
-				targetArtifact, targetFlavor, transformFlavor, component));
+				targetArtifact, targetFlavor, transformFlavor, component, context));
 		targetArtifact.addFollowupTransformPropertyInjector(followupTransformPropertyInjector);
 		return transform.set();
 	}

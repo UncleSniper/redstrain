@@ -15,6 +15,7 @@ namespace build {
 	class Language;
 	class Artifact;
 	class FileArtifact;
+	class BuildContext;
 	class ComponentTypeStringifier;
 
 	class REDSTRAIN_BUILD_API Component : public util::ReferenceCounted {
@@ -117,6 +118,7 @@ namespace build {
 		bool removeSourceDirectory(const std::string&);
 		void clearSourceDirectories();
 		void getSourceDirectories(PathIterator&, PathIterator&) const;
+		FileArtifact* getSourceFile(const std::string&, BuildContext&) const;
 
 		bool addLanguage(Language&);
 		bool removeLanguage(Language&);

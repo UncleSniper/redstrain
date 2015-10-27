@@ -31,7 +31,7 @@ namespace build {
 
 	Transform* CodeTable16RegisterLanguage::getConversionTransform(FileArtifact& sourceArtifact,
 			const Flavor& sourceFlavor, FileArtifact& targetArtifact, const Flavor& targetFlavor,
-			const Flavor& transformFlavor, Component& component) {
+			const Flavor& transformFlavor, Component& component, BuildContext&) {
 		Unref<RegistrarConfiguration> configuration(getRegistrarConfiguration(sourceArtifact,
 				sourceFlavor, targetArtifact, targetFlavor, transformFlavor, component));
 		return new CodeTable16RegistrarGenerationTransform(sourceArtifact, *configuration);

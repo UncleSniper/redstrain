@@ -58,7 +58,7 @@ namespace build {
 
 	Transform* BlobAliasLanguage::getConversionTransform(FileArtifact& sourceArtifact,
 			const Flavor& sourceFlavor, FileArtifact& targetArtifact, const Flavor& targetFlavor,
-			const Flavor& transformFlavor, Component& component) {
+			const Flavor& transformFlavor, Component& component, BuildContext&) {
 		Unref<AliasConfiguration> configuration(getAliasConfiguration(sourceArtifact,
 				sourceFlavor, targetArtifact, targetFlavor, transformFlavor, component));
 		return new BlobAliasGenerationTransform(sourceArtifact, *configuration);

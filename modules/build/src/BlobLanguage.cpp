@@ -78,7 +78,7 @@ namespace build {
 
 	Transform* BlobLanguage::getConversionTransform(FileArtifact& sourceArtifact,
 			const Flavor& sourceFlavor, FileArtifact& targetArtifact, const Flavor& targetFlavor,
-			const Flavor& transformFlavor, Component& component) {
+			const Flavor& transformFlavor, Component& component, BuildContext&) {
 		Unref<BlobConfiguration> configuration(getBlobConfiguration(sourceArtifact,
 				sourceFlavor, targetArtifact, targetFlavor, transformFlavor, component));
 		return new BlobGenerationTransform(sourceArtifact, *configuration, transformFlavor == Flavor::HEADER);
@@ -91,6 +91,7 @@ namespace build {
 
 	static const char *const SOURCE_SUFFIXES[] = {
 		".redct",
+		".rlmg2",
 		NULL
 	};
 
