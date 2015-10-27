@@ -21,6 +21,7 @@ namespace locale {
 	  public:
 		typedef CharT Char;
 		typedef KeyT Key;
+		typedef LockingPolicyT LockingPolicy;
 		typedef std::basic_string<CharT> String;
 		typedef typename MessageLoaders::const_iterator MessageLoaderIterator;
 
@@ -42,6 +43,9 @@ namespace locale {
 			}
 			return NULL;
 		}
+
+	  protected:
+		virtual void localeSwitched() {}
 
 	  public:
 		MessageCatalog() : lastLocale(NULL), cache(NULL) {}
@@ -91,13 +95,20 @@ namespace locale {
 			end = loaders.end();
 		}
 
+		inline const Locale* getCurrentLocale() const {
+			return lastLocale;
+		}
+
 		void purgeCache() {
 			CatalogLocker lock(this);
+			bool hadLocale = !!lastLocale;
 			lastLocale = NULL;
 			if(cache) {
 				delete cache;
 				cache = NULL;
 			}
+			if(hadLocale)
+				localeSwitched();
 			lock.release();
 		}
 
@@ -116,6 +127,7 @@ namespace locale {
 					lock.release();
 					throw NoMessagesForRequestedLocaleError(locale);
 				}
+				localeSwitched();
 			}
 			String msg(cache->getMessage(static_cast<size_t>(key)).getValue());
 			lock.release();
