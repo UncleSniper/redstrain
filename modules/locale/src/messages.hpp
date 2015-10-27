@@ -7,7 +7,10 @@
 #include <redstrain/text/StringUtils.hpp>
 #include <redstrain/text/TranscodeForError.hpp>
 #include <redstrain/io/FormattedInputStream.hpp>
+#include <redstrain/io/FormattedOutputStream.hpp>
 #include <redstrain/io/MissingInputSeparatorError.hpp>
+#include <redstrain/io/streamtypes.hpp>
+#include <redstrain/io/streamoperators.hpp>
 
 #include "MessageCache.hpp"
 #include "MissingMessageKeyError.hpp"
@@ -87,6 +90,65 @@ namespace locale {
 			if(listOrder)
 				listOrder->push_back(begin->getKey());
 		}
+	}
+
+	template<typename CharT>
+	void generateMessageKeyHeader(const MessageCache<CharT>& cache, io::OutputStream<char>& outputStream,
+			const std::string typeName, const std::string& constantPrefix = "MSG_",
+			const std::string& guardMacro = "") {
+		using redengine::io::operator<<;
+		using redengine::io::endln;
+		using redengine::io::shift;
+		using redengine::io::indent;
+		using redengine::io::unshift;
+		io::DefaultConfiguredOutputStream<char>::Stream formattedOutput(outputStream);
+		typename MessageCache<CharT>::ItemIterator begin, end;
+		if(!guardMacro.empty()) {
+			formattedOutput << "#ifndef " << guardMacro << endln;
+			formattedOutput << "#define " << guardMacro << endln << endln;
+		}
+		class NamespaceOpener : public util::Appender<std::string> {
+		  private:
+			io::DefaultConfiguredOutputStream<char>::Stream& output;
+			std::string lastSegment;
+			unsigned level;
+		  public:
+			NamespaceOpener(io::DefaultConfiguredOutputStream<char>::Stream& output)
+					: output(output), level(0u) {}
+			virtual void append(const std::string& segment) {
+				std::string seg(text::StringUtils<char>::trim(segment));
+				if(seg.empty())
+					return;
+				if(!lastSegment.empty()) {
+					output << indent << "namespace " << lastSegment << " {" << endln;
+					++level;
+				}
+				lastSegment = seg;
+			}
+			virtual void doneAppending() {
+				if(level)
+					output << shift << endln;
+				output << indent << "enum " << lastSegment << " {" << endln << shift;
+			}
+			void closeAll() {
+				output << unshift << indent << "};" << endln;
+				if(level) {
+					output << endln << unshift << indent;
+					for(; level; --level)
+						output << '}';
+					output << endln;
+				}
+			}
+		} nsOpener(formattedOutput);
+		text::StringUtils<char>::split(typeName, "::", nsOpener);
+		cache.getMessages(begin, end);
+		for(; begin != end; ++begin)
+			formattedOutput << indent << constantPrefix
+					<< text::TranscodeForError<CharT>::toCharString(begin->getKey()) << ',' << endln;
+		formattedOutput << indent << constantPrefix << "_LAST" << endln;
+		nsOpener.closeAll();
+		if(!guardMacro.empty())
+			formattedOutput << endln << "#endif /* " << guardMacro << " */" << endln;
 	}
 
 }}
