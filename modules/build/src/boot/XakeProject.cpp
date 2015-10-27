@@ -32,7 +32,7 @@ namespace boot {
 	XakeProject::XakeProject(const string& baseDirectory)
 			: baseDirectory(Pathname::tidy(Pathname::join(Pathname::getWorkingDirectory(), baseDirectory))),
 			compiler(NULL), linker(NULL), cppLanguage(NULL), objectFileLanguage(NULL), codeTableLanguage(NULL),
-			blobLanguage(NULL), blobAliasLanguage(NULL), ct16RegisterLanguage(NULL) {
+			blobLanguage(NULL), blobAliasLanguage(NULL), ct16RegisterLanguage(NULL), messages16Language(NULL) {
 		configuration.load(Resources::DFL_DEFAULTS);
 		switch(buildTargetOS) {
 			case OS_LINUX:
@@ -61,7 +61,7 @@ namespace boot {
 
 	XakeProject::XakeProject(const XakeProject& project) : configuration(project.configuration), compiler(NULL),
 			linker(NULL), cppLanguage(NULL), objectFileLanguage(NULL), codeTableLanguage(NULL),
-			blobLanguage(NULL), blobAliasLanguage(NULL), ct16RegisterLanguage(NULL) {}
+			blobLanguage(NULL), blobAliasLanguage(NULL), ct16RegisterLanguage(NULL), messages16Language(NULL) {}
 
 	XakeProject::~XakeProject() {
 		if(compiler)
@@ -79,6 +79,8 @@ namespace boot {
 			delete blobAliasLanguage;
 		if(ct16RegisterLanguage)
 			delete ct16RegisterLanguage;
+		if(messages16Language)
+			delete messages16Language;
 	}
 
 	string XakeProject::getProjectName() const {
@@ -163,6 +165,12 @@ namespace boot {
 		if(!ct16RegisterLanguage)
 			ct16RegisterLanguage = new XakeCodeTable16RegisterLanguage(*this);
 		return *ct16RegisterLanguage;
+	}
+
+	Language& XakeProject::getMessages16DefinitionLanguage() {
+		if(!messages16Language)
+			messages16Language = new Messages16DefinitionLanguage();
+		return *messages16Language;
 	}
 
 	const string& XakeProject::getCompilerName() {

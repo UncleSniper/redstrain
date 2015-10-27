@@ -6,6 +6,7 @@
 #include "../Compiler.hpp"
 #include "../Language.hpp"
 #include "../CodeTableDefinitionLanguage.hpp"
+#include "../Messages16DefinitionLanguage.hpp"
 
 namespace redengine {
 namespace build {
@@ -30,6 +31,7 @@ namespace boot {
 		XakeBlobLanguage* blobLanguage;
 		XakeBlobAliasLanguage* blobAliasLanguage;
 		XakeCodeTable16RegisterLanguage* ct16RegisterLanguage;
+		Messages16DefinitionLanguage* messages16Language;
 		std::string compilerName;
 
 	  private:
@@ -64,6 +66,7 @@ namespace boot {
 		Language& getBlobLanguage();
 		Language& getBlobAliasLanguage();
 		Language& getCodeTable16RegisterLanguage();
+		Language& getMessages16DefinitionLanguage();
 		const std::string& getCompilerName();
 
 	};

@@ -29,6 +29,7 @@ namespace boot {
 				component->addLanguage(project.getCodeTable16RegisterLanguage());
 			case Component::DATA:
 				component->addLanguage(project.getCodeTableDefinitionLanguage());
+				component->addLanguage(project.getMessages16DefinitionLanguage());
 				break;
 			default:
 				break;

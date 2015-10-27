@@ -46,7 +46,10 @@ namespace boot {
 			if(basename.empty())
 				basename = fdirDefault;
 		}
-		else if(&language == &project.getCodeTableDefinitionLanguage()) {
+		else if(
+			&language == &project.getCodeTableDefinitionLanguage()
+			|| &language == &project.getMessages16DefinitionLanguage()
+		) {
 			directory = configuration.getProperty(Resources::RES_BUILD_DIRECTORY);
 			if(directory.empty())
 				directory = XakeBuildDirectoryMapper::DEFAULT_BUILD_DIRECTORY;
