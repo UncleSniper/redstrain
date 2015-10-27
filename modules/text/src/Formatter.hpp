@@ -933,7 +933,7 @@ namespace text {
 		}
 
 	  public:
-		Formatter() : defaultOptions(DefaultFormattingOptionStringEmitter<char>::instance) {}
+		Formatter() : defaultOptions(DefaultFormattingOptionStringEmitter<CharT>::instance) {}
 		Formatter(FormattingOptionStringEmitter<CharT>& stringEmitter) : defaultOptions(stringEmitter) {}
 		Formatter(const Options& defaultOptions) : defaultOptions(defaultOptions) {}
 		Formatter(const Formatter& formatter) : defaultOptions(formatter.defaultOptions) {}
