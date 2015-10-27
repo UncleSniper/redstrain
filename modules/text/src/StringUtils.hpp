@@ -72,7 +72,8 @@ namespace text {
 			return haystack.substr(hlen - nlen) == needle;
 		}
 
-		static void split(const String& haystack, const String& needle, util::Appender<String>& sink, int flags) {
+		static void split(const String& haystack, const String& needle, util::Appender<String>& sink,
+				int flags = 0) {
 			if(needle.empty()) {
 				sink.append(haystack);
 				sink.doneAppending();
