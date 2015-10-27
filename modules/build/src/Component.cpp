@@ -170,9 +170,10 @@ namespace build {
 	FileArtifact* Component::getSourceFile(const string& basename, BuildContext& context) const {
 		PathIterator begin(sourceDirectories.begin()), end(sourceDirectories.end());
 		for(; begin != end; ++begin) {
-			string path(Pathname::join(*begin, basename));
+			string tail(Pathname::join(*begin, basename));
+			string path(Pathname::join(baseDirectory, tail));
 			if(Filesystem::access(path, Filesystem::FILE_EXISTS))
-				return &context.internFileArtifact(path, basename);
+				return &context.internFileArtifact(path, tail);
 		}
 		return NULL;
 	}
