@@ -93,6 +93,7 @@ namespace text {
 		tmp += static_cast<uint64_t>(1u) << 31;
 		f = ac + (ad >> 32) + (bc >> 32) + (tmp >> 32);
 		e += other.e + static_cast<int32_t>(64);
+		return *this;
 	}
 
 	// ======== DecimalRepresentation ========
