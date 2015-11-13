@@ -4,6 +4,7 @@
 #include <redstrain/util/IntegerLog.hpp>
 #include <redstrain/util/FloatTraits.hpp>
 #include <redstrain/util/StringUtils.hpp>
+#include <redstrain/util/DeleteArray.hpp>
 #include <redstrain/error/ProgrammingError.hpp>
 #include <redstrain/util/mathwrap.hpp>
 
@@ -321,8 +322,8 @@ namespace text {
 					result += RenditionT::POSITIVE_SIGN;
 				if(!expDigits)
 					++expDigits;
-				CharT buffer[expDigits];
-				CharT* insert = buffer + expDigits;
+				util::DeleteArray<CharT> buffer(new CharT[expDigits]);
+				CharT* insert = *buffer + expDigits;
 				if(expExp) {
 					for(; expExp; expExp /= static_cast<int32_t>(10)) {
 						*--insert = RenditionT::digit(
