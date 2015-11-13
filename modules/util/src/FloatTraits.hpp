@@ -1,8 +1,8 @@
 #ifndef REDSTRAIN_MOD_UTIL_FLOATTRAITS_HPP
 #define REDSTRAIN_MOD_UTIL_FLOATTRAITS_HPP
 
-#include <list>
 #include <cmath>
+#include <cstddef>
 
 #include "LeastInteger.hpp"
 
