@@ -14,7 +14,7 @@ fi
 
 if [ -x "$MSGSHDR" ]; then
 	"$MSGSHDR" -tredengine::locale::CoreMessageKey -pCMK_ -gREDSTRAIN_MOD_LOCALE_COREMESSAGEKEY_HPP \
-			modules/locale/core.msgsc "$COREMSGKEY"
+			data/locale-core/src/messages.msgsc "$COREMSGKEY"
 else
 	echo "Missing '$MSGSHDR', skipping generation of '$COREMSGKEY'." >&2
 fi
