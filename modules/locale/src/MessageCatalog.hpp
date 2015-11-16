@@ -44,6 +44,22 @@ namespace locale {
 			return NULL;
 		}
 
+		void switchToLocale(const Locale& locale) {
+			if(&locale == lastLocale)
+				return;
+			lastLocale = NULL;
+			if(cache) {
+				delete cache;
+				cache = NULL;
+			}
+			cache = loadMessageCache(locale);
+			if(cache)
+				lastLocale = &locale;
+			else
+				throw NoMessagesForRequestedLocaleError(locale);
+			localeSwitched();
+		}
+
 	  protected:
 		virtual void localeSwitched() {}
 
@@ -114,24 +130,16 @@ namespace locale {
 
 		String getMessage(const Locale& locale, KeyT key) {
 			CatalogLocker lock(this);
-			if(&locale != lastLocale) {
-				lastLocale = NULL;
-				if(cache) {
-					delete cache;
-					cache = NULL;
-				}
-				cache = loadMessageCache(locale);
-				if(cache)
-					lastLocale = &locale;
-				else {
-					lock.release();
-					throw NoMessagesForRequestedLocaleError(locale);
-				}
-				localeSwitched();
-			}
+			switchToLocale(locale);
 			String msg(cache->getMessage(static_cast<size_t>(key)).getValue());
 			lock.release();
 			return msg;
+		}
+
+		void forceLocale(const Locale& locale) {
+			CatalogLocker lock(this);
+			switchToLocale(locale);
+			lock.release();
 		}
 
 	};

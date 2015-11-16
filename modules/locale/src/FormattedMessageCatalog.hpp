@@ -36,11 +36,18 @@ namespace locale {
 	  public:
 		FormattedMessageCatalog() {}
 
+		FormattedMessageCatalog(text::FormattingOptionStringEmitter<CharT>& stringEmitter)
+				: formatter(stringEmitter) {}
+
 		FormattedMessageCatalog(typename LockingPolicyT::LockingPolicyInitializer lockInitializer)
 				: MessageCatalog<CharT, KeyT, LockingPolicyT>(lockInitializer) {}
 
+		FormattedMessageCatalog(text::FormattingOptionStringEmitter<CharT>& stringEmitter,
+				typename LockingPolicyT::LockingPolicyInitializer lockInitializer)
+				: MessageCatalog<CharT, KeyT, LockingPolicyT>(lockInitializer), formatter(stringEmitter) {}
+
 		FormattedMessageCatalog(const FormattedMessageCatalog& catalog)
-				: MessageCatalog<CharT, KeyT, LockingPolicyT>(catalog) {}
+				: MessageCatalog<CharT, KeyT, LockingPolicyT>(catalog), formatter(catalog.formatter) {}
 
 		virtual ~FormattedMessageCatalog() {}
 

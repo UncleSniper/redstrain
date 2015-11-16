@@ -27,6 +27,12 @@ namespace locale {
 
 		std::string getName() const;
 
+		bool operator==(const Locale&) const;
+		bool operator!=(const Locale&) const;
+		bool operator<(const Locale&) const;
+
+		const Locale& intern() const;
+
 	};
 
 }}
