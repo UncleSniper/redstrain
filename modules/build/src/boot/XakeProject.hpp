@@ -16,6 +16,7 @@ namespace boot {
 	class XakeBlobLanguage;
 	class XakeBlobAliasLanguage;
 	class XakeObjectFileLanguage;
+	class XakeMessageBlobAliasLanguage;
 	class XakeCodeTable16RegisterLanguage;
 	class XakeMessageBlobRegisterLanguage;
 
@@ -34,6 +35,7 @@ namespace boot {
 		XakeCodeTable16RegisterLanguage* ct16RegisterLanguage;
 		Messages16DefinitionLanguage* messages16Language;
 		XakeMessageBlobRegisterLanguage* messageBlobRegisterLanguage;
+		XakeMessageBlobAliasLanguage* messageBlobAliasLanguage;
 		std::string compilerName;
 
 	  private:
@@ -70,6 +72,7 @@ namespace boot {
 		Language& getCodeTable16RegisterLanguage();
 		Language& getMessages16DefinitionLanguage();
 		Language& getMessageBlobRegisterLanguage();
+		Language& getMessageBlobAliasLanguage();
 		const std::string& getCompilerName();
 
 	};

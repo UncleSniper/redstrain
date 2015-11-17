@@ -11,6 +11,7 @@
 #include "XakeBlobLanguage.hpp"
 #include "XakeBlobAliasLanguage.hpp"
 #include "XakeObjectFileLanguage.hpp"
+#include "XakeMessageBlobAliasLanguage.hpp"
 #include "XakeCodeTable16RegisterLanguage.hpp"
 #include "XakeMessageBlobRegisterLanguage.hpp"
 #include "../UnsupportedToolchainError.hpp"
@@ -34,7 +35,7 @@ namespace boot {
 			: baseDirectory(Pathname::tidy(Pathname::join(Pathname::getWorkingDirectory(), baseDirectory))),
 			compiler(NULL), linker(NULL), cppLanguage(NULL), objectFileLanguage(NULL), codeTableLanguage(NULL),
 			blobLanguage(NULL), blobAliasLanguage(NULL), ct16RegisterLanguage(NULL), messages16Language(NULL),
-			messageBlobRegisterLanguage(NULL) {
+			messageBlobRegisterLanguage(NULL), messageBlobAliasLanguage(NULL) {
 		configuration.load(Resources::DFL_DEFAULTS);
 		switch(buildTargetOS) {
 			case OS_LINUX:
@@ -64,7 +65,7 @@ namespace boot {
 	XakeProject::XakeProject(const XakeProject& project) : configuration(project.configuration), compiler(NULL),
 			linker(NULL), cppLanguage(NULL), objectFileLanguage(NULL), codeTableLanguage(NULL),
 			blobLanguage(NULL), blobAliasLanguage(NULL), ct16RegisterLanguage(NULL), messages16Language(NULL),
-			messageBlobRegisterLanguage(NULL) {}
+			messageBlobRegisterLanguage(NULL), messageBlobAliasLanguage(NULL) {}
 
 	XakeProject::~XakeProject() {
 		if(compiler)
@@ -86,6 +87,8 @@ namespace boot {
 			delete messages16Language;
 		if(messageBlobRegisterLanguage)
 			delete messageBlobRegisterLanguage;
+		if(messageBlobAliasLanguage)
+			delete messageBlobAliasLanguage;
 	}
 
 	string XakeProject::getProjectName() const {
@@ -182,6 +185,12 @@ namespace boot {
 		if(!messageBlobRegisterLanguage)
 			messageBlobRegisterLanguage = new XakeMessageBlobRegisterLanguage(*this);
 		return *messageBlobRegisterLanguage;
+	}
+
+	Language& XakeProject::getMessageBlobAliasLanguage() {
+		if(!messageBlobAliasLanguage)
+			messageBlobAliasLanguage = new XakeMessageBlobAliasLanguage(*this);
+		return *messageBlobAliasLanguage;
 	}
 
 	const string& XakeProject::getCompilerName() {

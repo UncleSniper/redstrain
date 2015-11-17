@@ -24,7 +24,7 @@ namespace locale {
 			virtual ~IncludeResolver();
 
 			virtual void includeBlobs(const std::string&, io::OutputStream<char>&, bool&,
-					const std::string&, const std::string&) = 0;
+					const std::string&, const std::string&, unsigned&) = 0;
 
 		};
 
@@ -39,7 +39,7 @@ namespace locale {
 			virtual ~FileIncludeResolver();
 
 			virtual void includeBlobs(const std::string&, io::OutputStream<char>&, bool&,
-					const std::string&, const std::string&);
+					const std::string&, const std::string&, unsigned&);
 
 		};
 
@@ -47,9 +47,9 @@ namespace locale {
 		MessageBlobRegistrar(BlobMessageMapping*&, const std::string&, const std::string&, const char*, size_t);
 
 		static void generateBlobRegistrar(io::OutputStream<char>&, const std::string&, const std::string&,
-				const std::string&, const std::string&, bool);
+				const std::string&, const std::string&, bool, unsigned);
 		static void generateBlobAliases(io::InputStream<char>&, const std::string&, IncludeResolver&,
-				io::OutputStream<char>&, bool&, const std::string&, const std::string&);
+				io::OutputStream<char>&, bool&, const std::string&, const std::string&, unsigned&);
 
 	};
 

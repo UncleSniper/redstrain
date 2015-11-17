@@ -50,13 +50,13 @@ namespace locale {
 	MessageBlobRegistrar::FileIncludeResolver::~FileIncludeResolver() {}
 
 	void MessageBlobRegistrar::FileIncludeResolver::includeBlobs(const string& reference, OutputStream<char>& output,
-			bool& withInclude, const string& mappingSymbol, const string& blobNSPrefix) {
+			bool& withInclude, const string& mappingSymbol, const string& blobNSPrefix, unsigned& nextID) {
 		string path(Pathname::tidy(Pathname::join(directory, reference)));
 		FileInputStream input(path);
 		StreamCloser inCloser(input);
 		FileIncludeResolver innerIncludeResolver(Pathname::dirname(path, Pathname::LOGICAL));
 		MessageBlobRegistrar::generateBlobAliases(input, path, innerIncludeResolver, output, withInclude,
-				mappingSymbol, blobNSPrefix);
+				mappingSymbol, blobNSPrefix, nextID);
 		inCloser.close();
 	}
 
@@ -139,7 +139,8 @@ namespace locale {
 	}
 
 	void MessageBlobRegistrar::generateBlobRegistrar(OutputStream<char>& stream, const string& mappingSymbol,
-			const string& blobSymbol, const string& language, const string& country, bool withInclude) {
+			const string& blobSymbol, const string& language, const string& country, bool withInclude,
+			unsigned objectID) {
 		DefaultConfiguredOutputStream<char>::Stream out(stream);
 		if(withInclude)
 			out << "#include <redstrain/locale/MessageBlobRegistrar.hpp>" << endln;
@@ -148,7 +149,8 @@ namespace locale {
 		StringUtils::split(mappingSymbol, "::", mappingDeclarer);
 		MessageBlobRegistrarBlobDeclarer blobDeclarer(out);
 		StringUtils::split(blobSymbol, "::", blobDeclarer);
-		out << "static ::redengine::locale::MessageBlobRegistrar registerMessages(";
+		out << "static ::redengine::locale::MessageBlobRegistrar registerMessages";
+		out << objectID << '(';
 		out << mappingSymbol << ", " << CPPUtils::escapeString(language, true);
 		out << ", " << CPPUtils::escapeString(country, true) << ", ";
 		out << blobSymbol << ", " << blobSymbol << "_size);" << endln;
@@ -156,7 +158,7 @@ namespace locale {
 
 	void MessageBlobRegistrar::generateBlobAliases(InputStream<char>& input, const string& inputStreamName,
 			IncludeResolver& includeResolver, OutputStream<char>& output, bool& withInclude,
-			const string& mappingSymbol, const string& blobNSPrefix) {
+			const string& mappingSymbol, const string& blobNSPrefix, unsigned& nextID) {
 		FormattedInputStream<char> formattedInput(input);
 		string line, language, country;
 		unsigned lno = 0u;
@@ -176,7 +178,7 @@ namespace locale {
 							string reference(StringUtils::trim(line.substr(static_cast<string::size_type>(9u))));
 							if(!reference.empty()) {
 								includeResolver.includeBlobs(reference, output, withInclude,
-										mappingSymbol, blobNSPrefix);
+										mappingSymbol, blobNSPrefix, nextID);
 								line.clear();
 								continue;
 							}
@@ -203,8 +205,9 @@ namespace locale {
 				country.clear();
 			}
 			MessageBlobRegistrar::generateBlobRegistrar(output, mappingSymbol, blobNSPrefix + blob,
-					language, country, withInclude);
+					language, country, withInclude, nextID);
 			withInclude = false;
+			++nextID;
 			line.clear();
 		}
 	}

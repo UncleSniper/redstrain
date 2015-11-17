@@ -44,7 +44,7 @@ namespace build {
 		Delete<OutputStream<char> > out(target.getOutputStream(context, Artifact::FOR_USE, this));
 		StreamCloser outCloser(*out);
 		MessageBlobRegistrar::generateBlobRegistrar(**out, configuration.getMappingSymbol(),
-				configuration.getBlobSymbol(), configuration.getLanguage(), configuration.getCountry(), true);
+				configuration.getBlobSymbol(), configuration.getLanguage(), configuration.getCountry(), true, 0u);
 		outCloser.close();
 	}
 

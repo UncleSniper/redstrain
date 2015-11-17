@@ -51,8 +51,9 @@ namespace build {
 		string path(getSource().getPath());
 		MessageBlobRegistrar::FileIncludeResolver includeResolver(Pathname::dirname(path, Pathname::LOGICAL));
 		bool withInclude = true;
+		unsigned nextID = 0u;
 		MessageBlobRegistrar::generateBlobAliases(**in, path, includeResolver, **out, withInclude,
-				configuration.getMappingSymbol(), configuration.getBlobNamespacePrefix());
+				configuration.getMappingSymbol(), configuration.getBlobNamespacePrefix(), nextID);
 		outCloser.close();
 		inCloser.close();
 	}
