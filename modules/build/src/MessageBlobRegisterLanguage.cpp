@@ -1,6 +1,6 @@
 #include <redstrain/util/Unref.hpp>
 
-#include "MessageBlobRegisterLanguage.hpp"
+#include "MessageBlobRegistrarGenerationTransform.hpp"
 
 using std::string;
 using redengine::util::Unref;
@@ -53,8 +53,7 @@ namespace build {
 			const Flavor& transformFlavor, Component& component, BuildContext&) {
 		Unref<RegistrarConfiguration> configuration(&getRegistrarConfiguration(sourceArtifact,
 				sourceFlavor, targetArtifact, targetFlavor, transformFlavor, component));
-		//TODO
-		return NULL;
+		return new MessageBlobRegistrarGenerationTransform(sourceArtifact, **configuration);
 	}
 
 	static const char *const SOURCE_SUFFIXES[] = {

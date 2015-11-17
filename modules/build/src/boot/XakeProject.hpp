@@ -17,6 +17,7 @@ namespace boot {
 	class XakeBlobAliasLanguage;
 	class XakeObjectFileLanguage;
 	class XakeCodeTable16RegisterLanguage;
+	class XakeMessageBlobRegisterLanguage;
 
 	class REDSTRAIN_BUILD_API XakeProject {
 
@@ -32,6 +33,7 @@ namespace boot {
 		XakeBlobAliasLanguage* blobAliasLanguage;
 		XakeCodeTable16RegisterLanguage* ct16RegisterLanguage;
 		Messages16DefinitionLanguage* messages16Language;
+		XakeMessageBlobRegisterLanguage* messageBlobRegisterLanguage;
 		std::string compilerName;
 
 	  private:
@@ -67,6 +69,7 @@ namespace boot {
 		Language& getBlobAliasLanguage();
 		Language& getCodeTable16RegisterLanguage();
 		Language& getMessages16DefinitionLanguage();
+		Language& getMessageBlobRegisterLanguage();
 		const std::string& getCompilerName();
 
 	};

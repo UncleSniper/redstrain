@@ -98,9 +98,11 @@ namespace locale {
 	}
 
 	void MessageBlobRegistrar::generateBlobRegistrar(OutputStream<char>& stream, const string& mappingSymbol,
-			const string& blobSymbol, const string& language, const string& country) {
+			const string& blobSymbol, const string& language, const string& country, bool withInclude) {
 		DefaultConfiguredOutputStream<char>::Stream out(stream);
-		out << "#include <redstrain/locale/MessageBlobRegistrar.hpp>" << endln << endln;
+		if(withInclude)
+			out << "#include <redstrain/locale/MessageBlobRegistrar.hpp>" << endln;
+		out << endln;
 		MessageBlobRegistrarMappingDeclarer mappingDeclarer(out);
 		StringUtils::split(mappingSymbol, "::", mappingDeclarer);
 		MessageBlobRegistrarBlobDeclarer blobDeclarer(out);

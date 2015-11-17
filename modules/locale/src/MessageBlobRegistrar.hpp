@@ -17,7 +17,7 @@ namespace locale {
 		MessageBlobRegistrar(BlobMessageMapping*&, const std::string&, const std::string&, const char*, size_t);
 
 		static void generateBlobRegistrar(io::OutputStream<char>&, const std::string&, const std::string&,
-				const std::string&, const std::string&);
+				const std::string&, const std::string&, bool);
 
 	};
 

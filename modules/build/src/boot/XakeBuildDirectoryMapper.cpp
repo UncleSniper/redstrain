@@ -58,6 +58,7 @@ namespace boot {
 			&language == &project.getBlobLanguage()
 			|| &language == &project.getBlobAliasLanguage()
 			|| &language == &project.getCodeTable16RegisterLanguage()
+			|| &language == &project.getMessageBlobRegisterLanguage()
 		) {
 			directory = configuration.getProperty(Resources::RES_RSB_GENERATED_SOURCE_DIRECTORY);
 			if(directory.empty())
