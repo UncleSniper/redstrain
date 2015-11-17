@@ -100,7 +100,7 @@ namespace locale {
 			String value;
 			for(; size; --size) {
 				text::readMultiByteString<uint16_t, CharT>(reader, value);
-				items.push_back(Item("", value));
+				items.push_back(Item(String(), value));
 			}
 		}
 
