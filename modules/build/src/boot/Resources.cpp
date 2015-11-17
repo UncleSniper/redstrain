@@ -97,6 +97,7 @@ namespace boot {
 		"blob.alias.path.prefix",
 		"blob.alias.file.suffix",
 		"blobful.depend.modules",
+		"message.blob.mapping",
 		"linux.external.libraries",
 		"windows.external.libraries"
 	};

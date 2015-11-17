@@ -59,8 +59,8 @@ namespace boot {
 			Component& component) {
 		// determine namespace
 		map<string, string> variables;
-		variables["project"] = project.getProjectName();
-		variables["module"] = component.getName();
+		variables["project"] = CPPUtils::slugifySymbol(project.getProjectName());
+		variables["module"] = CPPUtils::slugifySymbol(component.getName());
 		string ns;
 		const XakeComponent* xcomponent = dynamic_cast<const XakeComponent*>(&component);
 		if(xcomponent)
@@ -72,6 +72,15 @@ namespace boot {
 			if(!StringUtils::endsWith(ns, "::"))
 				ns += "::";
 		}
+		// determine mapping symbol
+		string mappingSymbol;
+		if(xcomponent)
+			mappingSymbol = xcomponent->getComponentConfiguration()
+					.getProperty(Resources::RES_RSB_MESSAGE_BLOB_MAPPING);
+		if(mappingSymbol.empty())
+			mappingSymbol = ns + " messageBlobMapping";
+		else
+			mappingSymbol = XakeUtils::subst(mappingSymbol, variables);
 		// determine locale name
 		string sourceBasename(Pathname::basename(sourceArtifact.getPath()));
 		string::size_type pos = sourceBasename.rfind('.');
@@ -87,7 +96,7 @@ namespace boot {
 		}
 		else
 			language = sourceBasename;
-		return *new RegistrarConfiguration(ns + "messageBlobMapping", ns + sourceBasename, language, country);
+		return *new RegistrarConfiguration(mappingSymbol, ns + sourceBasename, language, country);
 	}
 
 }}}

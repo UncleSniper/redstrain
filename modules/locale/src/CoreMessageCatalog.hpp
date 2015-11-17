@@ -71,6 +71,8 @@ namespace locale {
 
 	typedef CoreMessageCatalog<text::Char16, platform::PropertyMutexLockingPolicy> CoreMessageCatalog16;
 
+	CoreMessageCatalog16& getDefaultCoreMessageCatalog16();
+
 }}
 
 #endif /* REDSTRAIN_MOD_LOCALE_COREMESSAGECATALOG_HPP */

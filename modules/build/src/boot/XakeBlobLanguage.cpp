@@ -70,7 +70,10 @@ namespace boot {
 		if(ns.empty())
 			ns = project.getProjectConfiguration().getProperty(Resources::RES_RSB_GENERATED_NAMESPACE);
 		if(!ns.empty()) {
-			ns = XakeUtils::subst(ns, variables);
+			map<string, string> nsvariables(variables);
+			nsvariables["project"] = CPPUtils::slugifySymbol(project.getProjectName());
+			nsvariables["module"] = CPPUtils::slugifySymbol(component.getName());
+			ns = XakeUtils::subst(ns, nsvariables);
 			if(!StringUtils::endsWith(ns, "::"))
 				ns += "::";
 		}

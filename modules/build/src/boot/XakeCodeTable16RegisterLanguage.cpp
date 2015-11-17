@@ -78,8 +78,8 @@ namespace boot {
 			FileArtifact&, const Flavor&, FileArtifact&, const Flavor&, const Flavor&,
 			Component& component) {
 		map<string, string> variables, mvariables;
-		variables["project"] = project.getProjectName();
-		variables["module"] = component.getName();
+		variables["project"] = CPPUtils::slugifySymbol(project.getProjectName());
+		variables["module"] = CPPUtils::slugifySymbol(component.getName());
 		string ns;
 		const XakeComponent* xcomponent = dynamic_cast<const XakeComponent*>(&component);
 		if(xcomponent)
