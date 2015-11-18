@@ -2,9 +2,9 @@
 #define REDSTRAIN_MOD_IO_DROPPINGOUTPUTSTREAM_HPP
 
 #include <redstrain/util/StringUtils.hpp>
-#include <redstrain/error/IllegalArgumentError.hpp>
 
 #include "OutputStream.hpp"
+#include "IllegalSeekWhenceError.hpp"
 #include "SeekOffsetOutOfBoundsError.hpp"
 
 namespace redengine {
@@ -42,8 +42,7 @@ namespace io {
 					targetOffset += static_cast<off_t>(offset);
 					goto withTargetOffset;
 				default:
-					throw error::IllegalArgumentError("Not a valid SeekWhence: "
-							+ util::StringUtils::toString(static_cast<int>(whence)));
+					throw IllegalSeekWhenceError(whence);
 			}
 		}
 

@@ -5,6 +5,7 @@
 
 #include "ProcessBuilder.hpp"
 #include "ProcessOperationError.hpp"
+#include "IllegalStandardStreamSpecifierError.hpp"
 
 #if REDSTRAIN_PLATFORM_OS == REDSTRAIN_PLATFORM_OS_UNIX
 #include <errno.h>
@@ -111,10 +112,6 @@ namespace platform {
 		targetEnv[key] = value;
 	}
 
-	#define invalidStream \
-		throw IllegalArgumentError("Illegal standard stream specifier: " \
-				+ StringUtils::toString(static_cast<int>(stream)))
-
 	void ProcessBuilder::setStreamInherited(Console::StandardHandle stream) {
 		#define clamp(which) \
 			which ## Mode = STREAM_INHERITED; \
@@ -130,7 +127,7 @@ namespace platform {
 				joinedStreams = false;
 				clamp(stderr)
 			default:
-				invalidStream;
+				throw IllegalStandardStreamSpecifierError(stream);
 		}
 		#undef clamp
 	}
@@ -150,7 +147,7 @@ namespace platform {
 				joinedStreams = false;
 				clamp(stderr)
 			default:
-				invalidStream;
+				throw IllegalStandardStreamSpecifierError(stream);
 		}
 		#undef clamp
 	}
@@ -170,7 +167,7 @@ namespace platform {
 				joinedStreams = false;
 				clamp(stderr)
 			default:
-				invalidStream;
+				throw IllegalStandardStreamSpecifierError(stream);
 		}
 		#undef clamp
 	}
@@ -190,7 +187,7 @@ namespace platform {
 				joinedStreams = false;
 				clamp(stderr)
 			default:
-				invalidStream;
+				throw IllegalStandardStreamSpecifierError(stream);
 		}
 		#undef clamp
 	}
@@ -206,7 +203,7 @@ namespace platform {
 			case Console::STANDARD_ERROR:
 				clamp(stderr)
 			default:
-				invalidStream;
+				throw IllegalStandardStreamSpecifierError(stream);
 		}
 		#undef clamp
 	}
@@ -222,12 +219,10 @@ namespace platform {
 			case Console::STANDARD_ERROR:
 				clamp(stderr)
 			default:
-				invalidStream;
+				throw IllegalStandardStreamSpecifierError(stream);
 		}
 		#undef clamp
 	}
-
-	#undef invalidStream
 
 	void ProcessBuilder::joinOutputStreams() {
 		joinedStreams = true;

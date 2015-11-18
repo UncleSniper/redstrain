@@ -4,7 +4,7 @@
 #include <redstrain/util/Delete.hpp>
 #include <redstrain/util/Appender.hpp>
 #include <redstrain/util/WithAlign.hpp>
-#include <redstrain/error/IndexOutOfBoundsError.hpp>
+#include <redstrain/error/ListIndexOutOfBoundsError.hpp>
 
 #include "allocators.hpp"
 #include "destructors.hpp"
@@ -334,7 +334,7 @@ namespace algorithm {
 
 			ElementT* deref() const {
 				if(!rope || offset >= rope->cursize)
-					throw error::IndexOutOfBoundsError("List index out of bounds", offset);
+					throw error::ListIndexOutOfBoundsError(offset);
 				return static_cast<Leaf*>(path->node)->getElements() + path->offset;
 			}
 
@@ -376,7 +376,7 @@ namespace algorithm {
 					return;
 				}
 				if(target >= rope->cursize)
-					throw error::IndexOutOfBoundsError("List index out of bounds", target);
+					throw error::ListIndexOutOfBoundsError(target);
 				if(path->offset + delta < path->size) {
 					path->offset += delta;
 					offset = target;
@@ -443,7 +443,7 @@ namespace algorithm {
 				}
 				size_t target = offset - delta;
 				if(delta > offset)
-					throw error::IndexOutOfBoundsError("List index out of bounds", delta);
+					throw error::ListIndexOutOfBoundsError(delta);
 				if(path->offset >= delta) {
 					path->offset -= delta;
 					offset = target;
@@ -582,7 +582,7 @@ namespace algorithm {
 				if(this->rope && this->rope->cursize) {
 					if(this->offset >= this->rope->cursize) {
 						if(delta > this->rope->cursize)
-							throw error::IndexOutOfBoundsError("List index out of bounds", delta);
+							throw error::ListIndexOutOfBoundsError(delta);
 						this->buildStackFromOffset(this->rope->cursize - delta);
 					}
 					else
@@ -807,7 +807,7 @@ namespace algorithm {
 				if(this->rope && this->rope->cursize) {
 					if(this->offset >= this->rope->cursize) {
 						if(delta > this->rope->cursize)
-							throw error::IndexOutOfBoundsError("List index out of bounds", delta);
+							throw error::ListIndexOutOfBoundsError(delta);
 						this->buildStackFromOffset(delta - static_cast<size_t>(1u));
 					}
 					else
@@ -1950,21 +1950,21 @@ namespace algorithm {
 	  private:
 		void checkIndex(size_t index, bool equalAllowed) const {
 			if(equalAllowed ? index > cursize : index >= cursize)
-				throw error::IndexOutOfBoundsError("List index out of bounds", index);
+				throw error::ListIndexOutOfBoundsError(index);
 		}
 
 		void checkIndices(size_t& begin, size_t end) const {
 			if(begin > end)
 				begin = end;
 			if(begin > cursize)
-				throw error::IndexOutOfBoundsError("List index out of bounds", begin);
+				throw error::ListIndexOutOfBoundsError(begin);
 			if(end > cursize)
-				throw error::IndexOutOfBoundsError("List index out of bounds", end);
+				throw error::ListIndexOutOfBoundsError(end);
 		}
 
 		ElementT* findElement(size_t index) const {
 			if(index >= cursize)
-				throw error::IndexOutOfBoundsError("List index out of bounds", index);
+				throw error::ListIndexOutOfBoundsError(index);
 			Node* node = root;
 			while(node->height) {
 				Concat* cat = static_cast<Concat*>(node);
@@ -2036,7 +2036,7 @@ namespace algorithm {
 		template<typename IteratorT>
 		void insert(size_t index, IteratorT begin, IteratorT end) {
 			if(index > cursize)
-				throw error::IndexOutOfBoundsError("List index out of bounds", index);
+				throw error::ListIndexOutOfBoundsError(index);
 			if(begin == end)
 				return;
 			size_t count = static_cast<size_t>(end - begin);
@@ -2083,7 +2083,7 @@ namespace algorithm {
 
 		void insert(size_t index, const ElementT& value) {
 			if(index > cursize)
-				throw error::IndexOutOfBoundsError("List index out of bounds", index);
+				throw error::ListIndexOutOfBoundsError(index);
 			if(root)
 				root = insertElement(root, cursize, index, value);
 			else
@@ -2357,7 +2357,7 @@ namespace algorithm {
 		template<typename IteratorT>
 		void binsert(size_t index, IteratorT begin, IteratorT end, size_t batchSize = static_cast<size_t>(0u)) {
 			if(index > cursize)
-				throw error::IndexOutOfBoundsError("List index out of bounds", index);
+				throw error::ListIndexOutOfBoundsError(index);
 			if(begin == end)
 				return;
 			if(!batchSize)

@@ -1,15 +1,11 @@
 #include <redstrain/io/StreamCloser.hpp>
-#include <redstrain/util/StringUtils.hpp>
 #include <redstrain/io/FileInputStream.hpp>
-#include <redstrain/error/IllegalArgumentError.hpp>
 
-#include "Resources.hpp"
+#include "UnknownResourceDefaultsIDError.hpp"
 
 using std::string;
 using redengine::io::StreamCloser;
-using redengine::util::StringUtils;
 using redengine::io::FileInputStream;
-using redengine::error::IllegalArgumentError;
 
 namespace redengine {
 namespace build {
@@ -139,8 +135,7 @@ namespace boot {
 				putWindowsDefaults();
 				break;
 			default:
-				throw IllegalArgumentError("Unknown defaults ID: "
-						+ StringUtils::toString(static_cast<int>(defaults)));
+				throw UnknownResourceDefaultsIDError(defaults);
 		}
 	}
 

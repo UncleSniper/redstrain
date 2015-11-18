@@ -14,6 +14,7 @@ namespace build {
 	  public:
 		NoSuchComponentError(const std::string&);
 		NoSuchComponentError(const NoSuchComponentError&);
+		virtual ~NoSuchComponentError();
 
 		inline const std::string& getComponentName() const {
 			return component;

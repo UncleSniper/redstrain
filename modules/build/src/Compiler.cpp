@@ -1,10 +1,8 @@
-#include <redstrain/error/IllegalArgumentError.hpp>
-
 #include "Compiler.hpp"
+#include "UnrecognizedArchitectureNameError.hpp"
 
 using std::string;
 using redengine::redmond::Architecture;
-using redengine::error::IllegalArgumentError;
 using redengine::redmond::ARCH_I686;
 using redengine::redmond::ARCH_X86_64;
 
@@ -22,7 +20,7 @@ namespace build {
 			return ARCH_I686;
 		if(specifier == "x86_64" || specifier == "x86_64_64" || specifier == "amd64" || specifier == "x64")
 			return ARCH_X86_64;
-		throw new IllegalArgumentError("Unrecognized architecture: " + specifier);
+		throw UnrecognizedArchitectureNameError(specifier);
 	}
 
 }}

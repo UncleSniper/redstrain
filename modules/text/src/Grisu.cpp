@@ -2,11 +2,11 @@
 #include <redstrain/util/IntegerLog.hpp>
 #include <redstrain/util/DeleteArray.hpp>
 #include <redstrain/util/StringUtils.hpp>
-#include <redstrain/error/IllegalArgumentError.hpp>
 #include <redstrain/io/streamtypes.hpp>
 #include <redstrain/io/streamoperators.hpp>
 
 #include "Grisu.hpp"
+#include "GrisuError.hpp"
 
 using std::string;
 using redengine::util::Appender;
@@ -15,7 +15,6 @@ using redengine::util::IntegerLog;
 using redengine::util::DeleteArray;
 using redengine::util::StringUtils;
 using redengine::util::IntegerBounds;
-using redengine::error::IllegalArgumentError;
 using redengine::io::DefaultConfiguredOutputStream;
 using redengine::io::endln;
 using redengine::io::shift;
@@ -54,10 +53,10 @@ namespace text {
 
 	Grisu::FakeFloat Grisu::FakeFloat::operator-(const FakeFloat& other) const {
 		if(e != other.e)
-			throw IllegalArgumentError("FakeFloat subtraction with difference exponents: x.e = "
+			throw GrisuError("FakeFloat subtraction with different exponents: x.e = "
 					+ StringUtils::toString(e) + ", y.e = " + StringUtils::toString(other.e));
 		if(f < other.f)
-			throw IllegalArgumentError("FakeFloat subtraction would yield negative value: x.f = "
+			throw GrisuError("FakeFloat subtraction would yield negative value: x.f = "
 					+ StringUtils::toString(f) + ", y.f = " + StringUtils::toString(other.f));
 		return FakeFloat(f - other.f, e);
 	}
@@ -76,10 +75,10 @@ namespace text {
 
 	Grisu::FakeFloat& Grisu::FakeFloat::operator-=(const FakeFloat& other) {
 		if(e != other.e)
-			throw IllegalArgumentError("FakeFloat subtraction with difference exponents: x.e = "
+			throw GrisuError("FakeFloat subtraction with different exponents: x.e = "
 					+ StringUtils::toString(e) + ", y.e = " + StringUtils::toString(other.e));
 		if(f < other.f)
-			throw IllegalArgumentError("FakeFloat subtraction would yield negative value: x.f = "
+			throw GrisuError("FakeFloat subtraction would yield negative value: x.f = "
 					+ StringUtils::toString(f) + ", y.f = " + StringUtils::toString(other.f));
 		f -= other.f;
 		return *this;
@@ -113,7 +112,7 @@ namespace text {
 
 	uint32_t Grisu::computeCache(int32_t kMin, int32_t kMax, uint64_t*& significants, int32_t*& exponents) {
 		if(kMin >= kMax)
-			throw IllegalArgumentError("Minimal exponent must be less than maximal exponent: "
+			throw GrisuError("Minimal exponent must be less than maximal exponent: "
 					+ StringUtils::toString(kMin) + " >= " + StringUtils::toString(kMax));
 		uint32_t count = static_cast<uint32_t>(kMax - kMin) + static_cast<uint32_t>(1u);
 		DeleteArray<uint64_t> sigs(new uint64_t[count]);
@@ -255,7 +254,7 @@ namespace text {
 
 	Grisu::FakeFloat Grisu::cachedPower(int32_t k) {
 		if(k < Grisu::K_MIN || k > Grisu::K_MAX)
-			throw IllegalArgumentError("Exponent for cached Grisu power out of range: " + StringUtils::toString(k));
+			throw GrisuError("Exponent for cached Grisu power out of range: " + StringUtils::toString(k));
 		unsigned index = static_cast<unsigned>(k - Grisu::K_MIN);
 		return FakeFloat(Grisu::CACHED_SIGNIFICANTS[index], Grisu::CACHED_EXPONENTS[index]);
 	}

@@ -1,6 +1,5 @@
 #include <redstrain/util/Unref.hpp>
 #include <redstrain/util/Delete.hpp>
-#include <redstrain/error/IllegalArgumentError.hpp>
 
 #include "Project.hpp"
 #include "RuleBuilder.hpp"
@@ -11,11 +10,11 @@
 #include "ComponentFinder.hpp"
 #include "ComponentFactory.hpp"
 #include "DependencyResolver.hpp"
+#include "DuplicateComponentError.hpp"
 
 using std::string;
 using redengine::util::Unref;
 using redengine::util::Delete;
-using redengine::error::IllegalArgumentError;
 
 namespace redengine {
 namespace build {
@@ -65,8 +64,7 @@ namespace build {
 			return;
 		if(project->getComponent(component->getType() == Component::EXECUTABLE
 				? Project::EXECUTABLE : Project::LIBRARY, component->getName()))
-			throw IllegalArgumentError("A component named '" + component->getName()
-					+ "' already exists in the project");
+			throw DuplicateComponentError(component->getName());
 		project->addComponent(**component);
 	}
 

@@ -13,7 +13,6 @@ namespace error {
 
 	  public:
 		IndexOutOfBoundsError(size_t);
-		IndexOutOfBoundsError(const std::string&, size_t);
 		IndexOutOfBoundsError(const IndexOutOfBoundsError&);
 
 		inline size_t getOffendingIndex() const {

@@ -2,9 +2,9 @@
 #define REDSTRAIN_MOD_IO_MEMORYINPUTSTREAM_HPP
 
 #include <redstrain/util/StringUtils.hpp>
-#include <redstrain/error/IllegalArgumentError.hpp>
 
 #include "InputStream.hpp"
+#include "IllegalSeekWhenceError.hpp"
 #include "SeekOffsetOutOfBoundsError.hpp"
 
 namespace redengine {
@@ -94,8 +94,7 @@ namespace io {
 					target = static_cast<off_t>(dataSize) + offset;
 					break;
 				default:
-					throw error::IllegalArgumentError("Not a valid SeekWhence: "
-							+ util::StringUtils::toString(static_cast<int>(whence)));
+					throw IllegalSeekWhenceError(whence);
 			}
 			if(target < static_cast<off_t>(0) || static_cast<size_t>(target) > dataSize)
 				throw SeekOffsetOutOfBoundsError(target);

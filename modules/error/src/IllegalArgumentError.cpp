@@ -5,13 +5,12 @@ using std::string;
 namespace redengine {
 namespace error {
 
-	IllegalArgumentError::IllegalArgumentError(const string& message) : message(message) {}
+	IllegalArgumentError::IllegalArgumentError() {}
 
-	IllegalArgumentError::IllegalArgumentError(const IllegalArgumentError& error)
-			: Error(error), message(error.message) {}
+	IllegalArgumentError::IllegalArgumentError(const IllegalArgumentError& error) : Error(error) {}
 
 	REDSTRAIN_DEFINE_ERROR(IllegalArgumentError) {
-		out << "Illegal argument: " << message;
+		out << "Illegal argument";
 	}
 
 }}

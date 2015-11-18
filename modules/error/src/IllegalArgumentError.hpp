@@ -8,16 +8,9 @@ namespace error {
 
 	class REDSTRAIN_ERROR_API IllegalArgumentError : public virtual Error {
 
-	  private:
-		const std::string message;
-
 	  public:
-		IllegalArgumentError(const std::string&);
+		IllegalArgumentError();
 		IllegalArgumentError(const IllegalArgumentError&);
-
-		inline const std::string& getRawMessage() const {
-			return message;
-		}
 
 		REDSTRAIN_DECLARE_ERROR(IllegalArgumentError)
 

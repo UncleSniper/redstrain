@@ -1,6 +1,6 @@
 #include <redstrain/util/StringUtils.hpp>
 #include <redstrain/platform/ObjectLocker.hpp>
-#include <redstrain/error/IllegalArgumentError.hpp>
+#include <redstrain/io/IllegalSeekWhenceError.hpp>
 #include <redstrain/io/StreamAlreadyClosedError.hpp>
 #include <redstrain/io/SeekOffsetOutOfBoundsError.hpp>
 
@@ -14,7 +14,7 @@ using redengine::io::OutputStream;
 using redengine::util::StringUtils;
 using redengine::platform::ObjectLocker;
 using redengine::io::BidirectionalStream;
-using redengine::error::IllegalArgumentError;
+using redengine::io::IllegalSeekWhenceError;
 using redengine::io::StreamAlreadyClosedError;
 using redengine::io::SeekOffsetOutOfBoundsError;
 
@@ -114,8 +114,7 @@ namespace vfs {
 				target = static_cast<off_t>(fsize) + offset;
 				break;
 			default:
-				throw IllegalArgumentError("Not a valid SeekWhence: "
-						+ StringUtils::toString(static_cast<int>(whence)));
+				throw IllegalSeekWhenceError(whence);
 		}
 		if(target < static_cast<off_t>(0) || static_cast<size_t>(target) > fsize)
 			throw SeekOffsetOutOfBoundsError(target);

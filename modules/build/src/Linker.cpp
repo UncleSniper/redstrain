@@ -1,11 +1,9 @@
-#include <redstrain/error/IllegalArgumentError.hpp>
-
 #include "Linker.hpp"
+#include "UnrecognizedOperatingSystemNameError.hpp"
 
 using std::string;
 using redengine::redmond::Architecture;
 using redengine::redmond::OperatingSystem;
-using redengine::error::IllegalArgumentError;
 using redengine::redmond::OS_LINUX;
 using redengine::redmond::OS_WINDOWS;
 
@@ -24,7 +22,7 @@ namespace build {
 			return OS_LINUX;
 		if(specifier == "windows" || specifier == "Windows")
 			return OS_WINDOWS;
-		throw new IllegalArgumentError("Unrecognized operating system: " + specifier);
+		throw UnrecognizedOperatingSystemNameError(specifier);
 	}
 
 }}

@@ -1,12 +1,11 @@
 #include <redstrain/util/StringUtils.hpp>
-#include <redstrain/error/IllegalArgumentError.hpp>
 
 #include "FileBase.hpp"
+#include "IllegalSeekWhenceError.hpp"
 
 using std::string;
 using redengine::platform::File;
 using redengine::util::StringUtils;
-using redengine::error::IllegalArgumentError;
 
 namespace redengine {
 namespace io {
@@ -45,8 +44,7 @@ namespace io {
 				platformWhence = File::OFFSET_FROM_HERE;
 				break;
 			default:
-				throw IllegalArgumentError("Not a valid SeekWhence: "
-						+ StringUtils::toString(static_cast<int>(whence)));
+				throw IllegalSeekWhenceError(whence);
 		}
 		file.seek(offset, platformWhence);
 	}
