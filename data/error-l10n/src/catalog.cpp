@@ -50,12 +50,12 @@ namespace l10n {
 		return defaultErrorModuleMessageCatalog16.get();
 	}
 
-	BlobMessageMapping* TODO = NULL;
+	BlobMessageMapping* messageBlobMapping = NULL;
 
 	MessageLoader<Char16>* newErrorModuleBlobMessageLoader16() {
-		if(!TODO)
+		if(!messageBlobMapping)
 			return NULL;
-		return new BlobMessageLoader<Char16>(*TODO);
+		return new BlobMessageLoader<Char16>(*messageBlobMapping);
 	}
 
 }}}
