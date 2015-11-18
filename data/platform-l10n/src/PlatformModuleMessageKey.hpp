@@ -1,0 +1,15 @@
+#ifndef REDSTRAIN_DATA_PLATFORM_L10N_PLATFORMMODULEMESSAGEKEY_HPP
+#define REDSTRAIN_DATA_PLATFORM_L10N_PLATFORMMODULEMESSAGEKEY_HPP
+
+namespace redengine {
+namespace platform {
+namespace l10n {
+
+	enum PlatformModuleMessageKey {
+		MSG_FOO,
+		MSG__LAST
+	};
+
+}}}
+
+#endif /* REDSTRAIN_DATA_PLATFORM_L10N_PLATFORMMODULEMESSAGEKEY_HPP */

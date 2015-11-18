@@ -27,6 +27,7 @@ function genModMsgsHdr {
 if [ -x "$MSGSHDR" ]; then
 	genMsgsHdr locale::CoreMessageKey CMK MOD_LOCALE_COREMESSAGEKEY data/locale-core "$COREMSGKEY"
 	genModMsgsHdr error Error ERROR
+	genModMsgsHdr platform Platform PLATFORM
 else
 	echo "Missing '$MSGSHDR', skipping generation of '$COREMSGKEY' and others." >&2
 fi

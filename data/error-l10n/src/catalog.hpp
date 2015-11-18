@@ -5,6 +5,7 @@
 #include <redstrain/platform/PropertyMutexLockingPolicy.hpp>
 
 #include "ErrorModuleMessageKey.hpp"
+#include "api.hpp"
 
 namespace redengine {
 namespace error {
@@ -16,8 +17,8 @@ namespace l10n {
 		platform::PropertyMutexLockingPolicy
 	> ErrorModuleMessageCatalog16;
 
-	ErrorModuleMessageCatalog16& getDefaultErrorModuleMessageCatalog16();
-	locale::MessageLoader<text::Char16>* newErrorModuleBlobMessageLoader16();
+	REDSTRAIN_ERROR_L10N_API ErrorModuleMessageCatalog16& getDefaultErrorModuleMessageCatalog16();
+	REDSTRAIN_ERROR_L10N_API locale::MessageLoader<text::Char16>* newErrorModuleBlobMessageLoader16();
 
 }}}
 
