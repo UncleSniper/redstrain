@@ -18,4 +18,6 @@ namespace error {
 
 }}
 
+#include "NoErrorLocalizerRegisteredError.hpp"
+
 #endif /* REDSTRAIN_MOD_ERROR_STATEERROR_HPP */

@@ -1,10 +1,16 @@
 #include <string>
 #include <cstdlib>
 #include <redstrain/util/StringUtils.hpp>
+#include <redstrain/io/StringOutputStream.hpp>
 #include <redstrain/platform/platform.hpp>
 
+#include "agnostic.hpp"
+
 using std::string;
+using redengine::error::Error;
+using redengine::locale::Locale;
 using redengine::util::StringUtils;
+using redengine::io::StringOutputStream;
 
 namespace redengine {
 namespace text {
@@ -56,5 +62,13 @@ namespace text {
 #else /* OS not implemented */
 #error Platform not supported
 #endif /* OS-specific implementations */
+
+	String16 getErrorMessage(const Error& error, const Locale& locale) {
+		String16 result;
+		StringOutputStream<Char16> stream(result);
+		StreamSink16 sink(stream);
+		error.printMessage(locale, sink);
+		return result;
+	}
 
 }}

@@ -2,6 +2,7 @@
 #define REDSTRAIN_MOD_LOCALE_COREMESSAGECATALOG_HPP
 
 #include <redstrain/platform/PropertyMutexLockingPolicy.hpp>
+#include <redstrain/text/types.hpp>
 
 #include "CoreMessageKey.hpp"
 #include "FormattedMessageCatalog.hpp"

@@ -1,7 +1,8 @@
 #ifndef REDSTRAIN_MOD_TEXT_AGNOSTIC_HPP
 #define REDSTRAIN_MOD_TEXT_AGNOSTIC_HPP
 
-#include <redstrain/io/OutputStream.hpp>
+#include <redstrain/io/streamtypes.hpp>
+#include <redstrain/io/streamoperators.hpp>
 
 #include "api.hpp"
 #include "types.hpp"
@@ -49,5 +50,9 @@ namespace text {
 	};
 
 }}
+
+#define REDSTRAIN_MAKE_L10N_SINK16 \
+	::redengine::io::DefaultConfiguredOutputStream< ::redengine::text::Char16>::Stream out(sink.getStream()); \
+	using ::redengine::io::operator<<;
 
 #endif /* REDSTRAIN_MOD_TEXT_AGNOSTIC_HPP */

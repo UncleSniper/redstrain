@@ -9,4 +9,11 @@ namespace text {
 
 }}
 
+namespace redengine {
+namespace locale {
+
+	class Locale;
+
+}}
+
 #endif /* REDSTRAIN_MOD_REDMOND_L10NBIND_HPP */
