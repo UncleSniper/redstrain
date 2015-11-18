@@ -1,0 +1,12 @@
+# Generic error message for pure IllegalArgumentError instances.
+ILLEGAL_ARGUMENT=Illegal argument
+# Error message for IndexOutOfBoundsError instances. Arguments: uint64_t index
+INDEX_OUT_OF_BOUNDS=Index out of bounds: %L
+# Error message for ListIndexOutOfBoundsError instances. Arguments: uint64_t index
+LIST_INDEX_OUT_OF_BOUNDS=List index out of bounds: %L
+# Error message for NoErrorLocalizerRegisteredError instances. Arguments: string exceptionClass
+NO_ERROR_LOCALIZER_REGISTERED=Cannot localize error message: No localizer function registered for class %s
+# Error message for ProgrammingError instances. Arguments: string message
+PROGRAMMING_ERROR=Programmer fsck(8)ed up: %s
+# Error message for UnsupportedOperationError instances. Arguments: string operation
+UNSUPPORTED_OPERATION=Operation not supported: %s
