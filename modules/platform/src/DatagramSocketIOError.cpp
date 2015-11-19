@@ -12,7 +12,7 @@ namespace platform {
 
 	REDSTRAIN_DEFINE_ERROR(DatagramSocketIOError) {
 		printDirection(out);
-		out << "across datagram socket: " << DatagramSocket::getErrorMessage(code);
+		out << " across datagram socket: " << DatagramSocket::getErrorMessage(code);
 	}
 
 }}

@@ -1,0 +1,279 @@
+# UNIX error message for EPERM.
+UNIX_EPERM=Operation not permitted
+# UNIX error message for ENOENT.
+UNIX_ENOENT=No such file or directory
+# UNIX error message for ESRCH.
+UNIX_ESRCH=No such process
+# UNIX error message for EINTR.
+UNIX_EINTR=Interrupted system call
+# UNIX error message for EIO.
+UNIX_EIO=I/O error
+# UNIX error message for ENXIO.
+UNIX_ENXIO=No such device or address
+# UNIX error message for E2BIG.
+UNIX_E2BIG=Argument list too long
+# UNIX error message for ENOEXEC.
+UNIX_ENOEXEC=Exec format error
+# UNIX error message for EBADF.
+UNIX_EBADF=Bad file descriptor
+# UNIX error message for ECHILD.
+UNIX_ECHILD=No child processes
+# UNIX error message for EAGAIN.
+UNIX_EAGAIN=Resource temporarily unavailable
+# UNIX error message for ENOMEM.
+UNIX_ENOMEM=Cannot allocate memory
+# UNIX error message for EACCES.
+UNIX_EACCES=Permission denied
+# UNIX error message for EFAULT.
+UNIX_EFAULT=Bad address
+# UNIX error message for ENOTBLK.
+UNIX_ENOTBLK=Block device required
+# UNIX error message for EBUSY.
+UNIX_EBUSY=Device or resource busy
+# UNIX error message for EEXIST.
+UNIX_EEXIST=File exists
+# UNIX error message for EXDEV.
+UNIX_EXDEV=Invalid cross-device link
+# UNIX error message for ENODEV.
+UNIX_ENODEV=No such device
+# UNIX error message for ENOTDIR.
+UNIX_ENOTDIR=Not a directory
+# UNIX error message for EISDIR.
+UNIX_EISDIR=Is a directory
+# UNIX error message for EINVAL.
+UNIX_EINVAL=Invalid argument
+# UNIX error message for ENFILE.
+UNIX_ENFILE=Too many open files in system
+# UNIX error message for EMFILE.
+UNIX_EMFILE=Too many open files
+# UNIX error message for ENOTTY.
+UNIX_ENOTTY=Inappropriate ioctl for device
+# UNIX error message for ETXTBSY.
+UNIX_ETXTBSY=Text file busy
+# UNIX error message for EFBIG.
+UNIX_EFBIG=File too large
+# UNIX error message for ENOSPC.
+UNIX_ENOSPC=No space left on device
+# UNIX error message for ESPIPE.
+UNIX_ESPIPE=Illegal seek
+# UNIX error message for EROFS.
+UNIX_EROFS=Read-only file system
+# UNIX error message for EMLINK.
+UNIX_EMLINK=Too many links
+# UNIX error message for EPIPE.
+UNIX_EPIPE=Broken pipe
+# UNIX error message for EDOM.
+UNIX_EDOM=Numerical argument out of domain
+# UNIX error message for ERANGE.
+UNIX_ERANGE=Numerical result out of range
+# UNIX error message for EDEADLK.
+UNIX_EDEADLK=Resource deadlock avoided
+# UNIX error message for ENAMETOOLONG.
+UNIX_ENAMETOOLONG=File name too long
+# UNIX error message for ENOLCK.
+UNIX_ENOLCK=No locks available
+# UNIX error message for ENOSYS.
+UNIX_ENOSYS=Function not implemented
+# UNIX error message for ENOTEMPTY.
+UNIX_ENOTEMPTY=Directory not empty
+# UNIX error message for ELOOP.
+UNIX_ELOOP=Too many levels of symbolic links
+# UNIX error message for ENOMSG.
+UNIX_ENOMSG=No message of desired type
+# UNIX error message for EIDRM.
+UNIX_EIDRM=Identifier removed
+# UNIX error message for ECHRNG.
+UNIX_ECHRNG=Channel number out of range
+# UNIX error message for EL2NSYNC.
+UNIX_EL2NSYNC=Level 2 not synchronized
+# UNIX error message for EL3HLT.
+UNIX_EL3HLT=Level 3 halted
+# UNIX error message for EL3RST.
+UNIX_EL3RST=Level 3 reset
+# UNIX error message for ELNRNG.
+UNIX_ELNRNG=Link number out of range
+# UNIX error message for EUNATCH.
+UNIX_EUNATCH=Protocol driver not attached
+# UNIX error message for ENOCSI.
+UNIX_ENOCSI=No CSI structure available
+# UNIX error message for EL2HLT.
+UNIX_EL2HLT=Level 2 halted
+# UNIX error message for EBADE.
+UNIX_EBADE=Invalid exchange
+# UNIX error message for EBADR.
+UNIX_EBADR=Invalid request descriptor
+# UNIX error message for EXFULL.
+UNIX_EXFULL=Exchange full
+# UNIX error message for ENOANO.
+UNIX_ENOANO=No anode
+# UNIX error message for EBADRQC.
+UNIX_EBADRQC=Invalid request code
+# UNIX error message for EBADSLT.
+UNIX_EBADSLT=Invalid slot
+# UNIX error message for EBFONT.
+UNIX_EBFONT=Bad font file format
+# UNIX error message for ENOSTR.
+UNIX_ENOSTR=Device not a stream
+# UNIX error message for ENODATA.
+UNIX_ENODATA=No data available
+# UNIX error message for ETIME.
+UNIX_ETIME=Timer expired
+# UNIX error message for ENOSR.
+UNIX_ENOSR=Out of streams resources
+# UNIX error message for ENONET.
+UNIX_ENONET=Machine is not on the network
+# UNIX error message for ENOPKG.
+UNIX_ENOPKG=Package not installed
+# UNIX error message for EREMOTE.
+UNIX_EREMOTE=Object is remote
+# UNIX error message for ENOLINK.
+UNIX_ENOLINK=Link has been severed
+# UNIX error message for EADV.
+UNIX_EADV=Advertise error
+# UNIX error message for ESRMNT.
+UNIX_ESRMNT=Srmount error
+# UNIX error message for ECOMM.
+UNIX_ECOMM=Communication error on send
+# UNIX error message for EPROTO.
+UNIX_EPROTO=Protocol error
+# UNIX error message for EMULTIHOP.
+UNIX_EMULTIHOP=Multihop attempted
+# UNIX error message for EDOTDOT.
+UNIX_EDOTDOT=RFS specific error
+# UNIX error message for EBADMSG.
+UNIX_EBADMSG=Bad message
+# UNIX error message for EOVERFLOW.
+UNIX_EOVERFLOW=Value too large for defined data type
+# UNIX error message for ENOTUNIQ.
+UNIX_ENOTUNIQ=Name not unique on network
+# UNIX error message for EBADFD.
+UNIX_EBADFD=File descriptor in bad state
+# UNIX error message for EREMCHG.
+UNIX_EREMCHG=Remote address changed
+# UNIX error message for ELIBACC.
+UNIX_ELIBACC=Can not access a needed shared library
+# UNIX error message for ELIBBAD.
+UNIX_ELIBBAD=Accessing a corrupted shared library
+# UNIX error message for ELIBSCN.
+UNIX_ELIBSCN=.lib section in a.out corrupted
+# UNIX error message for ELIBMAX.
+UNIX_ELIBMAX=Attempting to link in too many shared libraries
+# UNIX error message for ELIBEXEC.
+UNIX_ELIBEXEC=Cannot exec a shared library directly
+# UNIX error message for EILSEQ.
+UNIX_EILSEQ=Invalid or incomplete multibyte or wide character
+# UNIX error message for ERESTART.
+UNIX_ERESTART=Interrupted system call should be restarted
+# UNIX error message for ESTRPIPE.
+UNIX_ESTRPIPE=Streams pipe error
+# UNIX error message for EUSERS.
+UNIX_EUSERS=Too many users
+# UNIX error message for ENOTSOCK.
+UNIX_ENOTSOCK=Socket operation on non-socket
+# UNIX error message for EDESTADDRREQ.
+UNIX_EDESTADDRREQ=Destination address required
+# UNIX error message for EMSGSIZE.
+UNIX_EMSGSIZE=Message too long
+# UNIX error message for EPROTOTYPE.
+UNIX_EPROTOTYPE=Protocol wrong type for socket
+# UNIX error message for ENOPROTOOPT.
+UNIX_ENOPROTOOPT=Protocol not available
+# UNIX error message for EPROTONOSUPPORT.
+UNIX_EPROTONOSUPPORT=Protocol not supported
+# UNIX error message for ESOCKTNOSUPPORT.
+UNIX_ESOCKTNOSUPPORT=Socket type not supported
+# UNIX error message for EOPNOTSUPP.
+UNIX_EOPNOTSUPP=Operation not supported
+# UNIX error message for EPFNOSUPPORT.
+UNIX_EPFNOSUPPORT=Protocol family not supported
+# UNIX error message for EAFNOSUPPORT.
+UNIX_EAFNOSUPPORT=Address family not supported by protocol
+# UNIX error message for EADDRINUSE.
+UNIX_EADDRINUSE=Address already in use
+# UNIX error message for EADDRNOTAVAIL.
+UNIX_EADDRNOTAVAIL=Cannot assign requested address
+# UNIX error message for ENETDOWN.
+UNIX_ENETDOWN=Network is down
+# UNIX error message for ENETUNREACH.
+UNIX_ENETUNREACH=Network is unreachable
+# UNIX error message for ENETRESET.
+UNIX_ENETRESET=Network dropped connection on reset
+# UNIX error message for ECONNABORTED.
+UNIX_ECONNABORTED=Software caused connection abort
+# UNIX error message for ECONNRESET.
+UNIX_ECONNRESET=Connection reset by peer
+# UNIX error message for ENOBUFS.
+UNIX_ENOBUFS=No buffer space available
+# UNIX error message for EISCONN.
+UNIX_EISCONN=Transport endpoint is already connected
+# UNIX error message for ENOTCONN.
+UNIX_ENOTCONN=Transport endpoint is not connected
+# UNIX error message for ESHUTDOWN.
+UNIX_ESHUTDOWN=Cannot send after transport endpoint shutdown
+# UNIX error message for ETOOMANYREFS.
+UNIX_ETOOMANYREFS=Too many references: cannot splice
+# UNIX error message for ETIMEDOUT.
+UNIX_ETIMEDOUT=Connection timed out
+# UNIX error message for ECONNREFUSED.
+UNIX_ECONNREFUSED=Connection refused
+# UNIX error message for EHOSTDOWN.
+UNIX_EHOSTDOWN=Host is down
+# UNIX error message for EHOSTUNREACH.
+UNIX_EHOSTUNREACH=No route to host
+# UNIX error message for EALREADY.
+UNIX_EALREADY=Operation already in progress
+# UNIX error message for EINPROGRESS.
+UNIX_EINPROGRESS=Operation now in progress
+# UNIX error message for ESTALE.
+UNIX_ESTALE=Stale NFS file handle
+# UNIX error message for EUCLEAN.
+UNIX_EUCLEAN=Structure needs cleaning
+# UNIX error message for ENOTNAM.
+UNIX_ENOTNAM=Not a XENIX named type file
+# UNIX error message for ENAVAIL.
+UNIX_ENAVAIL=No XENIX semaphores available
+# UNIX error message for EISNAM.
+UNIX_EISNAM=Is a named type file
+# UNIX error message for EREMOTEIO.
+UNIX_EREMOTEIO=Remote I/O error
+# UNIX error message for EDQUOT.
+UNIX_EDQUOT=Disk quota exceeded
+# UNIX error message for ENOMEDIUM.
+UNIX_ENOMEDIUM=No medium found
+# UNIX error message for EMEDIUMTYPE.
+UNIX_EMEDIUMTYPE=Wrong medium type
+
+# OS-specific error message for unknown errors. Arguments: int32_t errorCode
+UNKNOWN_OS_ERROR=Unknown error %I
+
+# Error message for ConditionVariableOperationError instances.
+# Arguments: string operation, string sysErrorMsg (where 'operation' arises from CONDITION_VARIABLE_OPERATION_ERROR_*)
+CONDITION_VARIABLE_OPERATION_ERROR=Failed to %s: %s
+# Operation name for ConditionVariableOperationError::CREATE.
+CONDITION_VARIABLE_OPERATION_ERROR_CREATE=create condition variable
+# Operation name for ConditionVariableOperationError::DESTROY.
+CONDITION_VARIABLE_OPERATION_ERROR_DESTROY=destroy condition variable
+# Operation name for ConditionVariableOperationError::WAIT.
+CONDITION_VARIABLE_OPERATION_ERROR_WAIT=wait on condition variable
+# Operation name for ConditionVariableOperationError::SIGNAL.
+CONDITION_VARIABLE_OPERATION_ERROR_SIGNAL=signal condition variable
+# Operation name for unrecognized ConditionVariableOperationError::Operation.
+CONDITION_VARIABLE_OPERATION_ERROR_UNKNOWN_OPERATION=perform requested operation on condition variable
+
+# Error message for ConsoleError instances. Arguments: string operation, string sysErrorMsg (where 'operation' arises from CONSOLE_ERROR_*)
+CONSOLE_ERROR=Failed to %s: %s
+# Operation name for ConsoleError::CLEAR.
+CONSOLE_ERROR_CLEAR=clear console
+# Operation name for ConsoleError::SET_CURSOR_POSITION.
+CONSOLE_ERROR_SET_CURSOR_POSITION=set console cursor position
+# Operation name for ConsoleError::SET_TEXT_ATTRIBUTE.
+CONSOLE_ERROR_SET_TEXT_ATTRIBUTE=set console text attributes
+# Operation name for unrecognized ConsoleError::Operation.
+CONSOLE_ERROR_UNKNOWN_OPERATION=perform console operation
+
+# Error message for DatagramSocketBindError instances. Arguments: string sysErrorMsg
+DATAGRAM_SOCKET_BIND_ERROR=Failed to bind datagram socket: %s
+# Error message for DatagramSocketCloseError instances. Arguments: string sysErrorMsg
+DATAGRAM_SOCKET_CLOSE_ERROR=Failed to close datagram socket: %s
+# Error message for DatagramSocketCreateError instances. Arguments: string sysErrorMsg
+DATAGRAM_SOCKET_CREATE_ERROR=Failed to create datagram socket: %s
