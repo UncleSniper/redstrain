@@ -3,8 +3,9 @@
 
 #include <redstrain/util/Unref.hpp>
 #include <redstrain/util/Delete.hpp>
-#include <redstrain/locale/BlobMessageLoader.hpp>
 #include <redstrain/platform/SynchronizedSingleton.hpp>
+
+#include "BlobMessageLoader.hpp"
 
 #define REDSTRAIN_DEFINE_DEFAULT_MESSAGE_CATALOG16(M_CatalogT, M_SingletonT, \
 		m_messageLoaderConstructor, m_singletonObject, m_blobMappingObject) \
