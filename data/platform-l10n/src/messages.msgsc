@@ -136,6 +136,26 @@ CONSOLE_ERROR_SET_CURSOR_POSITION=Operation name for ConsoleError::SET_CURSOR_PO
 CONSOLE_ERROR_SET_TEXT_ATTRIBUTE=Operation name for ConsoleError::SET_TEXT_ATTRIBUTE.
 CONSOLE_ERROR_UNKNOWN_OPERATION=Operation name for unrecognized ConsoleError::Operation.
 
+SOCKET_IO_ERROR_DIRECTION=Partial error message for a SocketIOError::Direction. Arguments: string direction (which arises from SOCKET_IO_ERROR_{SEND,RECEIVE,UNKNOWN_DIRECTION})
+SOCKET_IO_ERROR_SEND=Partial error message for SocketIOError::SEND.
+SOCKET_IO_ERROR_RECEIVE=Partial error message for SocketIOError::RECEIVE.
+SOCKET_IO_ERROR_UNKNOWN_DIRECTION=Partial error message for unrecognized SocketIOError::Direction.
+
+FILE_ERROR_ACCESS_INPUT=Partial error message for the File::Direction File::INPUT of a FileError when used to specify access (e.g. for "reading", not to "read").
+FILE_ERROR_ACCESS_OUTPUT=Partial error message for the File::Direction File::OUTPUT of a FileError when used to specify access (e.g. for "reading", not to "read").
+FILE_ERROR_ACCESS_RANDOM_ACCESS=Partial error message for the File::Direction File::RANDOM_ACCESS of a FileError when used to specify access (e.g. for "reading", not to "read").
+FILE_ERROR_ACCESS_UNKNOWN_DIRECTION=Partial error message for unknown File::Direction of a FileError when used to specify access (e.g. for "reading", not to "read").
+
+FILE_ERROR_IO_INPUT=Partial error message for the File::Direction File::INPUT of a FileError when used to specify an I/O operation (e.g. to "read", not for "reading").
+FILE_ERROR_IO_OUTPUT=Partial error message for the File::Direction File::OUTPUT of a FileError when used to specify an I/O operation (e.g. to "read", not for "reading").
+FILE_ERROR_IO_RANDOM_ACCESS=Partial error message for the File::Direction File::RANDOM_ACCESS of a FileError when used to specify an I/O operation (e.g. to "read", not for "reading").
+FILE_ERROR_IO_UNKNOWN_DIRECTION=Partial error message for unknown File::Direction of a FileError when used to specify an I/O operation (e.g. to "read", not for "reading").
+
 DATAGRAM_SOCKET_BIND_ERROR=Error message for DatagramSocketBindError instances. Arguments: string sysErrorMsg
 DATAGRAM_SOCKET_CLOSE_ERROR=Error message for DatagramSocketCloseError instances. Arguments: string sysErrorMsg
 DATAGRAM_SOCKET_CREATE_ERROR=Error message for DatagramSocketCreateError instances. Arguments: string sysErrorMsg
+DATAGRAM_SOCKET_IO_ERROR=Error message for DatagramSocketIOError instances. Arguments: string direction, string sysErrorMsg (where 'direction' arises from SOCKET_IO_ERROR_DIRECTION)
+FILE_ACCESS_DENIED_ERROR=Error message for FileAccessDeniedError instances. Arguments: string sysErrorMsg
+FILE_CLOSE_ERROR=Error message for FileCloseError instances. Arguments: string direction, string sysErrorMsg (where 'direction' arises from FILE_ERROR_ACCESS_*)
+FILE_IO_ERROR=Error message for FileIOError instances. Arguments: string direction, string sysErrorMsg (where 'direction' arises from FILE_ERROR_IO_*)
+FILE_OPEN_ERROR=Error message for FileOpenError instances. Arguments: string path, string direction, string sysErrorMsg (where 'path' may be empty if not known and 'direction' arises from FILE_ERROR_ACCESS_*)

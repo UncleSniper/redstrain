@@ -271,9 +271,51 @@ CONSOLE_ERROR_SET_TEXT_ATTRIBUTE=set console text attributes
 # Operation name for unrecognized ConsoleError::Operation.
 CONSOLE_ERROR_UNKNOWN_OPERATION=perform console operation
 
+# Partial error message for a SocketIOError::Direction. Arguments: string direction (which arises from SOCKET_IO_ERROR_{SEND,RECEIVE,UNKNOWN_DIRECTION})
+SOCKET_IO_ERROR_DIRECTION=Failed to %s data
+# Partial error message for SocketIOError::SEND.
+SOCKET_IO_ERROR_SEND=send
+# Partial error message for SocketIOError::RECEIVE.
+SOCKET_IO_ERROR_RECEIVE=receive
+# Partial error message for unrecognized SocketIOError::Direction.
+SOCKET_IO_ERROR_UNKNOWN_DIRECTION=send/receive
+
+# Partial error message for the File::Direction File::INPUT of a FileError when used to specify access (e.g. for "reading", not to "read").
+FILE_ERROR_ACCESS_INPUT=reading
+# Partial error message for the File::Direction File::OUTPUT of a FileError when used to specify access (e.g. for "reading", not to "read").
+FILE_ERROR_ACCESS_OUTPUT=writing
+# Partial error message for the File::Direction File::RANDOM_ACCESS of a FileError when used to specify access (e.g. for "reading", not to "read").
+FILE_ERROR_ACCESS_RANDOM_ACCESS=reading and writing
+# Partial error message for unknown File::Direction of a FileError when used to specify access (e.g. for "reading", not to "read").
+FILE_ERROR_ACCESS_UNKNOWN_DIRECTION=unknown access
+
+# Partial error message for the File::Direction File::INPUT of a FileError when used to specify an I/O operation (e.g. to "read", not for "reading").
+FILE_ERROR_IO_INPUT=read
+# Partial error message for the File::Direction File::OUTPUT of a FileError when used to specify an I/O operation (e.g. to "read", not for "reading").
+FILE_ERROR_IO_OUTPUT=write
+# Partial error message for the File::Direction File::RANDOM_ACCESS of a FileError when used to specify an I/O operation (e.g. to "read", not for "reading").
+FILE_ERROR_IO_RANDOM_ACCESS=read/write
+# Partial error message for unknown File::Direction of a FileError when used to specify an I/O operation (e.g. to "read", not for "reading").
+FILE_ERROR_IO_UNKNOWN_DIRECTION=read/write
+
 # Error message for DatagramSocketBindError instances. Arguments: string sysErrorMsg
 DATAGRAM_SOCKET_BIND_ERROR=Failed to bind datagram socket: %s
 # Error message for DatagramSocketCloseError instances. Arguments: string sysErrorMsg
 DATAGRAM_SOCKET_CLOSE_ERROR=Failed to close datagram socket: %s
 # Error message for DatagramSocketCreateError instances. Arguments: string sysErrorMsg
 DATAGRAM_SOCKET_CREATE_ERROR=Failed to create datagram socket: %s
+# Error message for DatagramSocketIOError instances.
+# Arguments: string direction, string sysErrorMsg (where 'direction' arises from SOCKET_IO_ERROR_DIRECTION)
+DATAGRAM_SOCKET_IO_ERROR=%s across datagram socket: %s
+# Error message for FileAccessDeniedError instances. Arguments: string sysErrorMsg
+FILE_ACCESS_DENIED_ERROR=Access to file was denied: %s
+# Error message for FileCloseError instances.
+# Arguments: string direction, string sysErrorMsg (where 'direction' arises from FILE_ERROR_ACCESS_*)
+FILE_CLOSE_ERROR=Failed to close file open for %s: %s
+# Error message for FileIOError instances.
+# Arguments: string direction, string sysErrorMsg (where 'direction' arises from FILE_ERROR_IO_*)
+FILE_IO_ERROR=Failed to %s file: %s
+# Error message for FileOpenError instances.
+# Arguments: string path, string direction, string sysErrorMsg
+# (where 'path' may be empty if not known and 'direction' arises from FILE_ERROR_ACCESS_*)
+FILE_OPEN_ERROR=Failed to open file%?ts{ '%s'} for %=1:s: %s

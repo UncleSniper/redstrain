@@ -16,6 +16,7 @@ namespace platform {
 			case File::OUTPUT:
 				out << "write";
 				break;
+			case File::RANDOM_ACCESS:
 			default:
 				out << "read/write";
 				break;

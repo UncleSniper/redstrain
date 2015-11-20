@@ -16,8 +16,11 @@ namespace platform {
 			case File::OUTPUT:
 				out << "writing";
 				break;
-			default:
+			case File::RANDOM_ACCESS:
 				out << "reading and writing";
+				break;
+			default:
+				out << "unknown access";
 				break;
 		}
 		out << ": " << File::getErrorMessage(code);
