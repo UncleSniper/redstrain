@@ -319,3 +319,9 @@ FILE_IO_ERROR=Failed to %s file: %s
 # Arguments: string path, string direction, string sysErrorMsg
 # (where 'path' may be empty if not known and 'direction' arises from FILE_ERROR_ACCESS_*)
 FILE_OPEN_ERROR=Failed to open file%?ts{ '%s'} for %=1:s: %s
+# Error message for FileSeekError instances. Arguments: string sysErrorMsg
+FILE_SEEK_ERROR=Failed to seek in file: %s
+# Error message for FilesystemError instances. Arguments: string sysErrorMsg
+FILESYSTEM_ERROR=Filesystem operation failed: %s
+# Error message for FileTellError instances. Arguments: string sysErrorMsg
+FILE_TELL_ERROR=Failed to retrieve read/write position in file: %s
