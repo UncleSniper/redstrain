@@ -50,7 +50,6 @@ namespace text {
 	 * construct           ::= if_construct
 	 * if_construct        ::= '?' condition '{' format_string '}'
 	 *                         ('|' condition '{' format_string '}')*
-	 *                         ':'?
 	 * condition           ::= '0' | '1'
 	 *                         | unary_predicate item? conversion
 	 *                         | binary_predicate item? '/' item? conversion
@@ -638,6 +637,7 @@ namespace text {
 
 		template<typename IteratorT>
 		void parseIfConstruct(FormatState<IteratorT>& state, bool emit) const {
+			const size_t originalItemIndex = state.itemIndex;
 			++state.fmtindex;
 			++state.format;
 			bool condition = parseCondition<IteratorT>(state);
@@ -649,6 +649,7 @@ namespace text {
 						UnexpectedFormatStringCharacterError::EXP_SUBGROUP_INITIATOR, state.fmtindex);
 			++state.fmtindex;
 			++state.format;
+			state.itemIndex = originalItemIndex;
 			parseFormatString(state, true, emit && condition);
 			if(state.format == state.endfmt)
 				throw UnexpectedEndOfFormatStringError(state.fmtindex);
@@ -663,6 +664,7 @@ namespace text {
 					break;
 				++state.fmtindex;
 				++state.format;
+				state.itemIndex = originalItemIndex;
 				condition = parseCondition<IteratorT>(state);
 				++state.fmtindex;
 				if(++state.format == state.endfmt)
@@ -672,6 +674,7 @@ namespace text {
 							UnexpectedFormatStringCharacterError::EXP_SUBGROUP_INITIATOR, state.fmtindex);
 				++state.fmtindex;
 				++state.format;
+				state.itemIndex = originalItemIndex;
 				parseFormatString(state, true, emit && condition && !hadTrue);
 				if(state.format == state.endfmt)
 					throw UnexpectedEndOfFormatStringError(state.fmtindex);
