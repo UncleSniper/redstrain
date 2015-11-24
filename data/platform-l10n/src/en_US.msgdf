@@ -350,6 +350,22 @@ ILLEGAL_THREAD_STATE_ERROR_STATE_TERMINATED=terminated
 # State name for unrecognized Thread::State.
 ILLEGAL_THREAD_STATE_ERROR_STATE_UNKNOWN_STATE=in unknown state
 
+# Error message for ProcessOperationError instances.
+# Arguments: string operation, string sysErrorMsg (where 'operation' arises from PROCESS_OPERATION_ERROR_*)
+PROCESS_OPERATION_ERROR=Failed to %s: %s
+# Operation name for ProcessOperationError::START.
+PROCESS_OPERATION_ERROR_START=start process
+# Operation name for ProcessOperationError::TERMINATE.
+PROCESS_OPERATION_ERROR_TERMINATE=terminate process
+# Operation name for ProcessOperationError::KILL.
+PROCESS_OPERATION_ERROR_KILL=kill process
+# Operation name for ProcessOperationError::INTERRUPT.
+PROCESS_OPERATION_ERROR_INTERRUPT=interrupt process
+# Operation name for ProcessOperationError::WAIT.
+PROCESS_OPERATION_ERROR_WAIT=wait for process
+# Operation name for unrecognized ProcessOperationError::Operation.
+PROCESS_OPERATION_ERROR_UNKNOWN_OPERATION=perform requested operation on process
+
 # Error message for DatagramSocketBindError instances. Arguments: string sysErrorMsg
 DATAGRAM_SOCKET_BIND_ERROR=Failed to bind datagram socket: %s
 # Error message for DatagramSocketCloseError instances. Arguments: string sysErrorMsg
@@ -415,3 +431,26 @@ LOCAL_SOCKET_IO_ERROR=%s across local socket: %s
 LOCAL_SOCKET_LISTEN_ERROR=Failed to listen on local socket: %s
 # Error message for NetworkAddressResolutionError instances. Arguments: string sysErrorMsg
 NETWORK_ADDRESS_RESOLUTION_ERROR=Failed to resolve network address: %s
+# Error message for NetworkingInitializationError instances. Arguments: string sysErrorMsg
+NETWORKING_INITIALIZATION_ERROR=Failed to initialize networking subsystem: %s
+# Error message for NoSuchFileError instances. Arguments: string sysErrorMsg
+NO_SUCH_FILE_ERROR=No such file (%s)
+# Error message for ReadOnlyFilesystemError instances. Arguments: string sysErrorMsg
+READ_ONLY_FILESYSTEM_ERROR=Filesystem hierarchy not writable: %s
+# Error message for SocketPacketSizeExceededError instances.
+SOCKET_PACKET_SIZE_EXCEEDED_ERROR=Packed size for underlying socket protocol exceeded
+# Error message for TCPSocketAcceptError instances. Arguments: string sysErrorMsg
+TCP_SOCKET_ACCEPT_ERROR=Failed to accept from TCP socket: %s
+# Error message for TCPSocketBindError instances. Arguments: string sysErrorMsg
+TCP_SOCKET_BIND_ERROR=Failed to bind TCP socket: %s
+# Error message for TCPSocketCloseError instances. Arguments: string sysErrorMsg
+TCP_SOCKET_CLOSE_ERROR=Failed to close TCP socket: %s
+# Error message for TCPSocketConnectError instances. Arguments: string sysErrorMsg
+TCP_SOCKET_CONNECT_ERROR=Failed to connect TCP socket: %s
+# Error message for TCPSocketCreateError instances. Arguments: string sysErrorMsg
+TCP_SOCKET_CREATE_ERROR=Failed to create TCP socket: %s
+# Error message for TCPSocketIOError instances.
+# Arguments: string direction, string sysErrorMsg (where 'direction' arises from SOCKET_IO_ERROR_DIRECTION)
+TCP_SOCKET_IO_ERROR=%s across TCP socket: %s
+# Error message for TCPSocketCreateError instances. Arguments: string sysErrorMsg
+TCP_SOCKET_LISTEN_ERROR=Failed to listen on TCP socket: %s

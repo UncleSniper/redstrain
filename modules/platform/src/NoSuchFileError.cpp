@@ -8,7 +8,7 @@ namespace platform {
 	NoSuchFileError::NoSuchFileError(const NoSuchFileError& error) : Error(error), FilesystemError(error) {}
 
 	REDSTRAIN_DEFINE_ERROR(NoSuchFileError) {
-		out << "No such file: " << Filesystem::getErrorMessage(code);
+		out << "No such file (" << Filesystem::getErrorMessage(code) << ')';
 	}
 
 }}
