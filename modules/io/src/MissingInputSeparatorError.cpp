@@ -13,10 +13,15 @@ namespace io {
 
 	REDSTRAIN_DEFINE_ERROR(MissingInputSeparatorError) {
 		out << "Missing '" << separator << "' separator";
-		if(!file.empty())
+		if(!file.empty()) {
 			out << " in '" << file << '\'';
-		if(lineNumber)
-			out << " line " << lineNumber;
+			if(lineNumber)
+				out << " line " << lineNumber;
+		}
+		else {
+			if(lineNumber)
+				out << " in line " << lineNumber;
+		}
 	}
 
 }}

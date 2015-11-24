@@ -1,0 +1,16 @@
+#ifndef REDSTRAIN_DATA_IO_L10N_API_HPP
+#define REDSTRAIN_DATA_IO_L10N_API_HPP
+
+#include <redstrain/redmond/macros.hpp>
+
+#ifdef REDSTRAIN_NEEDS_DLLEXPORT
+#ifdef BUILDING_REDSTRAIN_IO_L10N_API
+#define REDSTRAIN_IO_L10N_API __declspec(dllexport)
+#else /* !BUILDING_REDSTRAIN_IO_L10N_API */
+#define REDSTRAIN_IO_L10N_API __declspec(dllimport)
+#endif /* BUILDING_REDSTRAIN_IO_L10N_API */
+#else /* !REDSTRAIN_NEEDS_DLLEXPORT */
+#define REDSTRAIN_IO_L10N_API
+#endif
+
+#endif /* REDSTRAIN_DATA_IO_L10N_API_HPP */

@@ -1,0 +1,2 @@
+ILLEGAL_SEEK_WHENCE_ERROR=Error message for IllegalSeekWhenceError instances. Arguments: int32_t whence
+MISSING_INPUT_SEPARATOR_ERROR=Error message for IllegalSeekWhenceError instances. Arguments: string separator, string file, uint32_t lineNumber (where 'file' may be empty to indicate an unknown file and 'lineNumber' may be zero to indicate an unknown line)

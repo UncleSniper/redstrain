@@ -1,0 +1,5 @@
+# Error message for IllegalSeekWhenceError instances. Arguments: int32_t whence
+ILLEGAL_SEEK_WHENCE_ERROR=Not a valid SeekWhence: %i
+# Error message for IllegalSeekWhenceError instances. Arguments: string separator, string file, uint32_t lineNumber
+# (where 'file' may be empty to indicate an unknown file and 'lineNumber' may be zero to indicate an unknown line)
+MISSING_INPUT_SEPARATOR_ERROR=Missing '%s' separator%?t1s{ in '%=1:s'%?t2I{ line %=2:I}}|t2I{ in line %=2:I}
