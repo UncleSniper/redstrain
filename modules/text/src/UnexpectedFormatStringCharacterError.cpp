@@ -49,6 +49,9 @@ namespace text {
 			case EXP_GENERATOR_TYPE:
 				out << "generator type";
 				break;
+			case EXP_CONDITION_GROUP_TERMINATOR:
+				out << "condition group terminator";
+				break;
 			default:
 				out << "<Uh oh, unrecognized enum constant...>";
 				break;

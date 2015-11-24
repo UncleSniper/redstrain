@@ -54,6 +54,9 @@ namespace text {
 	 *                         | unary_predicate item? conversion
 	 *                         | binary_predicate item? '/' item? conversion
 	 *                         | '!' condition
+	 *                         | condition '&' condition
+	 *                         | condition '|' condition
+	 *                         | '(' condition ')'
 	 * unary_predicate     ::= 'f' | 't' | 'n' | 'N' | 'p' | 'p'
 	 *                         | 'e' | 'o' | 's'
 	 * binary_predicate    ::= '=' | '/' | '<' | '>' | '<=' | '>='
@@ -689,6 +692,30 @@ namespace text {
 
 		template<typename IteratorT>
 		bool parseCondition(FormatState<IteratorT>& state) const {
+			bool result = parseSingleCondition(state), opnd;
+			while(state.format != state.endfmt) {
+				switch(*state.format) {
+					case FormatRenditionT::CONDITION_AND:
+						++state.format;
+						++state.fmtindex;
+						opnd = parseSingleCondition(state);
+						result = result && opnd;
+						break;
+					case FormatRenditionT::CONDITION_OR:
+						++state.format;
+						++state.fmtindex;
+						opnd = parseSingleCondition(state);
+						result = result || opnd;
+						break;
+					default:
+						return result;
+				}
+			}
+			return result;
+		}
+
+		template<typename IteratorT>
+		bool parseSingleCondition(FormatState<IteratorT>& state) const {
 			typedef typename util::StandardIntegerMapping<typename String::size_type>::StandardType StringLength;
 			bool negate = false;
 			for(;;) {
@@ -700,9 +727,22 @@ namespace text {
 				++state.format;
 				++state.fmtindex;
 			}
+			bool result;
+			if(state.format != state.endfmt && *state.format == FormatRenditionT::CONDITION_BEGIN_GROUP) {
+				++state.format;
+				++state.fmtindex;
+				result = parseCondition(state);
+				if(state.format == state.endfmt)
+					throw UnexpectedEndOfFormatStringError(state.fmtindex);
+				if(*state.format != FormatRenditionT::CONDITION_END_GROUP)
+					throw UnexpectedFormatStringCharacterError(
+							UnexpectedFormatStringCharacterError::EXP_CONDITION_GROUP_TERMINATOR, state.fmtindex);
+				++state.format;
+				++state.fmtindex;
+				return negate ? !result : result;
+			}
 			UnaryPredicate unaryop;
 			BinaryPredicate binaryop;
-			bool result;
 			size_t lopnd, ropnd;
 			switch(*state.format) {
 				case FormatRenditionT::CONDITION_FALSE:

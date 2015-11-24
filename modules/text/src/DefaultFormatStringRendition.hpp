@@ -70,6 +70,10 @@ namespace text {
 		static const CharT CONDITION_BINARY_DIVISIBLE = static_cast<CharT>('%');
 		static const CharT CONDITION_BINARY_SAME_SIGN = static_cast<CharT>('+');
 		static const CharT CONDITION_BINARY_DIFFERENT_SIGNS = static_cast<CharT>('-');
+		static const CharT CONDITION_AND = static_cast<CharT>('&');
+		static const CharT CONDITION_OR = static_cast<CharT>('|');
+		static const CharT CONDITION_BEGIN_GROUP = static_cast<CharT>('(');
+		static const CharT CONDITION_END_GROUP = static_cast<CharT>(')');
 		static const CharT CONVERSION_INT8 = static_cast<CharT>('b');
 		static const CharT CONVERSION_UINT8 = static_cast<CharT>('B');
 		static const CharT CONVERSION_INT16 = static_cast<CharT>('t');
