@@ -3,6 +3,8 @@
 
 #if REDSTRAIN_PLATFORM_OS == REDSTRAIN_PLATFORM_OS_UNIX
 #include <errno.h>
+#include <netdb.h>
+#include <arpa/inet.h>
 #endif /* OS-specific includes */
 
 using redengine::text::String16;
@@ -163,9 +165,38 @@ namespace l10n {
 			return catalog.formatMessage(locale, key);
 	}
 
+	REDSTRAIN_PLATFORM_L10N_API String16 localizeOSNetworkingErrorMessage16(GeneralizedErrorCode error,
+			const Locale& locale) {
+		PlatformModuleMessageKey key;
+		switch(static_cast<int>(error)) {
+			#define clamp(constant) \
+				case constant: \
+					key = MSG_UNIX_NET_ ## constant; \
+					break;
+			clamp(HOST_NOT_FOUND)
+			clamp(NO_ADDRESS)
+			clamp(NO_RECOVERY)
+			clamp(TRY_AGAIN)
+			#undef clamp
+			default:
+				key = MSG_UNKNOWN_OS_ERROR;
+				break;
+		}
+		PlatformModuleMessageCatalog16& catalog = getDefaultPlatformModuleMessageCatalog16();
+		if(key == MSG_UNKNOWN_OS_ERROR)
+			return catalog.formatMessage(locale, key, static_cast<int32_t>(error));
+		else
+			return catalog.formatMessage(locale, key);
+	}
+
 #elif REDSTRAIN_PLATFORM_OS == REDSTRAIN_PLATFORM_OS_WINDOWS
 
 #error TODO: support Windows
+
+	REDSTRAIN_PLATFORM_L10N_API String16 localizeOSNetworkingErrorMessage16(GeneralizedErrorCode error,
+			const Locale& locale) {
+		return localizeOSErrorMessage16(error, locale);
+	}
 
 #else /* OS not implemented */
 #error Platform not supported

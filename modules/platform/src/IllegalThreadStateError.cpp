@@ -22,7 +22,7 @@ namespace platform {
 				out << "interrupt thread";
 				break;
 			case ThreadOperationError::JOIN:
-				out << "start thread";
+				out << "join thread";
 				break;
 			default:
 				out << "perform requested operation on thread";

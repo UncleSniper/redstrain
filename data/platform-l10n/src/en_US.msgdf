@@ -243,8 +243,17 @@ UNIX_ENOMEDIUM=No medium found
 # UNIX error message for EMEDIUMTYPE.
 UNIX_EMEDIUMTYPE=Wrong medium type
 
+# UNIX networking error message for HOST_NOT_FOUND.
+UNIX_NET_HOST_NOT_FOUND=Unknown host
+# UNIX networking error message for NO_ADDRESS.
+UNIX_NET_NO_ADDRESS=No matching address
+# UNIX networking error message for NO_RECOVERY.
+UNIX_NET_NO_RECOVERY=Non-recoverable error in name resolution
+# UNIX networking error message for TRY_AGAIN.
+UNIX_NET_TRY_AGAIN=Temporary error in name resolution
+
 # OS-specific error message for unknown errors. Arguments: int32_t errorCode
-UNKNOWN_OS_ERROR=Unknown error %I
+UNKNOWN_OS_ERROR=Unknown error %i
 
 # Error message for ConditionVariableOperationError instances.
 # Arguments: string operation, string sysErrorMsg (where 'operation' arises from CONDITION_VARIABLE_OPERATION_ERROR_*)
@@ -298,6 +307,49 @@ FILE_ERROR_IO_RANDOM_ACCESS=read/write
 # Partial error message for unknown File::Direction of a FileError when used to specify an I/O operation (e.g. to "read", not for "reading").
 FILE_ERROR_IO_UNKNOWN_DIRECTION=read/write
 
+# Error message for MutexOperationError instances.
+# Arguments: string operation, string sysErrorMsg (where 'operation' arises from MUTEX_OPERATION_ERROR_*)
+MUTEX_OPERATION_ERROR=Failed to %s: %s
+# Operation name for MutexOperationError::CREATE.
+MUTEX_OPERATION_ERROR_CREATE=create mutex
+# Operation name for MutexOperationError::DESTROY.
+MUTEX_OPERATION_ERROR_DESTROY=destroy mutex
+# Operation name for MutexOperationError::LOCK.
+MUTEX_OPERATION_ERROR_LOCK=lock mutex
+# Operation name for MutexOperationError::UNLOCK.
+MUTEX_OPERATION_ERROR_UNLOCK=unlock mutex
+# Operation name for unrecognized MutexOperationError::Operation.
+MUTEX_OPERATION_ERROR_UNKNOWN_OPERATION=perform requested operation on mutex
+
+# Error message for ThreadOperationError instances.
+# Arguments: string operation, string sysErrorMsg (where 'operation' arises from THREAD_OPERATION_ERROR_*)
+THREAD_OPERATION_ERROR=Failed to %s: %s
+# Operation name for ThreadOperationError::START.
+THREAD_OPERATION_ERROR_START=start thread
+# Operation name for ThreadOperationError::STOP.
+THREAD_OPERATION_ERROR_STOP=stop thread
+# Operation name for ThreadOperationError::INTERRUPT.
+THREAD_OPERATION_ERROR_INTERRUPT=interrupt thread
+# Operation name for ThreadOperationError::JOIN.
+THREAD_OPERATION_ERROR_JOIN=join thread
+# Operation name for unrecognized ThreadOperationError::Operation.
+THREAD_OPERATION_ERROR_UNKNOWN_OPERATION=perform requested operation on thread
+
+# Error message for IllegalThreadStateError instances.
+# Arguments: string operation, string state (where 'operation' arises from THREAD_OPERATION_ERROR_*
+# and 'state' arises from ILLEGAL_THREAD_STATE_ERROR_STATE_*)
+ILLEGAL_THREAD_STATE_ERROR=Cannot %s, as it is %s
+# State name for Thread::PRISTINE.
+ILLEGAL_THREAD_STATE_ERROR_STATE_PRISTINE=pristine
+# State name for Thread::JOINABLE.
+ILLEGAL_THREAD_STATE_ERROR_STATE_JOINABLE=joinable
+# State name for Thread::DETACHED.
+ILLEGAL_THREAD_STATE_ERROR_STATE_DETACHED=detached
+# State name for Thread::TERMINATED.
+ILLEGAL_THREAD_STATE_ERROR_STATE_TERMINATED=terminated
+# State name for unrecognized Thread::State.
+ILLEGAL_THREAD_STATE_ERROR_STATE_UNKNOWN_STATE=in unknown state
+
 # Error message for DatagramSocketBindError instances. Arguments: string sysErrorMsg
 DATAGRAM_SOCKET_BIND_ERROR=Failed to bind datagram socket: %s
 # Error message for DatagramSocketCloseError instances. Arguments: string sysErrorMsg
@@ -325,3 +377,41 @@ FILE_SEEK_ERROR=Failed to seek in file: %s
 FILESYSTEM_ERROR=Filesystem operation failed: %s
 # Error message for FileTellError instances. Arguments: string sysErrorMsg
 FILE_TELL_ERROR=Failed to retrieve read/write position in file: %s
+# Error message for IllegalConditionLockStateError instances.
+# Arguments: string operation (where 'operation' arises from CONDITION_VARIABLE_OPERATION_ERROR_*)
+ILLEGAL_CONDITION_LOCK_STATE_ERROR=Cannot %s, the associated mutex is not owned by the calling thread
+# Error message for IllegalConditionVariableStateError instances.
+# Arguments: string operation (where 'operation' arises from CONDITION_VARIABLE_OPERATION_ERROR_*)
+ILLEGAL_CONDITION_VARIABLE_STATE_ERROR=Cannot %s, as it has already been destroyed
+# Error message for IllegalMutexStateError instances.
+# Arguments: string operation (where 'operation' arises from MUTEX_OPERATION_ERROR_*)
+ILLEGAL_MUTEX_STATE_ERROR=Cannot %s, as it has already been destroyed
+# Error message for IllegalStandardStreamSpecifierError instances. Arguments: int32_t specifier
+ILLEGAL_STANDARD_STREAM_SPECIFIER_ERROR=Illegal standard stream specifier: %i
+# Error message for InconsistentMutexUnlockError instances.
+INCONSISTENT_MUTEX_UNLOCK_ERROR=Cannot unlock mutex, as it is not owned by the calling thread
+# Error message for InvalidNetworkAddressError instances. Arguments: string address
+INVALID_NETWORK_ADDRESS_ERROR=Invalid network address: %s
+# Error message for LibraryCloseError instances. Arguments: string sysErrorMsg
+LIBRARY_CLOSE_ERROR=Failed to close library: %s
+# Error message for LibraryOpenError instances. Arguments: string sysErrorMsg
+LIBRARY_OPEN_ERROR=Failed to open library: %s
+# Error message for LibraryResolveError instances. Arguments: string sysErrorMsg
+LIBRARY_RESOLVE_ERROR=Failed to resolve symbol in library: %s
+# Error message for LocalSocketAcceptError instances. Arguments: string sysErrorMsg
+LOCAL_SOCKET_ACCEPT_ERROR=Failed to accept from local socket: %s
+# Error message for LocalSocketBindError instances. Arguments: string sysErrorMsg
+LOCAL_SOCKET_BIND_ERROR=Failed to bind local socket: %s
+# Error message for LocalSocketCloseError instances. Arguments: string sysErrorMsg
+LOCAL_SOCKET_CLOSE_ERROR=Failed to close local socket: %s
+# Error message for LocalSocketConnectError instances. Arguments: string sysErrorMsg
+LOCAL_SOCKET_CONNECT_ERROR=Failed to connect local socket: %s
+# Error message for LocalSocketCreateError instances. Arguments: string sysErrorMsg
+LOCAL_SOCKET_CREATE_ERROR=Failed to create local socket: %s
+# Error message for LocalSocketIOError instances.
+# Arguments: string direction, string sysErrorMsg (where 'direction' arises from SOCKET_IO_ERROR_DIRECTION)
+LOCAL_SOCKET_IO_ERROR=%s across local socket: %s
+# Error message for LocalSocketListenError instances. Arguments: string sysErrorMsg
+LOCAL_SOCKET_LISTEN_ERROR=Failed to listen on local socket: %s
+# Error message for NetworkAddressResolutionError instances. Arguments: string sysErrorMsg
+NETWORK_ADDRESS_RESOLUTION_ERROR=Failed to resolve network address: %s

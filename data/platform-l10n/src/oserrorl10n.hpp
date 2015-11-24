@@ -20,6 +20,8 @@ namespace l10n {
 #endif /* OS-specific types */
 
 	REDSTRAIN_PLATFORM_L10N_API text::String16 localizeOSErrorMessage16(GeneralizedErrorCode, const locale::Locale&);
+	REDSTRAIN_PLATFORM_L10N_API text::String16 localizeOSNetworkingErrorMessage16(GeneralizedErrorCode,
+			const locale::Locale&);
 
 }}}
 
