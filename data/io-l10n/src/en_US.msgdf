@@ -1,5 +1,24 @@
+# Error message for NumberFormatError instances. Arguments: string numberType, string rendition (where 'numberType' arises from NUMBER_FORMAT_ERROR_*)
+NUMBER_FORMAT_ERROR=Not a valid %s: %s
+# Required number type name for NumberFormatError::SIGNED_INTEGER.
+NUMBER_FORMAT_ERROR_SIGNED_INTEGER=integer
+# Required number type name for NumberFormatError::UNSIGNED_INTEGER.
+NUMBER_FORMAT_ERROR_UNSIGNED_INTEGER=unsigned integer
+# Required number type name for unrecognized NumberFormatError::NumberType.
+NUMBER_FORMAT_ERROR_UNKNOWN_TYPE=number
+
 # Error message for IllegalSeekWhenceError instances. Arguments: int32_t whence
 ILLEGAL_SEEK_WHENCE_ERROR=Not a valid SeekWhence: %i
 # Error message for IllegalSeekWhenceError instances. Arguments: string separator, string file, uint32_t lineNumber
 # (where 'file' may be empty to indicate an unknown file and 'lineNumber' may be zero to indicate an unknown line)
 MISSING_INPUT_SEPARATOR_ERROR=Missing '%s' separator%?t1s{ in '%=1:s'%?t2I{ line %=2:I}}|t2I{ in line %=2:I}
+# Error message for NumberAddressSpaceError instances. Arguments: string rendition
+NUMBER_ADDRESS_SPACE_ERROR=Number exceeds addressable range: %s
+# Error message for SeekOffsetOutOfBoundsError instances. Arguments: int64_t offset
+SEEK_OFFSET_OUT_OF_BOUNDS_ERROR=Stream seek destination offset out of bounds: %l
+# Error message for StreamAlreadyClosedError instances.
+STREAM_ALREADY_CLOSED_ERROR=Stream has already been closed
+# Error message for StreamArrayClosedError instances.
+STREAM_ARRAY_CLOSED_ERROR=Stream-written array has already been closed
+# Error message for StreamBufferFullError instances.
+STREAM_BUFFER_FULL_ERROR=Stream buffer full

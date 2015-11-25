@@ -109,21 +109,23 @@ namespace io {
 		NumberBase base = DECIMAL,
 		CharSemanticsT charSemantics = CharSemanticsT()
 	) {
+		const NumberFormatError::NumberType numberType
+				= NumberFormatError::NumberTypeByPrimitiveType<IntT>::NUMBER_TYPE;
 		IntT result = static_cast<IntT>(0);
 		typename std::basic_string<CharT>::const_iterator begin(specifier.begin()), end(specifier.end());
 		if(begin == end)
-			throw NumberFormatError(ErrorRendererT::renderNumberForError(specifier));
+			throw NumberFormatError(numberType, ErrorRendererT::renderNumberForError(specifier));
 		bool negative = false;
 		NumberCharClass cc = NumberTypeSignFilter<IntT>::filterClass(charSemantics.getCharClass(*begin, base));
 		if(cc == NCC_SIGN) {
 			negative = charSemantics.isSignNegative(*begin);
 			if(++begin == end)
-				throw NumberFormatError(ErrorRendererT::renderNumberForError(specifier));
+				throw NumberFormatError(numberType, ErrorRendererT::renderNumberForError(specifier));
 			cc = NumberTypeSignFilter<IntT>::filterClass(charSemantics.getCharClass(*begin, base));
 		}
 		for(;;) {
 			if(cc != NCC_DIGIT)
-				throw NumberFormatError(ErrorRendererT::renderNumberForError(specifier));
+				throw NumberFormatError(numberType, ErrorRendererT::renderNumberForError(specifier));
 			IntT digit = charSemantics.getDigitValue(*begin);
 			IntT next = result * static_cast<IntT>(base) + digit;
 			if(next < result)
