@@ -17,6 +17,7 @@
 #endif /* OS-specific includes */
 
 using std::string;
+using redengine::util::MemorySize;
 
 namespace redengine {
 namespace platform {
@@ -36,20 +37,20 @@ namespace platform {
 			throw LocalSocketCreateError(errno);
 	}
 
-	size_t LocalSocket::read(char* buffer, size_t size) {
+	MemorySize LocalSocket::read(char* buffer, MemorySize size) {
 		ssize_t count = ::read(handle, buffer, size);
 		if(count == static_cast<ssize_t>(-1))
 			throw LocalSocketIOError(SocketIOError::RECEIVE, errno);
-		return static_cast<size_t>(count);
+		return static_cast<MemorySize>(count);
 	}
 
-	void LocalSocket::write(const char* buffer, size_t size) {
+	void LocalSocket::write(const char* buffer, MemorySize size) {
 		while(size) {
 			ssize_t count = ::write(handle, buffer, size);
 			if(count == static_cast<ssize_t>(-1))
 				throw LocalSocketIOError(SocketIOError::SEND, errno);
 			buffer += count;
-			size -= static_cast<size_t>(count);
+			size -= static_cast<MemorySize>(count);
 		}
 	}
 
@@ -111,20 +112,20 @@ namespace platform {
 
 	LocalSocket::LocalSocket() : handle(INVALID_HANDLE) {}
 
-	size_t LocalSocket::read(char* buffer, size_t size) {
+	MemorySize LocalSocket::read(char* buffer, MemorySize size) {
 		DWORD count;
 		if(!ReadFile(handle, buffer, static_cast<DWORD>(size), &count, NULL))
 			throw LocalSocketIOError(SocketIOError::RECEIVE, GetLastError());
-		return static_cast<size_t>(count);
+		return static_cast<MemorySize>(count);
 	}
 
-	void LocalSocket::write(const char* buffer, size_t size) {
+	void LocalSocket::write(const char* buffer, MemorySize size) {
 		DWORD count;
 		while(size) {
 			if(WriteFile(handle, buffer, static_cast<DWORD>(size), &count, NULL))
 				throw LocalSocketIOError(SocketIOError::SEND, GetLastError());
 			buffer += count;
-			size -= static_cast<size_t>(count);
+			size -= static_cast<MemorySize>(count);
 		}
 	}
 

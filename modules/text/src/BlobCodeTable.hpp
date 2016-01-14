@@ -2,6 +2,7 @@
 #define REDSTRAIN_MOD_TEXT_BLOBCODETABLE_HPP
 
 #include <cstring>
+#include <redstrain/util/types.hpp>
 #include <redstrain/platform/Endianness.hpp>
 
 #include "types.hpp"
@@ -15,30 +16,31 @@ namespace text {
 	class BlobCodeTable : public CodeTable<CharT> {
 
 	  private:
-		static const size_t TABLE_SIZE = static_cast<size_t>(256u) * sizeof(CharT);
-		static const size_t TRIE_OFFSET = TABLE_SIZE + static_cast<size_t>(4u);
-		static const size_t NODE_SIZE = static_cast<size_t>(16u * 4u);
+		static const util::MemorySize TABLE_SIZE
+				= static_cast<util::MemorySize>(256u) * static_cast<util::MemorySize>(sizeof(CharT));
+		static const util::MemorySize TRIE_OFFSET = TABLE_SIZE + static_cast<util::MemorySize>(4u);
+		static const util::MemorySize NODE_SIZE = static_cast<util::MemorySize>(16u * 4u);
 
 	  private:
 		const char *const data;
-		const size_t size;
+		const util::MemorySize size;
 
 	  private:
 		const char* seekToNode(uint32_t nodeIndex, unsigned childIndex = 0u) const {
-			size_t offset = TRIE_OFFSET + static_cast<size_t>(nodeIndex) * NODE_SIZE
-					+ static_cast<size_t>(childIndex * 4u);
+			util::MemorySize offset = TRIE_OFFSET + static_cast<util::MemorySize>(nodeIndex) * NODE_SIZE
+					+ static_cast<util::MemorySize>(childIndex * 4u);
 			return data + offset;
 		}
 
 	  public:
-		BlobCodeTable(const char* data, size_t size) : data(data), size(size) {}
+		BlobCodeTable(const char* data, util::MemorySize size) : data(data), size(size) {}
 		BlobCodeTable(const BlobCodeTable& table) : CodeTable<CharT>(table), data(table.data), size(table.size) {}
 
 		inline const char* getBlobData() const {
 			return data;
 		}
 
-		inline size_t getBlobSize() const {
+		inline util::MemorySize getBlobSize() const {
 			return size;
 		}
 

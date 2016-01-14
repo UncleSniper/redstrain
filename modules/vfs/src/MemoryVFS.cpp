@@ -1,4 +1,6 @@
+#include <new>
 #include <redstrain/util/StringUtils.hpp>
+#include <redstrain/util/IntegerBounds.hpp>
 #include <redstrain/platform/ObjectLocker.hpp>
 #include <redstrain/io/IllegalSeekWhenceError.hpp>
 #include <redstrain/io/StreamAlreadyClosedError.hpp>
@@ -6,12 +8,17 @@
 
 #include "MemoryVFS.hpp"
 
+using std::bad_alloc;
 using redengine::vfs::VFS;
 using redengine::io::Stream;
+using redengine::util::FileSize;
 using redengine::algorithm::Rope;
 using redengine::io::InputStream;
 using redengine::io::OutputStream;
+using redengine::util::FileOffset;
+using redengine::util::MemorySize;
 using redengine::util::StringUtils;
+using redengine::util::IntegerBounds;
 using redengine::platform::ObjectLocker;
 using redengine::io::BidirectionalStream;
 using redengine::io::IllegalSeekWhenceError;
@@ -39,14 +46,17 @@ namespace vfs {
 		info.setSize(content.size());
 	}
 
-	void MemoryVFS::RopeMemoryFile::truncate(size_t size) {
+	void MemoryVFS::RopeMemoryFile::truncate(FileSize size) {
 		requirePermissions(VFS::CAN_WRITE);
+		if(size > IntegerBounds<MemorySize>::MAX)
+			throw bad_alloc();
+		MemorySize rsz = static_cast<MemorySize>(size);
 		ObjectLocker<MemoryFile> locker(getMemoryBase().getEffectiveMutexPool(), this);
-		size_t csz = content.size();
-		if(csz > size)
-			content.erase(size, csz);
-		else if(csz < size)
-			content.fill('\0', size - csz);
+		MemorySize csz = content.size();
+		if(csz > rsz)
+			content.erase(rsz, csz);
+		else if(csz < rsz)
+			content.fill('\0', rsz - csz);
 		locker.release();
 	}
 
@@ -68,7 +78,7 @@ namespace vfs {
 	// ======== RopeBase ========
 
 	MemoryVFS::RopeBase::RopeBase(RopeMemoryFile& file, bool truncate)
-			: closed(false), file(file), position(static_cast<size_t>(0u)) {
+			: closed(false), file(file), position(static_cast<MemorySize>(0u)) {
 		file.ref();
 		if(truncate) {
 			ObjectLocker<MemoryFile> locker(file.getMemoryBase().getEffectiveMutexPool(), &file);
@@ -98,31 +108,31 @@ namespace vfs {
 		closed = true;
 	}
 
-	void MemoryVFS::RopeBase::seek(off_t offset, SeekWhence whence) {
+	void MemoryVFS::RopeBase::seek(FileOffset offset, SeekWhence whence) {
 		if(closed)
 			throw StreamAlreadyClosedError();
-		size_t fsize = file.getContent().size();
-		off_t target;
+		MemorySize fsize = file.getContent().size();
+		FileOffset target;
 		switch(whence) {
 			case Stream::OFFSET_FROM_START:
 				target = offset;
 				break;
 			case Stream::OFFSET_FROM_HERE:
-				target = static_cast<off_t>(position) + offset;
+				target = static_cast<FileOffset>(position) + offset;
 				break;
 			case Stream::OFFSET_FROM_END:
-				target = static_cast<off_t>(fsize) + offset;
+				target = static_cast<FileOffset>(fsize) + offset;
 				break;
 			default:
 				throw IllegalSeekWhenceError(whence);
 		}
-		if(target < static_cast<off_t>(0) || static_cast<size_t>(target) > fsize)
+		if(target < static_cast<FileOffset>(0) || static_cast<FileSize>(target) > static_cast<FileSize>(fsize))
 			throw SeekOffsetOutOfBoundsError(target);
-		position = static_cast<size_t>(target);
+		position = static_cast<MemorySize>(target);
 	}
 
-	size_t MemoryVFS::RopeBase::tell() const {
-		return position;
+	FileSize MemoryVFS::RopeBase::tell() const {
+		return static_cast<FileSize>(position);
 	}
 
 	// ======== RopeInputStream ========
@@ -132,14 +142,14 @@ namespace vfs {
 	MemoryVFS::RopeInputStream::RopeInputStream(const RopeInputStream& stream)
 			: Stream(stream), RopeBase(stream), InputStream<char>(stream) {}
 
-	size_t MemoryVFS::RopeInputStream::readBlock(char* buffer, size_t bufferSize) {
+	MemorySize MemoryVFS::RopeInputStream::readBlock(char* buffer, MemorySize bufferSize) {
 		if(isClosed())
 			throw StreamAlreadyClosedError();
 		ObjectLocker<MemoryFile> locker(file.getMemoryBase().getEffectiveMutexPool(), &file);
 		Rope<char>& content = file.getContent();
-		size_t fsize = content.size(), count;
+		MemorySize fsize = content.size(), count;
 		if(position >= fsize)
-			count = static_cast<size_t>(0u);
+			count = static_cast<MemorySize>(0u);
 		else {
 			count = fsize - position;
 			if(count > bufferSize)
@@ -151,7 +161,7 @@ namespace vfs {
 		return count;
 	}
 
-	void MemoryVFS::RopeInputStream::seek(off_t offset, SeekWhence whence) {
+	void MemoryVFS::RopeInputStream::seek(FileOffset offset, SeekWhence whence) {
 		RopeBase::seek(offset, whence);
 		atEnd = false;
 	}
@@ -163,12 +173,12 @@ namespace vfs {
 	MemoryVFS::RopeOutputStream::RopeOutputStream(const RopeOutputStream& stream)
 			: Stream(stream), RopeBase(stream), OutputStream<char>(stream) {}
 
-	void MemoryVFS::RopeOutputStream::writeBlock(const char* data, size_t dataSize) {
+	void MemoryVFS::RopeOutputStream::writeBlock(const char* data, MemorySize dataSize) {
 		if(isClosed())
 			throw StreamAlreadyClosedError();
 		ObjectLocker<MemoryFile> locker(file.getMemoryBase().getEffectiveMutexPool(), &file);
 		Rope<char>& content = file.getContent();
-		size_t fsize = content.size();
+		MemorySize fsize = content.size();
 		if(fsize < position) {
 			content.fill('\0', position - fsize);
 			fsize = position;
@@ -176,7 +186,7 @@ namespace vfs {
 		// file:   ...#######
 		// write:        ##
 		// write:        ######
-		size_t end = position + dataSize;
+		MemorySize end = position + dataSize;
 		if(end > fsize)
 			end = fsize;
 		content.bsplice(position, end, data, data + dataSize);

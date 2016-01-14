@@ -1,3 +1,4 @@
+#define _LARGEFILE64_SOURCE
 #include <redstrain/util/IntegerBits.hpp>
 
 #include "FileIOError.hpp"
@@ -15,6 +16,9 @@
 #endif /* OS-specific includes */
 
 using std::string;
+using redengine::util::FileSize;
+using redengine::util::FileOffset;
+using redengine::util::MemorySize;
 using redengine::util::IntegerBits;
 
 namespace redengine {
@@ -72,24 +76,24 @@ namespace platform {
 		}
 	}
 
-	size_t File::read(char* buffer, size_t size) {
-		ssize_t count = ::read(handle, buffer, size);
+	MemorySize File::read(char* buffer, MemorySize size) {
+		ssize_t count = ::read(handle, buffer, static_cast<size_t>(size));
 		if(count == static_cast<ssize_t>(-1))
 			throw FileIOError(INPUT, errno);
-		return static_cast<size_t>(count);
+		return static_cast<MemorySize>(count);
 	}
 
-	void File::write(const char* buffer, size_t size) {
+	void File::write(const char* buffer, MemorySize size) {
 		while(size) {
-			ssize_t count = ::write(handle, buffer, size);
+			ssize_t count = ::write(handle, buffer, static_cast<size_t>(size));
 			if(count == static_cast<ssize_t>(-1))
 				throw FileIOError(OUTPUT, errno);
 			buffer += count;
-			size -= static_cast<size_t>(count);
+			size -= static_cast<MemorySize>(count);
 		}
 	}
 
-	void File::seek(off_t offset, SeekWhence whence) {
+	void File::seek(FileOffset offset, SeekWhence whence) {
 		int nativeWhence;
 		switch(whence) {
 			case OFFSET_FROM_END:
@@ -102,15 +106,15 @@ namespace platform {
 				nativeWhence = SEEK_SET;
 				break;
 		}
-		if(lseek(handle, offset, nativeWhence) == static_cast<off_t>(-1))
+		if(lseek64(handle, static_cast<off64_t>(offset), nativeWhence) == static_cast<off64_t>(-1))
 			throw FileSeekError(dir, errno);
 	}
 
-	size_t File::tell() const {
-		off_t offset = lseek(handle, static_cast<off_t>(0), SEEK_CUR);
-		if(offset == static_cast<off_t>(-1))
+	FileSize File::tell() const {
+		off64_t offset = lseek64(handle, static_cast<off64_t>(0), SEEK_CUR);
+		if(offset == static_cast<off64_t>(-1))
 			throw FileTellError(dir, errno);
-		return static_cast<size_t>(offset);
+		return static_cast<FileSize>(offset);
 	}
 
 	string File::getErrorMessage(ErrorCode error) {
@@ -170,24 +174,24 @@ namespace platform {
 		}
 	}
 
-	size_t File::read(char* buffer, size_t size) {
+	MemorySize File::read(char* buffer, MemorySize size) {
 		DWORD count;
 		if(!ReadFile(handle, buffer, static_cast<DWORD>(size), &count, NULL))
 			throw FileIOError(File::INPUT, GetLastError());
-		return static_cast<size_t>(count);
+		return static_cast<MemorySize>(count);
 	}
 
-	void File::write(const char* buffer, size_t size) {
+	void File::write(const char* buffer, MemorySize size) {
 		DWORD count;
 		while(size) {
 			if(!WriteFile(handle, buffer, static_cast<DWORD>(size), &count, NULL))
 				throw FileIOError(File::OUTPUT, GetLastError());
 			buffer += count;
-			size -= static_cast<size_t>(count);
+			size -= static_cast<MemorySize>(count);
 		}
 	}
 
-	void File::seek(off_t offset, SeekWhence whence) {
+	void File::seek(FileOffset offset, SeekWhence whence) {
 		DWORD nativeWhence;
 		switch(whence) {
 			case OFFSET_FROM_END:
@@ -200,8 +204,8 @@ namespace platform {
 				nativeWhence = FILE_BEGIN;
 				break;
 		}
-		LONG loOffset = IntegerBits<off_t>::getBitsAs<LONG>(offset, 32u, 0u);
-		LONG hiOffset = IntegerBits<off_t>::getBitsAs<LONG>(offset, 32u, 1u);
+		LONG loOffset = IntegerBits<FileOffset>::getBitsAs<LONG>(offset, 32u, 0u);
+		LONG hiOffset = IntegerBits<FileOffset>::getBitsAs<LONG>(offset, 32u, 1u);
 		SetLastError(static_cast<DWORD>(0u));
 		DWORD newLo = SetFilePointer(handle, loOffset, &hiOffset, nativeWhence);
 		DWORD error = GetLastError();
@@ -209,17 +213,17 @@ namespace platform {
 			throw FileSeekError(dir, error);
 	}
 
-	size_t File::tell() const {
+	FileSize File::tell() const {
 		LONG hiOffset = static_cast<LONG>(0);
 		SetLastError(static_cast<DWORD>(0u));
 		DWORD newLo = SetFilePointer(handle, static_cast<LONG>(0u), &hiOffset, FILE_CURRENT);
 		DWORD error = GetLastError();
 		if(newLo == INVALID_SET_FILE_POINTER && error)
 			throw FileTellError(dir, error);
-		return static_cast<size_t>(IntegerBits<size_t>::shiftLeft(
-			static_cast<size_t>(static_cast<IntegerBits<LONG>::AsUnsigned>(hiOffset)),
+		return static_cast<FileSize>(IntegerBits<FileSize>::shiftLeft(
+			static_cast<FileSize>(static_cast<IntegerBits<LONG>::AsUnsigned>(hiOffset)),
 			32u
-		) | static_cast<size_t>(newLo));
+		) | static_cast<FileSize>(newLo));
 	}
 
 	string File::getErrorMessage(ErrorCode error) {

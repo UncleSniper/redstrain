@@ -57,7 +57,7 @@ namespace vfs {
 		virtual void symlink(const text::String16&, PathIterator, PathIterator);
 		virtual void readlink(PathIterator, PathIterator, text::String16&);
 		virtual void readdir(PathIterator, PathIterator, util::Appender<text::String16>&);
-		virtual void truncate(PathIterator, PathIterator, size_t);
+		virtual void truncate(PathIterator, PathIterator, util::FileSize);
 		virtual void statfs(PathIterator, PathIterator, FSInfo&);
 		virtual void mknod(PathIterator, PathIterator, Stat::Type, int, Stat::DeviceID);
 		virtual io::InputStream<char>* getInputStream(PathIterator, PathIterator);

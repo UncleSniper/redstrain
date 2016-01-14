@@ -4,6 +4,8 @@
 #include "IllegalReaderStateError.hpp"
 #include "UnexpectedEndOfStreamError.hpp"
 
+using redengine::util::MemorySize;
+
 namespace redengine {
 namespace protostr {
 
@@ -12,7 +14,7 @@ namespace protostr {
 	ProtocolInputStream::ProtocolInputStream(const ProtocolInputStream& stream)
 			: Stream(stream), InputStream(stream), reader(stream.reader) {}
 
-	size_t ProtocolInputStream::readBlock(char* buffer, size_t bufferSize) {
+	MemorySize ProtocolInputStream::readBlock(char* buffer, MemorySize bufferSize) {
 		try {
 			return reader.readChunk(buffer, bufferSize);
 		}

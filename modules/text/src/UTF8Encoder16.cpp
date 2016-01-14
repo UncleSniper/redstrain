@@ -1,5 +1,7 @@
 #include "UTF8Encoder16.hpp"
 
+using redengine::util::MemorySize;
+
 namespace redengine {
 namespace text {
 
@@ -8,11 +10,11 @@ namespace text {
 	UTF8Encoder16::UTF8Encoder16(const UTF8Encoder16& encoder)
 			: Encoder16(encoder), pending(encoder.pending), partial(encoder.partial) {}
 
-	size_t UTF8Encoder16::encodeBlock(const Char16* input, size_t insize, char* output, size_t outsize,
-			size_t& outcount) {
+	MemorySize UTF8Encoder16::encodeBlock(const Char16* input, MemorySize insize, char* output, MemorySize outsize,
+			MemorySize& outcount) {
 		unsigned char* out = reinterpret_cast<unsigned char*>(output);
-		outcount = static_cast<size_t>(0u);
-		size_t consumed = static_cast<size_t>(0u);
+		outcount = static_cast<MemorySize>(0u);
+		MemorySize consumed = static_cast<MemorySize>(0u);
 		while(consumed < insize && outcount < outsize) {
 			if(pending) {
 				out[outcount++] = static_cast<unsigned char>((partial & 0x00EFu) | 0x80u);

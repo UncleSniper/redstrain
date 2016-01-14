@@ -6,14 +6,15 @@
 #include "Decoder16InputStream.hpp"
 
 using redengine::io::InputStream;
+using redengine::util::MemorySize;
 using redengine::error::wrapError;
 
 namespace redengine {
 namespace text {
 
 	Decoder16InputStream::Decoder16InputStream(InputStream<char>& input, Decoder16& decoder)
-			: input(input), decoder(decoder), bufferFill(static_cast<size_t>(0u)),
-			bufferOffset(static_cast<size_t>(0u)) {}
+			: input(input), decoder(decoder), bufferFill(static_cast<MemorySize>(0u)),
+			bufferOffset(static_cast<MemorySize>(0u)) {}
 
 	Decoder16InputStream::Decoder16InputStream(const Decoder16InputStream& stream)
 			: Stream(stream), InputStream<Char16>(stream), input(stream.input), decoder(stream.decoder),
@@ -26,11 +27,12 @@ namespace text {
 		input.close();
 	}
 
-	size_t Decoder16InputStream::readBlock(Char16* buffer, size_t bufferSize) {
-		size_t outcount, consumed;
+	MemorySize Decoder16InputStream::readBlock(Char16* buffer, MemorySize bufferSize) {
+		MemorySize outcount, consumed;
 		do {
 			if(bufferOffset >= bufferFill) {
-				size_t count = input.read(byteBuffer, static_cast<size_t>(REDSTRAIN_TEXT_CODEC_STREAM_BUFFER_SIZE));
+				MemorySize count = input.read(byteBuffer,
+						static_cast<MemorySize>(REDSTRAIN_TEXT_CODEC_STREAM_BUFFER_SIZE));
 				if(!count) {
 					atEnd = true;
 					try {
@@ -39,10 +41,10 @@ namespace text {
 					catch(const RenditionError& error) {
 						wrapError<RenditionError, RenditionIOError>(error);
 					}
-					return static_cast<size_t>(0u);
+					return static_cast<MemorySize>(0u);
 				}
 				bufferFill = count;
-				bufferOffset = static_cast<size_t>(0u);
+				bufferOffset = static_cast<MemorySize>(0u);
 			}
 			consumed = decoder.decodeBlock(byteBuffer + bufferOffset, bufferFill - bufferOffset,
 					buffer, bufferSize, outcount);

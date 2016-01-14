@@ -16,7 +16,8 @@ namespace text {
 		UTF8Encoder16();
 		UTF8Encoder16(const UTF8Encoder16&);
 
-		virtual size_t encodeBlock(const Char16*, size_t, char*, size_t, size_t&);
+		virtual util::MemorySize encodeBlock(const Char16*, util::MemorySize,
+				char*, util::MemorySize, util::MemorySize&);
 
 	};
 

@@ -14,43 +14,44 @@ namespace io {
 	class DroppingOutputStream : public OutputStream<RecordT> {
 
 	  private:
-		size_t offset, size;
+		util::FileSize offset, size;
 
 	  protected:
-		virtual void writeBlock(const RecordT*, size_t count) {
-			offset += count;
+		virtual void writeBlock(const RecordT*, util::MemorySize count) {
+			offset += static_cast<util::FileSize>(count);
 			if(offset > size)
 				size = offset;
 		}
 
 	  public:
-		DroppingOutputStream() : offset(static_cast<size_t>(0u)), size(static_cast<size_t>(0u)) {}
+		DroppingOutputStream() : offset(static_cast<util::FileSize>(0u)), size(static_cast<util::FileSize>(0u)) {}
+
 		DroppingOutputStream(const DroppingOutputStream& stream)
 				: Stream(stream), OutputStream<RecordT>(stream), offset(stream.offset), size(stream.size) {}
 
-		virtual void seek(off_t targetOffset, Stream::SeekWhence whence) {
+		virtual void seek(util::FileOffset targetOffset, Stream::SeekWhence whence) {
 			switch(whence) {
 				case Stream::OFFSET_FROM_END:
-					targetOffset += static_cast<off_t>(size);
+					targetOffset += static_cast<util::FileOffset>(size);
 				case Stream::OFFSET_FROM_START:
 				withTargetOffset:
-					if(targetOffset < static_cast<off_t>(0))
+					if(targetOffset < static_cast<util::FileOffset>(0))
 						throw SeekOffsetOutOfBoundsError(targetOffset);
-					offset = static_cast<size_t>(targetOffset);
+					offset = static_cast<util::FileSize>(targetOffset);
 					break;
 				case Stream::OFFSET_FROM_HERE:
-					targetOffset += static_cast<off_t>(offset);
+					targetOffset += static_cast<util::FileOffset>(offset);
 					goto withTargetOffset;
 				default:
 					throw IllegalSeekWhenceError(whence);
 			}
 		}
 
-		virtual size_t tell() const {
+		virtual util::FileSize tell() const {
 			return offset;
 		}
 
-		inline size_t getDataSize() const {
+		inline util::FileSize getDataSize() const {
 			return size;
 		}
 

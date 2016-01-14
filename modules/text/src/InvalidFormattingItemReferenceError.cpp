@@ -1,9 +1,11 @@
 #include "InvalidFormattingItemReferenceError.hpp"
 
+using redengine::util::MemorySize;
+
 namespace redengine {
 namespace text {
 
-	InvalidFormattingItemReferenceError::InvalidFormattingItemReferenceError(Reference reference, size_t offset)
+	InvalidFormattingItemReferenceError::InvalidFormattingItemReferenceError(Reference reference, MemorySize offset)
 			: reference(reference), offset(offset) {}
 
 	InvalidFormattingItemReferenceError::InvalidFormattingItemReferenceError(const

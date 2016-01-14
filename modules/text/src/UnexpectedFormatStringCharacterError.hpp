@@ -29,7 +29,7 @@ namespace text {
 		const Expected expected;
 
 	  public:
-		UnexpectedFormatStringCharacterError(Expected, size_t);
+		UnexpectedFormatStringCharacterError(Expected, util::MemorySize);
 		UnexpectedFormatStringCharacterError(const UnexpectedFormatStringCharacterError&);
 
 		inline Expected getExpected() const {

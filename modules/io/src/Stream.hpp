@@ -25,8 +25,8 @@ namespace io {
 		virtual ~Stream();
 
 		virtual void close();
-		virtual void seek(off_t, SeekWhence);
-		virtual size_t tell() const;
+		virtual void seek(util::FileOffset, SeekWhence);
+		virtual util::FileSize tell() const;
 
 	};
 

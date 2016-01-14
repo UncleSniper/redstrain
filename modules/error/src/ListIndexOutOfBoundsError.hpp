@@ -9,7 +9,7 @@ namespace error {
 	class REDSTRAIN_ERROR_API ListIndexOutOfBoundsError : public IndexOutOfBoundsError {
 
 	  public:
-		ListIndexOutOfBoundsError(size_t);
+		ListIndexOutOfBoundsError(util::MemorySize);
 		ListIndexOutOfBoundsError(const ListIndexOutOfBoundsError&);
 
 		REDSTRAIN_DECLARE_ERROR(ListIndexOutOfBoundsError)

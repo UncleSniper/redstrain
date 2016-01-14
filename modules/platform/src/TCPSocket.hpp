@@ -45,8 +45,8 @@ namespace platform {
 		TCPSocket(const TCPSocket&);
 
 		virtual bool isOpen() const;
-		virtual size_t read(char*, size_t);
-		virtual void write(const char*, size_t);
+		virtual util::MemorySize read(char*, util::MemorySize);
+		virtual void write(const char*, util::MemorySize);
 		virtual void close();
 		virtual void _uncheckedClose();
 

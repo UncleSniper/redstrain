@@ -5,6 +5,8 @@
 #include <list>
 #include <cstddef>
 
+#include "types.hpp"
+
 namespace redengine {
 namespace util {
 
@@ -88,8 +90,8 @@ namespace util {
 			return list.end();
 		}
 
-		size_t size() const {
-			return static_cast<size_t>(map.size());
+		MemorySize size() const {
+			return static_cast<MemorySize>(map.size());
 		}
 
 		bool empty() const {

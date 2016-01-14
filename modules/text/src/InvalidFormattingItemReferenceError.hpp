@@ -2,6 +2,7 @@
 #define REDSTRAIN_MOD_TEXT_INVALIDFORMATTINGITEMREFERENCEERROR_HPP
 
 #include <redstrain/util/IntegerBits.hpp>
+#include <redstrain/util/types.hpp>
 
 #include "FormattingError.hpp"
 
@@ -11,21 +12,21 @@ namespace text {
 	class REDSTRAIN_TEXT_API InvalidFormattingItemReferenceError : public FormattingError {
 
 	  public:
-		typedef util::IntegerBits<size_t>::AsSigned Reference;
+		typedef util::IntegerBits<util::MemorySize>::AsSigned Reference;
 
 	  private:
 		const Reference reference;
-		const size_t offset;
+		const util::MemorySize offset;
 
 	  public:
-		InvalidFormattingItemReferenceError(Reference, size_t);
+		InvalidFormattingItemReferenceError(Reference, util::MemorySize);
 		InvalidFormattingItemReferenceError(const InvalidFormattingItemReferenceError&);
 
 		inline Reference getReference() const {
 			return reference;
 		}
 
-		inline size_t getOffset() const {
+		inline util::MemorySize getOffset() const {
 			return offset;
 		}
 

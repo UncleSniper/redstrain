@@ -18,10 +18,10 @@ namespace io {
 			RecordT* buffer;
 
 		  public:
-			size_t count;
+			util::MemorySize count;
 
 		  public:
-			DestroyRecords(RecordT* buffer) : buffer(buffer), count(static_cast<size_t>(0u)) {}
+			DestroyRecords(RecordT* buffer) : buffer(buffer), count(static_cast<util::MemorySize>(0u)) {}
 
 			~DestroyRecords() {
 				if(!buffer)
@@ -39,19 +39,21 @@ namespace io {
 
 	  private:
 		RecordT* data;
-		size_t dataSize, readIndex, writeIndex;
+		util::MemorySize dataSize, readIndex, writeIndex;
 
 	  private:
 		FixedBufferStream(const FixedBufferStream& stream)
-				: Stream(stream), InputStream<RecordT>(stream), OutputStream<RecordT>(stream) {}
+				: Stream(stream), InputStream<RecordT>(stream), OutputStream<RecordT>(stream),
+				data(stream.data), dataSize(stream.dataSize), readIndex(stream.readIndex),
+				writeIndex(stream.writeIndex) {}
 
 	  protected:
-		virtual size_t readBlock(RecordT* buffer, size_t bufferSize) {
-			size_t restSize = getDataSize();
+		virtual util::MemorySize readBlock(RecordT* buffer, util::MemorySize bufferSize) {
+			util::MemorySize restSize = getDataSize();
 			if(bufferSize < restSize)
 				restSize = bufferSize;
 			if(!restSize)
-				return static_cast<size_t>(0u);
+				return static_cast<util::MemorySize>(0u);
 			const RecordT *src, *end;
 			DestroyRecords destroy(buffer);
 			if(readIndex + restSize < dataSize) {
@@ -65,7 +67,7 @@ namespace io {
 				}
 			}
 			else {
-				size_t half = dataSize - readIndex;
+				util::MemorySize half = dataSize - readIndex;
 				src = data + readIndex;
 				end = src + half;
 				for(; src != end; ++src, ++buffer) {
@@ -87,7 +89,7 @@ namespace io {
 			return restSize;
 		}
 
-		virtual void writeBlock(const RecordT* buffer, size_t count) {
+		virtual void writeBlock(const RecordT* buffer, util::MemorySize count) {
 			if(getFreeRecords() <= count)
 				throw StreamBufferFullError();
 			RecordT* dest;
@@ -102,7 +104,7 @@ namespace io {
 				}
 			}
 			else {
-				size_t half = dataSize - writeIndex;
+				util::MemorySize half = dataSize - writeIndex;
 				dest = data + writeIndex;
 				end = buffer + half;
 				for(; buffer != end; ++buffer, ++dest) {
@@ -121,9 +123,9 @@ namespace io {
 		}
 
 	  public:
-		FixedBufferStream(RecordT* data, size_t dataSize)
-				: data(data), dataSize(dataSize), readIndex(static_cast<size_t>(0u)),
-				writeIndex(static_cast<size_t>(0u)) {}
+		FixedBufferStream(RecordT* data, util::MemorySize dataSize)
+				: data(data), dataSize(dataSize), readIndex(static_cast<util::MemorySize>(0u)),
+				writeIndex(static_cast<util::MemorySize>(0u)) {}
 
 		virtual ~FixedBufferStream() {
 			if(dataSize) {
@@ -139,16 +141,17 @@ namespace io {
 			return data;
 		}
 
-		inline size_t getBufferSize() const {
+		inline util::MemorySize getBufferSize() const {
 			return dataSize;
 		}
 
-		inline size_t getDataSize() const {
-			return dataSize ? (writeIndex + dataSize - readIndex) % dataSize : static_cast<size_t>(0u);
+		inline util::MemorySize getDataSize() const {
+			return dataSize ? (writeIndex + dataSize - readIndex) % dataSize : static_cast<util::MemorySize>(0u);
 		}
 
-		inline size_t getFreeRecords() const {
-			return dataSize ? dataSize - (writeIndex + dataSize - readIndex) % dataSize : static_cast<size_t>(0u);
+		inline util::MemorySize getFreeRecords() const {
+			return dataSize ? dataSize - (writeIndex + dataSize - readIndex) % dataSize
+					: static_cast<util::MemorySize>(0u);
 		}
 
 	};

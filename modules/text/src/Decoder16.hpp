@@ -1,6 +1,8 @@
 #ifndef REDSTRAIN_MOD_TEXT_DECODER16_HPP
 #define REDSTRAIN_MOD_TEXT_DECODER16_HPP
 
+#include <redstrain/util/types.hpp>
+
 #include "api.hpp"
 #include "types.hpp"
 
@@ -14,7 +16,8 @@ namespace text {
 		Decoder16(const Decoder16&);
 		virtual ~Decoder16();
 
-		virtual size_t decodeBlock(const char*, size_t, Char16*, size_t, size_t&) = 0;
+		virtual util::MemorySize decodeBlock(const char*, util::MemorySize,
+				Char16*, util::MemorySize, util::MemorySize&) = 0;
 		virtual void endDecoding();
 
 	};

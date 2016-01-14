@@ -96,7 +96,7 @@ namespace platform {
 
 	ConditionVariable::ConditionVariable() : destroyed(false) {
 		handle.waitersCount = 0u;
-		handle.wasBroadcast = static_cast<size_t>(0u);
+		handle.wasBroadcast = false;
 		handle.semaphore = CreateSemaphore(NULL, static_cast<LONG>(0l), IntegerBounds<LONG>::MAX, NULL);
 		if(!handle.semaphore)
 			throw ConditionVariableOperationError(ConditionVariableOperationError::CREATE, GetLastError());

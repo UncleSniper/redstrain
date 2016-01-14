@@ -7,6 +7,7 @@ using std::string;
 using redengine::util::Appender;
 using redengine::io::InputStream;
 using redengine::io::OutputStream;
+using redengine::util::MemorySize;
 using redengine::io::DefaultConfiguredOutputStream;
 using redengine::io::endln;
 using redengine::io::shift;
@@ -33,7 +34,7 @@ namespace build {
 	}
 
 	Artifact& MultiArtifact::checkSingleChild(const char* action) {
-		if(artifacts.size() == static_cast<size_t>(1u))
+		if(artifacts.size() == static_cast<MemorySize>(1u))
 			return **artifacts.begin();
 		throw ArtifactMultiplicityError(*this, "Cannot " + string(action) + " for composite artifact");
 	}

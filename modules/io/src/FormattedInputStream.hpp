@@ -23,9 +23,10 @@ namespace io {
 		struct DeleteBuffer {
 
 			RecordT* buffer;
-			size_t offset, count;
+			util::MemorySize offset, count;
 
-			DeleteBuffer(RecordT* buffer, size_t offset, size_t count = static_cast<size_t>(0u))
+			DeleteBuffer(RecordT* buffer, util::MemorySize offset,
+					util::MemorySize count = static_cast<util::MemorySize>(0u))
 					: buffer(buffer), offset(offset), count(count) {}
 
 			~DeleteBuffer() {
@@ -43,9 +44,9 @@ namespace io {
 		struct ClearBuffer {
 
 			RecordT* buffer;
-			size_t count;
+			util::MemorySize count;
 
-			ClearBuffer(RecordT* buffer, size_t count = static_cast<size_t>(0u))
+			ClearBuffer(RecordT* buffer, util::MemorySize count = static_cast<util::MemorySize>(0u))
 					: buffer(buffer), count(count) {}
 
 			~ClearBuffer() {
@@ -59,7 +60,7 @@ namespace io {
 		};
 
 	  private:
-		size_t bufferSize, bufferFill, bufferOffset;
+		util::MemorySize bufferSize, bufferFill, bufferOffset;
 		RecordT* lineBuffer;
 
 	  protected:
@@ -68,7 +69,7 @@ namespace io {
 				bufferSize(stream.bufferSize), bufferFill(stream.bufferFill), bufferOffset(stream.bufferOffset) {
 			lineBuffer = reinterpret_cast<RecordT*>(new char[bufferSize * sizeof(RecordT)]);
 			DeleteBuffer delBuf(lineBuffer, bufferOffset);
-			size_t index;
+			util::MemorySize index;
 			for(index = bufferOffset; index < bufferFill; ++index) {
 				new(lineBuffer + index) RecordT(stream.lineBuffer[index]);
 				++delBuf.count;
@@ -76,19 +77,19 @@ namespace io {
 			delBuf.buffer = NULL;
 		}
 
-		virtual size_t readBlock(RecordT* buffer, size_t size) {
-			size_t buffered = bufferFill - bufferOffset;
+		virtual util::MemorySize readBlock(RecordT* buffer, util::MemorySize size) {
+			util::MemorySize buffered = bufferFill - bufferOffset;
 			if(!buffered) {
-				size_t count = this->input.read(buffer, size);
+				util::MemorySize count = this->input.read(buffer, size);
 				if(!count)
 					this->atEnd = true;
 				return count;
 			}
 			if(size > buffered)
 				size = buffered;
-			size_t index;
+			util::MemorySize index;
 			ClearBuffer clearBuf(buffer);
-			for(index = static_cast<size_t>(0u); index < buffered; ++index) {
+			for(index = static_cast<util::MemorySize>(0u); index < buffered; ++index) {
 				new(buffer + index) RecordT(lineBuffer[bufferOffset + index]);
 				++bufferOffset;
 				++clearBuf.count;
@@ -102,15 +103,15 @@ namespace io {
 			if(bufferOffset != bufferFill)
 				return true;
 			bufferFill = this->input.read(lineBuffer, bufferSize);
-			bufferOffset = static_cast<size_t>(0u);
+			bufferOffset = static_cast<util::MemorySize>(0u);
 			if(bufferFill)
 				return true;
 			this->atEnd = true;
 			return false;
 		}
 
-		bool findLinebreak(size_t& offset) {
-			size_t index;
+		bool findLinebreak(util::MemorySize& offset) {
+			util::MemorySize index;
 			if(linebreaks == AUTO_LINEBREAKS) {
 				for(index = bufferOffset; index < bufferFill; ++index) {
 					if(lineBuffer[index] == LinebreakRecordsT::NEWLINE
@@ -143,10 +144,10 @@ namespace io {
 
 	  public:
 		FormattedInputStream(InputStream<RecordT>& input, LinebreakPolicy linebreaks = AUTO_LINEBREAKS,
-				size_t bufferSize = static_cast<size_t>(0u)) : ProxyInputStream<RecordT>(input),
+				util::MemorySize bufferSize = static_cast<util::MemorySize>(0u)) : ProxyInputStream<RecordT>(input),
 				LineOriented(linebreaks), bufferSize(bufferSize ? bufferSize
-				: static_cast<size_t>(REDSTRAIN_IO_DEFAULT_LINE_BUFFER_RECORDS)),
-				bufferFill(static_cast<size_t>(0u)), bufferOffset(static_cast<size_t>(0u)) {
+				: static_cast<util::MemorySize>(REDSTRAIN_IO_DEFAULT_LINE_BUFFER_RECORDS)),
+				bufferFill(static_cast<util::MemorySize>(0u)), bufferOffset(static_cast<util::MemorySize>(0u)) {
 			lineBuffer = reinterpret_cast<RecordT*>(new char[this->bufferSize * sizeof(RecordT)]);
 		}
 
@@ -154,18 +155,18 @@ namespace io {
 			DeleteBuffer delBuf(lineBuffer, bufferOffset, bufferFill - bufferOffset);
 		}
 
-		inline size_t getBufferSize() const {
+		inline util::MemorySize getBufferSize() const {
 			return bufferSize;
 		}
 
-		void setBufferSize(size_t newBufferSize) {
+		void setBufferSize(util::MemorySize newBufferSize) {
 			if(!newBufferSize)
-				newBufferSize = static_cast<size_t>(REDSTRAIN_IO_DEFAULT_LINE_BUFFER_RECORDS);
+				newBufferSize = static_cast<util::MemorySize>(REDSTRAIN_IO_DEFAULT_LINE_BUFFER_RECORDS);
 			if(newBufferSize < bufferFill - bufferOffset)
 				return;
 			RecordT* newBuffer = reinterpret_cast<RecordT*>(new char[newBufferSize * sizeof(RecordT)]);
-			DeleteBuffer delBuf(newBuffer, static_cast<size_t>(0u));
-			size_t index;
+			DeleteBuffer delBuf(newBuffer, static_cast<util::MemorySize>(0u));
+			util::MemorySize index;
 			for(index = bufferOffset; index < bufferFill; ++index) {
 				new(newBuffer + (index - bufferOffset)) RecordT(lineBuffer[index]);
 				++delBuf.count;
@@ -174,7 +175,7 @@ namespace io {
 			delBuf.offset = bufferOffset;
 			lineBuffer = newBuffer;
 			bufferFill -= bufferOffset;
-			bufferOffset = static_cast<size_t>(0u);
+			bufferOffset = static_cast<util::MemorySize>(0u);
 		}
 
 		bool readLine(String& line) {
@@ -182,7 +183,7 @@ namespace io {
 			for(;;) {
 				if(!fillBuffer())
 					return haveData;
-				size_t offset;
+				util::MemorySize offset;
 				bool found = findLinebreak(offset);
 				if(!found)
 					offset = bufferFill;
@@ -227,14 +228,14 @@ namespace io {
 			}
 		}
 
-		virtual void seek(off_t offset, Stream::SeekWhence whence) {
+		virtual void seek(util::FileOffset offset, Stream::SeekWhence whence) {
 			ProxyInputStream<RecordT>::seek(offset, whence);
 			for(; bufferOffset < bufferFill; ++bufferOffset)
 				lineBuffer[bufferOffset].~RecordT();
 		}
 
-		virtual size_t tell() const {
-			return this->input.tell() - (bufferFill - bufferOffset);
+		virtual util::FileSize tell() const {
+			return this->input.tell() - static_cast<util::FileSize>(bufferFill - bufferOffset);
 		}
 
 	};

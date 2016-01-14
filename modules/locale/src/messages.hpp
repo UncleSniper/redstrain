@@ -74,7 +74,8 @@ namespace locale {
 	}
 
 	template<typename CharT>
-	void getMessageKeyOrder(const MessageCache<CharT>& cache, std::map<std::basic_string<CharT>, size_t>* mapOrder,
+	void getMessageKeyOrder(const MessageCache<CharT>& cache,
+			std::map<std::basic_string<CharT>, util::MemorySize>* mapOrder,
 			std::list<std::basic_string<CharT> >* listOrder) {
 		if(mapOrder)
 			mapOrder->clear();
@@ -84,7 +85,7 @@ namespace locale {
 		cache.getMessages(begin, end);
 		for(; begin != end; ++begin) {
 			if(mapOrder) {
-				size_t index = static_cast<size_t>(mapOrder->size());
+				util::MemorySize index = static_cast<util::MemorySize>(mapOrder->size());
 				(*mapOrder)[begin->getKey()] = index;
 			}
 			if(listOrder)

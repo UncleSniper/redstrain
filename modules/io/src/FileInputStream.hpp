@@ -12,7 +12,7 @@ namespace io {
 	  protected:
 		FileInputStream(const FileInputStream&);
 
-		virtual size_t readBlock(char*, size_t);
+		virtual util::MemorySize readBlock(char*, util::MemorySize);
 
 	  public:
 		FileInputStream(const std::string&, platform::File::Direction = platform::File::INPUT, bool = false,
@@ -20,7 +20,7 @@ namespace io {
 		FileInputStream(const platform::File&);
 		FileInputStream(platform::File::Handle, platform::File::Direction = platform::File::INPUT);
 
-		virtual void seek(off_t, SeekWhence);
+		virtual void seek(util::FileOffset, SeekWhence);
 
 	};
 

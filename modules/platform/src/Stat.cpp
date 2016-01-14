@@ -1,6 +1,8 @@
 #include "Stat.hpp"
 #include "Filesystem.hpp"
 
+using redengine::util::FileSize;
+
 namespace redengine {
 namespace platform {
 
@@ -13,7 +15,7 @@ namespace platform {
 #endif /* OS-specific definitions */
 
 	Stat::Stat() : type(REGULAR_FILE), owner(NO_USER), group(NO_GROUP), device(NO_DEVICE), special(NO_DEVICE),
-			permissions(0), size(static_cast<size_t>(0u)), atime(static_cast<time_t>(0u)),
+			permissions(0), size(static_cast<FileSize>(0u)), atime(static_cast<time_t>(0u)),
 			mtime(static_cast<time_t>(0u)), ctime(static_cast<time_t>(0u)) {}
 
 	Stat::Stat(const Stat& stat) : type(stat.type), owner(stat.owner), group(stat.group), device(stat.device),

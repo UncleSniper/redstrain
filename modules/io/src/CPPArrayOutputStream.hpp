@@ -65,13 +65,13 @@ namespace io {
 
 		  private:
 			FormattedOutputStream<char>& output;
-			size_t size;
+			util::FileSize size;
 			std::string lastPart;
 			unsigned partCount;
 			const std::string& exportMacro;
 
 		  public:
-			SizeAppender(FormattedOutputStream<char>&, size_t, const std::string&);
+			SizeAppender(FormattedOutputStream<char>&, util::FileSize, const std::string&);
 			SizeAppender(const SizeAppender&);
 
 			virtual void append(const std::string&);
@@ -102,7 +102,7 @@ namespace io {
 		State state;
 		bool needsIndent;
 		unsigned columns;
-		size_t arraySize;
+		util::FileSize arraySize;
 		std::string exportMacro, extraInclude, blobPath, guardMacro;
 
 	  public:
@@ -115,7 +115,7 @@ namespace io {
 	  protected:
 		CPPArrayOutputStream(const CPPArrayOutputStream&);
 
-		virtual void writeBlock(const char*, size_t);
+		virtual void writeBlock(const char*, util::MemorySize);
 
 	  public:
 		CPPArrayOutputStream(OutputStream<char>&, const std::string& = DEFAULT_VARIABLE_NAME,
@@ -152,7 +152,7 @@ namespace io {
 		void writeHeader();
 
 		virtual void close();
-		virtual size_t tell() const;
+		virtual util::FileSize tell() const;
 
 	};
 

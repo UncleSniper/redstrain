@@ -13,6 +13,7 @@ using std::string;
 using redengine::util::Ref;
 using redengine::util::Delete;
 using redengine::util::Appender;
+using redengine::util::FileSize;
 using redengine::io::FileStream;
 using redengine::text::String16;
 using redengine::text::Transcode;
@@ -199,7 +200,7 @@ namespace vfs {
 		Filesystem::readdir(toHostPath(pathBegin, pathEnd), proxy);
 	}
 
-	void HostVFS::truncate(PathIterator pathBegin, PathIterator pathEnd, size_t size) {
+	void HostVFS::truncate(PathIterator pathBegin, PathIterator pathEnd, FileSize size) {
 		Filesystem::truncate(toHostPath(pathBegin, pathEnd), size);
 	}
 
@@ -303,7 +304,7 @@ namespace vfs {
 		//TODO
 	}
 
-	void HostVFS::truncate(PathIterator pathBegin, PathIterator pathEnd, size_t size) {
+	void HostVFS::truncate(PathIterator pathBegin, PathIterator pathEnd, FileSize size) {
 		//TODO
 	}
 

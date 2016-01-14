@@ -1,6 +1,8 @@
 #ifndef REDSTRAIN_MOD_PLATFORM_STAT_HPP
 #define REDSTRAIN_MOD_PLATFORM_STAT_HPP
 
+#include <redstrain/util/types.hpp>
+
 #include "api.hpp"
 #include "platform.hpp"
 
@@ -82,7 +84,7 @@ namespace platform {
 		GroupID group;
 		DeviceID device, special;
 		int permissions;
-		size_t size;
+		util::FileSize size;
 		time_t atime, mtime, ctime;
 
 	  public:
@@ -137,11 +139,11 @@ namespace platform {
 			permissions = newPermissions & PERMISSIONS_MASK;
 		}
 
-		inline size_t getSize() const {
+		inline util::FileSize getSize() const {
 			return size;
 		}
 
-		inline void setSize(size_t newSize) {
+		inline void setSize(util::FileSize newSize) {
 			size = newSize;
 		}
 

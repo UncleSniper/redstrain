@@ -8,6 +8,7 @@
 #include "tweaks.hpp"
 
 using redengine::util::MaxAlign;
+using redengine::util::MemorySize;
 using redengine::util::IntegerLog;
 using redengine::util::IntegerPointer;
 
@@ -29,10 +30,14 @@ namespace platform {
 		delete[] shards;
 	}
 
-	static const size_t ALIGN_EXP = IntegerLog<size_t, static_cast<size_t>(2u), MaxAlign::MAX_ALIGNMENT>::EXPONENT;
+	static const MemorySize ALIGN_EXP = IntegerLog<
+		MemorySize,
+		static_cast<MemorySize>(2u),
+		MaxAlign::MAX_ALIGNMENT
+	>::EXPONENT;
 
 	unsigned SuspendingMutexPool::indexByAddress(const void* object) const {
-		IntegerPointer iptr = reinterpret_cast<IntegerPointer>(object) >> (ALIGN_EXP - static_cast<size_t>(1u));
+		IntegerPointer iptr = reinterpret_cast<IntegerPointer>(object) >> (ALIGN_EXP - static_cast<MemorySize>(1u));
 		return static_cast<unsigned>(iptr % static_cast<IntegerPointer>(size));
 	}
 

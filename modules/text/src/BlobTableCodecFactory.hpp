@@ -14,7 +14,8 @@ namespace text {
 		BlobCodeTable<CharT>& table;
 
 	  public:
-		BlobTableCodecFactory(const char* data, size_t size) : table(*(new BlobCodeTable<CharT>(data, size))) {}
+		BlobTableCodecFactory(const char* data, util::MemorySize size)
+				: table(*(new BlobCodeTable<CharT>(data, size))) {}
 
 		BlobTableCodecFactory(const BlobTableCodecFactory& factory)
 				: CodecFactory<CodecT>(factory), table(factory.table) {

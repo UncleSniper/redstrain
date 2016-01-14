@@ -15,8 +15,8 @@ namespace text {
 
 	struct REDSTRAIN_TEXT_API Transcode {
 
-		static size_t encode(io::InputStream<Char16>&, io::OutputStream<char>&, Encoder16&);
-		static size_t decode(io::InputStream<char>&, io::OutputStream<Char16>&, Decoder16&);
+		static util::FileSize encode(io::InputStream<Char16>&, io::OutputStream<char>&, Encoder16&);
+		static util::FileSize decode(io::InputStream<char>&, io::OutputStream<Char16>&, Decoder16&);
 
 		static void encode(const String16&, std::string&, Encoder16&);
 		static void decode(const std::string&, String16&, Decoder16&);

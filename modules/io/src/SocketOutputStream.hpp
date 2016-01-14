@@ -12,7 +12,7 @@ namespace io {
 	  protected:
 		SocketOutputStream(const SocketOutputStream&);
 
-		virtual void writeBlock(const char*, size_t);
+		virtual void writeBlock(const char*, util::MemorySize);
 
 	  public:
 		SocketOutputStream(platform::StreamSocket&);

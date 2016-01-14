@@ -27,7 +27,7 @@ namespace util {
 		};
 
 	  public:
-		static const size_t MAX_ALIGNMENT = AlignOf<Primitives>::ALIGNMENT;
+		static const MemorySize MAX_ALIGNMENT = AlignOf<Primitives>::ALIGNMENT;
 
 	};
 

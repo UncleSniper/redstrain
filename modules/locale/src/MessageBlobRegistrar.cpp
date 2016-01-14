@@ -16,6 +16,7 @@ using redengine::util::CPPUtils;
 using redengine::io::InputStream;
 using redengine::io::OutputStream;
 using redengine::io::StreamCloser;
+using redengine::util::MemorySize;
 using redengine::util::StringUtils;
 using redengine::platform::Pathname;
 using redengine::io::FileInputStream;
@@ -63,7 +64,7 @@ namespace locale {
 	// ======== MessageBlobRegistrar ========
 
 	MessageBlobRegistrar::MessageBlobRegistrar(BlobMessageMapping*& mapping,
-			const string& language, const string& country, const char* data, size_t size) {
+			const string& language, const string& country, const char* data, MemorySize size) {
 		if(!mapping)
 			mapping = new BlobMessageMapping;
 		mapping->addBlob(language, country, data, size);
@@ -135,7 +136,7 @@ namespace locale {
 
 	void MessageBlobRegistrarBlobDeclarer::emitDeclaration() {
 		output << indent << "extern const char " << lastSegment << "[];" << endln;
-		output << indent << "extern const size_t " << lastSegment << "_size;" << endln;
+		output << indent << "extern const ::redengine::util::FileSize " << lastSegment << "_size;" << endln;
 	}
 
 	void MessageBlobRegistrar::generateBlobRegistrar(OutputStream<char>& stream, const string& mappingSymbol,
@@ -153,7 +154,7 @@ namespace locale {
 		out << objectID << '(';
 		out << mappingSymbol << ", " << CPPUtils::escapeString(language, true);
 		out << ", " << CPPUtils::escapeString(country, true) << ", ";
-		out << blobSymbol << ", " << blobSymbol << "_size);" << endln;
+		out << blobSymbol << ", static_cast<::redengine::util::MemorySize>(" << blobSymbol << "_size));" << endln;
 	}
 
 	void MessageBlobRegistrar::generateBlobAliases(InputStream<char>& input, const string& inputStreamName,

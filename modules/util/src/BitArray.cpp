@@ -3,9 +3,9 @@
 namespace redengine {
 namespace util {
 
-	BitArray::BitArray(size_t sizeInBits)
-			: size((sizeInBits + (ELEMENT_BITS - static_cast<size_t>(1u))) / ELEMENT_BITS),
-			tainted(static_cast<size_t>(0u)), bits(size ? new unsigned[size] : NULL) {}
+	BitArray::BitArray(MemorySize sizeInBits)
+			: size((sizeInBits + (ELEMENT_BITS - static_cast<MemorySize>(1u))) / ELEMENT_BITS),
+			tainted(static_cast<MemorySize>(0u)), bits(size ? new unsigned[size] : NULL) {}
 
 	BitArray::BitArray(const BitArray& array) : size(array.size), tainted(array.tainted),
 			bits(size ? new unsigned[size] : NULL) {
@@ -18,27 +18,27 @@ namespace util {
 			delete bits;
 	}
 
-	bool BitArray::isSet(size_t index) const {
+	bool BitArray::isSet(MemorySize index) const {
 		if(index < tainted)
 			return !!(bits[index / ELEMENT_BITS] & (1u << (index % ELEMENT_BITS)));
 		else
 			return false;
 	}
 
-	void BitArray::set(size_t index) {
-		size_t offset = index / ELEMENT_BITS;
+	void BitArray::set(MemorySize index) {
+		MemorySize offset = index / ELEMENT_BITS;
 		taint(offset);
 		bits[offset] |= 1u << (index % ELEMENT_BITS);
 	}
 
-	void BitArray::unset(size_t index) {
-		size_t offset = index / ELEMENT_BITS;
+	void BitArray::unset(MemorySize index) {
+		MemorySize offset = index / ELEMENT_BITS;
 		taint(offset);
 		bits[offset] &= ~(1u << (index % ELEMENT_BITS));
 	}
 
-	void BitArray::set(size_t index, bool value) {
-		size_t offset = index / ELEMENT_BITS;
+	void BitArray::set(MemorySize index, bool value) {
+		MemorySize offset = index / ELEMENT_BITS;
 		taint(offset);
 		if(value)
 			bits[offset] |= 1u << (index % ELEMENT_BITS);
@@ -46,8 +46,8 @@ namespace util {
 			bits[offset] &= ~(1u << (index % ELEMENT_BITS));
 	}
 
-	void BitArray::toggle(size_t index) {
-		size_t offset = index / ELEMENT_BITS, rest = index % ELEMENT_BITS;
+	void BitArray::toggle(MemorySize index) {
+		MemorySize offset = index / ELEMENT_BITS, rest = index % ELEMENT_BITS;
 		taint(offset);
 		unsigned mask = 1u << rest;
 		if(bits[offset] & mask)
@@ -57,7 +57,7 @@ namespace util {
 	}
 
 	int BitArray::compare(const BitArray& array) const {
-		size_t compareSize = tainted < array.tainted ? tainted : array.tainted;
+		MemorySize compareSize = tainted < array.tainted ? tainted : array.tainted;
 		if(compareSize) {
 			int order = memcmp(bits, array.bits, compareSize * sizeof(unsigned));
 			if(order)
@@ -86,7 +86,7 @@ namespace util {
 	}
 
 	BitArray& BitArray::operator=(const BitArray& array) {
-		size_t copySize = size < array.size ? size : array.size;
+		MemorySize copySize = size < array.size ? size : array.size;
 		tainted = copySize < array.tainted ? copySize : array.tainted;
 		if(tainted)
 			memcpy(bits, array.bits, tainted);

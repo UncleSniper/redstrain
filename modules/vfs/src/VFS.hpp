@@ -87,7 +87,8 @@ namespace vfs {
 
 		  private:
 			FSType type;
-			size_t totalBlocks, freeBlocks, totalINodes, freeINodes, nameLength;
+			util::FileSize totalBlocks, freeBlocks, totalINodes, freeINodes;
+			util::MemorySize nameLength;
 
 		  public:
 			FSInfo();
@@ -101,43 +102,43 @@ namespace vfs {
 				type = newType;
 			}
 
-			inline size_t getTotalBlockCount() const {
+			inline util::FileSize getTotalBlockCount() const {
 				return totalBlocks;
 			}
 
-			inline void setTotalBlockCount(size_t newBlockCount) {
+			inline void setTotalBlockCount(util::FileSize newBlockCount) {
 				totalBlocks = newBlockCount;
 			}
 
-			inline size_t getFreeBlockCount() const {
+			inline util::FileSize getFreeBlockCount() const {
 				return freeBlocks;
 			}
 
-			inline void setFreeBlockCount(size_t newBlockCount) {
+			inline void setFreeBlockCount(util::FileSize newBlockCount) {
 				freeBlocks = newBlockCount;
 			}
 
-			inline size_t getTotalINodeCount() const {
+			inline util::FileSize getTotalINodeCount() const {
 				return totalINodes;
 			}
 
-			inline void setTotalINodeCount(size_t newINodeCount) {
+			inline void setTotalINodeCount(util::FileSize newINodeCount) {
 				totalINodes = newINodeCount;
 			}
 
-			inline size_t getFreeINodeCount() const {
+			inline util::FileSize getFreeINodeCount() const {
 				return freeINodes;
 			}
 
-			inline void setFreeINodeCount(size_t newINodeCount) {
+			inline void setFreeINodeCount(util::FileSize newINodeCount) {
 				freeINodes = newINodeCount;
 			}
 
-			inline size_t getMaximumFilenameLength() const {
+			inline util::MemorySize getMaximumFilenameLength() const {
 				return nameLength;
 			}
 
-			inline void setMaximumFilenameLength(size_t newMaxLength) {
+			inline void setMaximumFilenameLength(util::MemorySize newMaxLength) {
 				nameLength = newMaxLength;
 			}
 
@@ -256,9 +257,9 @@ namespace vfs {
 		void readdir(const std::string&, util::Appender<std::string>&);
 		void readdir(const text::String16&, util::Appender<text::String16>&);
 		void readdir(const Pathname&, util::Appender<text::String16>&);
-		void truncate(const std::string&, size_t);
-		void truncate(const text::String16&, size_t);
-		void truncate(const Pathname&, size_t);
+		void truncate(const std::string&, util::FileSize);
+		void truncate(const text::String16&, util::FileSize);
+		void truncate(const Pathname&, util::FileSize);
 		void statfs(const std::string&, FSInfo&);
 		void statfs(const text::String16&, FSInfo&);
 		void statfs(const Pathname&, FSInfo&);
@@ -308,7 +309,7 @@ namespace vfs {
 		virtual void symlink(const text::String16&, PathIterator, PathIterator) = 0;
 		virtual void readlink(PathIterator, PathIterator, text::String16&) = 0;
 		virtual void readdir(PathIterator, PathIterator, util::Appender<text::String16>&) = 0;
-		virtual void truncate(PathIterator, PathIterator, size_t) = 0;
+		virtual void truncate(PathIterator, PathIterator, util::FileSize) = 0;
 		virtual void statfs(PathIterator, PathIterator, FSInfo&) = 0;
 		virtual void mknod(PathIterator, PathIterator, Stat::Type, int, Stat::DeviceID) = 0;
 		virtual io::InputStream<char>* getInputStream(PathIterator, PathIterator) = 0;

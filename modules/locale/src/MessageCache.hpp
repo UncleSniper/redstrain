@@ -65,8 +65,8 @@ namespace locale {
 			items.clear();
 		}
 
-		size_t getMessageCount() const {
-			return static_cast<size_t>(items.size());
+		util::MemorySize getMessageCount() const {
+			return static_cast<util::MemorySize>(items.size());
 		}
 
 		void getMessages(ItemIterator& begin, ItemIterator& end) const {
@@ -74,7 +74,7 @@ namespace locale {
 			end = items.end();
 		}
 
-		const Item& getMessage(size_t index) const {
+		const Item& getMessage(util::MemorySize index) const {
 			if(static_cast<typename Items::size_type>(index) >= items.size())
 				throw MessageKeyOutOfBoundsError(index);
 			return items[index];

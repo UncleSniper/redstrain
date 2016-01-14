@@ -11,13 +11,13 @@ namespace io {
 	class REDSTRAIN_IO_API SeekOffsetOutOfBoundsError : public error::IOError {
 
 	  private:
-		const off_t offset;
+		const util::FileOffset offset;
 
 	  public:
-		SeekOffsetOutOfBoundsError(off_t);
+		SeekOffsetOutOfBoundsError(util::FileOffset);
 		SeekOffsetOutOfBoundsError(const SeekOffsetOutOfBoundsError&);
 
-		inline off_t getTargetOffset() const {
+		inline util::FileOffset getTargetOffset() const {
 			return offset;
 		}
 

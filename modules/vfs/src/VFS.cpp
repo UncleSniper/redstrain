@@ -16,6 +16,7 @@ using std::string;
 using redengine::util::Ref;
 using redengine::util::Delete;
 using redengine::text::Char16;
+using redengine::util::FileSize;
 using redengine::util::Appender;
 using redengine::text::String16;
 using redengine::text::Encoder16;
@@ -24,6 +25,7 @@ using redengine::text::Transcode;
 using redengine::io::InputStream;
 using redengine::io::OutputStream;
 using redengine::io::StreamCloser;
+using redengine::util::MemorySize;
 using redengine::util::StringUtils;
 using redengine::text::CodecFactory;
 using redengine::text::UTF8Encoder16;
@@ -43,9 +45,9 @@ namespace vfs {
 	const String16 VFS::SELF_LINK(parentLinkChars + 1);
 	const String16 VFS::PARENT_LINK(parentLinkChars);
 
-	VFS::FSInfo::FSInfo() : type(UNKNOWNFS), totalBlocks(static_cast<size_t>(0u)),
-			freeBlocks(static_cast<size_t>(0u)), totalINodes(static_cast<size_t>(0u)),
-			freeINodes(static_cast<size_t>(0u)), nameLength(static_cast<size_t>(0u)) {}
+	VFS::FSInfo::FSInfo() : type(UNKNOWNFS), totalBlocks(static_cast<FileSize>(0u)),
+			freeBlocks(static_cast<FileSize>(0u)), totalINodes(static_cast<FileSize>(0u)),
+			freeINodes(static_cast<FileSize>(0u)), nameLength(static_cast<MemorySize>(0u)) {}
 
 	VFS::FSInfo::FSInfo(const FSInfo& info) : type(info.type), totalBlocks(info.totalBlocks),
 			freeBlocks(info.freeBlocks), totalINodes(info.totalINodes), freeINodes(info.freeINodes),
@@ -427,19 +429,19 @@ namespace vfs {
 		readdir(path.begin(), path.end(), sink);
 	}
 
-	void VFS::truncate(const string& path, size_t size) {
+	void VFS::truncate(const string& path, FileSize size) {
 		Pathname pl;
 		deconstructPathname(path, pl);
 		truncate(pl.begin(), pl.end(), size);
 	}
 
-	void VFS::truncate(const String16& path, size_t size) {
+	void VFS::truncate(const String16& path, FileSize size) {
 		Pathname pl;
 		VFS::deconstructPathname(path, pl);
 		truncate(pl.begin(), pl.end(), size);
 	}
 
-	void VFS::truncate(const Pathname& path, size_t size) {
+	void VFS::truncate(const Pathname& path, FileSize size) {
 		truncate(path.begin(), path.end(), size);
 	}
 

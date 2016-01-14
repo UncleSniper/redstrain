@@ -2,6 +2,7 @@
 
 #include "TableCodec16.hpp"
 
+using redengine::util::MemorySize;
 using redengine::platform::ObjectLocker;
 
 namespace redengine {
@@ -24,23 +25,23 @@ namespace text {
 		table.unref();
 	}
 
-	size_t TableCodec16::encodeBlock(const Char16* input, size_t insize, char* output, size_t outsize,
-			size_t& outcount) {
+	MemorySize TableCodec16::encodeBlock(const Char16* input, MemorySize insize, char* output, MemorySize outsize,
+			MemorySize& outcount) {
 		if(outsize < insize)
 			insize = outsize;
 		ObjectLocker<CodeTable<Char16> > locker(table.supportsConcurrentLookup() ? NULL : &table);
-		for(outcount = static_cast<size_t>(0u); outcount < insize; ++outcount)
+		for(outcount = static_cast<MemorySize>(0u); outcount < insize; ++outcount)
 			output[outcount] = table.encodeCharacter(input[outcount]);
 		locker.release();
 		return insize;
 	}
 
-	size_t TableCodec16::decodeBlock(const char* input, size_t insize, Char16* output, size_t outsize,
-			size_t& outcount) {
+	MemorySize TableCodec16::decodeBlock(const char* input, MemorySize insize, Char16* output, MemorySize outsize,
+			MemorySize& outcount) {
 		if(outsize < insize)
 			insize = outsize;
 		ObjectLocker<CodeTable<Char16> > locker(table.supportsConcurrentLookup() ? NULL : &table);
-		for(outcount = static_cast<size_t>(0u); outcount < insize; ++outcount)
+		for(outcount = static_cast<MemorySize>(0u); outcount < insize; ++outcount)
 			output[outcount] = table.decodeCharacter(input[outcount]);
 		locker.release();
 		return insize;

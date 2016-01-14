@@ -13,15 +13,17 @@ namespace io {
 	class REDSTRAIN_IO_API AssemblingOutputStream : public OutputStream<char> {
 
 	  public:
-		static const size_t DEFAULT_SEGMENT_SIZE
-				= static_cast<size_t>(REDSTRAIN_IO_ASSEMBLING_OUTPUT_STREAM_DEFAULT_SEGMENT_SIZE);
+		static const util::MemorySize DEFAULT_SEGMENT_SIZE
+				= static_cast<util::MemorySize>(REDSTRAIN_IO_ASSEMBLING_OUTPUT_STREAM_DEFAULT_SEGMENT_SIZE);
 
 	  private:
 		struct Segment {
 
-			size_t size, fill;
+			util::MemorySize size, fill;
 
-			Segment(size_t, size_t = static_cast<size_t>(0u));
+			Segment(util::MemorySize, util::MemorySize = static_cast<util::MemorySize>(0u));
+
+			static void* operator new(size_t, size_t);
 
 		};
 
@@ -42,25 +44,25 @@ namespace io {
 		};
 
 	  private:
-		size_t segmentSize, dataSize;
+		util::MemorySize segmentSize, dataSize;
 		Segments segments;
 
 	  private:
-		char* reserveBlock(size_t);
+		char* reserveBlock(util::MemorySize);
 
 	  protected:
-		virtual void writeBlock(const char*, size_t);
+		virtual void writeBlock(const char*, util::MemorySize);
 
 	  public:
-		AssemblingOutputStream(size_t = DEFAULT_SEGMENT_SIZE);
+		AssemblingOutputStream(util::MemorySize = DEFAULT_SEGMENT_SIZE);
 		AssemblingOutputStream(const AssemblingOutputStream&);
 		virtual ~AssemblingOutputStream();
 
-		inline size_t getSegmentSize() const {
+		inline util::MemorySize getSegmentSize() const {
 			return segmentSize;
 		}
 
-		inline size_t getDataSize() const {
+		inline util::MemorySize getDataSize() const {
 			return dataSize;
 		}
 

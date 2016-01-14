@@ -1,9 +1,11 @@
 #include "ListIndexOutOfBoundsError.hpp"
 
+using redengine::util::MemorySize;
+
 namespace redengine {
 namespace error {
 
-	ListIndexOutOfBoundsError::ListIndexOutOfBoundsError(size_t index) : IndexOutOfBoundsError(index) {}
+	ListIndexOutOfBoundsError::ListIndexOutOfBoundsError(MemorySize index) : IndexOutOfBoundsError(index) {}
 
 	ListIndexOutOfBoundsError::ListIndexOutOfBoundsError(const ListIndexOutOfBoundsError& error)
 			: IndexOutOfBoundsError(error) {}

@@ -4,6 +4,7 @@
 
 using std::map;
 using std::string;
+using redengine::util::MemorySize;
 using redengine::platform::ObjectLocker;
 
 namespace redengine {
@@ -11,7 +12,7 @@ namespace locale {
 
 	// ======== Blob ========
 
-	BlobMessageMapping::Blob::Blob(const string& language, const string& country, const char* data, size_t size)
+	BlobMessageMapping::Blob::Blob(const string& language, const string& country, const char* data, MemorySize size)
 			: language(language), country(country), data(data), size(size) {}
 
 	BlobMessageMapping::Blob::Blob(const Blob& blob)
@@ -48,7 +49,8 @@ namespace locale {
 		}
 	}
 
-	void BlobMessageMapping::addBlob(const string& language, const string& country, const char* data, size_t size) {
+	void BlobMessageMapping::addBlob(const string& language, const string& country,
+			const char* data, MemorySize size) {
 		addBlob(Blob(language, country, data, size));
 	}
 

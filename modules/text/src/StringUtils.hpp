@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 #include <redstrain/util/Appender.hpp>
+#include <redstrain/util/types.hpp>
 
 namespace redengine {
 namespace text {
@@ -80,7 +81,7 @@ namespace text {
 				return;
 			}
 			bool atFront = true;
-			size_t skipped = static_cast<size_t>(0u);
+			util::MemorySize skipped = static_cast<util::MemorySize>(0u);
 			typename String::size_type pos, old = static_cast<typename String::size_type>(0u);
 			while((pos = haystack.find(needle, old)) != String::npos) {
 				if(pos > old) {
@@ -89,7 +90,7 @@ namespace text {
 							for(; skipped; --skipped)
 								sink.append(needle);
 						else
-							skipped = static_cast<size_t>(0u);
+							skipped = static_cast<util::MemorySize>(0u);
 					}
 					else {
 						for(; skipped; --skipped) {

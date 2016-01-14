@@ -63,7 +63,7 @@ namespace vfs {
 		GroupID group;
 		DeviceID device, special;
 		int permissions;
-		size_t size;
+		util::FileSize size;
 		time_t atime, mtime, ctime;
 
 	  public:
@@ -118,11 +118,11 @@ namespace vfs {
 			permissions = newPermissions & PERMISSIONS_MASK;
 		}
 
-		inline size_t getSize() const {
+		inline util::FileSize getSize() const {
 			return size;
 		}
 
-		inline void setSize(size_t newSize) {
+		inline void setSize(util::FileSize newSize) {
 			size = newSize;
 		}
 

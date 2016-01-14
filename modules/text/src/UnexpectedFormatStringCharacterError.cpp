@@ -1,9 +1,11 @@
 #include "UnexpectedFormatStringCharacterError.hpp"
 
+using redengine::util::MemorySize;
+
 namespace redengine {
 namespace text {
 
-	UnexpectedFormatStringCharacterError::UnexpectedFormatStringCharacterError(Expected expected, size_t offset)
+	UnexpectedFormatStringCharacterError::UnexpectedFormatStringCharacterError(Expected expected, MemorySize offset)
 			: FormatStringSyntaxError(offset), expected(expected) {}
 
 	UnexpectedFormatStringCharacterError::UnexpectedFormatStringCharacterError(const

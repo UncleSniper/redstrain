@@ -5,6 +5,7 @@
 #include "Decoder16OutputStream.hpp"
 
 using redengine::io::OutputStream;
+using redengine::util::MemorySize;
 using redengine::error::wrapError;
 
 namespace redengine {
@@ -26,12 +27,12 @@ namespace text {
 		output.close();
 	}
 
-	void Decoder16OutputStream::writeBlock(const char* buffer, size_t bufferSize) {
+	void Decoder16OutputStream::writeBlock(const char* buffer, MemorySize bufferSize) {
 		Char16 charBuffer[REDSTRAIN_TEXT_CODEC_STREAM_BUFFER_SIZE];
-		size_t outcount, consumed;
+		MemorySize outcount, consumed;
 		while(bufferSize) {
 			consumed = decoder.decodeBlock(buffer, bufferSize, charBuffer,
-					static_cast<size_t>(REDSTRAIN_TEXT_CODEC_STREAM_BUFFER_SIZE), outcount);
+					static_cast<MemorySize>(REDSTRAIN_TEXT_CODEC_STREAM_BUFFER_SIZE), outcount);
 			output.write(charBuffer, outcount);
 			buffer += consumed;
 			bufferSize -= consumed;

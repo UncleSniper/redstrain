@@ -5,6 +5,7 @@
 #if REDSTRAIN_PLATFORM_OS == REDSTRAIN_PLATFORM_OS_UNIX
 #include <cstdio>
 #include <cstring>
+using redengine::util::MemorySize;
 #elif REDSTRAIN_PLATFORM_OS == REDSTRAIN_PLATFORM_OS_WINDOWS
 #include <redstrain/util/IntegerBounds.hpp>
 using redengine::util::IntegerBounds;
@@ -28,14 +29,14 @@ namespace platform {
 
 	void Console::clear() {
 		try {
-			file.write("\033[2J\033[H", static_cast<size_t>(7u));
+			file.write("\033[2J\033[H", static_cast<MemorySize>(7u));
 		}
 		wrapWriteError(CLEAR)
 	}
 
 	void Console::home() {
 		try {
-			file.write("\033[H", static_cast<size_t>(3u));
+			file.write("\033[H", static_cast<MemorySize>(3u));
 		}
 		wrapWriteError(SET_CURSOR_POSITION)
 	}
@@ -48,7 +49,7 @@ namespace platform {
 		char seq[6] = "\033[3?m";
 		seq[3] = COLOR_DIGITS[color];
 		try {
-			file.write(seq, static_cast<size_t>(5u));
+			file.write(seq, static_cast<MemorySize>(5u));
 		}
 		wrapWriteError(SET_TEXT_ATTRIBUTE)
 	}
@@ -59,7 +60,7 @@ namespace platform {
 		char seq[6] = "\033[4?m";
 		seq[3] = COLOR_DIGITS[color];
 		try {
-			file.write(seq, static_cast<size_t>(5u));
+			file.write(seq, static_cast<MemorySize>(5u));
 		}
 		wrapWriteError(SET_TEXT_ATTRIBUTE)
 	}
@@ -67,16 +68,16 @@ namespace platform {
 	void Console::setIntensity(Intensity intensity) {
 		try {
 			if(intensity == NORMAL)
-				file.write("\033[22m", static_cast<size_t>(5u));
+				file.write("\033[22m", static_cast<MemorySize>(5u));
 			else
-				file.write("\033[1m", static_cast<size_t>(4u));
+				file.write("\033[1m", static_cast<MemorySize>(4u));
 		}
 		wrapWriteError(SET_TEXT_ATTRIBUTE)
 	}
 
 	void Console::resetAttributes() {
 		try {
-			file.write("\033[m", static_cast<size_t>(3u));
+			file.write("\033[m", static_cast<MemorySize>(3u));
 		}
 		wrapWriteError(SET_TEXT_ATTRIBUTE)
 	}

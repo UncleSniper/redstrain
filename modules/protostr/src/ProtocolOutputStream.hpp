@@ -16,7 +16,7 @@ namespace protostr {
 		ProtocolWriter& writer;
 
 	  protected:
-		virtual void writeBlock(const char*, size_t);
+		virtual void writeBlock(const char*, util::MemorySize);
 
 	  public:
 		ProtocolOutputStream(ProtocolWriter&);

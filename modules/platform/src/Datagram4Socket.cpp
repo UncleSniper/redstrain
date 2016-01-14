@@ -15,6 +15,8 @@
 #include <netinet/ip.h>
 #endif /* OS-specific includes */
 
+using redengine::util::MemorySize;
+
 namespace redengine {
 namespace platform {
 
@@ -34,11 +36,11 @@ namespace platform {
 			throw DatagramSocketBindError(errno);
 	}
 
-	size_t Datagram4Socket::receive(char* buffer, size_t size, Networking::IP4Address* addr,
+	MemorySize Datagram4Socket::receive(char* buffer, MemorySize size, Networking::IP4Address* addr,
 			Networking::TCPPort* port) {
 		struct sockaddr_in paddr;
 		socklen_t fromlen = static_cast<socklen_t>(sizeof(paddr));
-		ssize_t count = recvfrom(handle, buffer, size, MSG_TRUNC,
+		ssize_t count = recvfrom(handle, buffer, static_cast<size_t>(size), MSG_TRUNC,
 				reinterpret_cast<struct sockaddr*>(&paddr), &fromlen);
 		if(count == static_cast<ssize_t>(-1))
 			throw DatagramSocketIOError(SocketIOError::RECEIVE, errno);
@@ -54,17 +56,17 @@ namespace platform {
 			if(port)
 				*port = static_cast<Networking::TCPPort>(0u);
 		}
-		return static_cast<size_t>(count);
+		return static_cast<MemorySize>(count);
 	}
 
-	void Datagram4Socket::send(const char* buffer, size_t size, Networking::IP4Address addr,
+	void Datagram4Socket::send(const char* buffer, MemorySize size, Networking::IP4Address addr,
 			Networking::TCPPort port) {
 		struct sockaddr_in paddr;
 		paddr.sin_family = AF_INET;
 		paddr.sin_port = htons(port);
 		paddr.sin_addr.s_addr = addr;
-		ssize_t count = sendto(handle, buffer, size, 0, reinterpret_cast<struct sockaddr*>(&paddr),
-				static_cast<socklen_t>(sizeof(paddr)));
+		ssize_t count = sendto(handle, buffer, static_cast<size_t>(size), 0,
+				reinterpret_cast<struct sockaddr*>(&paddr), static_cast<socklen_t>(sizeof(paddr)));
 		if(count == static_cast<ssize_t>(-1)) {
 			if(errno == EMSGSIZE)
 				throw SocketPacketSizeExceededError(EMSGSIZE);
@@ -90,7 +92,7 @@ namespace platform {
 			throw DatagramSocketBindError(WSAGetLastError());
 	}
 
-	size_t Datagram4Socket::receive(char* buffer, size_t size, Networking::IP4Address* addr,
+	MemorySize Datagram4Socket::receive(char* buffer, MemorySize size, Networking::IP4Address* addr,
 			Networking::TCPPort* port) {
 		struct sockaddr_in paddr;
 		int fromlen = static_cast<int>(sizeof(paddr));
@@ -114,10 +116,10 @@ namespace platform {
 			if(port)
 				*port = static_cast<Networking::TCPPort>(0u);
 		}
-		return static_cast<size_t>(count);
+		return static_cast<MemorySize>(count);
 	}
 
-	void Datagram4Socket::send(const char* buffer, size_t size, Networking::IP4Address addr,
+	void Datagram4Socket::send(const char* buffer, MemorySize size, Networking::IP4Address addr,
 			Networking::TCPPort port) {
 		struct sockaddr_in paddr;
 		paddr.sin_family = AF_INET;

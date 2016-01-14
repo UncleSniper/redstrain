@@ -1,9 +1,11 @@
 #include "SeekOffsetOutOfBoundsError.hpp"
 
+using redengine::util::FileOffset;
+
 namespace redengine {
 namespace io {
 
-	SeekOffsetOutOfBoundsError::SeekOffsetOutOfBoundsError(off_t offset) : offset(offset) {}
+	SeekOffsetOutOfBoundsError::SeekOffsetOutOfBoundsError(FileOffset offset) : offset(offset) {}
 
 	SeekOffsetOutOfBoundsError::SeekOffsetOutOfBoundsError(const SeekOffsetOutOfBoundsError& error)
 			: Error(error), IOError(error), offset(error.offset) {}

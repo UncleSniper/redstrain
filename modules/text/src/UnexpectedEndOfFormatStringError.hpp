@@ -9,7 +9,7 @@ namespace text {
 	class REDSTRAIN_TEXT_API UnexpectedEndOfFormatStringError : public FormatStringSyntaxError {
 
 	  public:
-		UnexpectedEndOfFormatStringError(size_t);
+		UnexpectedEndOfFormatStringError(util::MemorySize);
 		UnexpectedEndOfFormatStringError(const UnexpectedEndOfFormatStringError&);
 
 		REDSTRAIN_DECLARE_ERROR(UnexpectedEndOfFormatStringError)

@@ -3,10 +3,11 @@
 
 #include <cstdlib>
 
-#include "api.hpp"
 #include "IntegerLog.hpp"
 #include "IntegerBits.hpp"
 #include "TypeCombinators.hpp"
+#include "api.hpp"
+#include "types.hpp"
 
 namespace redengine {
 namespace util {
@@ -57,7 +58,7 @@ namespace util {
 	}
 
 	template<typename IntegerT>
-	void randomInts(IntegerT* sink, size_t count) {
+	void randomInts(IntegerT* sink, MemorySize count) {
 		for(; count; --count, ++sink)
 			*sink = randomInt<IntegerT>();
 	}

@@ -1,6 +1,8 @@
 #ifndef REDSTRAIN_MOD_ERROR_INDEXOUTOFBOUNDSERROR_HPP
 #define REDSTRAIN_MOD_ERROR_INDEXOUTOFBOUNDSERROR_HPP
 
+#include <redstrain/util/types.hpp>
+
 #include "IllegalArgumentError.hpp"
 
 namespace redengine {
@@ -9,13 +11,13 @@ namespace error {
 	class REDSTRAIN_ERROR_API IndexOutOfBoundsError : public IllegalArgumentError {
 
 	  private:
-		const size_t index;
+		const util::MemorySize index;
 
 	  public:
-		IndexOutOfBoundsError(size_t);
+		IndexOutOfBoundsError(util::MemorySize);
 		IndexOutOfBoundsError(const IndexOutOfBoundsError&);
 
-		inline size_t getOffendingIndex() const {
+		inline util::MemorySize getOffendingIndex() const {
 			return index;
 		}
 

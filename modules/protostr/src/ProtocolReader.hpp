@@ -14,8 +14,10 @@ namespace protostr {
 	class REDSTRAIN_PROTOSTR_API ProtocolReader {
 
 	  private:
-		static const size_t BUFFER_SIZE = static_cast<size_t>(REDSTRAIN_PROTOSTR_READER_BUFFER_SIZE);
-		static const size_t STRING_BUFFER_SIZE = static_cast<size_t>(REDSTRAIN_PROTOSTR_READER_STRING_BUFFER_SIZE);
+		static const util::MemorySize BUFFER_SIZE
+				= static_cast<util::MemorySize>(REDSTRAIN_PROTOSTR_READER_BUFFER_SIZE);
+		static const util::MemorySize STRING_BUFFER_SIZE
+				= static_cast<util::MemorySize>(REDSTRAIN_PROTOSTR_READER_STRING_BUFFER_SIZE);
 
 	  private:
 		enum State {
@@ -35,12 +37,13 @@ namespace protostr {
 	  private:
 		io::InputStream<char>& stream;
 		char gatherBuffer[BUFFER_SIZE];
-		size_t gatherFill, pendingSize, pendingChunkSize;
+		util::MemorySize gatherFill;
+		util::FileSize pendingSize, pendingChunkSize;
 		State state;
 
 	  private:
-		void readRawElement(size_t);
-		void readBlockBody(char*, size_t, size_t&, size_t&);
+		void readRawElement(util::MemorySize);
+		void readBlockBody(char*, util::MemorySize, util::MemorySize&, util::FileSize&);
 
 	  public:
 		ProtocolReader(io::InputStream<char>&);
@@ -79,9 +82,9 @@ namespace protostr {
 		int64_t readInt64NBO();
 		uint64_t readUInt64NBO();
 
-		void readBlock8(char*, size_t, size_t&, size_t&);
-		void readBlock16(char*, size_t, size_t&, size_t&);
-		void readBlock32(char*, size_t, size_t&, size_t&);
+		void readBlock8(char*, util::MemorySize, util::MemorySize&, util::FileSize&);
+		void readBlock16(char*, util::MemorySize, util::MemorySize&, util::FileSize&);
+		void readBlock32(char*, util::MemorySize, util::MemorySize&, util::FileSize&);
 		void readString8(std::string&);
 		void readString16(std::string&);
 		void readString32(std::string&);
@@ -92,7 +95,7 @@ namespace protostr {
 		void readUnsizedStream8();
 		void readUnsizedStream16();
 		void readUnsizedStream32();
-		size_t readChunk(char*, size_t);
+		util::MemorySize readChunk(char*, util::MemorySize);
 		void readEndOfStream();
 
 	};

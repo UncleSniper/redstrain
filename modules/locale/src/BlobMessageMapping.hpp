@@ -4,6 +4,7 @@
 #include <map>
 #include <list>
 #include <string>
+#include <redstrain/util/types.hpp>
 
 #include "api.hpp"
 
@@ -17,11 +18,11 @@ namespace locale {
 
 		  private:
 			std::string language, country;
-			const char * data;
-			size_t size;
+			const char* data;
+			util::MemorySize size;
 
 		  public:
-			Blob(const std::string&, const std::string&, const char*, size_t);
+			Blob(const std::string&, const std::string&, const char*, util::MemorySize);
 			Blob(const Blob&);
 
 			inline const std::string& getCountry() const {
@@ -36,7 +37,7 @@ namespace locale {
 				return data;
 			}
 
-			inline size_t getSize() const {
+			inline util::MemorySize getSize() const {
 				return size;
 			}
 
@@ -62,7 +63,7 @@ namespace locale {
 		~BlobMessageMapping();
 
 		void addBlob(const Blob&);
-		void addBlob(const std::string&, const std::string&, const char*, size_t);
+		void addBlob(const std::string&, const std::string&, const char*, util::MemorySize);
 		bool linkBlob(const std::string&, const std::string&, const std::string&, const std::string&);
 		void clearBlobs();
 		void getBlobs(BlobIterator&, BlobIterator&) const;

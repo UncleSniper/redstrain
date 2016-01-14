@@ -16,7 +16,7 @@ namespace protostr {
 		ProtocolReader& reader;
 
 	  protected:
-		virtual size_t readBlock(char*, size_t);
+		virtual util::MemorySize readBlock(char*, util::MemorySize);
 
 	  public:
 		ProtocolInputStream(ProtocolReader&);

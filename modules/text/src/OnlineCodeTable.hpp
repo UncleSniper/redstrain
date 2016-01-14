@@ -17,19 +17,19 @@ namespace text {
 	class OnlineCodeTable : public CodeTable<CharT> {
 
 	  private:
-		static const size_t TABLE_SIZE = static_cast<size_t>(256u) * sizeof(CharT);
-		static const size_t TRIE_OFFSET = TABLE_SIZE + static_cast<size_t>(4u);
-		static const size_t NODE_SIZE = static_cast<size_t>(16u * 4u);
+		static const util::FileSize TABLE_SIZE = static_cast<util::FileSize>(256u) * sizeof(CharT);
+		static const util::FileSize TRIE_OFFSET = TABLE_SIZE + static_cast<util::FileSize>(4u);
+		static const util::FileSize NODE_SIZE = static_cast<util::FileSize>(16u * 4u);
 
 	  private:
 		io::InputStream<char>& stream;
 		protostr::ProtocolReader proto;
-		size_t dataOffset;
+		util::FileSize dataOffset;
 
 		void seekToNode(uint32_t nodeIndex, unsigned childIndex = 0u) {
-			size_t offset = dataOffset + TRIE_OFFSET + static_cast<size_t>(nodeIndex) * NODE_SIZE
-					+ static_cast<size_t>(childIndex * 4u);
-			stream.seek(offset, io::Stream::OFFSET_FROM_START);
+			util::FileSize offset = dataOffset + TRIE_OFFSET + static_cast<util::FileSize>(nodeIndex) * NODE_SIZE
+					+ static_cast<util::FileSize>(childIndex * 4u);
+			stream.seek(static_cast<util::FileOffset>(offset), io::Stream::OFFSET_FROM_START);
 		}
 
 	  public:
@@ -45,7 +45,7 @@ namespace text {
 			return stream;
 		}
 
-		inline size_t getDataOffset() const {
+		inline util::FileSize getDataOffset() const {
 			return dataOffset;
 		}
 
@@ -81,8 +81,9 @@ namespace text {
 		virtual CharT decodeCharacter(char eight) {
 			try {
 				unsigned index = static_cast<unsigned>(static_cast<unsigned char>(eight));
-				size_t offset = dataOffset + static_cast<size_t>(index) * sizeof(CharT);
-				stream.seek(offset, io::Stream::OFFSET_FROM_START);
+				util::FileSize offset = dataOffset
+						+ static_cast<util::FileSize>(index) * static_cast<util::FileSize>(sizeof(CharT));
+				stream.seek(static_cast<util::FileOffset>(offset), io::Stream::OFFSET_FROM_START);
 				return protostr::readProtocolPrimitive<CharT>(proto);
 			}
 			catch(const error::IOError& error) {

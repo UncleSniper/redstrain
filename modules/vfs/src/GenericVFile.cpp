@@ -3,6 +3,7 @@
 using std::string;
 using redengine::text::String16;
 using redengine::util::Appender;
+using redengine::util::FileSize;
 using redengine::io::InputStream;
 using redengine::io::OutputStream;
 using redengine::io::BidirectionalStream;
@@ -82,7 +83,7 @@ namespace vfs {
 		getVFS().readdir(path.begin(), path.end(), sink);
 	}
 
-	void GenericVFile::truncate(size_t size) {
+	void GenericVFile::truncate(FileSize size) {
 		getVFS().truncate(path.begin(), path.end(), size);
 	}
 

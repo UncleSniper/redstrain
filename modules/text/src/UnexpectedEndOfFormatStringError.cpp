@@ -1,9 +1,11 @@
 #include "UnexpectedEndOfFormatStringError.hpp"
 
+using redengine::util::MemorySize;
+
 namespace redengine {
 namespace text {
 
-	UnexpectedEndOfFormatStringError::UnexpectedEndOfFormatStringError(size_t offset)
+	UnexpectedEndOfFormatStringError::UnexpectedEndOfFormatStringError(MemorySize offset)
 			: FormatStringSyntaxError(offset) {}
 
 	UnexpectedEndOfFormatStringError::UnexpectedEndOfFormatStringError(const UnexpectedEndOfFormatStringError& error)

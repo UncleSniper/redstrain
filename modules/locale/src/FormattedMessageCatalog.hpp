@@ -2,6 +2,7 @@
 #define REDSTRAIN_MOD_LOCALE_FORMATTEDMESSAGECATALOG_HPP
 
 #include <redstrain/text/Formatter.hpp>
+#include <redstrain/util/types.hpp>
 
 #include "MessageCatalog.hpp"
 
@@ -60,7 +61,8 @@ namespace locale {
 		}
 
 		template<typename IteratorT>
-		String formatMessageIter(const Locale& locale, KeyT key, const IteratorT& beginItems, size_t itemCount) {
+		String formatMessageIter(const Locale& locale, KeyT key, const IteratorT& beginItems,
+				util::MemorySize itemCount) {
 			return formatter.template formatIter<IteratorT>(this->getMessage(locale, key), beginItems, itemCount);
 		}
 

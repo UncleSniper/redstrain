@@ -24,8 +24,10 @@ using redengine::util::Ref;
 using redengine::util::Delete;
 using redengine::text::String16;
 using redengine::util::Appender;
+using redengine::util::FileSize;
 using redengine::io::InputStream;
 using redengine::io::OutputStream;
+using redengine::util::MemorySize;
 using redengine::util::IntegerBounds;
 using redengine::platform::MutexPool;
 using redengine::platform::ObjectLocker;
@@ -67,7 +69,7 @@ namespace vfs {
 		info.setDevice(Stat::NO_DEVICE);
 		info.setSpecialSpecifier(Stat::NO_DEVICE);
 		info.setPermissions(permissions);
-		info.setSize(static_cast<size_t>(0u));
+		info.setSize(static_cast<FileSize>(0u));
 		info.setAccessTimestamp(atime);
 		info.setModificationTimestamp(mtime);
 		info.setStatusChangeTimestamp(ctime);
@@ -145,7 +147,7 @@ namespace vfs {
 		return Stat::DIRECTORY;
 	}
 
-	void MemoryBase::MemoryDirectory::truncate(size_t) {
+	void MemoryBase::MemoryDirectory::truncate(FileSize) {
 		throw IsADirectoryError();
 	}
 
@@ -179,7 +181,7 @@ namespace vfs {
 
 	void MemoryBase::SimpleMemoryDirectory::stat(Stat& info) {
 		ObjectLocker<MemoryFile> locker(getMemoryBase().getEffectiveMutexPool(), this);
-		info.setSize(static_cast<size_t>(entries.size()));
+		info.setSize(static_cast<FileSize>(entries.size()));
 		locker.release();
 	}
 
@@ -247,7 +249,7 @@ namespace vfs {
 		result = target;
 	}
 
-	void MemoryBase::SimpleMemorySymlink::truncate(size_t) {
+	void MemoryBase::SimpleMemorySymlink::truncate(FileSize) {
 		throw ProgrammingError("MemoryBase should not attempt to call MemoryFile::truncate() on a symlink");
 	}
 
@@ -280,7 +282,7 @@ namespace vfs {
 		info.setSize(getMemoryBase().getDeviceSize(block, device));
 	}
 
-	void MemoryBase::SimpleMemoryDeviceFile::truncate(size_t size) {
+	void MemoryBase::SimpleMemoryDeviceFile::truncate(FileSize size) {
 		getMemoryBase().truncateDevice(block, device, size);
 	}
 
@@ -301,10 +303,13 @@ namespace vfs {
 	struct UnrefPartialTreePath {
 
 		list<MemoryBase::MemoryFile*>* stack;
-		size_t count;
+		MemorySize count;
 
-		UnrefPartialTreePath(list<MemoryBase::MemoryFile*>* stack) : stack(stack), count(static_cast<size_t>(0u)) {}
-		UnrefPartialTreePath(const UnrefPartialTreePath& pointer) : stack(pointer.stack), count(pointer.count) {}
+		UnrefPartialTreePath(list<MemoryBase::MemoryFile*>* stack)
+				: stack(stack), count(static_cast<MemorySize>(0u)) {}
+
+		UnrefPartialTreePath(const UnrefPartialTreePath& pointer)
+				: stack(pointer.stack), count(pointer.count) {}
 
 		~UnrefPartialTreePath() {
 			if(!stack)
@@ -810,7 +815,7 @@ namespace vfs {
 		sync.release();
 	}
 
-	void MemoryBase::MemoryVFile::truncate(size_t size) {
+	void MemoryBase::MemoryVFile::truncate(FileSize size) {
 		MemoryBase& mbase = parent->getMemoryBase();
 		ObjectLocker<MemoryVFile> sync(mbase.getEffectiveMutexPool(), this);
 		if(!*child) {
@@ -1133,11 +1138,11 @@ namespace vfs {
 		return new SimpleMemoryDeviceFile(*this, permissions, block, device);
 	}
 
-	size_t MemoryBase::getDeviceSize(bool, Stat::DeviceID) {
-		return static_cast<size_t>(0u);
+	FileSize MemoryBase::getDeviceSize(bool, Stat::DeviceID) {
+		return static_cast<FileSize>(0u);
 	}
 
-	void MemoryBase::truncateDevice(bool block, Stat::DeviceID device, size_t) {
+	void MemoryBase::truncateDevice(bool block, Stat::DeviceID device, FileSize) {
 		throw UnsupportedDeviceFileOperationError(block, device, UnsupportedDeviceFileOperationError::TRUNCATE);
 	}
 
@@ -1544,7 +1549,7 @@ namespace vfs {
 		file.move();
 	}
 
-	void MemoryBase::truncate(PathIterator pathBegin, PathIterator pathEnd, size_t size) {
+	void MemoryBase::truncate(PathIterator pathBegin, PathIterator pathEnd, FileSize size) {
 		Ref<MemoryFile> file(requireFile(pathBegin, pathEnd));
 		file = snapSymbolicLinks(pathBegin, pathEnd, file.set(), false);
 		if(flags & MemoryBase::BFL_READONLY) {
@@ -1562,11 +1567,11 @@ namespace vfs {
 
 	void MemoryBase::statfs(FSInfo& info) const {
 		info.setType(RED_MEMORYFS);
-		info.setTotalBlockCount(static_cast<size_t>(0u));
-		info.setFreeBlockCount(static_cast<size_t>(0u));
-		info.setTotalINodeCount(static_cast<size_t>(0u));
-		info.setFreeINodeCount(static_cast<size_t>(0u));
-		info.setMaximumFilenameLength(IntegerBounds<size_t>::MAX);
+		info.setTotalBlockCount(static_cast<FileSize>(0u));
+		info.setFreeBlockCount(static_cast<FileSize>(0u));
+		info.setTotalINodeCount(static_cast<FileSize>(0u));
+		info.setFreeINodeCount(static_cast<FileSize>(0u));
+		info.setMaximumFilenameLength(IntegerBounds<MemorySize>::MAX);
 	}
 
 	void MemoryBase::mknod(PathIterator pathBegin, PathIterator pathEnd, Stat::Type type, int permissions,

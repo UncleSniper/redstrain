@@ -5,6 +5,7 @@
 #include <redstrain/util/Appender.hpp>
 #include <redstrain/util/WithAlign.hpp>
 #include <redstrain/error/ListIndexOutOfBoundsError.hpp>
+#include <redstrain/util/types.hpp>
 
 #include "allocators.hpp"
 #include "destructors.hpp"
@@ -14,19 +15,23 @@ namespace algorithm {
 
 	template<
 		typename ElementT,
-		size_t SpareBytes = static_cast<size_t>(128u),
-		size_t CombineBytes = static_cast<size_t>(64u)
+		util::MemorySize SpareBytes = static_cast<util::MemorySize>(128u),
+		util::MemorySize CombineBytes = static_cast<util::MemorySize>(64u)
 	>
 	class DefaultRopeTraits {
 
 	  private:
-		static const size_t _SPARE_SIZE = SpareBytes / sizeof(ElementT);
-		static const size_t _COMBINE_LIMIT = CombineBytes / sizeof(ElementT);
+		static const util::MemorySize _SPARE_SIZE = SpareBytes / static_cast<util::MemorySize>(sizeof(ElementT));
+		static const util::MemorySize _COMBINE_LIMIT
+				= CombineBytes / static_cast<util::MemorySize>(sizeof(ElementT));
 
 	  public:
-		static const size_t COMBINE_LIMIT = _COMBINE_LIMIT ? _COMBINE_LIMIT : static_cast<size_t>(1u);
-		static const size_t MOVE_LIMIT = COMBINE_LIMIT * static_cast<size_t>(2u) / static_cast<size_t>(3u);
-		static const size_t SPARE_SIZE = _SPARE_SIZE ? _SPARE_SIZE : static_cast<size_t>(1u);
+		static const util::MemorySize COMBINE_LIMIT
+				= _COMBINE_LIMIT ? _COMBINE_LIMIT : static_cast<util::MemorySize>(1u);
+		static const util::MemorySize MOVE_LIMIT
+				= COMBINE_LIMIT * static_cast<util::MemorySize>(2u) / static_cast<util::MemorySize>(3u);
+		static const util::MemorySize SPARE_SIZE
+				= _SPARE_SIZE ? _SPARE_SIZE : static_cast<util::MemorySize>(1u);
 
 	};
 
@@ -34,7 +39,7 @@ namespace algorithm {
 		typename ElementT,
 		void (*Destructor)(ElementT&) = explicitDestructor<ElementT>,
 		typename RopeTraitsT = DefaultRopeTraits<ElementT>,
-		void* (*Allocator)(size_t) = standardAlloc
+		void* (*Allocator)(util::MemorySize) = standardAlloc
 	>
 	class Rope {
 
@@ -43,9 +48,9 @@ namespace algorithm {
 		typedef RopeTraitsT RopeTraits;
 
 	  public:
-		static const size_t COMBINE_LIMIT = RopeTraitsT::COMBINE_LIMIT;
-		static const size_t MOVE_LIMIT = RopeTraitsT::MOVE_LIMIT;
-		static const size_t SPARE_SIZE = RopeTraitsT::SPARE_SIZE;
+		static const util::MemorySize COMBINE_LIMIT = RopeTraitsT::COMBINE_LIMIT;
+		static const util::MemorySize MOVE_LIMIT = RopeTraitsT::MOVE_LIMIT;
+		static const util::MemorySize SPARE_SIZE = RopeTraitsT::SPARE_SIZE;
 
 	  private:
 		typedef typename util::WithAlign<util::AlignOf<ElementT>::ALIGNMENT>::Primitive AlignElement;
@@ -54,11 +59,11 @@ namespace algorithm {
 		class DeleteLeafNode : public util::Pointer<SubjectT> {
 
 		  public:
-			size_t count;
+			util::MemorySize count;
 
 		  public:
 			DeleteLeafNode(SubjectT* object = NULL)
-					: util::Pointer<SubjectT>(object), count(static_cast<size_t>(0u)) {}
+					: util::Pointer<SubjectT>(object), count(static_cast<util::MemorySize>(0u)) {}
 
 			DeleteLeafNode(const DeleteLeafNode& pointer)
 					: util::Pointer<SubjectT>(pointer), count(pointer.count) {}
@@ -68,7 +73,7 @@ namespace algorithm {
 					return;
 				if(!this->object->height)
 					static_cast<LeafT*>(this->object)->destroyElements(count,
-							static_cast<size_t>(0u), static_cast<size_t>(0u));
+							static_cast<util::MemorySize>(0u), static_cast<util::MemorySize>(0u));
 				delete this->object;
 			}
 
@@ -83,23 +88,23 @@ namespace algorithm {
 
 		struct Node {
 
-			size_t height;
+			util::MemorySize height;
 
-			Node(size_t height) : height(height) {}
+			Node(util::MemorySize height) : height(height) {}
 			virtual ~Node() {}
 
-			virtual Node* clone(size_t) const = 0;
-			virtual void destroy(size_t, size_t, size_t) = 0;
+			virtual Node* clone(util::MemorySize) const = 0;
+			virtual void destroy(util::MemorySize, util::MemorySize, util::MemorySize) = 0;
 
 		};
 
 		class DeleteAnyNode : public util::Pointer<Node> {
 
 		  public:
-			size_t length;
+			util::MemorySize length;
 
 		  public:
-			DeleteAnyNode(Node* node = NULL, size_t length = static_cast<size_t>(0u))
+			DeleteAnyNode(Node* node = NULL, util::MemorySize length = static_cast<util::MemorySize>(0u))
 					: util::Pointer<Node>(node), length(length) {}
 
 			DeleteAnyNode(const DeleteAnyNode& pointer)
@@ -107,7 +112,8 @@ namespace algorithm {
 
 			~DeleteAnyNode() {
 				if(this->object) {
-					this->object->destroy(length, static_cast<size_t>(0u), static_cast<size_t>(0u));
+					this->object->destroy(length,
+							static_cast<util::MemorySize>(0u), static_cast<util::MemorySize>(0u));
 					delete this->object;
 				}
 			}
@@ -123,19 +129,19 @@ namespace algorithm {
 
 		struct Leaf : Node {
 
-			size_t size;
+			util::MemorySize size;
 			AlignElement elements;
 
-			Leaf(size_t size) : Node(static_cast<size_t>(0u)), size(size) {}
+			Leaf(util::MemorySize size) : Node(static_cast<util::MemorySize>(0u)), size(size) {}
 
 			inline ElementT* getElements() {
 				return reinterpret_cast<ElementT*>(&elements);
 			}
 
-			void destroyElements(size_t length, size_t finalBegin, size_t finalEnd) {
+			void destroyElements(util::MemorySize length, util::MemorySize finalBegin, util::MemorySize finalEnd) {
 				ElementT* eptr = reinterpret_cast<ElementT*>(&elements);
-				size_t index;
-				for(index = static_cast<size_t>(0u); index < length; ++index) {
+				util::MemorySize index;
+				for(index = static_cast<util::MemorySize>(0u); index < length; ++index) {
 					if(index >= finalBegin && index < finalEnd)
 						Destructor(eptr[index]);
 					else
@@ -143,8 +149,8 @@ namespace algorithm {
 				}
 			}
 
-			virtual Node* clone(size_t length) const {
-				DeleteLeafNode<Leaf, Leaf> newLeaf(new(size) Leaf(size));
+			virtual Node* clone(util::MemorySize length) const {
+				DeleteLeafNode<Leaf, Leaf> newLeaf(new(static_cast<size_t>(size)) Leaf(size));
 				const ElementT* src = reinterpret_cast<const ElementT*>(&elements);
 				ElementT* dest = reinterpret_cast<ElementT*>(&newLeaf->elements);
 				for(; length; ++src, ++dest, --length) {
@@ -154,12 +160,13 @@ namespace algorithm {
 				return newLeaf.set();
 			}
 
-			virtual void destroy(size_t length, size_t finalBegin, size_t finalEnd) {
+			virtual void destroy(util::MemorySize length, util::MemorySize finalBegin, util::MemorySize finalEnd) {
 				destroyElements(length, finalBegin, finalEnd);
 			}
 
 			static void* operator new(size_t allocSize, size_t nodeSize) {
-				return Allocator(allocSize - sizeof(AlignElement) + nodeSize * sizeof(ElementT));
+				return Allocator(static_cast<util::MemorySize>(allocSize - sizeof(AlignElement)
+						+ nodeSize * sizeof(ElementT)));
 			}
 
 		};
@@ -167,18 +174,19 @@ namespace algorithm {
 		struct Concat : Node {
 
 			Node *left, *right;
-			size_t weight;
+			util::MemorySize weight;
 
-			Concat(Node* left, Node* right, size_t weight)
-					: Node((left->height < right->height ? right->height : left->height) + static_cast<size_t>(1u)),
+			Concat(Node* left, Node* right, util::MemorySize weight)
+					: Node((left->height < right->height ? right->height : left->height)
+					+ static_cast<util::MemorySize>(1u)),
 					left(left), right(right), weight(weight) {}
 
 			void fixHeight() {
 				this->height = (left->height < right->height
-						? right->height : left->height) + static_cast<size_t>(1u);
+						? right->height : left->height) + static_cast<util::MemorySize>(1u);
 			}
 
-			virtual Node* clone(size_t length) const {
+			virtual Node* clone(util::MemorySize length) const {
 				DeleteAnyNode newLeft(left->clone(weight), weight);
 				DeleteAnyNode newRight(right->clone(length - weight), length - weight);
 				Concat* cat = new Concat(*newLeft, *newRight, weight);
@@ -187,18 +195,19 @@ namespace algorithm {
 				return cat;
 			}
 
-			virtual void destroy(size_t length, size_t finalBegin, size_t finalEnd) {
+			virtual void destroy(util::MemorySize length, util::MemorySize finalBegin, util::MemorySize finalEnd) {
 				left->destroy(weight, finalBegin, finalEnd);
 				delete left;
 				if(finalBegin >= weight)
 					right->destroy(length - weight, finalBegin - weight, finalEnd - weight);
 				else
-					right->destroy(length - weight, static_cast<size_t>(0u), static_cast<size_t>(0u));
+					right->destroy(length - weight,
+							static_cast<util::MemorySize>(0u), static_cast<util::MemorySize>(0u));
 				delete right;
 			}
 
 			static void* operator new(size_t size) {
-				return Allocator(size);
+				return Allocator(static_cast<util::MemorySize>(size));
 			}
 
 		};
@@ -206,9 +215,9 @@ namespace algorithm {
 		struct DestroyElements {
 
 			ElementT* elements;
-			size_t count;
+			util::MemorySize count;
 
-			DestroyElements(ElementT* elements = NULL, size_t count = static_cast<size_t>(0u))
+			DestroyElements(ElementT* elements = NULL, util::MemorySize count = static_cast<util::MemorySize>(0u))
 					: elements(elements), count(count) {}
 
 			DestroyElements(const DestroyElements& destroy)
@@ -249,14 +258,14 @@ namespace algorithm {
 			struct PathLink {
 
 				Node* node;
-				size_t size, offset;
+				util::MemorySize size, offset;
 				PathLink* parent;
 
-				PathLink(Node* node, size_t size, size_t offset, PathLink* parent)
+				PathLink(Node* node, util::MemorySize size, util::MemorySize offset, PathLink* parent)
 						: node(node), size(size), offset(offset), parent(parent) {}
 
 				static void* operator new(size_t size) {
-					return Allocator(size);
+					return Allocator(static_cast<util::MemorySize>(size));
 				}
 
 			};
@@ -315,15 +324,16 @@ namespace algorithm {
 
 		  protected:
 			const Rope* rope;
-			size_t offset;
+			util::MemorySize offset;
 			PathLink *path;
 
 		  protected:
-			IteratorBase(const Rope* rope, size_t offset, PathLink* path)
+			IteratorBase(const Rope* rope, util::MemorySize offset, PathLink* path)
 					: rope(rope), offset(offset), path(path) {}
 
-			IteratorBase(const Rope* rope, size_t offset, PathLink* path, size_t delta, bool moveForward,
-					bool allowExcess) : rope(rope), offset(offset), path(path) {
+			IteratorBase(const Rope* rope, util::MemorySize offset, PathLink* path,
+					util::MemorySize delta, bool moveForward, bool allowExcess)
+					: rope(rope), offset(offset), path(path) {
 				DeletePath destroyPath(path);
 				if(moveForward)
 					forward(delta, allowExcess);
@@ -338,22 +348,22 @@ namespace algorithm {
 				return static_cast<Leaf*>(path->node)->getElements() + path->offset;
 			}
 
-			void buildStackFromOffset(size_t newOffset) {
+			void buildStackFromOffset(util::MemorySize newOffset) {
 				Node *node = rope->root, *next;
 				DeletePath destroy;
-				size_t index = newOffset, size = rope->cursize;
+				util::MemorySize index = newOffset, size = rope->cursize;
 				while(node->height) {
 					Concat* cat = static_cast<Concat*>(node);
-					size_t coff, nextSize;
+					util::MemorySize coff, nextSize;
 					if(index < cat->weight) {
 						next = cat->left;
-						coff = static_cast<size_t>(0u);
+						coff = static_cast<util::MemorySize>(0u);
 						nextSize = cat->weight;
 					}
 					else {
 						next = cat->right;
 						index -= cat->weight;
-						coff = static_cast<size_t>(1u);
+						coff = static_cast<util::MemorySize>(1u);
 						nextSize = size - cat->weight;
 					}
 					destroy.path = path = new PathLink(node, size, coff, path);
@@ -365,8 +375,8 @@ namespace algorithm {
 				offset = newOffset;
 			}
 
-			void forward(size_t delta, bool allowExcess) {
-				size_t target = offset + delta;
+			void forward(util::MemorySize delta, bool allowExcess) {
+				util::MemorySize target = offset + delta;
 				if(allowExcess && target == rope->cursize) {
 					if(path) {
 						destroyPath(path);
@@ -384,7 +394,7 @@ namespace algorithm {
 				}
 				// 'scanOffset' points after the end of the
 				// interval we just ascended from
-				size_t scanOffset = offset + (path->size - path->offset);
+				util::MemorySize scanOffset = offset + (path->size - path->offset);
 				util::Delete<PathLink> deleteLeafLink(path);
 				PathLink *top = path->parent, *next;
 				ClearIterator clearOnError(*this, &top);
@@ -416,11 +426,12 @@ namespace algorithm {
 					tcat = static_cast<Concat*>(top->node);
 					if(target - scanOffset < tcat->weight) {
 						// go left
-						next = new PathLink(tcat->left, tcat->weight, static_cast<size_t>(0u), top);
+						next = new PathLink(tcat->left, tcat->weight, static_cast<util::MemorySize>(0u), top);
 					}
 					else {
 						// go right
-						next = new PathLink(tcat->right, top->size - tcat->weight, static_cast<size_t>(0u), top);
+						next = new PathLink(tcat->right, top->size - tcat->weight,
+								static_cast<util::MemorySize>(0u), top);
 						scanOffset += tcat->weight;
 						++top->offset;
 					}
@@ -432,8 +443,8 @@ namespace algorithm {
 				offset = target;
 			}
 
-			void backward(size_t delta, bool allowExcess) {
-				if(allowExcess && delta == offset + static_cast<size_t>(1u)) {
+			void backward(util::MemorySize delta, bool allowExcess) {
+				if(allowExcess && delta == offset + static_cast<util::MemorySize>(1u)) {
 					if(path) {
 						destroyPath(path);
 						path = NULL;
@@ -441,7 +452,7 @@ namespace algorithm {
 					offset = rope->cursize;
 					return;
 				}
-				size_t target = offset - delta;
+				util::MemorySize target = offset - delta;
 				if(delta > offset)
 					throw error::ListIndexOutOfBoundsError(delta);
 				if(path->offset >= delta) {
@@ -451,7 +462,7 @@ namespace algorithm {
 				}
 				// 'scanOffset' points to the start of
 				// the interval we just ascended from
-				size_t scanOffset = offset - path->offset;
+				util::MemorySize scanOffset = offset - path->offset;
 				util::Delete<PathLink> deleteLeafLink(path);
 				PathLink *top = path->parent, *next;
 				ClearIterator clearOnError(*this, &top);
@@ -483,11 +494,12 @@ namespace algorithm {
 					tcat = static_cast<Concat*>(top->node);
 					if(target - scanOffset < tcat->weight) {
 						// go left
-						next = new PathLink(tcat->left, tcat->weight, static_cast<size_t>(0u), top);
+						next = new PathLink(tcat->left, tcat->weight, static_cast<util::MemorySize>(0u), top);
 					}
 					else {
 						// go right
-						next = new PathLink(tcat->right, top->size - tcat->weight, static_cast<size_t>(0u), top);
+						next = new PathLink(tcat->right, top->size - tcat->weight,
+								static_cast<util::MemorySize>(0u), top);
 						scanOffset += tcat->weight;
 						++top->offset;
 					}
@@ -500,9 +512,9 @@ namespace algorithm {
 			}
 
 		  protected:
-			IteratorBase(const Rope* rope, size_t offset) : rope(rope), offset(offset), path(NULL) {
+			IteratorBase(const Rope* rope, util::MemorySize offset) : rope(rope), offset(offset), path(NULL) {
 				if(!rope)
-					offset = static_cast<size_t>(0u);
+					offset = static_cast<util::MemorySize>(0u);
 				else if(offset < rope->cursize)
 					buildStackFromOffset(offset);
 				else
@@ -523,7 +535,7 @@ namespace algorithm {
 				return rope;
 			}
 
-			inline size_t index() const {
+			inline util::MemorySize index() const {
 				return offset;
 			}
 
@@ -533,21 +545,21 @@ namespace algorithm {
 		class ConstIterator : public IteratorBase {
 
 		  protected:
-			ConstIterator(const Rope* rope, size_t offset, typename IteratorBase::PathLink* path)
+			ConstIterator(const Rope* rope, util::MemorySize offset, typename IteratorBase::PathLink* path)
 					: IteratorBase(rope, offset, path) {}
-			ConstIterator(const Rope* rope, size_t offset, typename IteratorBase::PathLink* path,
-					size_t delta, bool moveForward, bool allowExcess)
+			ConstIterator(const Rope* rope, util::MemorySize offset, typename IteratorBase::PathLink* path,
+					util::MemorySize delta, bool moveForward, bool allowExcess)
 					: IteratorBase(rope, offset, path, delta, moveForward, allowExcess) {}
 
 		  protected:
 			void preincrement() {
 				if(this->rope && this->offset < this->rope->cursize)
-					this->forward(static_cast<size_t>(1u), true);
+					this->forward(static_cast<util::MemorySize>(1u), true);
 			}
 
 			typename IteratorBase::PathLink* postincrement() {
 				typename IteratorBase::DeletePath oldPath(this->path ? IteratorBase::clonePath(this->path) : NULL);
-				this->forward(static_cast<size_t>(1u), true);
+				this->forward(static_cast<util::MemorySize>(1u), true);
 				typename IteratorBase::PathLink* returnPath = oldPath.path;
 				oldPath.path = NULL;
 				return returnPath;
@@ -556,29 +568,29 @@ namespace algorithm {
 			void predecrement() {
 				if(this->rope && this->rope->cursize) {
 					if(this->offset >= this->rope->cursize)
-						this->buildStackFromOffset(this->rope->cursize - static_cast<size_t>(1u));
+						this->buildStackFromOffset(this->rope->cursize - static_cast<util::MemorySize>(1u));
 					else
-						this->backward(static_cast<size_t>(1u), false);
+						this->backward(static_cast<util::MemorySize>(1u), false);
 				}
 			}
 
 			typename IteratorBase::PathLink* postdecrement() {
 				typename IteratorBase::DeletePath oldPath(this->path ? IteratorBase::clonePath(this->path) : NULL);
 				if(this->offset >= this->rope->cursize)
-					this->buildStackFromOffset(this->rope->cursize - static_cast<size_t>(1u));
+					this->buildStackFromOffset(this->rope->cursize - static_cast<util::MemorySize>(1u));
 				else
-					this->backward(static_cast<size_t>(1u), false);
+					this->backward(static_cast<util::MemorySize>(1u), false);
 				typename IteratorBase::PathLink* returnPath = oldPath.path;
 				oldPath.path = NULL;
 				return returnPath;
 			}
 
-			void skipForward(size_t delta) {
+			void skipForward(util::MemorySize delta) {
 				if(delta && this->rope && this->offset < this->rope->cursize)
 					this->forward(delta, true);
 			}
 
-			void skipBackward(size_t delta) {
+			void skipBackward(util::MemorySize delta) {
 				if(this->rope && this->rope->cursize) {
 					if(this->offset >= this->rope->cursize) {
 						if(delta > this->rope->cursize)
@@ -591,8 +603,8 @@ namespace algorithm {
 			}
 
 		  public:
-			ConstIterator() : IteratorBase(NULL, static_cast<size_t>(0u)) {}
-			ConstIterator(const Rope* rope, size_t offset) : IteratorBase(rope, offset) {}
+			ConstIterator() : IteratorBase(NULL, static_cast<util::MemorySize>(0u)) {}
+			ConstIterator(const Rope* rope, util::MemorySize offset) : IteratorBase(rope, offset) {}
 			ConstIterator(const ConstIterator& iterator) : IteratorBase(iterator) {}
 
 			const ElementT& operator*() const {
@@ -608,7 +620,7 @@ namespace algorithm {
 				if(!this->rope || this->offset >= this->rope->cursize)
 					return *this;
 				typename IteratorBase::PathLink* returnPath = postincrement();
-				return ConstIterator(this->rope, this->offset - static_cast<size_t>(1u), returnPath);
+				return ConstIterator(this->rope, this->offset - static_cast<util::MemorySize>(1u), returnPath);
 			}
 
 			ConstIterator& operator--() {
@@ -620,29 +632,29 @@ namespace algorithm {
 				if(!this->rope || !this->rope->cursize)
 					return *this;
 				typename IteratorBase::PathLink* returnPath = postdecrement();
-				return ConstIterator(this->rope, this->offset + static_cast<size_t>(1u), returnPath);
+				return ConstIterator(this->rope, this->offset + static_cast<util::MemorySize>(1u), returnPath);
 			}
 
-			ConstIterator operator+(size_t delta) const {
+			ConstIterator operator+(util::MemorySize delta) const {
 				if(!this->rope || this->offset >= this->rope->cursize)
 					return *this;
 				return ConstIterator(this->rope, this->offset,
 						IteratorBase::clonePath(this->path), delta, true, true);
 			}
 
-			ConstIterator operator-(size_t delta) const {
+			ConstIterator operator-(util::MemorySize delta) const {
 				if(!this->rope || !this->rope->cursize)
 					return *this;
 				return ConstIterator(this->rope, this->offset,
 						IteratorBase::clonePath(this->path), delta, false, false);
 			}
 
-			ConstIterator& operator+=(size_t delta) {
+			ConstIterator& operator+=(util::MemorySize delta) {
 				skipForward(delta);
 				return *this;
 			}
 
-			ConstIterator& operator-=(size_t delta) {
+			ConstIterator& operator-=(util::MemorySize delta) {
 				if(delta)
 					skipBackward(delta);
 				return *this;
@@ -687,15 +699,15 @@ namespace algorithm {
 		class Iterator : public ConstIterator {
 
 		  private:
-			Iterator(const Rope* rope, size_t offset, typename IteratorBase::PathLink* path)
+			Iterator(const Rope* rope, util::MemorySize offset, typename IteratorBase::PathLink* path)
 					: ConstIterator(rope, offset, path) {}
-			Iterator(const Rope* rope, size_t offset, typename IteratorBase::PathLink* path,
-					size_t delta, bool moveForward, bool allowExcess)
+			Iterator(const Rope* rope, util::MemorySize offset, typename IteratorBase::PathLink* path,
+					util::MemorySize delta, bool moveForward, bool allowExcess)
 					: ConstIterator(rope, offset, path, delta, moveForward, allowExcess) {}
 
 		  public:
 			Iterator() {}
-			Iterator(const Rope* rope, size_t offset) : ConstIterator(rope, offset) {}
+			Iterator(const Rope* rope, util::MemorySize offset) : ConstIterator(rope, offset) {}
 			Iterator(const Iterator& iterator) : ConstIterator(iterator) {}
 
 			ElementT& operator*() const {
@@ -711,7 +723,7 @@ namespace algorithm {
 				if(!this->rope || this->offset >= this->rope->cursize)
 					return *this;
 				typename IteratorBase::PathLink* returnPath = this->postincrement();
-				return Iterator(this->rope, this->offset - static_cast<size_t>(1u), returnPath);
+				return Iterator(this->rope, this->offset - static_cast<util::MemorySize>(1u), returnPath);
 			}
 
 			Iterator& operator--() {
@@ -723,29 +735,29 @@ namespace algorithm {
 				if(!this->rope || !this->rope->cursize)
 					return *this;
 				typename IteratorBase::PathLink* returnPath = this->postdecrement();
-				return Iterator(this->rope, this->offset + static_cast<size_t>(1u), returnPath);
+				return Iterator(this->rope, this->offset + static_cast<util::MemorySize>(1u), returnPath);
 			}
 
-			Iterator operator+(size_t delta) const {
+			Iterator operator+(util::MemorySize delta) const {
 				if(!this->rope || this->offset >= this->rope->cursize)
 					return *this;
 				return Iterator(this->rope, this->offset + delta,
 						IteratorBase::clonePath(this->path), delta, true, true);
 			}
 
-			Iterator operator-(size_t delta) const {
+			Iterator operator-(util::MemorySize delta) const {
 				if(!this->rope || !this->rope->cursize)
 					return *this;
 				return Iterator(this->rope, this->offset - delta,
 						IteratorBase::clonePath(this->path), delta, false, false);
 			}
 
-			Iterator& operator+=(size_t delta) {
+			Iterator& operator+=(util::MemorySize delta) {
 				this->skipForward(delta);
 				return *this;
 			}
 
-			Iterator& operator-=(size_t delta) {
+			Iterator& operator-=(util::MemorySize delta) {
 				if(delta)
 					this->skipBackward(delta);
 				return *this;
@@ -758,21 +770,21 @@ namespace algorithm {
 		class ConstReverseIterator : public IteratorBase {
 
 		  protected:
-			ConstReverseIterator(const Rope* rope, size_t offset, typename IteratorBase::PathLink* path)
+			ConstReverseIterator(const Rope* rope, util::MemorySize offset, typename IteratorBase::PathLink* path)
 					: IteratorBase(rope, offset, path) {}
-			ConstReverseIterator(const Rope* rope, size_t offset, typename IteratorBase::PathLink* path,
-					size_t delta, bool moveForward, bool allowExcess)
+			ConstReverseIterator(const Rope* rope, util::MemorySize offset, typename IteratorBase::PathLink* path,
+					util::MemorySize delta, bool moveForward, bool allowExcess)
 					: IteratorBase(rope, offset, path, delta, moveForward, allowExcess) {}
 
 		  protected:
 			void preincrement() {
 				if(this->rope && this->offset < this->rope->cursize)
-					this->backward(static_cast<size_t>(1u), true);
+					this->backward(static_cast<util::MemorySize>(1u), true);
 			}
 
 			typename IteratorBase::PathLink* postincrement() {
 				typename IteratorBase::DeletePath oldPath(this->path ? IteratorBase::clonePath(this->path) : NULL);
-				this->backward(static_cast<size_t>(1u), true);
+				this->backward(static_cast<util::MemorySize>(1u), true);
 				typename IteratorBase::PathLink* returnPath = oldPath.path;
 				oldPath.path = NULL;
 				return returnPath;
@@ -781,34 +793,34 @@ namespace algorithm {
 			void predecrement() {
 				if(this->rope && this->rope->cursize) {
 					if(this->offset >= this->rope->cursize)
-						this->buildStackFromOffset(static_cast<size_t>(0u));
+						this->buildStackFromOffset(static_cast<util::MemorySize>(0u));
 					else
-						this->forward(static_cast<size_t>(1u), false);
+						this->forward(static_cast<util::MemorySize>(1u), false);
 				}
 			}
 
 			typename IteratorBase::PathLink* postdecrement() {
 				typename IteratorBase::DeletePath oldPath(this->path ? IteratorBase::clonePath(this->path) : NULL);
 				if(this->offset >= this->rope->cursize)
-					this->buildStackFromOffset(static_cast<size_t>(0u));
+					this->buildStackFromOffset(static_cast<util::MemorySize>(0u));
 				else
-					this->forward(static_cast<size_t>(1u), false);
+					this->forward(static_cast<util::MemorySize>(1u), false);
 				typename IteratorBase::PathLink* returnPath = oldPath.path;
 				oldPath.path = NULL;
 				return returnPath;
 			}
 
-			void skipForward(size_t delta) {
+			void skipForward(util::MemorySize delta) {
 				if(delta && this->rope && this->offset < this->rope->cursize)
 					this->backward(delta, true);
 			}
 
-			void skipBackward(size_t delta) {
+			void skipBackward(util::MemorySize delta) {
 				if(this->rope && this->rope->cursize) {
 					if(this->offset >= this->rope->cursize) {
 						if(delta > this->rope->cursize)
 							throw error::ListIndexOutOfBoundsError(delta);
-						this->buildStackFromOffset(delta - static_cast<size_t>(1u));
+						this->buildStackFromOffset(delta - static_cast<util::MemorySize>(1u));
 					}
 					else
 						this->forward(delta, false);
@@ -816,8 +828,8 @@ namespace algorithm {
 			}
 
 		  public:
-			ConstReverseIterator() : IteratorBase(NULL, static_cast<size_t>(0u)) {}
-			ConstReverseIterator(const Rope* rope, size_t offset) : IteratorBase(rope, offset) {}
+			ConstReverseIterator() : IteratorBase(NULL, static_cast<util::MemorySize>(0u)) {}
+			ConstReverseIterator(const Rope* rope, util::MemorySize offset) : IteratorBase(rope, offset) {}
 			ConstReverseIterator(const ConstReverseIterator& iterator) : IteratorBase(iterator) {}
 
 			const ElementT& operator*() const {
@@ -832,7 +844,7 @@ namespace algorithm {
 			ConstReverseIterator operator++(int) {
 				if(!this->rope || this->offset >= this->rope->cursize)
 					return *this;
-				size_t oldOffset = this->offset;
+				util::MemorySize oldOffset = this->offset;
 				typename IteratorBase::PathLink* returnPath = postincrement();
 				return ConstReverseIterator(this->rope, oldOffset, returnPath);
 			}
@@ -846,29 +858,29 @@ namespace algorithm {
 				if(!this->rope || !this->rope->cursize)
 					return *this;
 				typename IteratorBase::PathLink* returnPath = postdecrement();
-				return ConstReverseIterator(this->rope, this->offset + static_cast<size_t>(1u), returnPath);
+				return ConstReverseIterator(this->rope, this->offset + static_cast<util::MemorySize>(1u), returnPath);
 			}
 
-			ConstReverseIterator operator+(size_t delta) const {
+			ConstReverseIterator operator+(util::MemorySize delta) const {
 				if(!this->rope || this->offset >= this->rope->cursize)
 					return *this;
 				return ConstReverseIterator(this->rope, this->offset,
 						IteratorBase::clonePath(this->path), delta, false, true);
 			}
 
-			ConstReverseIterator operator-(size_t delta) const {
+			ConstReverseIterator operator-(util::MemorySize delta) const {
 				if(!this->rope || !this->rope->cursize)
 					return *this;
 				return ConstReverseIterator(this->rope, this->offset,
 						IteratorBase::clonePath(this->path), delta, true, false);
 			}
 
-			ConstReverseIterator& operator+=(size_t delta) {
+			ConstReverseIterator& operator+=(util::MemorySize delta) {
 				skipForward(delta);
 				return *this;
 			}
 
-			ConstReverseIterator& operator-=(size_t delta) {
+			ConstReverseIterator& operator-=(util::MemorySize delta) {
 				if(delta)
 					skipBackward(delta);
 				return *this;
@@ -908,7 +920,7 @@ namespace algorithm {
 					// +---+---+---+
 					//           ^--- me
 					//   ^----------- them
-					return static_cast<ptrdiff_t>(iterator.offset + static_cast<size_t>(1u));
+					return static_cast<ptrdiff_t>(iterator.offset + static_cast<util::MemorySize>(1u));
 				}
 				else {
 					if(iterator.offset >= this->rope->cursize) {
@@ -916,7 +928,7 @@ namespace algorithm {
 						// +---+---+---+
 						//           ^--- them
 						//   ^----------- me
-						return -static_cast<ptrdiff_t>(this->offset + static_cast<size_t>(1u));
+						return -static_cast<ptrdiff_t>(this->offset + static_cast<util::MemorySize>(1u));
 					}
 					return this->offset >= iterator.offset
 						? -static_cast<ptrdiff_t>(this->offset - iterator.offset)
@@ -933,15 +945,15 @@ namespace algorithm {
 		class ReverseIterator : public ConstReverseIterator {
 
 		  private:
-			ReverseIterator(const Rope* rope, size_t offset, typename IteratorBase::PathLink* path)
+			ReverseIterator(const Rope* rope, util::MemorySize offset, typename IteratorBase::PathLink* path)
 					: ConstReverseIterator(rope, offset, path) {}
-			ReverseIterator(const Rope* rope, size_t offset, typename IteratorBase::PathLink* path,
-					size_t delta, bool moveForward, bool allowExcess)
+			ReverseIterator(const Rope* rope, util::MemorySize offset, typename IteratorBase::PathLink* path,
+					util::MemorySize delta, bool moveForward, bool allowExcess)
 					: ConstReverseIterator(rope, offset, path, delta, moveForward, allowExcess) {}
 
 		  public:
 			ReverseIterator() {}
-			ReverseIterator(const Rope* rope, size_t offset) : ConstReverseIterator(rope, offset) {}
+			ReverseIterator(const Rope* rope, util::MemorySize offset) : ConstReverseIterator(rope, offset) {}
 			ReverseIterator(const ReverseIterator& iterator) : ConstReverseIterator(iterator) {}
 
 			ElementT& operator*() const {
@@ -956,7 +968,7 @@ namespace algorithm {
 			ReverseIterator operator++(int) {
 				if(!this->rope || this->offset >= this->rope->cursize)
 					return *this;
-				size_t oldOffset = this->offset;
+				util::MemorySize oldOffset = this->offset;
 				typename IteratorBase::PathLink* returnPath = this->postincrement();
 				return ReverseIterator(this->rope, oldOffset, returnPath);
 			}
@@ -970,29 +982,29 @@ namespace algorithm {
 				if(!this->rope || !this->rope->cursize)
 					return *this;
 				typename IteratorBase::PathLink* returnPath = this->postdecrement();
-				return ReverseIterator(this->rope, this->offset + static_cast<size_t>(1u), returnPath);
+				return ReverseIterator(this->rope, this->offset + static_cast<util::MemorySize>(1u), returnPath);
 			}
 
-			ReverseIterator operator+(size_t delta) const {
+			ReverseIterator operator+(util::MemorySize delta) const {
 				if(!this->rope || this->offset >= this->rope->cursize)
 					return *this;
 				return ReverseIterator(this->rope, this->offset,
 						IteratorBase::clonePath(this->path), delta, false, true);
 			}
 
-			ReverseIterator operator-(size_t delta) const {
+			ReverseIterator operator-(util::MemorySize delta) const {
 				if(!this->rope || !this->rope->cursize)
 					return *this;
 				return ReverseIterator(this->rope, this->offset,
 						IteratorBase::clonePath(this->path), delta, true, false);
 			}
 
-			ReverseIterator& operator+=(size_t delta) {
+			ReverseIterator& operator+=(util::MemorySize delta) {
 				this->skipForward(delta);
 				return *this;
 			}
 
-			ReverseIterator& operator-=(size_t delta) {
+			ReverseIterator& operator-=(util::MemorySize delta) {
 				if(delta)
 					this->skipBackward(delta);
 				return *this;
@@ -1004,15 +1016,15 @@ namespace algorithm {
 
 	  private:
 		static Leaf* newSingletonLeaf(const ElementT& value) {
-			size_t size = static_cast<size_t>(1u) + SPARE_SIZE;
-			util::Delete<Leaf> leaf(new(size) Leaf(size));
+			size_t size = static_cast<size_t>(1u) + static_cast<size_t>(SPARE_SIZE);
+			util::Delete<Leaf> leaf(new(size) Leaf(static_cast<util::MemorySize>(size)));
 			new(leaf->getElements()) ElementT(value);
 			return leaf.set();
 		}
 
 		template<typename IteratorT>
-		static Leaf* newIteratedLeaf(IteratorT begin, IteratorT end, size_t count) {
-			DeleteLeafNode<Leaf, Leaf> leaf(new(count) Leaf(count));
+		static Leaf* newIteratedLeaf(IteratorT begin, IteratorT end, util::MemorySize count) {
+			DeleteLeafNode<Leaf, Leaf> leaf(new(static_cast<size_t>(count)) Leaf(count));
 			ElementT* dest = leaf->getElements();
 			for(; begin != end; ++begin) {
 				new(dest++) ElementT(*begin);
@@ -1087,7 +1099,7 @@ namespace algorithm {
 			 * scat->height' - 2 or scat->height' - 3; clearly, only the
 			 * former is viable.
 			 */
-			if(left->left->height < left->height - static_cast<size_t>(1u)) {
+			if(left->left->height < left->height - static_cast<util::MemorySize>(1u)) {
 				/* restructure variant #1 */
 				scat->right = node;
 				tmp = scat->left;
@@ -1098,7 +1110,7 @@ namespace algorithm {
 				scat->fixHeight();
 				return scat;
 			}
-			if(scat->left->height == left->right->height - static_cast<size_t>(1u)) {
+			if(scat->left->height == left->right->height - static_cast<util::MemorySize>(1u)) {
 				/* keep structure, increase heights */
 				scat->right = node;
 				++scat->height;
@@ -1226,7 +1238,7 @@ namespace algorithm {
 		 * must be >= right->right->height (otherwise, the
 		 * type invariant would intrinsically still hold).
 		 */
-		static Concat* growLeftFixup(Node* node, size_t nodeSize, Concat* right) {
+		static Concat* growLeftFixup(Node* node, util::MemorySize nodeSize, Concat* right) {
 			Concat* scat = static_cast<Concat*>(right->left);
 			Node* tmp;
 			if(node->height < right->left->height) {
@@ -1279,7 +1291,7 @@ namespace algorithm {
 			 * scat->height' - 2 or scat->height' - 3; clearly, only the
 			 * former is viable.
 			 */
-			if(right->right->height < right->height - static_cast<size_t>(1u)) {
+			if(right->right->height < right->height - static_cast<util::MemorySize>(1u)) {
 				/* restructure variant #1 */
 				right->weight -= scat->weight;
 				scat->left = node;
@@ -1291,7 +1303,7 @@ namespace algorithm {
 				scat->fixHeight();
 				return scat;
 			}
-			if(scat->right->height == right->left->height - static_cast<size_t>(1u)) {
+			if(scat->right->height == right->left->height - static_cast<util::MemorySize>(1u)) {
 				/* keep structure, increase heights */
 				scat->left = node;
 				++scat->height;
@@ -1419,10 +1431,11 @@ namespace algorithm {
 		 * node creation), the input trees will remain
 		 * unmodified.
 		 */
-		static Node* concatNodes(Node* left, size_t leftSize, Node* right, size_t rightSize, Concat* emergencyCat) {
+		static Node* concatNodes(Node* left, util::MemorySize leftSize,
+				Node* right, util::MemorySize rightSize, Concat* emergencyCat) {
 			Node* node;
 			Concat *cat, *scat;
-			if(left->height > right->height + static_cast<size_t>(1u)) {
+			if(left->height > right->height + static_cast<util::MemorySize>(1u)) {
 				/* 'Concatenation vs. Leaf' case:
 				 *   +-------------+    +---------+
 				 *   | left:Concat |    | right:? |
@@ -1487,7 +1500,7 @@ namespace algorithm {
 						right, rightSize, emergencyCat);
 				return growRightFixup(cat, node);
 			}
-			else if(right->height > left->height + static_cast<size_t>(1u)) {
+			else if(right->height > left->height + static_cast<util::MemorySize>(1u)) {
 				/* 'Leaf vs. Concatenation' case:
 				 *   +--------+    +--------------+
 				 *   | left:? |    | right:Concat |
@@ -1515,9 +1528,9 @@ namespace algorithm {
 				const ElementT* src = static_cast<Leaf*>(right)->getElements();
 				ElementT* dest = static_cast<Leaf*>(left)->getElements() + leftSize;
 				DestroyElements destroyCopied(dest);
-				size_t index;
+				util::MemorySize index;
 				try {
-					for(index = static_cast<size_t>(0u); index < rightSize; ++index) {
+					for(index = static_cast<util::MemorySize>(0u); index < rightSize; ++index) {
 						new(dest + index) ElementT(src[index]);
 						++destroyCopied.count;
 					}
@@ -1531,7 +1544,7 @@ namespace algorithm {
 					emergencyCat->fixHeight();
 					return ecat.set();
 				}
-				right->destroy(rightSize, static_cast<size_t>(0u), static_cast<size_t>(0u));
+				right->destroy(rightSize, static_cast<util::MemorySize>(0u), static_cast<util::MemorySize>(0u));
 				delete right;
 				destroyCopied.elements = NULL;
 				return left;
@@ -1547,7 +1560,7 @@ namespace algorithm {
 			}
 		}
 
-		static Node* insertElement(Node* node, size_t size, size_t index, const ElementT& value) {
+		static Node* insertElement(Node* node, util::MemorySize size, util::MemorySize index, const ElementT& value) {
 			if(node->height) {
 				// insert into concatenation node
 				Concat *cat = static_cast<Concat*>(node), *scat;
@@ -1583,11 +1596,11 @@ namespace algorithm {
 					if(index <= scat->weight) {
 						// growing cat->left->left; can use normal fixup
 						tnode = insertElement(scat->left, scat->weight, index, value);
-						return growLeftFixup(tnode, scat->weight + static_cast<size_t>(1u), cat);
+						return growLeftFixup(tnode, scat->weight + static_cast<util::MemorySize>(1u), cat);
 					}
 					// cannot use fixup; call down and concatenate
 					tnode = insertElement(scat, cat->weight, index, value);
-					return concatNodes(tnode, cat->weight + static_cast<size_t>(1u),
+					return concatNodes(tnode, cat->weight + static_cast<util::MemorySize>(1u),
 							cat->right, size - cat->weight, cat);
 				}
 				else {
@@ -1627,7 +1640,7 @@ namespace algorithm {
 					// cannot use fixup; call down and concatenate
 					tnode = insertElement(scat, size - cat->weight, index - cat->weight, value);
 					return concatNodes(cat->left, cat->weight,
-							tnode, size - cat->weight + static_cast<size_t>(1u), cat);
+							tnode, size - cat->weight + static_cast<util::MemorySize>(1u), cat);
 				}
 			}
 			else {
@@ -1643,21 +1656,21 @@ namespace algorithm {
 					++newLeaf.count;
 					Concat* cat = index
 						? new Concat(leaf, *newLeaf, size)
-						: new Concat(*newLeaf, leaf, static_cast<size_t>(1u));
+						: new Concat(*newLeaf, leaf, static_cast<util::MemorySize>(1u));
 					newLeaf.set();
 					return cat;
 				}
 				else if(index && size > MOVE_LIMIT) {
 					// split node and concatenate
-					size_t newSize = size - index + static_cast<size_t>(1u) + SPARE_SIZE;
-					DeleteLeafNode<Leaf, Leaf> newLeaf(new(newSize) Leaf(newSize));
+					util::MemorySize newSize = size - index + static_cast<util::MemorySize>(1u) + SPARE_SIZE;
+					DeleteLeafNode<Leaf, Leaf> newLeaf(new(static_cast<size_t>(newSize)) Leaf(newSize));
 					const ElementT* src = leaf->getElements();
 					ElementT* dest = newLeaf->getElements();
 					new(dest) ElementT(value);
 					++newLeaf.count;
-					size_t u;
+					util::MemorySize u;
 					for(u = index; u < size; ++u) {
-						new(dest + (u - index + static_cast<size_t>(1u))) ElementT(src[u]);
+						new(dest + (u - index + static_cast<util::MemorySize>(1u))) ElementT(src[u]);
 						++newLeaf.count;
 					}
 					Concat* cat = new Concat(leaf, *newLeaf, index);
@@ -1668,27 +1681,27 @@ namespace algorithm {
 				}
 				else {
 					// "split" node, then reassemble it into a new one
-					size_t newSize = size + static_cast<size_t>(1u) + SPARE_SIZE;
-					DeleteLeafNode<Leaf, Leaf> newLeaf(new(newSize) Leaf(newSize));
+					util::MemorySize newSize = size + static_cast<util::MemorySize>(1u) + SPARE_SIZE;
+					DeleteLeafNode<Leaf, Leaf> newLeaf(new(static_cast<size_t>(newSize)) Leaf(newSize));
 					const ElementT* src = leaf->getElements();
 					ElementT* dest = newLeaf->getElements();
-					size_t u;
-					for(u = static_cast<size_t>(0u); u < index; ++u, ++newLeaf.count)
+					util::MemorySize u;
+					for(u = static_cast<util::MemorySize>(0u); u < index; ++u, ++newLeaf.count)
 						new(dest++) ElementT(src[u]);
 					new(dest++) ElementT(value);
 					++newLeaf.count;
 					for(u = index; u < size; ++u, ++newLeaf.count)
 						new(dest++) ElementT(src[u]);
-					leaf->destroy(size, static_cast<size_t>(0u), static_cast<size_t>(0u));
+					leaf->destroy(size, static_cast<util::MemorySize>(0u), static_cast<util::MemorySize>(0u));
 					delete leaf;
 					return newLeaf.set();
 				}
 			}
 		}
 
-		static Node* spliceNodes(Node* node, size_t size, size_t offset, size_t count, Node* replacement,
-				size_t replacementSize) {
-			size_t index;
+		static Node* spliceNodes(Node* node, util::MemorySize size, util::MemorySize offset,
+				util::MemorySize count, Node* replacement, util::MemorySize replacementSize) {
+			util::MemorySize index;
 			if(!node->height) {
 				// The "easy" case: We have a leaf.
 				Leaf* leaf = static_cast<Leaf*>(node);
@@ -1696,16 +1709,16 @@ namespace algorithm {
 					if(offset + count == size) {
 						// we only need a prefix of this leaf
 						ElementT* erase = leaf->getElements() + offset;
-						for(index = static_cast<size_t>(0u); index < count; ++index)
+						for(index = static_cast<util::MemorySize>(0u); index < count; ++index)
 							erase[index].~ElementT();
 						return leaf;
 					}
 					// just fumble together the required elements into a new leaf
-					size_t newSize = size - count + SPARE_SIZE;
-					DeleteLeafNode<Leaf, Leaf> newLeaf(new(newSize) Leaf(newSize));
+					util::MemorySize newSize = size - count + SPARE_SIZE;
+					DeleteLeafNode<Leaf, Leaf> newLeaf(new(static_cast<size_t>(newSize)) Leaf(newSize));
 					const ElementT* src = leaf->getElements();
 					ElementT* dest = newLeaf->getElements();
-					for(index = static_cast<size_t>(0u); index < offset; ++index) {
+					for(index = static_cast<util::MemorySize>(0u); index < offset; ++index) {
 						new(dest + index) ElementT(src[index]);
 						++newLeaf.count;
 					}
@@ -1723,11 +1736,11 @@ namespace algorithm {
 					// need back piece
 					if(!count)
 						return concatNodes(replacement, replacementSize, leaf, size, NULL);
-					size_t newSize = leaf->size - count;
-					size_t altSize = size - count + SPARE_SIZE;
+					util::MemorySize newSize = leaf->size - count;
+					util::MemorySize altSize = size - count + SPARE_SIZE;
 					if(altSize > newSize)
 						newSize = altSize;
-					DeleteLeafNode<Leaf, Leaf> newLeaf(new(newSize) Leaf(newSize));
+					DeleteLeafNode<Leaf, Leaf> newLeaf(new(static_cast<size_t>(newSize)) Leaf(newSize));
 					const ElementT* src = leaf->getElements();
 					ElementT* dest = newLeaf->getElements();
 					for(index = count; index < size; ++index) {
@@ -1735,7 +1748,7 @@ namespace algorithm {
 						++newLeaf.count;
 					}
 					Node* cat = concatNodes(replacement, replacementSize, *newLeaf, size - count, NULL);
-					leaf->destroy(size, static_cast<size_t>(0), count);
+					leaf->destroy(size, static_cast<util::MemorySize>(0), count);
 					delete leaf;
 					newLeaf.set();
 					return cat;
@@ -1744,7 +1757,7 @@ namespace algorithm {
 					// need front piece
 					util::Delete<Concat> emergencyCat(new Concat(leaf, replacement, size));
 					ElementT* src = leaf->getElements();
-					for(index = static_cast<size_t>(0u); index < count; ++index)
+					for(index = static_cast<util::MemorySize>(0u); index < count; ++index)
 						src[offset + index].~ElementT();
 					Node* cat = concatNodes(leaf, size - count, replacement, replacementSize, *emergencyCat);
 					emergencyCat.set();
@@ -1754,8 +1767,8 @@ namespace algorithm {
 				// 'node', we'll just have to split it up
 				// and concat 'replacement' right into the
 				// middle; giving two new concatenation nodes.
-				size_t newSize = size - (offset + count) + SPARE_SIZE;
-				DeleteLeafNode<Leaf, Leaf> newLeaf(new(newSize) Leaf(newSize));
+				util::MemorySize newSize = size - (offset + count) + SPARE_SIZE;
+				DeleteLeafNode<Leaf, Leaf> newLeaf(new(static_cast<size_t>(newSize)) Leaf(newSize));
 				ElementT *src = leaf->getElements(), *dest = newLeaf->getElements();
 				for(index = offset + count; index < size; ++index) {
 					new(dest + (index - offset - count)) ElementT(src[index]);
@@ -1796,9 +1809,9 @@ namespace algorithm {
 						if(count == cat->weight)
 							tnode = cat->right;
 						else
-							tnode = spliceNodes(cat->right, size - cat->weight,
-									static_cast<size_t>(0u), count - cat->weight, replacement, replacementSize);
-						cat->left->destroy(cat->weight, static_cast<size_t>(0u), cat->weight);
+							tnode = spliceNodes(cat->right, size - cat->weight, static_cast<util::MemorySize>(0u),
+									count - cat->weight, replacement, replacementSize);
+						cat->left->destroy(cat->weight, static_cast<util::MemorySize>(0u), cat->weight);
 						delete cat->left;
 						delete cat;
 						return tnode;
@@ -1808,7 +1821,8 @@ namespace algorithm {
 						return concatNodes(replacement, replacementSize, cat->right, size - cat->weight, cat);
 					else {
 						tnode = spliceNodes(cat->right, size - cat->weight,
-								static_cast<size_t>(0u), count - cat->weight, NULL, static_cast<size_t>(0u));
+								static_cast<util::MemorySize>(0u), count - cat->weight, NULL,
+								static_cast<util::MemorySize>(0u));
 						return concatNodes(replacement, replacementSize, tnode, size - count, cat);
 					}
 				}
@@ -1821,7 +1835,7 @@ namespace algorithm {
 						else
 							tnode = spliceNodes(cat->left, cat->weight, offset, cat->weight - offset,
 									replacement, replacementSize);
-						cat->right->destroy(size - cat->weight, static_cast<size_t>(0u), size);
+						cat->right->destroy(size - cat->weight, static_cast<util::MemorySize>(0u), size);
 						delete cat->right;
 						delete cat;
 						return tnode;
@@ -1831,7 +1845,7 @@ namespace algorithm {
 						return concatNodes(cat->left, cat->weight, replacement, replacementSize, cat);
 					else {
 						tnode = spliceNodes(cat->left, cat->weight, offset, cat->weight - offset,
-								NULL, static_cast<size_t>(0u));
+								NULL, static_cast<util::MemorySize>(0u));
 						return concatNodes(tnode, offset, replacement, replacementSize, cat);
 					}
 				}
@@ -1877,36 +1891,40 @@ namespace algorithm {
 				 * well and the overall splice thus succeeds.
 				 */
 				Node* newRight = spliceNodes(cat->right, size - cat->weight,
-						static_cast<size_t>(0u), offset + count - cat->weight, replacement, replacementSize);
+						static_cast<util::MemorySize>(0u), offset + count - cat->weight,
+						replacement, replacementSize);
 				Node* newLeft = spliceNodes(cat->left, cat->weight, offset, cat->weight - offset,
-						NULL, static_cast<size_t>(0u));
+						NULL, static_cast<util::MemorySize>(0u));
 				return concatNodes(newLeft, offset, newRight, size - offset - count + replacementSize, cat);
 			}
 		}
 
-		static void subseqNodes(Node* node, size_t offset, size_t count, util::Appender<ElementT>& sink) {
+		static void subseqNodes(Node* node, util::MemorySize offset, util::MemorySize count,
+				util::Appender<ElementT>& sink) {
 			if(!node->height) {
 				// leaf
 				const ElementT* src = static_cast<Leaf*>(node)->getElements();
-				size_t index;
-				for(index = static_cast<size_t>(0u); index < count; ++index)
+				util::MemorySize index;
+				for(index = static_cast<util::MemorySize>(0u); index < count; ++index)
 					sink.append(src[offset + index]);
 			}
 			else {
 				// concatenation
 				Concat* cat = static_cast<Concat*>(node);
 				if(offset < cat->weight) {
-					size_t available = cat->weight - offset;
+					util::MemorySize available = cat->weight - offset;
 					subseqNodes(cat->left, offset, count > available ? available : count, sink);
 				}
 				if(offset + count > cat->weight) {
-					size_t begin = offset < cat->weight ? static_cast<size_t>(0u) : cat->weight - offset;
+					util::MemorySize begin = offset < cat->weight
+							? static_cast<util::MemorySize>(0u) : cat->weight - offset;
 					subseqNodes(cat->right, begin, offset + count - cat->weight - begin, sink);
 				}
 			}
 		}
 
-		static Node* subseqNodes(Node* node, size_t size, size_t offset, size_t count) {
+		static Node* subseqNodes(Node* node, util::MemorySize size,
+				util::MemorySize offset, util::MemorySize count) {
 			if(!offset && count == size)
 				return node->clone(size);
 			if(!node->height) {
@@ -1924,7 +1942,7 @@ namespace algorithm {
 						DeleteAnyNode newLeft(subseqNodes(cat->left, cat->weight, offset, cat->weight - offset),
 								cat->weight - offset);
 						DeleteAnyNode newRight(subseqNodes(cat->right, size - cat->weight,
-								static_cast<size_t>(0u), offset + count - cat->weight));
+								static_cast<util::MemorySize>(0u), offset + count - cat->weight));
 						Node* result = concatNodes(*newLeft, cat->weight - offset,
 								*newRight, offset + count - cat->weight, NULL);
 						newLeft.set();
@@ -1945,15 +1963,15 @@ namespace algorithm {
 
 	  private:
 		Node* root;
-		size_t cursize;
+		util::MemorySize cursize;
 
 	  private:
-		void checkIndex(size_t index, bool equalAllowed) const {
+		void checkIndex(util::MemorySize index, bool equalAllowed) const {
 			if(equalAllowed ? index > cursize : index >= cursize)
 				throw error::ListIndexOutOfBoundsError(index);
 		}
 
-		void checkIndices(size_t& begin, size_t end) const {
+		void checkIndices(util::MemorySize& begin, util::MemorySize end) const {
 			if(begin > end)
 				begin = end;
 			if(begin > cursize)
@@ -1962,7 +1980,7 @@ namespace algorithm {
 				throw error::ListIndexOutOfBoundsError(end);
 		}
 
-		ElementT* findElement(size_t index) const {
+		ElementT* findElement(util::MemorySize index) const {
 			if(index >= cursize)
 				throw error::ListIndexOutOfBoundsError(index);
 			Node* node = root;
@@ -1979,27 +1997,27 @@ namespace algorithm {
 		}
 
 	  public:
-		Rope() : root(NULL), cursize(static_cast<size_t>(0u)) {}
+		Rope() : root(NULL), cursize(static_cast<util::MemorySize>(0u)) {}
 
 		Rope(const Rope& rope)
 				: root(rope.root ? rope.root->clone(rope.cursize) : NULL), cursize(rope.cursize) {}
 
 		~Rope() {
 			if(root) {
-				root->destroy(cursize, static_cast<size_t>(0u), cursize);
+				root->destroy(cursize, static_cast<util::MemorySize>(0u), cursize);
 				delete root;
 			}
 		}
 
-		inline size_t size() const {
+		inline util::MemorySize size() const {
 			return cursize;
 		}
 
-		ElementT& operator[](size_t index) {
+		ElementT& operator[](util::MemorySize index) {
 			return *findElement(index);
 		}
 
-		const ElementT& operator[](size_t index) const {
+		const ElementT& operator[](util::MemorySize index) const {
 			return *findElement(index);
 		}
 
@@ -2007,7 +2025,7 @@ namespace algorithm {
 		void append(IteratorT begin, IteratorT end) {
 			if(begin == end)
 				return;
-			size_t count = static_cast<size_t>(end - begin);
+			util::MemorySize count = static_cast<util::MemorySize>(end - begin);
 			DeleteLeafNode<Leaf, Leaf> leaf(newIteratedLeaf<IteratorT>(begin, end, count));
 			leaf.count = count;
 			if(root)
@@ -2022,7 +2040,7 @@ namespace algorithm {
 		void prepend(IteratorT begin, IteratorT end) {
 			if(begin == end)
 				return;
-			size_t count = static_cast<size_t>(end - begin);
+			util::MemorySize count = static_cast<util::MemorySize>(end - begin);
 			DeleteLeafNode<Leaf, Leaf> leaf(newIteratedLeaf<IteratorT>(begin, end, count));
 			leaf.count = count;
 			if(root)
@@ -2034,16 +2052,16 @@ namespace algorithm {
 		}
 
 		template<typename IteratorT>
-		void insert(size_t index, IteratorT begin, IteratorT end) {
+		void insert(util::MemorySize index, IteratorT begin, IteratorT end) {
 			if(index > cursize)
 				throw error::ListIndexOutOfBoundsError(index);
 			if(begin == end)
 				return;
-			size_t count = static_cast<size_t>(end - begin);
+			util::MemorySize count = static_cast<util::MemorySize>(end - begin);
 			DeleteLeafNode<Leaf, Leaf> leaf(newIteratedLeaf<IteratorT>(begin, end, count));
 			leaf.count = count;
 			if(root)
-				root = spliceNodes(root, cursize, index, static_cast<size_t>(0u), *leaf, count);
+				root = spliceNodes(root, cursize, index, static_cast<util::MemorySize>(0u), *leaf, count);
 			else
 				root = *leaf;
 			cursize += count;
@@ -2070,7 +2088,7 @@ namespace algorithm {
 
 		void prepend(const ElementT& value) {
 			if(root)
-				root = insertElement(root, cursize, static_cast<size_t>(0u), value);
+				root = insertElement(root, cursize, static_cast<util::MemorySize>(0u), value);
 			else
 				root = newSingletonLeaf(value);
 			++cursize;
@@ -2081,7 +2099,7 @@ namespace algorithm {
 			return *this;
 		}
 
-		void insert(size_t index, const ElementT& value) {
+		void insert(util::MemorySize index, const ElementT& value) {
 			if(index > cursize)
 				throw error::ListIndexOutOfBoundsError(index);
 			if(root)
@@ -2102,18 +2120,19 @@ namespace algorithm {
 		void clear() {
 			if(!root)
 				return;
-			root->destroy(cursize, static_cast<size_t>(0u), cursize);
+			root->destroy(cursize, static_cast<util::MemorySize>(0u), cursize);
 			delete root;
 			root = NULL;
-			cursize = static_cast<size_t>(0u);
+			cursize = static_cast<util::MemorySize>(0u);
 		}
 
-		void erase(size_t index) {
+		void erase(util::MemorySize index) {
 			checkIndex(index, false);
-			if(cursize == static_cast<size_t>(1u))
+			if(cursize == static_cast<util::MemorySize>(1u))
 				clear();
 			else {
-				root = spliceNodes(root, cursize, index, static_cast<size_t>(1u), NULL, static_cast<size_t>(0u));
+				root = spliceNodes(root, cursize, index,
+						static_cast<util::MemorySize>(1u), NULL, static_cast<util::MemorySize>(0u));
 				--cursize;
 			}
 		}
@@ -2126,15 +2145,15 @@ namespace algorithm {
 			erase(index.index());
 		}
 
-		void erase(size_t begin, size_t end) {
+		void erase(util::MemorySize begin, util::MemorySize end) {
 			checkIndices(begin, end);
-			size_t count = end - begin;
+			util::MemorySize count = end - begin;
 			if(!count)
 				return;
 			if(count == cursize)
 				clear();
 			else {
-				root = spliceNodes(root, cursize, begin, count, NULL, static_cast<size_t>(0u));
+				root = spliceNodes(root, cursize, begin, count, NULL, static_cast<util::MemorySize>(0u));
 				cursize -= count;
 			}
 		}
@@ -2144,24 +2163,24 @@ namespace algorithm {
 		}
 
 		void erase(const ConstReverseIterator& begin, ConstReverseIterator& end) {
-			size_t eidx = end.index();
-			erase(eidx >= cursize ? static_cast<size_t>(0u) : eidx + static_cast<size_t>(1u),
-					begin.index() + static_cast<size_t>(1u));
+			util::MemorySize eidx = end.index();
+			erase(eidx >= cursize ? static_cast<util::MemorySize>(0u) : eidx + static_cast<util::MemorySize>(1u),
+					begin.index() + static_cast<util::MemorySize>(1u));
 		}
 
-		void splice(size_t begin, size_t end, const ElementT& value) {
+		void splice(util::MemorySize begin, util::MemorySize end, const ElementT& value) {
 			checkIndices(begin, end);
-			size_t count = end - begin;
+			util::MemorySize count = end - begin;
 			DeleteLeafNode<Leaf, Leaf> leaf(newSingletonLeaf(value));
 			++leaf.count;
 			if(count == cursize) {
-				root->destroy(cursize, static_cast<size_t>(0u), cursize);
+				root->destroy(cursize, static_cast<util::MemorySize>(0u), cursize);
 				delete root;
 				root = *leaf;
 			}
 			else
-				root = spliceNodes(root, cursize, begin, count, *leaf, static_cast<size_t>(1u));
-			cursize = cursize - count + static_cast<size_t>(1u);
+				root = spliceNodes(root, cursize, begin, count, *leaf, static_cast<util::MemorySize>(1u));
+			cursize = cursize - count + static_cast<util::MemorySize>(1u);
 			leaf.set();
 		}
 
@@ -2170,24 +2189,25 @@ namespace algorithm {
 		}
 
 		void splice(const ConstReverseIterator& begin, const ConstReverseIterator& end, const ElementT& value) {
-			size_t eidx = end.index();
-			splice(eidx >= cursize ? static_cast<size_t>(0u) : eidx + static_cast<size_t>(1u),
-					begin.index() + static_cast<size_t>(1u), value);
+			util::MemorySize eidx = end.index();
+			splice(eidx >= cursize ? static_cast<util::MemorySize>(0u) : eidx + static_cast<util::MemorySize>(1u),
+					begin.index() + static_cast<util::MemorySize>(1u), value);
 		}
 
 		template<typename IteratorT>
-		void splice(size_t beginIndex, size_t endIndex, IteratorT beginIterator, IteratorT endIterator) {
+		void splice(util::MemorySize beginIndex, util::MemorySize endIndex,
+				IteratorT beginIterator, IteratorT endIterator) {
 			checkIndices(beginIndex, endIndex);
-			size_t indexCount = endIndex - beginIndex;
+			util::MemorySize indexCount = endIndex - beginIndex;
 			if(!indexCount && beginIterator == endIterator)
 				return;
-			size_t iteratorCount = static_cast<size_t>(endIterator - beginIterator);
+			util::MemorySize iteratorCount = static_cast<util::MemorySize>(endIterator - beginIterator);
 			DeleteLeafNode<Leaf, Leaf> leaf(iteratorCount
 					? newIteratedLeaf<IteratorT>(beginIterator, endIterator, iteratorCount) : NULL);
 			leaf.count = iteratorCount;
 			if(indexCount == cursize) {
 				if(root) {
-					root->destroy(cursize, static_cast<size_t>(0u), cursize);
+					root->destroy(cursize, static_cast<util::MemorySize>(0u), cursize);
 					delete root;
 				}
 				root = *leaf;
@@ -2207,12 +2227,13 @@ namespace algorithm {
 		template<typename IteratorT>
 		void splice(const ConstReverseIterator& beginIndex, const ConstReverseIterator& endIndex,
 				IteratorT beginIterator, IteratorT endIterator) {
-			size_t eidx = endIndex.index();
-			splice<IteratorT>(eidx >= cursize ? static_cast<size_t>(0u) : eidx + static_cast<size_t>(1u),
-					beginIndex.index() + static_cast<size_t>(1u), beginIterator, endIterator);
+			util::MemorySize eidx = endIndex.index();
+			splice<IteratorT>(eidx >= cursize
+					? static_cast<util::MemorySize>(0u) : eidx + static_cast<util::MemorySize>(1u),
+					beginIndex.index() + static_cast<util::MemorySize>(1u), beginIterator, endIterator);
 		}
 
-		void subseq(size_t begin, size_t end, util::Appender<ElementT>& destination) const {
+		void subseq(util::MemorySize begin, util::MemorySize end, util::Appender<ElementT>& destination) const {
 			checkIndices(begin, end);
 			if(end > begin)
 				subseqNodes(root, begin, end - begin, destination);
@@ -2226,12 +2247,12 @@ namespace algorithm {
 
 		void subseq(const ConstReverseIterator& begin, const ConstReverseIterator& end,
 				util::Appender<ElementT>& destination) const {
-			size_t eidx = end.index();
-			subseq(eidx >= cursize ? static_cast<size_t>(0u) : eidx + static_cast<size_t>(1u),
-					begin.index() + static_cast<size_t>(1u), destination);
+			util::MemorySize eidx = end.index();
+			subseq(eidx >= cursize ? static_cast<util::MemorySize>(0u) : eidx + static_cast<util::MemorySize>(1u),
+					begin.index() + static_cast<util::MemorySize>(1u), destination);
 		}
 
-		void subseq(size_t begin, size_t end, ElementT* destination) const {
+		void subseq(util::MemorySize begin, util::MemorySize end, ElementT* destination) const {
 			DestroyElements destroy(destination);
 			ElementArrayAppender sink(destination, destroy);
 			subseq(begin, end, sink);
@@ -2243,21 +2264,22 @@ namespace algorithm {
 
 		void subseq(const ConstReverseIterator& begin, const ConstReverseIterator& end,
 				ElementT* destination) const {
-			size_t eidx = end.index();
-			subseq(eidx >= cursize ? static_cast<size_t>(0u) : eidx + static_cast<size_t>(1u),
-					begin.index() + static_cast<size_t>(1u), destination);
+			util::MemorySize eidx = end.index();
+			subseq(eidx >= cursize ? static_cast<util::MemorySize>(0u) : eidx + static_cast<util::MemorySize>(1u),
+					begin.index() + static_cast<util::MemorySize>(1u), destination);
 		}
 
-		void subseq(size_t begin, size_t end, Rope& destination) const {
+		void subseq(util::MemorySize begin, util::MemorySize end, Rope& destination) const {
 			checkIndices(begin, end);
 			if(end <= begin) {
 				destination.clear();
 				return;
 			}
-			size_t count = end - begin;
+			util::MemorySize count = end - begin;
 			Node* newTree = subseqNodes(root, cursize, begin, count);
 			if(destination.root) {
-				destination.root->destroy(destination.cursize, static_cast<size_t>(0u), destination.cursize);
+				destination.root->destroy(destination.cursize,
+						static_cast<util::MemorySize>(0u), destination.cursize);
 				delete destination.root;
 			}
 			destination.root = newTree;
@@ -2269,13 +2291,13 @@ namespace algorithm {
 		}
 
 		void subseq(const ConstReverseIterator& begin, const ConstReverseIterator& end, Rope& destination) const {
-			size_t eidx = end.index();
-			subseq(eidx >= cursize ? static_cast<size_t>(0u) : eidx + static_cast<size_t>(1u),
-					begin.index() + static_cast<size_t>(1u), destination);
+			util::MemorySize eidx = end.index();
+			subseq(eidx >= cursize ? static_cast<util::MemorySize>(0u) : eidx + static_cast<util::MemorySize>(1u),
+					begin.index() + static_cast<util::MemorySize>(1u), destination);
 		}
 
 		ConstIterator cbegin() const {
-			return ConstIterator(this, static_cast<size_t>(0u));
+			return ConstIterator(this, static_cast<util::MemorySize>(0u));
 		}
 
 		ConstIterator cend() const {
@@ -2283,7 +2305,7 @@ namespace algorithm {
 		}
 
 		Iterator begin() {
-			return Iterator(this, static_cast<size_t>(0u));
+			return Iterator(this, static_cast<util::MemorySize>(0u));
 		}
 
 		Iterator end() {
@@ -2291,7 +2313,7 @@ namespace algorithm {
 		}
 
 		ConstReverseIterator crbegin() const {
-			return ConstReverseIterator(this, cursize ? cursize - static_cast<size_t>(1u) : cursize);
+			return ConstReverseIterator(this, cursize ? cursize - static_cast<util::MemorySize>(1u) : cursize);
 		}
 
 		ConstReverseIterator crend() const {
@@ -2299,7 +2321,7 @@ namespace algorithm {
 		}
 
 		ReverseIterator rbegin() {
-			return ReverseIterator(this, cursize ? cursize - static_cast<size_t>(1u) : cursize);
+			return ReverseIterator(this, cursize ? cursize - static_cast<util::MemorySize>(1u) : cursize);
 		}
 
 		ReverseIterator rend() {
@@ -2307,14 +2329,15 @@ namespace algorithm {
 		}
 
 		template<typename IteratorT>
-		void bappend(IteratorT begin, IteratorT end, size_t batchSize = static_cast<size_t>(0u)) {
+		void bappend(IteratorT begin, IteratorT end,
+				util::MemorySize batchSize = static_cast<util::MemorySize>(0u)) {
 			if(begin == end)
 				return;
 			if(!batchSize)
 				batchSize = SPARE_SIZE;
-			size_t count = static_cast<size_t>(end - begin);
+			util::MemorySize count = static_cast<util::MemorySize>(end - begin);
 			while(count) {
-				size_t chunk = count;
+				util::MemorySize chunk = count;
 				if(chunk > batchSize)
 					chunk = batchSize;
 				DeleteLeafNode<Leaf, Leaf> leaf(newIteratedLeaf<IteratorT>(begin, begin + chunk, chunk));
@@ -2331,14 +2354,15 @@ namespace algorithm {
 		}
 
 		template<typename IteratorT>
-		void bprepend(IteratorT begin, IteratorT end, size_t batchSize = static_cast<size_t>(0u)) {
+		void bprepend(IteratorT begin, IteratorT end,
+				util::MemorySize batchSize = static_cast<util::MemorySize>(0u)) {
 			if(begin == end)
 				return;
 			if(!batchSize)
 				batchSize = SPARE_SIZE;
-			size_t count = static_cast<size_t>(end - begin);
+			util::MemorySize count = static_cast<util::MemorySize>(end - begin);
 			while(count) {
-				size_t chunk = count;
+				util::MemorySize chunk = count;
 				if(chunk > batchSize)
 					chunk = batchSize;
 				DeleteLeafNode<Leaf, Leaf> leaf(newIteratedLeaf<IteratorT>(begin, begin + chunk, chunk));
@@ -2355,22 +2379,23 @@ namespace algorithm {
 		}
 
 		template<typename IteratorT>
-		void binsert(size_t index, IteratorT begin, IteratorT end, size_t batchSize = static_cast<size_t>(0u)) {
+		void binsert(util::MemorySize index, IteratorT begin, IteratorT end,
+				util::MemorySize batchSize = static_cast<util::MemorySize>(0u)) {
 			if(index > cursize)
 				throw error::ListIndexOutOfBoundsError(index);
 			if(begin == end)
 				return;
 			if(!batchSize)
 				batchSize = SPARE_SIZE;
-			size_t count = static_cast<size_t>(end - begin);
+			util::MemorySize count = static_cast<util::MemorySize>(end - begin);
 			while(count) {
-				size_t chunk = count;
+				util::MemorySize chunk = count;
 				if(chunk > batchSize)
 					chunk = batchSize;
 				DeleteLeafNode<Leaf, Leaf> leaf(newIteratedLeaf<IteratorT>(begin, begin + chunk, chunk));
 				leaf.count = chunk;
 				if(root)
-					root = spliceNodes(root, cursize, index, static_cast<size_t>(0u), *leaf, chunk);
+					root = spliceNodes(root, cursize, index, static_cast<util::MemorySize>(0u), *leaf, chunk);
 				else
 					root = *leaf;
 				cursize += chunk;
@@ -2383,36 +2408,37 @@ namespace algorithm {
 
 		template<typename IteratorT>
 		void binsert(const ConstIterator& index, IteratorT begin, IteratorT end,
-				size_t batchSize = static_cast<size_t>(0u)) {
+				util::MemorySize batchSize = static_cast<util::MemorySize>(0u)) {
 			binsert<IteratorT>(index.index(), begin, end, batchSize);
 		}
 
 		template<typename IteratorT>
 		void binsert(const ConstReverseIterator& index, IteratorT begin, IteratorT end,
-				size_t batchSize = static_cast<size_t>(0u)) {
+				util::MemorySize batchSize = static_cast<util::MemorySize>(0u)) {
 			binsert<IteratorT>(index.index(), begin, end, batchSize);
 		}
 
 		template<typename IteratorT>
-		void bsplice(size_t beginIndex, size_t endIndex, IteratorT beginIterator, IteratorT endIterator,
-				size_t batchSize = static_cast<size_t>(0u)) {
+		void bsplice(util::MemorySize beginIndex, util::MemorySize endIndex,
+				IteratorT beginIterator, IteratorT endIterator,
+				util::MemorySize batchSize = static_cast<util::MemorySize>(0u)) {
 			checkIndices(beginIndex, endIndex);
-			size_t indexCount = endIndex - beginIndex;
+			util::MemorySize indexCount = endIndex - beginIndex;
 			if(beginIterator == endIterator) {
 				if(indexCount)
 					splice<IteratorT>(beginIndex, endIndex, beginIterator, endIterator);
 				return;
 			}
-			size_t iteratorCount = static_cast<size_t>(endIterator - beginIterator);
+			util::MemorySize iteratorCount = static_cast<util::MemorySize>(endIterator - beginIterator);
 			while(iteratorCount) {
-				size_t chunk = iteratorCount;
+				util::MemorySize chunk = iteratorCount;
 				if(chunk > batchSize)
 					chunk = batchSize;
 				DeleteLeafNode<Leaf, Leaf> leaf(newIteratedLeaf<IteratorT>(beginIterator, endIterator, chunk));
 				leaf.count = chunk;
 				if(indexCount == cursize) {
 					if(root) {
-						root->destroy(cursize, static_cast<size_t>(0u), cursize);
+						root->destroy(cursize, static_cast<util::MemorySize>(0u), cursize);
 						delete root;
 					}
 					root = *leaf;
@@ -2424,30 +2450,33 @@ namespace algorithm {
 				iteratorCount -= chunk;
 				beginIterator += chunk;
 				beginIndex += chunk;
-				indexCount = static_cast<size_t>(0u);
+				indexCount = static_cast<util::MemorySize>(0u);
 			}
 		}
 
 		template<typename IteratorT>
 		void bsplice(const ConstIterator& beginIndex, const ConstIterator& endIndex,
-				IteratorT beginIterator, IteratorT endIterator, size_t batchSize = static_cast<size_t>(0u)) {
+				IteratorT beginIterator, IteratorT endIterator,
+				util::MemorySize batchSize = static_cast<util::MemorySize>(0u)) {
 			bsplice<IteratorT>(beginIndex.index(), endIndex.index(), beginIterator, endIterator, batchSize);
 		}
 
 		template<typename IteratorT>
 		void bsplice(const ConstReverseIterator& beginIndex, const ConstReverseIterator& endIndex,
-				IteratorT beginIterator, IteratorT endIterator, size_t batchSize = static_cast<size_t>(0u)) {
-			size_t eidx = endIndex.index();
-			bsplice<IteratorT>(eidx >= cursize ? static_cast<size_t>(0u) : eidx + static_cast<size_t>(1u),
-					beginIndex.index() + static_cast<size_t>(1u), beginIterator, endIterator, batchSize);
+				IteratorT beginIterator, IteratorT endIterator,
+				util::MemorySize batchSize = static_cast<util::MemorySize>(0u)) {
+			util::MemorySize eidx = endIndex.index();
+			bsplice<IteratorT>(eidx >= cursize
+					? static_cast<util::MemorySize>(0u) : eidx + static_cast<util::MemorySize>(1u),
+					beginIndex.index() + static_cast<util::MemorySize>(1u), beginIterator, endIterator, batchSize);
 		}
 
 		void assign(const Rope& rope) {
 			if(root) {
-				root->destroy(cursize, static_cast<size_t>(0u), cursize);
+				root->destroy(cursize, static_cast<util::MemorySize>(0u), cursize);
 				delete root;
 				root = NULL;
-				cursize = static_cast<size_t>(0u);
+				cursize = static_cast<util::MemorySize>(0u);
 			}
 			if(rope.root) {
 				root = rope.root->clone(rope.cursize);
@@ -2455,15 +2484,16 @@ namespace algorithm {
 			}
 		}
 
-		void fill(const ElementT& value, size_t count, size_t batchSize = static_cast<size_t>(0u)) {
+		void fill(const ElementT& value, util::MemorySize count,
+				util::MemorySize batchSize = static_cast<util::MemorySize>(0u)) {
 			if(!batchSize)
 				batchSize = SPARE_SIZE;
 			while(count) {
-				size_t chunk = count;
+				util::MemorySize chunk = count;
 				if(chunk > batchSize)
 					chunk = batchSize;
-				size_t newSize = chunk + SPARE_SIZE;
-				DeleteLeafNode<Leaf, Leaf> leaf(new(newSize) Leaf(newSize));
+				util::MemorySize newSize = chunk + SPARE_SIZE;
+				DeleteLeafNode<Leaf, Leaf> leaf(new(static_cast<size_t>(newSize)) Leaf(newSize));
 				ElementT* dest = leaf->getElements();
 				for(; leaf.count < chunk; ++leaf.count)
 					new(dest + leaf.count) ElementT(value);

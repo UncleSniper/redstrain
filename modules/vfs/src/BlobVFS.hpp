@@ -17,23 +17,23 @@ namespace vfs {
 
 		  private:
 			const char* data;
-			size_t size;
+			util::MemorySize size;
 
 		  public:
-			BlobMemoryFile(MemoryBase&, int, const char*, size_t);
+			BlobMemoryFile(MemoryBase&, int, const char*, util::MemorySize);
 			BlobMemoryFile(const BlobMemoryFile&);
 
 			inline const char* getData() const {
 				return data;
 			}
 
-			inline size_t getSize() const {
+			inline util::MemorySize getSize() const {
 				return size;
 			}
 
 			virtual Stat::Type getFileType() const;
 			virtual void stat(Stat&);
-			virtual void truncate(size_t);
+			virtual void truncate(util::FileSize);
 			virtual io::InputStream<char>* getInputStream();
 			virtual io::OutputStream<char>* getOutputStream();
 			virtual io::BidirectionalStream<char>* getStream(bool);
@@ -54,18 +54,18 @@ namespace vfs {
 
 		  private:
 			const char *const data;
-			const size_t size;
+			const util::MemorySize size;
 			const std::string path;
 
 		  public:
-			BlobInjector(const char*, size_t, const std::string&);
+			BlobInjector(const char*, util::MemorySize, const std::string&);
 			BlobInjector(const BlobInjector&);
 
 			inline const char* getData() const {
 				return data;
 			}
 
-			inline size_t getSize() const {
+			inline util::MemorySize getSize() const {
 				return size;
 			}
 
@@ -126,9 +126,9 @@ namespace vfs {
 			defaultDirectoryPermissions = permissions;
 		}
 
-		void putBlob(const std::string&, const char*, size_t);
-		void putBlob(const text::String16&, const char*, size_t);
-		void putBlob(const Pathname&, const char*, size_t);
+		void putBlob(const std::string&, const char*, util::MemorySize);
+		void putBlob(const text::String16&, const char*, util::MemorySize);
+		void putBlob(const Pathname&, const char*, util::MemorySize);
 		void aliasBlob(const std::string&, const std::string&);
 		void aliasBlob(const text::String16&, const text::String16&);
 		void aliasBlob(const text::String16&, const Pathname&);

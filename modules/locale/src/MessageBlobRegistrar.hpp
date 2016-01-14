@@ -4,6 +4,7 @@
 #include <string>
 #include <redstrain/io/InputStream.hpp>
 #include <redstrain/io/OutputStream.hpp>
+#include <redstrain/util/types.hpp>
 #include <redstrain/io/streamtypes.hpp>
 
 #include "api.hpp"
@@ -44,7 +45,8 @@ namespace locale {
 		};
 
 	  public:
-		MessageBlobRegistrar(BlobMessageMapping*&, const std::string&, const std::string&, const char*, size_t);
+		MessageBlobRegistrar(BlobMessageMapping*&, const std::string&, const std::string&,
+				const char*, util::MemorySize);
 
 		static void generateBlobRegistrar(io::OutputStream<char>&, const std::string&, const std::string&,
 				const std::string&, const std::string&, bool, unsigned);

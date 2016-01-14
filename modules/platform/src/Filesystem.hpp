@@ -68,7 +68,7 @@ namespace platform {
 
 		  private:
 			FSType type;
-			size_t totalBlocks, freeBlocks, totalINodes, freeINodes, nameLength;
+			util::FileSize totalBlocks, freeBlocks, totalINodes, freeINodes, nameLength;
 
 		  public:
 			FSInfo();
@@ -82,43 +82,43 @@ namespace platform {
 				type = newType;
 			}
 
-			inline size_t getTotalBlockCount() const {
+			inline util::FileSize getTotalBlockCount() const {
 				return totalBlocks;
 			}
 
-			inline void setTotalBlockCount(size_t newBlockCount) {
+			inline void setTotalBlockCount(util::FileSize newBlockCount) {
 				totalBlocks = newBlockCount;
 			}
 
-			inline size_t getFreeBlockCount() const {
+			inline util::FileSize getFreeBlockCount() const {
 				return freeBlocks;
 			}
 
-			inline void setFreeBlockCount(size_t newBlockCount) {
+			inline void setFreeBlockCount(util::FileSize newBlockCount) {
 				freeBlocks = newBlockCount;
 			}
 
-			inline size_t getTotalINodeCount() const {
+			inline util::FileSize getTotalINodeCount() const {
 				return totalINodes;
 			}
 
-			inline void setTotalINodeCount(size_t newINodeCount) {
+			inline void setTotalINodeCount(util::FileSize newINodeCount) {
 				totalINodes = newINodeCount;
 			}
 
-			inline size_t getFreeINodeCount() const {
+			inline util::FileSize getFreeINodeCount() const {
 				return freeINodes;
 			}
 
-			inline void setFreeINodeCount(size_t newINodeCount) {
+			inline void setFreeINodeCount(util::FileSize newINodeCount) {
 				freeINodes = newINodeCount;
 			}
 
-			inline size_t getMaximumFilenameLength() const {
+			inline util::FileSize getMaximumFilenameLength() const {
 				return nameLength;
 			}
 
-			inline void setMaximumFilenameLength(size_t newMaxLength) {
+			inline void setMaximumFilenameLength(util::FileSize newMaxLength) {
 				nameLength = newMaxLength;
 			}
 
@@ -172,7 +172,7 @@ namespace platform {
 		static void symlink(const std::string&, const std::string&);
 		static void readlink(const std::string&, std::string&);
 		static void readdir(const std::string&, util::Appender<std::string>&);
-		static void truncate(const std::string&, size_t);
+		static void truncate(const std::string&, util::FileSize);
 		static void statfs(const std::string&, FSInfo&);
 		static void listRoots(util::Appender<std::string>&);
 		static void mknod(const std::string&, Stat::Type, int, Stat::DeviceID = Stat::NO_DEVICE);

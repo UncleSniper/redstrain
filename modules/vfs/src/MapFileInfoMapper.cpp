@@ -6,6 +6,7 @@
 
 using std::map;
 using redengine::platform::Mutex;
+using redengine::util::MemorySize;
 using redengine::util::StringUtils;
 using redengine::platform::MutexLocker;
 
@@ -90,8 +91,8 @@ namespace vfs {
 		lock.release();
 	}
 
-	size_t MapFileInfoMapper::getUserMappingCount() const {
-		return static_cast<size_t>(userh2v.size());
+	MemorySize MapFileInfoMapper::getUserMappingCount() const {
+		return static_cast<MemorySize>(userh2v.size());
 	}
 
 	void MapFileInfoMapper::putGroupMapping(const HostGroupID& hostID, VirtualGroupID virtualID) {
@@ -144,8 +145,8 @@ namespace vfs {
 		lock.release();
 	}
 
-	size_t MapFileInfoMapper::getGroupMappingCount() const {
-		return static_cast<size_t>(grouph2v.size());
+	MemorySize MapFileInfoMapper::getGroupMappingCount() const {
+		return static_cast<MemorySize>(grouph2v.size());
 	}
 
 	void MapFileInfoMapper::putDeviceMapping(const HostDeviceID& hostID, VirtualDeviceID virtualID) {
@@ -198,8 +199,8 @@ namespace vfs {
 		lock.release();
 	}
 
-	size_t MapFileInfoMapper::getDeviceMappingCount() const {
-		return static_cast<size_t>(deviceh2v.size());
+	MemorySize MapFileInfoMapper::getDeviceMappingCount() const {
+		return static_cast<MemorySize>(deviceh2v.size());
 	}
 
 	FileInfoMapper::VirtualUserID MapFileInfoMapper::mapHostUserToVirtual(const HostUserID& hostID) {

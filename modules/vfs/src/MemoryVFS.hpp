@@ -30,7 +30,7 @@ namespace vfs {
 
 			virtual Stat::Type getFileType() const;
 			virtual void stat(Stat&);
-			virtual void truncate(size_t);
+			virtual void truncate(util::FileSize);
 			virtual io::InputStream<char>* getInputStream();
 			virtual io::OutputStream<char>* getOutputStream();
 			virtual io::BidirectionalStream<char>* getStream(bool);
@@ -44,7 +44,7 @@ namespace vfs {
 
 		  protected:
 			RopeMemoryFile& file;
-			size_t position;
+			util::MemorySize position;
 
 		  protected:
 			RopeBase(const RopeBase&);
@@ -66,8 +66,8 @@ namespace vfs {
 			}
 
 			virtual void close();
-			virtual void seek(off_t, SeekWhence);
-			virtual size_t tell() const;
+			virtual void seek(util::FileOffset, SeekWhence);
+			virtual util::FileSize tell() const;
 
 		};
 
@@ -76,12 +76,12 @@ namespace vfs {
 		  protected:
 			RopeInputStream(const RopeInputStream&);
 
-			virtual size_t readBlock(char*, size_t);
+			virtual util::MemorySize readBlock(char*, util::MemorySize);
 
 		  public:
 			RopeInputStream(RopeMemoryFile&, bool = false);
 
-			virtual void seek(off_t, SeekWhence);
+			virtual void seek(util::FileOffset, SeekWhence);
 
 		};
 
@@ -90,7 +90,7 @@ namespace vfs {
 		  protected:
 			RopeOutputStream(const RopeOutputStream&);
 
-			virtual void writeBlock(const char*, size_t);
+			virtual void writeBlock(const char*, util::MemorySize);
 
 		  public:
 			RopeOutputStream(RopeMemoryFile&, bool = true);

@@ -103,7 +103,7 @@ namespace vfs {
 			virtual void utime(time_t, time_t);
 			virtual bool access(int);
 			virtual void readlink(text::String16&);
-			virtual void truncate(size_t) = 0;
+			virtual void truncate(util::FileSize) = 0;
 			virtual io::InputStream<char>* getInputStream() = 0;
 			virtual io::OutputStream<char>* getOutputStream() = 0;
 			virtual io::BidirectionalStream<char>* getStream(bool) = 0;
@@ -119,7 +119,7 @@ namespace vfs {
 			void removeEntry(const text::String16&);
 
 			virtual Stat::Type getFileType() const;
-			virtual void truncate(size_t);
+			virtual void truncate(util::FileSize);
 			virtual io::InputStream<char>* getInputStream();
 			virtual io::OutputStream<char>* getOutputStream();
 			virtual io::BidirectionalStream<char>* getStream(bool);
@@ -167,7 +167,7 @@ namespace vfs {
 			virtual Stat::Type getFileType() const;
 			virtual void stat(Stat&);
 			virtual void readlink(text::String16&);
-			virtual void truncate(size_t);
+			virtual void truncate(util::FileSize);
 			virtual io::InputStream<char>* getInputStream();
 			virtual io::OutputStream<char>* getOutputStream();
 			virtual io::BidirectionalStream<char>* getStream(bool);
@@ -186,7 +186,7 @@ namespace vfs {
 
 			virtual Stat::Type getFileType() const;
 			virtual void stat(Stat&);
-			virtual void truncate(size_t);
+			virtual void truncate(util::FileSize);
 			virtual io::InputStream<char>* getInputStream();
 			virtual io::OutputStream<char>* getOutputStream();
 			virtual io::BidirectionalStream<char>* getStream(bool);
@@ -253,7 +253,7 @@ namespace vfs {
 			virtual void rmdir();
 			virtual void readlink(text::String16&);
 			virtual void readdir(util::Appender<text::String16>&);
-			virtual void truncate(size_t);
+			virtual void truncate(util::FileSize);
 			virtual void statfs(FSInfo&);
 			virtual void mknod(Stat::Type, int, Stat::DeviceID);
 			virtual io::InputStream<char>* getInputStream();
@@ -362,8 +362,8 @@ namespace vfs {
 		virtual MemoryFile* createDeviceFile(int, bool, Stat::DeviceID);
 		virtual MemoryFile* createRegularFile(int) = 0;
 
-		virtual size_t getDeviceSize(bool, Stat::DeviceID);
-		virtual void truncateDevice(bool, Stat::DeviceID, size_t);
+		virtual util::FileSize getDeviceSize(bool, Stat::DeviceID);
+		virtual void truncateDevice(bool, Stat::DeviceID, util::FileSize);
 		virtual io::InputStream<char>* getDeviceInputStream(bool, Stat::DeviceID);
 		virtual io::OutputStream<char>* getDeviceOutputStream(bool, Stat::DeviceID);
 		virtual io::BidirectionalStream<char>* getDeviceStream(bool, Stat::DeviceID, bool);
@@ -384,7 +384,7 @@ namespace vfs {
 		virtual void symlink(const text::String16&, PathIterator, PathIterator);
 		virtual void readlink(PathIterator, PathIterator, text::String16&);
 		virtual void readdir(PathIterator, PathIterator, util::Appender<text::String16>&);
-		virtual void truncate(PathIterator, PathIterator, size_t);
+		virtual void truncate(PathIterator, PathIterator, util::FileSize);
 		virtual void statfs(PathIterator, PathIterator, FSInfo&);
 		virtual void mknod(PathIterator, PathIterator, Stat::Type, int, Stat::DeviceID);
 		virtual io::InputStream<char>* getInputStream(PathIterator, PathIterator);

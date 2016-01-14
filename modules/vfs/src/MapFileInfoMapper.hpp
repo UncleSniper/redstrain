@@ -3,6 +3,7 @@
 
 #include <map>
 #include <redstrain/platform/Mutex.hpp>
+#include <redstrain/util/types.hpp>
 
 #include "FileInfoMapper.hpp"
 
@@ -108,19 +109,19 @@ namespace vfs {
 		bool getHostUserID(VirtualUserID, HostUserID&);
 		bool getVirtualUserID(const HostUserID&, VirtualUserID&);
 		void getUserMappings(UserIterator&, UserIterator&);
-		size_t getUserMappingCount() const;
+		util::MemorySize getUserMappingCount() const;
 
 		void putGroupMapping(const HostGroupID&, VirtualGroupID);
 		bool getHostGroupID(VirtualGroupID, HostGroupID&);
 		bool getVirtualGroupID(const HostGroupID&, VirtualGroupID&);
 		void getGroupMappings(GroupIterator&, GroupIterator&);
-		size_t getGroupMappingCount() const;
+		util::MemorySize getGroupMappingCount() const;
 
 		void putDeviceMapping(const HostDeviceID&, VirtualDeviceID);
 		bool getHostDeviceID(VirtualDeviceID, HostDeviceID&);
 		bool getVirtualDeviceID(const HostDeviceID&, VirtualDeviceID&);
 		void getDeviceMappings(DeviceIterator&, DeviceIterator&);
-		size_t getDeviceMappingCount() const;
+		util::MemorySize getDeviceMappingCount() const;
 
 		virtual VirtualUserID mapHostUserToVirtual(const HostUserID&);
 		virtual HostUserID mapVirtualUserToHost(VirtualUserID);

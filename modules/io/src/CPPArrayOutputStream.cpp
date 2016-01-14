@@ -5,6 +5,8 @@
 #include "StreamArrayClosedError.hpp"
 
 using std::string;
+using redengine::util::FileSize;
+using redengine::util::MemorySize;
 using redengine::util::StringUtils;
 using redengine::error::ProgrammingError;
 
@@ -76,7 +78,7 @@ namespace io {
 
 	// ======== SizeAppender ========
 
-	CPPArrayOutputStream::SizeAppender::SizeAppender(FormattedOutputStream<char>& output, size_t size,
+	CPPArrayOutputStream::SizeAppender::SizeAppender(FormattedOutputStream<char>& output, FileSize size,
 			const string& exportMacro) : output(output), size(size), partCount(0u), exportMacro(exportMacro) {}
 
 	CPPArrayOutputStream::SizeAppender::SizeAppender(const SizeAppender& appender)
@@ -99,9 +101,9 @@ namespace io {
 			output.print(exportMacro);
 			output.print(" ");
 		}
-		output.print("const size_t ");
+		output.print("const ::redengine::util::FileSize ");
 		output.print(lastPart);
-		output.print("_size = static_cast<size_t>(");
+		output.print("_size = static_cast<::redengine::util::FileSize>(");
 		output.print(StringUtils::toString(size));
 		output.println("ul);");
 	}
@@ -130,9 +132,9 @@ namespace io {
 		output.print(lastPart);
 		output.print("_inject(");
 		output.print(lastPart);
-		output.print(", ");
+		output.print(", static_cast<::redengine::util::MemorySize>(");
 		output.print(lastPart);
-		output.print("_size, \"");
+		output.print("_size), \"");
 		output.print(blobPath);
 		output.println("\");");
 	}
@@ -142,7 +144,7 @@ namespace io {
 	CPPArrayOutputStream::CPPArrayOutputStream(OutputStream<char>& stream, const string& variable,
 			LineOriented::LinebreakPolicy linebreaks) : formatted(stream, linebreaks),
 			variable(variable.empty() ? DEFAULT_VARIABLE_NAME : variable), state(EMPTY), needsIndent(false),
-			columns(0u), arraySize(static_cast<size_t>(0u)) {}
+			columns(0u), arraySize(static_cast<FileSize>(0u)) {}
 
 	CPPArrayOutputStream::CPPArrayOutputStream(const CPPArrayOutputStream& stream)
 			: Stream(stream), OutputStream<char>(stream),
@@ -183,7 +185,7 @@ namespace io {
 		guardMacro = macro;
 	}
 
-	void CPPArrayOutputStream::writeBlock(const char* buffer, size_t count) {
+	void CPPArrayOutputStream::writeBlock(const char* buffer, MemorySize count) {
 		if(!count)
 			return;
 		switch(state) {
@@ -213,7 +215,7 @@ namespace io {
 			unsigned code = static_cast<unsigned>(static_cast<unsigned char>(*buffer));
 			block[3] = HEX_DIGITS[code / 16u];
 			block[4] = HEX_DIGITS[code % 16u];
-			formatted.write(block, sizeof(block) - static_cast<size_t>(1u));
+			formatted.write(block, static_cast<MemorySize>(sizeof(block)) - static_cast<MemorySize>(1u));
 			++columns;
 			++arraySize;
 		}
@@ -223,6 +225,8 @@ namespace io {
 		formatted.println("#include <cstddef>");
 		if(withBlob && !blobPath.empty())
 			formatted.println("#include <redstrain/vfs/BlobVFS.hpp>");
+		else
+			formatted.println("#include <redstrain/util/types.hpp>");
 		if(!extraInclude.empty()) {
 			formatted.endLine();
 			formatted.print("#include \"");
@@ -266,8 +270,8 @@ namespace io {
 		formatted.close();
 	}
 
-	size_t CPPArrayOutputStream::tell() const {
-		return formatted.tell();
+	FileSize CPPArrayOutputStream::tell() const {
+		return static_cast<FileSize>(arraySize);
 	}
 
 	void CPPArrayOutputStream::writeHeader() {
@@ -295,7 +299,7 @@ namespace io {
 			formatted.print(exportMacro);
 			formatted.print(" ");
 		}
-		formatted.print("const size_t ");
+		formatted.print("const ::redengine::util::FileSize ");
 		formatted.print(beginner.getVariableSimpleName());
 		formatted.println("_size;");
 		EndingAppender ender(formatted);

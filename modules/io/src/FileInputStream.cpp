@@ -2,6 +2,8 @@
 
 using std::string;
 using redengine::platform::File;
+using redengine::util::MemorySize;
+using redengine::util::FileOffset;
 
 namespace redengine {
 namespace io {
@@ -18,11 +20,11 @@ namespace io {
 	FileInputStream::FileInputStream(File::Handle handle, File::Direction dir)
 			: FileBase(handle, dir == File::OUTPUT ? File::RANDOM_ACCESS : dir) {}
 
-	size_t FileInputStream::readBlock(char* buffer, size_t size) {
+	MemorySize FileInputStream::readBlock(char* buffer, MemorySize size) {
 		return file.read(buffer, size);
 	}
 
-	void FileInputStream::seek(off_t offset, SeekWhence whence) {
+	void FileInputStream::seek(FileOffset offset, SeekWhence whence) {
 		FileBase::seek(offset, whence);
 		atEnd = false;
 	}

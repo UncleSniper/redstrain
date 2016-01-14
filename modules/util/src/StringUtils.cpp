@@ -2,6 +2,7 @@
 #include <cstring>
 
 #include "StringUtils.hpp"
+#include "types.hpp"
 
 using std::list;
 using std::deque;
@@ -120,7 +121,7 @@ namespace util {
 			return;
 		}
 		bool atFront = true;
-		size_t skipped = static_cast<size_t>(0u);
+		MemorySize skipped = static_cast<MemorySize>(0u);
 		string::size_type pos, old = static_cast<string::size_type>(0u);
 		while((pos = haystack.find(needle, old)) != string::npos) {
 			if(pos > old) {
@@ -129,7 +130,7 @@ namespace util {
 						for(; skipped; --skipped)
 							sink.append(needle);
 					else
-						skipped = static_cast<size_t>(0u);
+						skipped = static_cast<MemorySize>(0u);
 				}
 				else {
 					for(; skipped; --skipped) {
@@ -400,7 +401,7 @@ namespace util {
 	 */
 	string StringUtils::trim(const string& subject, const unsigned char* lut, int flags) {
 		string result;
-		result.reserve(static_cast<size_t>(subject.length()));
+		result.reserve(subject.length());
 		bool atFront = true;
 		const unsigned char* data = reinterpret_cast<const unsigned char*>(subject.data());
 		const unsigned char *end = data + subject.length(), *skipped = NULL;
@@ -515,7 +516,7 @@ namespace util {
 		if(pos == string::npos)
 			return subject;
 		string result;
-		result.reserve(static_cast<size_t>(subject.length() + replaceWith.length() - find.length()));
+		result.reserve(subject.length() + replaceWith.length() - find.length());
 		result.append(subject.substr(static_cast<string::size_type>(0u), pos));
 		result.append(replaceWith);
 		result.append(subject.substr(pos + find.length()));

@@ -15,12 +15,12 @@ namespace io {
 	  protected:
 		OutputStream(const OutputStream& stream) : Stream(stream) {}
 
-		virtual void writeBlock(const RecordT*, size_t) = 0;
+		virtual void writeBlock(const RecordT*, util::MemorySize) = 0;
 
 	  public:
 		OutputStream() {}
 
-		virtual void write(const RecordT* buffer, size_t size) {
+		virtual void write(const RecordT* buffer, util::MemorySize size) {
 			writeBlock(buffer, size);
 		}
 

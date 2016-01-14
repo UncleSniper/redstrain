@@ -2,6 +2,8 @@
 
 #include "Stream.hpp"
 
+using redengine::util::FileSize;
+using redengine::util::FileOffset;
 using redengine::error::UnsupportedOperationError;
 
 namespace redengine {
@@ -15,11 +17,11 @@ namespace io {
 
 	void Stream::close() {}
 
-	void Stream::seek(off_t, SeekWhence) {
-		throw UnsupportedOperationError("redengine::io::Stream::seek(off_t, SeekWhence)");
+	void Stream::seek(FileOffset, SeekWhence) {
+		throw UnsupportedOperationError("redengine::io::Stream::seek(FileOffset, SeekWhence)");
 	}
 
-	size_t Stream::tell() const {
+	FileSize Stream::tell() const {
 		throw UnsupportedOperationError("redengine::io::Stream::tell() const");
 	}
 

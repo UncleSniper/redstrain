@@ -2,6 +2,7 @@
 #define REDSTRAIN_MOD_PLATFORM_FILE_HPP
 
 #include <string>
+#include <redstrain/util/types.hpp>
 
 #include "api.hpp"
 #include "platform.hpp"
@@ -74,11 +75,11 @@ namespace platform {
 			return handle;
 		}
 
-		size_t read(char*, size_t);
-		void write(const char*, size_t);
+		util::MemorySize read(char*, util::MemorySize);
+		void write(const char*, util::MemorySize);
 		void close();
-		void seek(off_t, SeekWhence);
-		size_t tell() const;
+		void seek(util::FileOffset, SeekWhence);
+		util::FileSize tell() const;
 		void open(const std::string&, Direction, bool = false, TruncateMode = TRUNCATE_IF_WRONLY);
 
 		void _uncheckedClose();

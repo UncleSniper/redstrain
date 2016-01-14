@@ -14,9 +14,12 @@ namespace io {
 		typedef RecordT Record;
 
 	  public:
-		static const size_t COPY_BUFFER_BYTES = static_cast<size_t>(REDSTRAIN_IO_DEFAULT_COPY_BUFFER_BYTES);
-		static const size_t COPY_BUFFER_RECORDS = COPY_BUFFER_BYTES / sizeof(RecordT)
-				? COPY_BUFFER_BYTES / sizeof(RecordT) : static_cast<size_t>(1u);
+		static const util::MemorySize COPY_BUFFER_BYTES
+				= static_cast<util::MemorySize>(REDSTRAIN_IO_DEFAULT_COPY_BUFFER_BYTES);
+		static const util::MemorySize COPY_BUFFER_RECORDS
+				= COPY_BUFFER_BYTES / static_cast<util::MemorySize>(sizeof(RecordT))
+				? COPY_BUFFER_BYTES / static_cast<util::MemorySize>(sizeof(RecordT))
+				: static_cast<util::MemorySize>(1u);
 
 	  protected:
 		bool atEnd;
@@ -24,7 +27,7 @@ namespace io {
 	  protected:
 		InputStream(const InputStream& stream) : Stream(stream) {}
 
-		virtual size_t readBlock(RecordT*, size_t) = 0;
+		virtual util::MemorySize readBlock(RecordT*, util::MemorySize) = 0;
 
 	  public:
 		InputStream() : atEnd(false) {}
@@ -33,74 +36,78 @@ namespace io {
 			return atEnd;
 		}
 
-		virtual size_t read(RecordT* buffer, size_t size) {
-			size_t count = readBlock(buffer, size);
+		virtual util::MemorySize read(RecordT* buffer, util::MemorySize size) {
+			util::MemorySize count = readBlock(buffer, size);
 			if(!count)
 				atEnd = true;
 			return count;
 		}
 
-		size_t copyTo(OutputStream<RecordT>& sink) {
+		util::FileSize copyTo(OutputStream<RecordT>& sink) {
+			//TODO: make safe for arbitrary RecordT
 			RecordT buffer[COPY_BUFFER_RECORDS];
-			size_t total = static_cast<size_t>(0u);
+			util::FileSize total = static_cast<util::FileSize>(0u);
 			for(;;) {
-				size_t count = readBlock(buffer, sizeof(buffer));
+				util::MemorySize count = readBlock(buffer, COPY_BUFFER_RECORDS);
 				if(!count)
 					break;
 				sink.write(buffer, count);
-				total += count;
+				total += static_cast<util::FileSize>(count);
 			}
 			atEnd = true;
 			return total;
 		}
 
-		size_t copyTo(OutputStream<RecordT>& sink, size_t limit) {
+		util::FileSize copyTo(OutputStream<RecordT>& sink, util::FileSize limit) {
+			//TODO: make safe for arbitrary RecordT
 			RecordT buffer[COPY_BUFFER_RECORDS];
-			size_t remaining = limit;
+			util::FileSize remaining = limit;
 			while(remaining) {
-				size_t chunkSize = sizeof(buffer);
-				if(remaining < chunkSize)
-					chunkSize = remaining;
-				size_t count = readBlock(buffer, chunkSize);
+				util::MemorySize chunkSize = COPY_BUFFER_RECORDS;
+				if(remaining < static_cast<util::FileSize>(chunkSize))
+					chunkSize = static_cast<util::MemorySize>(remaining);
+				util::MemorySize count = readBlock(buffer, chunkSize);
 				if(!count) {
 					atEnd = true;
 					break;
 				}
 				sink.write(buffer, count);
-				remaining -= count;
+				remaining -= static_cast<util::FileSize>(count);
 			}
 			return limit - remaining;
 		}
 
 		template<typename CollectionT>
-		size_t teeTo(const CollectionT& sinks) {
+		util::FileSize teeTo(const CollectionT& sinks) {
+			//TODO: make safe for arbitrary RecordT
 			RecordT buffer[COPY_BUFFER_RECORDS];
 			typename CollectionT::const_iterator sinksBegin, sinksEnd;
-			size_t total = static_cast<size_t>(0u);
+			util::FileSize total = static_cast<util::FileSize>(0u);
 			for(;;) {
-				size_t count = readBlock(buffer, sizeof(buffer));
+				util::MemorySize count = readBlock(buffer, COPY_BUFFER_RECORDS);
 				if(!count)
 					break;
 				sinksBegin = sinks.begin();
 				sinksEnd = sinks.end();
 				for(; sinksBegin != sinksEnd; ++sinksBegin)
 					(*sinksBegin)->write(buffer, count);
-				total += count;
+				total += static_cast<util::FileSize>(count);
 			}
 			atEnd = true;
 			return total;
 		}
 
 		template<typename CollectionT>
-		size_t teeTo(const CollectionT& sinks, size_t limit) {
+		util::FileSize teeTo(const CollectionT& sinks, util::FileSize limit) {
+			//TODO: make safe for arbitrary RecordT
 			RecordT buffer[COPY_BUFFER_RECORDS];
 			typename CollectionT::const_iterator sinksBegin, sinksEnd;
-			size_t remaining = limit;
+			util::FileSize remaining = limit;
 			while(remaining) {
-				size_t chunkSize = sizeof(buffer);
-				if(remaining < chunkSize)
-					chunkSize = remaining;
-				size_t count = readBlock(buffer, chunkSize);
+				util::MemorySize chunkSize = sizeof(buffer);
+				if(remaining < static_cast<util::FileSize>(chunkSize))
+					chunkSize = static_cast<util::MemorySize>(remaining);
+				util::MemorySize count = readBlock(buffer, chunkSize);
 				if(!count) {
 					atEnd = true;
 					break;
@@ -109,7 +116,7 @@ namespace io {
 				sinksEnd = sinks.end();
 				for(; sinksBegin != sinksEnd; ++sinksBegin)
 					(*sinksBegin)->write(buffer, count);
-				remaining -= count;
+				remaining -= static_cast<util::FileSize>(count);
 			}
 			return limit - remaining;
 		}

@@ -90,15 +90,15 @@ namespace text {
 			typedef typename String::const_iterator StringIterator;
 
 			const IteratorT& items;
-			size_t itemCount, itemIndex;
+			util::MemorySize itemCount, itemIndex;
 			Stream stream;
 			StringIterator format, endfmt;
-			size_t fmtindex;
+			util::MemorySize fmtindex;
 
-			FormatState(const IteratorT& items, size_t itemCount, const StringIterator& format,
+			FormatState(const IteratorT& items, util::MemorySize itemCount, const StringIterator& format,
 					const StringIterator& endfmt) : items(items), itemCount(itemCount),
-					itemIndex(static_cast<size_t>(0u)), format(format), endfmt(endfmt),
-					fmtindex(static_cast<size_t>(0u)) {}
+					itemIndex(static_cast<util::MemorySize>(0u)), format(format), endfmt(endfmt),
+					fmtindex(static_cast<util::MemorySize>(0u)) {}
 
 		};
 
@@ -559,30 +559,30 @@ namespace text {
 		}
 
 		template<typename IteratorT>
-		static size_t parseItem(FormatState<IteratorT>& state) {
+		static util::MemorySize parseItem(FormatState<IteratorT>& state) {
 			typedef InvalidFormattingItemReferenceError::Reference ErrorReference;
 			if(state.format == state.endfmt)
 				throw UnexpectedEndOfFormatStringError(state.fmtindex);
-			size_t offset, ref;
+			util::MemorySize offset, ref;
 			switch(*state.format) {
 				case FormatRenditionT::ITEM_FORWARD:
 					++state.format;
 					offset = ++state.fmtindex;
-					ref = parseInt<IteratorT, size_t>(state, NULL) + state.itemIndex;
+					ref = parseInt<IteratorT, util::MemorySize>(state, NULL) + state.itemIndex;
 					if(ref >= state.itemCount)
 						throw InvalidFormattingItemReferenceError(ref, offset);
 					return ref;
 				case FormatRenditionT::ITEM_BACKWARD:
 					++state.format;
 					offset = ++state.fmtindex;
-					ref = parseInt<IteratorT, size_t>(state, NULL);
+					ref = parseInt<IteratorT, util::MemorySize>(state, NULL);
 					if(ref > state.itemIndex)
 						throw InvalidFormattingItemReferenceError(static_cast<ErrorReference>(state.itemIndex)
 								- static_cast<ErrorReference>(ref), offset);
 					return state.itemIndex - ref;
 				default:
 					offset = state.fmtindex;
-					ref = parseInt<IteratorT, size_t>(state, NULL);
+					ref = parseInt<IteratorT, util::MemorySize>(state, NULL);
 					if(ref >= state.itemCount)
 						throw InvalidFormattingItemReferenceError(ref, offset);
 					return ref;
@@ -640,7 +640,7 @@ namespace text {
 
 		template<typename IteratorT>
 		void parseIfConstruct(FormatState<IteratorT>& state, bool emit) const {
-			const size_t originalItemIndex = state.itemIndex;
+			const util::MemorySize originalItemIndex = state.itemIndex;
 			++state.fmtindex;
 			++state.format;
 			bool condition = parseCondition<IteratorT>(state);
@@ -743,7 +743,7 @@ namespace text {
 			}
 			UnaryPredicate unaryop;
 			BinaryPredicate binaryop;
-			size_t lopnd, ropnd;
+			util::MemorySize lopnd, ropnd;
 			switch(*state.format) {
 				case FormatRenditionT::CONDITION_FALSE:
 					result = false;
@@ -901,8 +901,8 @@ namespace text {
 		}
 
 		template<typename IteratorT>
-		static size_t parsePredicateOperand(FormatState<IteratorT>& state) {
-			size_t operand;
+		static util::MemorySize parsePredicateOperand(FormatState<IteratorT>& state) {
+			util::MemorySize operand;
 			switch(*state.format) {
 				default:
 					if(FormatRenditionT::decodeDigit(*state.format) < 0) {
@@ -990,7 +990,7 @@ namespace text {
 		}
 
 		template<typename IteratorT>
-		String formatIter(const String& format, const IteratorT& beginItems, size_t itemCount) const {
+		String formatIter(const String& format, const IteratorT& beginItems, util::MemorySize itemCount) const {
 			FormatState<IteratorT> state(beginItems, itemCount, format.begin(), format.end());
 			parseFormatString<IteratorT>(state, false, true);
 			return state.stream.str();
@@ -998,8 +998,8 @@ namespace text {
 
 		String format(const String& format, const std::list<const Item*>& items) const {
 			if(items.empty())
-				return formatIter<const Item**>(format, NULL, static_cast<size_t>(0u));
-			size_t itemCount = static_cast<size_t>(items.size());
+				return formatIter<const Item**>(format, NULL, static_cast<util::MemorySize>(0u));
+			util::MemorySize itemCount = static_cast<util::MemorySize>(items.size());
 			const Item* array[itemCount];
 			const Item** insert = array;
 			typename std::list<const Item*>::const_iterator beginItems(items.begin()), endItems(items.end());
@@ -1010,11 +1010,11 @@ namespace text {
 
 		String format(const String& format, const std::vector<const Item*>& items) const {
 			return formatIter<typename std::vector<const Item*>::const_iterator>(format, items.begin(),
-					static_cast<size_t>(items.size()));
+					static_cast<util::MemorySize>(items.size()));
 		}
 
 		String format(const String& format) const {
-			return formatIter<const Item**>(format, NULL, static_cast<size_t>(0u));
+			return formatIter<const Item**>(format, NULL, static_cast<util::MemorySize>(0u));
 		}
 
 		String format(
@@ -1024,7 +1024,7 @@ namespace text {
 			const Item* array[] = {
 				&item0
 			};
-			return formatIter<const Item**>(format, array, static_cast<size_t>(1u));
+			return formatIter<const Item**>(format, array, static_cast<util::MemorySize>(1u));
 		}
 
 		String format(
@@ -1036,7 +1036,7 @@ namespace text {
 				&item0,
 				&item1
 			};
-			return formatIter<const Item**>(format, array, static_cast<size_t>(2u));
+			return formatIter<const Item**>(format, array, static_cast<util::MemorySize>(2u));
 		}
 
 		String format(
@@ -1050,7 +1050,7 @@ namespace text {
 				&item1,
 				&item2
 			};
-			return formatIter<const Item**>(format, array, static_cast<size_t>(3u));
+			return formatIter<const Item**>(format, array, static_cast<util::MemorySize>(3u));
 		}
 
 		String format(
@@ -1066,7 +1066,7 @@ namespace text {
 				&item2,
 				&item3
 			};
-			return formatIter<const Item**>(format, array, static_cast<size_t>(4u));
+			return formatIter<const Item**>(format, array, static_cast<util::MemorySize>(4u));
 		}
 
 		String format(
@@ -1084,7 +1084,7 @@ namespace text {
 				&item3,
 				&item4
 			};
-			return formatIter<const Item**>(format, array, static_cast<size_t>(5u));
+			return formatIter<const Item**>(format, array, static_cast<util::MemorySize>(5u));
 		}
 
 		String format(
@@ -1104,7 +1104,7 @@ namespace text {
 				&item4,
 				&item5
 			};
-			return formatIter<const Item**>(format, array, static_cast<size_t>(6u));
+			return formatIter<const Item**>(format, array, static_cast<util::MemorySize>(6u));
 		}
 
 		String format(
@@ -1126,7 +1126,7 @@ namespace text {
 				&item5,
 				&item6
 			};
-			return formatIter<const Item**>(format, array, static_cast<size_t>(7u));
+			return formatIter<const Item**>(format, array, static_cast<util::MemorySize>(7u));
 		}
 
 		String format(
@@ -1150,7 +1150,7 @@ namespace text {
 				&item6,
 				&item7
 			};
-			return formatIter<const Item**>(format, array, static_cast<size_t>(8u));
+			return formatIter<const Item**>(format, array, static_cast<util::MemorySize>(8u));
 		}
 
 	};

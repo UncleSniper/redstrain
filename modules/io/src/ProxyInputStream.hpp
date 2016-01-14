@@ -16,8 +16,8 @@ namespace io {
 		ProxyInputStream(const ProxyInputStream& stream)
 				: Stream(stream), InputStream<RecordT>(stream), input(stream.input) {}
 
-		virtual size_t readBlock(RecordT* buffer, size_t size) {
-			size_t count = input.read(buffer, size);
+		virtual util::MemorySize readBlock(RecordT* buffer, util::MemorySize size) {
+			util::MemorySize count = input.read(buffer, size);
 			if(!count)
 				this->atEnd = true;
 			return count;
@@ -38,12 +38,12 @@ namespace io {
 			input.close();
 		}
 
-		virtual void seek(off_t offset, Stream::SeekWhence whence) {
+		virtual void seek(util::FileOffset offset, Stream::SeekWhence whence) {
 			input.seek(offset, whence);
 			this->atEnd = false;
 		}
 
-		virtual size_t tell() const {
+		virtual util::FileSize tell() const {
 			return input.tell();
 		}
 

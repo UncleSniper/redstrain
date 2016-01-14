@@ -12,6 +12,7 @@
 #endif /* OS-specific includes */
 
 using std::string;
+using redengine::util::MemorySize;
 
 namespace redengine {
 namespace platform {
@@ -33,20 +34,20 @@ namespace platform {
 		return fd;
 	}
 
-	size_t TCPSocket::read(char* buffer, size_t size) {
-		ssize_t count = ::read(handle, buffer, size);
+	MemorySize TCPSocket::read(char* buffer, MemorySize size) {
+		ssize_t count = ::read(handle, buffer, static_cast<size_t>(size));
 		if(count == static_cast<ssize_t>(-1))
 			throw TCPSocketIOError(SocketIOError::RECEIVE, errno);
-		return static_cast<size_t>(count);
+		return static_cast<MemorySize>(count);
 	}
 
-	void TCPSocket::write(const char* buffer, size_t size) {
+	void TCPSocket::write(const char* buffer, MemorySize size) {
 		while(size) {
-			ssize_t count = ::write(handle, buffer, size);
+			ssize_t count = ::write(handle, buffer, static_cast<size_t>(size));
 			if(count == static_cast<ssize_t>(-1))
 				throw TCPSocketIOError(SocketIOError::SEND, errno);
 			buffer += count;
-			size -= static_cast<size_t>(count);
+			size -= static_cast<MemorySize>(count);
 		}
 	}
 
@@ -76,17 +77,17 @@ namespace platform {
 		return sock;
 	}
 
-	size_t TCPSocket::read(char* buffer, size_t size) {
+	MemorySize TCPSocket::read(char* buffer, MemorySize size) {
 		DWORD count, flags = static_cast<DWORD>(0u);
 		WSABUF bufinfo;
 		bufinfo.len = static_cast<u_long>(size);
 		bufinfo.buf = buffer;
 		if(WSARecv(handle, &bufinfo, static_cast<DWORD>(1u), &count, &flags, NULL, NULL))
 			throw TCPSocketIOError(SocketIOError::RECEIVE, WSAGetLastError());
-		return static_cast<size_t>(count);
+		return static_cast<MemorySize>(count);
 	}
 
-	void TCPSocket::write(const char* buffer, size_t size) {
+	void TCPSocket::write(const char* buffer, MemorySize size) {
 		DWORD count;
 		WSABUF bufinfo;
 		bufinfo.len = static_cast<u_long>(size);
@@ -95,7 +96,7 @@ namespace platform {
 			if(WSASend(handle, &bufinfo, static_cast<DWORD>(1u), &count, static_cast<DWORD>(0u), NULL, NULL))
 				throw TCPSocketIOError(SocketIOError::SEND, WSAGetLastError());
 			bufinfo.buf += count;
-			size -= static_cast<size_t>(count);
+			size -= static_cast<MemorySize>(count);
 		}
 	}
 

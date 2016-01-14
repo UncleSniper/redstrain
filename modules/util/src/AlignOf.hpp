@@ -1,7 +1,7 @@
 #ifndef REDSTRAIN_MOD_UTIL_ALIGNOF_HPP
 #define REDSTRAIN_MOD_UTIL_ALIGNOF_HPP
 
-#include <cstddef>
+#include "types.hpp"
 
 namespace redengine {
 namespace util {
@@ -16,7 +16,7 @@ namespace util {
 		};
 
 	  public:
-		static const size_t ALIGNMENT = sizeof(Dummy) - sizeof(T);
+		static const MemorySize ALIGNMENT = static_cast<MemorySize>(sizeof(Dummy) - sizeof(T));
 
 	};
 

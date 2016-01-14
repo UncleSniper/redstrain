@@ -1,6 +1,8 @@
 #include "UTF8Decoder16.hpp"
 #include "IllegalCodeError.hpp"
 
+using redengine::util::MemorySize;
+
 namespace redengine {
 namespace text {
 
@@ -9,11 +11,11 @@ namespace text {
 	UTF8Decoder16::UTF8Decoder16(const UTF8Decoder16& decoder)
 			: Decoder16(decoder), state(decoder.state), partial(decoder.partial) {}
 
-	size_t UTF8Decoder16::decodeBlock(const char* input, size_t insize, Char16* output, size_t outsize,
-			size_t& outcount) {
+	MemorySize UTF8Decoder16::decodeBlock(const char* input, MemorySize insize, Char16* output, MemorySize outsize,
+			MemorySize& outcount) {
 		const unsigned char* in = reinterpret_cast<const unsigned char*>(input);
-		outcount = static_cast<size_t>(0u);
-		size_t consumed = static_cast<size_t>(0u);
+		outcount = static_cast<MemorySize>(0u);
+		MemorySize consumed = static_cast<MemorySize>(0u);
 		for(; consumed < insize && outcount < outsize; ++consumed) {
 			unsigned c = static_cast<unsigned>(in[consumed]);
 			switch(state) {

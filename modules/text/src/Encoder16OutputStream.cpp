@@ -4,6 +4,7 @@
 #include "RenditionIOError.hpp"
 #include "Encoder16OutputStream.hpp"
 
+using redengine::util::MemorySize;
 using redengine::io::OutputStream;
 using redengine::error::wrapError;
 
@@ -26,12 +27,12 @@ namespace text {
 		output.close();
 	}
 
-	void Encoder16OutputStream::writeBlock(const Char16* buffer, size_t bufferSize) {
+	void Encoder16OutputStream::writeBlock(const Char16* buffer, MemorySize bufferSize) {
 		char byteBuffer[REDSTRAIN_TEXT_CODEC_STREAM_BUFFER_SIZE];
-		size_t outcount, consumed;
+		MemorySize outcount, consumed;
 		while(bufferSize) {
 			consumed = encoder.encodeBlock(buffer, bufferSize, byteBuffer,
-					static_cast<size_t>(REDSTRAIN_TEXT_CODEC_STREAM_BUFFER_SIZE), outcount);
+					static_cast<MemorySize>(REDSTRAIN_TEXT_CODEC_STREAM_BUFFER_SIZE), outcount);
 			output.write(byteBuffer, outcount);
 			buffer += consumed;
 			bufferSize -= consumed;

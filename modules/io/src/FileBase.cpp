@@ -5,6 +5,8 @@
 
 using std::string;
 using redengine::platform::File;
+using redengine::util::FileSize;
+using redengine::util::FileOffset;
 using redengine::util::StringUtils;
 
 namespace redengine {
@@ -31,7 +33,7 @@ namespace io {
 			file.close();
 	}
 
-	void FileBase::seek(off_t offset, SeekWhence whence) {
+	void FileBase::seek(FileOffset offset, SeekWhence whence) {
 		File::SeekWhence platformWhence;
 		switch(whence) {
 			case OFFSET_FROM_START:
@@ -49,7 +51,7 @@ namespace io {
 		file.seek(offset, platformWhence);
 	}
 
-	size_t FileBase::tell() const {
+	FileSize FileBase::tell() const {
 		return file.tell();
 	}
 

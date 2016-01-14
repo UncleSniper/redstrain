@@ -1,3 +1,4 @@
+#define _LARGEFILE64_SOURCE
 #include <cstdlib>
 #include <redstrain/util/DeleteArray.hpp>
 #include <redstrain/util/IntegerBits.hpp>
@@ -26,6 +27,7 @@
 
 using std::string;
 using redengine::util::Appender;
+using redengine::util::FileSize;
 using redengine::util::DeleteArray;
 using redengine::util::IntegerBits;
 using redengine::util::SortingAppender;
@@ -37,9 +39,9 @@ namespace platform {
 
 	// ======== FSInfo ========
 
-	Filesystem::FSInfo::FSInfo() : type(UNKNOWNFS), totalBlocks(static_cast<size_t>(0u)),
-			freeBlocks(static_cast<size_t>(0u)), totalINodes(static_cast<size_t>(0u)),
-			freeINodes(static_cast<size_t>(0u)), nameLength(static_cast<size_t>(0u)) {}
+	Filesystem::FSInfo::FSInfo() : type(UNKNOWNFS), totalBlocks(static_cast<FileSize>(0u)),
+			freeBlocks(static_cast<FileSize>(0u)), totalINodes(static_cast<FileSize>(0u)),
+			freeINodes(static_cast<FileSize>(0u)), nameLength(static_cast<FileSize>(0u)) {}
 
 	Filesystem::FSInfo::FSInfo(const FSInfo& info) : type(info.type), totalBlocks(info.totalBlocks),
 			freeBlocks(info.freeBlocks), totalINodes(info.totalINodes), freeINodes(info.freeINodes),
@@ -85,8 +87,8 @@ namespace platform {
 	}
 
 	void Filesystem::stat(const string& path, Stat& info, bool ofLink) {
-		struct stat native;
-		if((ofLink ? ::lstat : ::stat)(path.c_str(), &native))
+		struct stat64 native;
+		if((ofLink ? ::lstat64 : ::stat64)(path.c_str(), &native))
 			bail();
 		switch(native.st_mode & S_IFMT) {
 			case S_IFDIR:
@@ -116,7 +118,7 @@ namespace platform {
 		info.setDevice(native.st_dev);
 		info.setSpecialSpecifier(native.st_rdev);
 		info.setPermissions(native.st_mode & 0777);
-		info.setSize(static_cast<size_t>(native.st_size));
+		info.setSize(static_cast<FileSize>(native.st_size));
 		info.setAccessTimestamp(native.st_atime);
 		info.setModificationTimestamp(native.st_mtime);
 		info.setStatusChangeTimestamp(native.st_ctime);
@@ -423,14 +425,14 @@ namespace platform {
 		sink.doneAppending();
 	}
 
-	void Filesystem::truncate(const string& path, size_t size) {
-		if(::truncate(path.c_str(), static_cast<off_t>(size)))
+	void Filesystem::truncate(const string& path, FileSize size) {
+		if(::truncate64(path.c_str(), static_cast<off64_t>(size)))
 			bail();
 	}
 
 	void Filesystem::statfs(const string& path, FSInfo& info) {
-		struct statfs native;
-		if(::statfs(path.c_str(), &native))
+		struct statfs64 native;
+		if(::statfs64(path.c_str(), &native))
 			bail();
 		switch(native.f_bfree) {
 			case 0x0000ADF5l: // ADFS_SUPER_MAGIC
@@ -561,11 +563,11 @@ namespace platform {
 				info.setType(UNKNOWNFS);
 				break;
 		}
-		info.setTotalBlockCount(static_cast<size_t>(native.f_blocks));
-		info.setFreeBlockCount(static_cast<size_t>(native.f_bfree));
-		info.setTotalINodeCount(static_cast<size_t>(native.f_files));
-		info.setFreeINodeCount(static_cast<size_t>(native.f_ffree));
-		info.setMaximumFilenameLength(static_cast<size_t>(native.f_namelen));
+		info.setTotalBlockCount(static_cast<FileSize>(native.f_blocks));
+		info.setFreeBlockCount(static_cast<FileSize>(native.f_bfree));
+		info.setTotalINodeCount(static_cast<FileSize>(native.f_files));
+		info.setFreeINodeCount(static_cast<FileSize>(native.f_ffree));
+		info.setMaximumFilenameLength(static_cast<FileSize>(native.f_namelen));
 	}
 
 	void Filesystem::listRoots(Appender<string>& sink) {
@@ -854,10 +856,10 @@ namespace platform {
 		}
 		info.setPermissions(seenAllowed & ~seenDenied);
 		info.setSize(
-			IntegerBits<size_t>::shiftLeft(
-				static_cast<size_t>(fileInfo.nFileSizeHigh),
+			IntegerBits<FileSize>::shiftLeft(
+				static_cast<FileSize>(fileInfo.nFileSizeHigh),
 				static_cast<unsigned>(sizeof(DWORD)) * 8u
-			) | static_cast<size_t>(fileInfo.nFileSizeLow)
+			) | static_cast<FileSize>(fileInfo.nFileSizeLow)
 		);
 		info.setAccessTimestamp(filetimeToTimestamp(fileInfo.ftLastAccessTime));
 		info.setModificationTimestamp(filetimeToTimestamp(fileInfo.ftLastWriteTime));
@@ -973,7 +975,7 @@ namespace platform {
 		*/
 	}
 
-	void Filesystem::truncate(const string& path, size_t size) {
+	void Filesystem::truncate(const string& path, FileSize size) {
 		//TODO
 	}
 

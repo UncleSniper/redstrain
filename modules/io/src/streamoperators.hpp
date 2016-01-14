@@ -71,7 +71,7 @@ namespace io {
 
 	template<typename RecordT>
 	OutputStream<RecordT>& operator<<(OutputStream<RecordT>& stream, const std::basic_string<RecordT>& data) {
-		stream.write(data.data(), static_cast<size_t>(data.length()));
+		stream.write(data.data(), static_cast<util::MemorySize>(data.length()));
 		return stream;
 	}
 
@@ -154,13 +154,13 @@ namespace io {
 			for(zeroes = 1u; zeroes < firstCount; ++zeroes)
 				buffer[maxDigits - zeroes] = padRecord;
 			buffer[maxDigits - zeroes] = negative ? RecordT('-') : padRecord;
-			stream.write(buffer + (maxDigits - zeroes), static_cast<size_t>(zeroes));
+			stream.write(buffer + (maxDigits - zeroes), static_cast<util::MemorySize>(zeroes));
 			preCount -= firstCount;
 			if(preCount) {
 				for(; zeroes <= maxDigits; ++zeroes)
 					buffer[maxDigits - zeroes] = padRecord;
 				for(; preCount; preCount -= maxDigits)
-					stream.write(buffer, static_cast<size_t>(maxDigits));
+					stream.write(buffer, static_cast<util::MemorySize>(maxDigits));
 			}
 		}
 		if(negative)
@@ -183,7 +183,7 @@ namespace io {
 					buffer[maxDigits - ++fill] = RecordT('-');
 			}
 		}
-		stream.write(buffer + (maxDigits - fill), static_cast<size_t>(fill));
+		stream.write(buffer + (maxDigits - fill), static_cast<util::MemorySize>(fill));
 	}
 
 	// primitive integral output for OutputStream
@@ -191,7 +191,7 @@ namespace io {
 	template<typename RecordT>
 	OutputStream<RecordT>& operator<<(OutputStream<RecordT>& stream, char c) {
 		RecordT rec(c);
-		stream.write(&rec, static_cast<size_t>(1u));
+		stream.write(&rec, static_cast<util::MemorySize>(1u));
 		return stream;
 	}
 
@@ -256,7 +256,7 @@ namespace io {
 	FormattedOutputStream<RecordT, LinebreakRecordsT>&
 	operator<<(FormattedOutputStream<RecordT, LinebreakRecordsT>& stream, char c) {
 		RecordT rec(c);
-		stream.write(&rec, static_cast<size_t>(1u));
+		stream.write(&rec, static_cast<util::MemorySize>(1u));
 		return stream;
 	}
 
@@ -336,7 +336,7 @@ namespace io {
 	ConfigurableFormattedOutputStream<RecordT, LinebreakRecordsT, ConfigT>&
 	operator<<(ConfigurableFormattedOutputStream<RecordT, LinebreakRecordsT, ConfigT>& stream, char c) {
 		RecordT rec(c);
-		stream.write(&rec, static_cast<size_t>(1u));
+		stream.write(&rec, static_cast<util::MemorySize>(1u));
 		return stream;
 	}
 

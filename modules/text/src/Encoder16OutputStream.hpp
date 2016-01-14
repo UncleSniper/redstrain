@@ -21,7 +21,7 @@ namespace text {
 	  protected:
 		Encoder16OutputStream(const Encoder16OutputStream&);
 
-		virtual void writeBlock(const Char16*, size_t);
+		virtual void writeBlock(const Char16*, util::MemorySize);
 
 	  public:
 		Encoder16OutputStream(io::OutputStream<char>&, Encoder16&);

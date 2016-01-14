@@ -131,7 +131,7 @@ namespace locale {
 		String getMessage(const Locale& locale, KeyT key) {
 			CatalogLocker lock(this);
 			switchToLocale(locale);
-			String msg(cache->getMessage(static_cast<size_t>(key)).getValue());
+			String msg(cache->getMessage(static_cast<util::MemorySize>(key)).getValue());
 			lock.release();
 			return msg;
 		}

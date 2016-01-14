@@ -10,6 +10,8 @@ namespace platform {
 
 	FileOpenError::FileOpenError(const FileOpenError& error) : Error(error), FileError(error), path(error.path) {}
 
+	FileOpenError::~FileOpenError() {}
+
 	REDSTRAIN_DEFINE_ERROR(FileOpenError) {
 		out << "Failed to open file";
 		if(!path.empty())

@@ -12,7 +12,7 @@ namespace io {
 	  protected:
 		FileOutputStream(const FileOutputStream&);
 
-		virtual void writeBlock(const char*, size_t);
+		virtual void writeBlock(const char*, util::MemorySize);
 
 	  public:
 		FileOutputStream(const std::string&, platform::File::Direction = platform::File::OUTPUT, bool = true,

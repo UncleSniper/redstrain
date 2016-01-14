@@ -14,7 +14,8 @@ namespace protostr {
 	class REDSTRAIN_PROTOSTR_API ProtocolWriter {
 
 	  public:
-		static const size_t BUFFER_SIZE = static_cast<size_t>(REDSTRAIN_PROTOSTR_WRITER_BUFFER_SIZE);
+		static const util::MemorySize BUFFER_SIZE
+				= static_cast<util::MemorySize>(REDSTRAIN_PROTOSTR_WRITER_BUFFER_SIZE);
 
 	  private:
 		enum State {
@@ -32,7 +33,8 @@ namespace protostr {
 	  private:
 		io::OutputStream<char>& stream;
 		char gatherBuffer[BUFFER_SIZE];
-		size_t gatherFill, pendingSize;
+		util::MemorySize gatherFill;
+		util::FileSize pendingSize;
 		State state;
 
 	  public:
@@ -47,11 +49,11 @@ namespace protostr {
 			return stream;
 		}
 
-		inline size_t getBufferFill() const {
+		inline util::MemorySize getBufferFill() const {
 			return gatherFill;
 		}
 
-		void writeRawElement(const char*, size_t);
+		void writeRawElement(const char*, util::MemorySize);
 		void flush();
 
 		void writeInt8(int8_t);
@@ -79,20 +81,20 @@ namespace protostr {
 		void writeInt64NBO(int64_t);
 		void writeUInt64NBO(uint64_t);
 
-		void writeBlock8(const char*, size_t);
-		void writeBlock16(const char*, size_t);
-		void writeBlock32(const char*, size_t);
+		void writeBlock8(const char*, util::MemorySize);
+		void writeBlock16(const char*, util::MemorySize);
+		void writeBlock32(const char*, util::MemorySize);
 		void writeString8(const std::string&);
 		void writeString16(const std::string&);
 		void writeString32(const std::string&);
 
-		void writeSizedStream8(size_t);
-		void writeSizedStream16(size_t);
-		void writeSizedStream32(size_t);
+		void writeSizedStream8(util::FileSize);
+		void writeSizedStream16(util::FileSize);
+		void writeSizedStream32(util::FileSize);
 		void writeUnsizedStream8();
 		void writeUnsizedStream16();
 		void writeUnsizedStream32();
-		void writeChunk(const char*, size_t);
+		void writeChunk(const char*, util::MemorySize);
 		void writeEndOfStream();
 
 	};

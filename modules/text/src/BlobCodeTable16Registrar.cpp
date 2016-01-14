@@ -22,6 +22,7 @@ using redengine::util::CPPUtils;
 using redengine::io::InputStream;
 using redengine::io::OutputStream;
 using redengine::io::StreamCloser;
+using redengine::util::MemorySize;
 using redengine::util::StringUtils;
 using redengine::platform::Pathname;
 using redengine::io::FileInputStream;
@@ -247,7 +248,7 @@ namespace text {
 		if(level)
 			output << shift;
 		output << indent << "extern const char " << lastSegment << "[];" << endln;
-		output << indent << "extern const size_t " << lastSegment << "_size;" << endln;
+		output << indent << "extern const ::redengine::util::FileSize " << lastSegment << "_size;" << endln;
 		if(level) {
 			output << unshift << indent;
 			for(; level; --level)
@@ -277,7 +278,7 @@ namespace text {
 		formattedOutput << indent << "static ::redengine::text::BlobCodeTable16Registrar register" << nextID
 				<< '(' << endln << shift;
 		formattedOutput << indent << "::" << symbol << ',' << endln;
-		formattedOutput << indent << "::" << symbol << "_size," << endln;
+		formattedOutput << indent << "static_cast<::redengine::util::MemorySize>(::" << symbol << "_size)," << endln;
 		formattedOutput << indent << "names" << nextID << ',' << endln;
 		formattedOutput << indent << CPPUtils::escapeString(blob, true) << endln << unshift;
 		formattedOutput << indent << ");" << endln;
@@ -297,7 +298,7 @@ namespace text {
 	static CanonicalNames* encoderNames = NULL;
 	static CanonicalNames* decoderNames = NULL;
 
-	BlobCodeTable16Registrar::BlobCodeTable16Registrar(const char* data, size_t size,
+	BlobCodeTable16Registrar::BlobCodeTable16Registrar(const char* data, MemorySize size,
 			const char *const* names, const char* canonicalName) {
 		const char *const* name;
 		if(!encoderFactories)

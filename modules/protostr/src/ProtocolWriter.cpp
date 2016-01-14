@@ -8,6 +8,8 @@
 #include "AnnouncedSizeMismatchError.hpp"
 
 using std::string;
+using redengine::util::FileSize;
+using redengine::util::MemorySize;
 using redengine::io::OutputStream;
 using redengine::util::AddressSpace;
 using redengine::platform::Endianness;
@@ -16,31 +18,31 @@ namespace redengine {
 namespace protostr {
 
 	ProtocolWriter::ProtocolWriter(OutputStream<char>& stream) : stream(stream),
-			gatherFill(static_cast<size_t>(0u)), state(STATE_NONE) {}
+			gatherFill(static_cast<MemorySize>(0u)), state(STATE_NONE) {}
 
 	ProtocolWriter::ProtocolWriter(const ProtocolWriter& writer) : stream(writer.stream),
 			gatherFill(writer.gatherFill), pendingSize(writer.pendingSize), state(writer.state) {
 		if(gatherFill)
-			memcpy(gatherBuffer, writer.gatherBuffer, gatherFill);
+			memcpy(gatherBuffer, writer.gatherBuffer, static_cast<size_t>(gatherFill));
 	}
 
-	void ProtocolWriter::writeRawElement(const char* element, size_t size) {
+	void ProtocolWriter::writeRawElement(const char* element, MemorySize size) {
 		if(!size)
 			return;
 		if(gatherFill + size <= BUFFER_SIZE) {
-			memcpy(gatherBuffer + gatherFill, element, size);
+			memcpy(gatherBuffer + gatherFill, element, static_cast<size_t>(size));
 			gatherFill += size;
 			return;
 		}
 		if(gatherFill) {
 			stream.write(gatherBuffer, gatherFill);
-			gatherFill = static_cast<size_t>(0u);
+			gatherFill = static_cast<MemorySize>(0u);
 		}
 		if(size >= BUFFER_SIZE) {
 			stream.write(element, size);
 			return;
 		}
-		memcpy(gatherBuffer, element, size);
+		memcpy(gatherBuffer, element, static_cast<size_t>(size));
 		gatherFill = size;
 	}
 
@@ -48,7 +50,7 @@ namespace protostr {
 		if(!gatherFill)
 			return;
 		stream.write(gatherBuffer, gatherFill);
-		gatherFill = static_cast<size_t>(0u);
+		gatherFill = static_cast<MemorySize>(0u);
 	}
 
 #define ensureClean \
@@ -57,12 +59,12 @@ namespace protostr {
 			throw IllegalWriterStateError(); \
 	} while(0)
 #define writeDirect(var, size) \
-	(writeRawElement(reinterpret_cast<const char*>(&var), static_cast<size_t>(size ## u)))
+	(writeRawElement(reinterpret_cast<const char*>(&var), static_cast<MemorySize>(size ## u)))
 #define toBig(type) (value = Endianness<type>::convertBig(value))
 #define toLittle(type) (value = Endianness<type>::convertLittle(value))
-#define checkSizeSpace(size, type) \
+#define checkSizeSpace(size, wtype, stype) \
 	do { \
-		if(AddressSpace<type, size_t>::exceededBy(size)) \
+		if(AddressSpace<wtype, stype>::exceededBy(size)) \
 			throw AddressSpaceExceededError(); \
 	} while(0)
 
@@ -194,13 +196,13 @@ namespace protostr {
 		writeDirect(value, 8);
 	}
 
-	void ProtocolWriter::writeBlock8(const char* data, size_t size) {
+	void ProtocolWriter::writeBlock8(const char* data, MemorySize size) {
 		uint8_t wireSize;
 		switch(state) {
 			case STATE_NONE:
 				if(!size)
 					break;
-				checkSizeSpace(size, uint8_t);
+				checkSizeSpace(size, uint8_t, MemorySize);
 				wireSize = static_cast<uint8_t>(size);
 				writeDirect(wireSize, 1);
 				state = STATE_HAVE_BLOCK_SIZE;
@@ -213,13 +215,13 @@ namespace protostr {
 		}
 	}
 
-	void ProtocolWriter::writeBlock16(const char* data, size_t size) {
+	void ProtocolWriter::writeBlock16(const char* data, MemorySize size) {
 		uint16_t wireSize;
 		switch(state) {
 			case STATE_NONE:
 				if(!size)
 					break;
-				checkSizeSpace(size, uint16_t);
+				checkSizeSpace(size, uint16_t, MemorySize);
 				wireSize = Endianness<uint16_t>::convertBig(static_cast<uint16_t>(size));
 				writeDirect(wireSize, 2);
 				state = STATE_HAVE_BLOCK_SIZE;
@@ -232,13 +234,13 @@ namespace protostr {
 		}
 	}
 
-	void ProtocolWriter::writeBlock32(const char* data, size_t size) {
+	void ProtocolWriter::writeBlock32(const char* data, MemorySize size) {
 		uint32_t wireSize;
 		switch(state) {
 			case STATE_NONE:
 				if(!size)
 					break;
-				checkSizeSpace(size, uint32_t);
+				checkSizeSpace(size, uint32_t, MemorySize);
 				wireSize = Endianness<uint32_t>::convertBig(static_cast<uint32_t>(size));
 				writeDirect(wireSize, 4);
 				state = STATE_HAVE_BLOCK_SIZE;
@@ -252,38 +254,38 @@ namespace protostr {
 	}
 
 	void ProtocolWriter::writeString8(const string& data) {
-		writeBlock8(data.data(), static_cast<size_t>(data.length()));
+		writeBlock8(data.data(), static_cast<MemorySize>(data.length()));
 	}
 
 	void ProtocolWriter::writeString16(const string& data) {
-		writeBlock16(data.data(), static_cast<size_t>(data.length()));
+		writeBlock16(data.data(), static_cast<MemorySize>(data.length()));
 	}
 
 	void ProtocolWriter::writeString32(const string& data) {
-		writeBlock32(data.data(), static_cast<size_t>(data.length()));
+		writeBlock32(data.data(), static_cast<MemorySize>(data.length()));
 	}
 
-	void ProtocolWriter::writeSizedStream8(size_t size) {
+	void ProtocolWriter::writeSizedStream8(FileSize size) {
 		ensureClean;
-		checkSizeSpace(size, uint8_t);
+		checkSizeSpace(size, uint8_t, FileSize);
 		uint8_t wireSize = static_cast<uint8_t>(size);
 		writeDirect(wireSize, 1);
 		state = STATE_SIZED_STREAM;
 		pendingSize = size;
 	}
 
-	void ProtocolWriter::writeSizedStream16(size_t size) {
+	void ProtocolWriter::writeSizedStream16(FileSize size) {
 		ensureClean;
-		checkSizeSpace(size, uint16_t);
+		checkSizeSpace(size, uint16_t, FileSize);
 		uint16_t wireSize = Endianness<uint16_t>::convertBig(static_cast<uint16_t>(size));
 		writeDirect(wireSize, 2);
 		state = STATE_SIZED_STREAM;
 		pendingSize = size;
 	}
 
-	void ProtocolWriter::writeSizedStream32(size_t size) {
+	void ProtocolWriter::writeSizedStream32(FileSize size) {
 		ensureClean;
-		checkSizeSpace(size, uint32_t);
+		checkSizeSpace(size, uint32_t, FileSize);
 		uint32_t wireSize = Endianness<uint32_t>::convertBig(static_cast<uint32_t>(size));
 		writeDirect(wireSize, 4);
 		state = STATE_SIZED_STREAM;
@@ -305,7 +307,7 @@ namespace protostr {
 		state = STATE_UNSIZED_STREAM32;
 	}
 
-	void ProtocolWriter::writeChunk(const char* data, size_t size) {
+	void ProtocolWriter::writeChunk(const char* data, MemorySize size) {
 		uint8_t wireSize8;
 		uint16_t wireSize16;
 		uint32_t wireSize32;
@@ -313,15 +315,15 @@ namespace protostr {
 			case STATE_SIZED_STREAM:
 				if(!size)
 					break;
-				if(size > pendingSize)
+				if(static_cast<FileSize>(size) > pendingSize)
 					throw AnnouncedSizeMismatchError();
 				writeRawElement(data, size);
-				pendingSize -= size;
+				pendingSize -= static_cast<FileSize>(size);
 				break;
 			case STATE_UNSIZED_STREAM8:
 				if(!size)
 					break;
-				checkSizeSpace(size, uint8_t);
+				checkSizeSpace(size, uint8_t, MemorySize);
 				wireSize8 = static_cast<uint8_t>(size);
 				writeDirect(wireSize8, 1);
 					break;
@@ -333,7 +335,7 @@ namespace protostr {
 			case STATE_UNSIZED_STREAM16:
 				if(!size)
 					break;
-				checkSizeSpace(size, uint16_t);
+				checkSizeSpace(size, uint16_t, MemorySize);
 				wireSize16 = Endianness<uint16_t>::convertBig(static_cast<uint16_t>(size));
 				writeDirect(wireSize16, 2);
 				state = STATE_HAVE_UNSIZED_STREAM16_SIZE;
@@ -344,7 +346,7 @@ namespace protostr {
 			case STATE_UNSIZED_STREAM32:
 				if(!size)
 					break;
-				checkSizeSpace(size, uint32_t);
+				checkSizeSpace(size, uint32_t, MemorySize);
 				wireSize32 = Endianness<uint32_t>::convertBig(static_cast<uint32_t>(size));
 				writeDirect(wireSize32, 4);
 				state = STATE_HAVE_UNSIZED_STREAM32_SIZE;

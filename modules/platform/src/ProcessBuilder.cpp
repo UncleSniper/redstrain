@@ -16,6 +16,7 @@ using std::map;
 using std::list;
 using std::vector;
 using std::string;
+using redengine::util::MemorySize;
 using redengine::util::StringUtils;
 using redengine::error::ProgrammingError;
 using redengine::error::IllegalArgumentError;
@@ -45,7 +46,7 @@ namespace platform {
 			this->arguments.push_back(*arguments);
 	}
 
-	ProcessBuilder::ProcessBuilder(const char *const* arguments, size_t count) : hasEnv(false),
+	ProcessBuilder::ProcessBuilder(const char *const* arguments, MemorySize count) : hasEnv(false),
 			stdinMode(STREAM_INHERITED), stdoutMode(STREAM_INHERITED), stderrMode(STREAM_INHERITED),
 			stdinFile(File::INVALID_HANDLE), stdoutFile(File::INVALID_HANDLE), stderrFile(File::INVALID_HANDLE),
 			joinedStreams(false) {
@@ -75,12 +76,12 @@ namespace platform {
 			this->arguments.push_back(*arguments);
 	}
 
-	void ProcessBuilder::addArguments(const char *const* arguments, size_t count) {
+	void ProcessBuilder::addArguments(const char *const* arguments, MemorySize count) {
 		this->arguments.insert(this->arguments.end(), arguments, arguments + count);
 	}
 
-	size_t ProcessBuilder::getArgumentCount() const {
-		return static_cast<size_t>(arguments.size());
+	MemorySize ProcessBuilder::getArgumentCount() const {
+		return static_cast<MemorySize>(arguments.size());
 	}
 
 	bool ProcessBuilder::hasArguments() const {

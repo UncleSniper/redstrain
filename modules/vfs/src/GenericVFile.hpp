@@ -36,7 +36,7 @@ namespace vfs {
 		virtual void rmdir();
 		virtual void readlink(text::String16&);
 		virtual void readdir(util::Appender<text::String16>&);
-		virtual void truncate(size_t);
+		virtual void truncate(util::FileSize);
 		virtual void statfs(VFS::FSInfo&);
 		virtual void mknod(Stat::Type, int, Stat::DeviceID);
 		virtual io::InputStream<char>* getInputStream();

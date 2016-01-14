@@ -1,6 +1,8 @@
 #ifndef REDSTRAIN_MOD_TEXT_FORMATSTRINGSYNTAXERROR_HPP
 #define REDSTRAIN_MOD_TEXT_FORMATSTRINGSYNTAXERROR_HPP
 
+#include <redstrain/util/types.hpp>
+
 #include "FormattingError.hpp"
 
 namespace redengine {
@@ -9,13 +11,13 @@ namespace text {
 	class REDSTRAIN_TEXT_API FormatStringSyntaxError : public FormattingError {
 
 	  private:
-		const size_t offset;
+		const util::MemorySize offset;
 
 	  public:
-		FormatStringSyntaxError(size_t);
+		FormatStringSyntaxError(util::MemorySize);
 		FormatStringSyntaxError(const FormatStringSyntaxError&);
 
-		inline size_t getOffset() const {
+		inline util::MemorySize getOffset() const {
 			return offset;
 		}
 

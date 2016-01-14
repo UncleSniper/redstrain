@@ -18,7 +18,7 @@ namespace io {
 		String& sink;
 
 	  protected:
-		virtual void writeBlock(const RecordT* data, size_t dataSize) {
+		virtual void writeBlock(const RecordT* data, util::MemorySize dataSize) {
 			sink.append(data, static_cast<typename String::size_type>(dataSize));
 		}
 

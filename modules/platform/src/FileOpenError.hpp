@@ -14,6 +14,7 @@ namespace platform {
 	  public:
 		FileOpenError(const std::string&, File::Direction, File::ErrorCode);
 		FileOpenError(const FileOpenError&);
+		virtual ~FileOpenError();
 
 		inline const std::string& getPath() const {
 			return path;

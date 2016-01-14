@@ -2,6 +2,7 @@
 
 using std::string;
 using redengine::platform::File;
+using redengine::util::MemorySize;
 
 namespace redengine {
 namespace io {
@@ -18,7 +19,7 @@ namespace io {
 	FileOutputStream::FileOutputStream(File::Handle handle, File::Direction dir)
 			: FileBase(handle, dir == File::INPUT ? File::RANDOM_ACCESS : dir) {}
 
-	void FileOutputStream::writeBlock(const char* buffer, size_t size) {
+	void FileOutputStream::writeBlock(const char* buffer, MemorySize size) {
 		file.write(buffer, size);
 	}
 

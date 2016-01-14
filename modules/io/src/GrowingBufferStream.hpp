@@ -20,10 +20,11 @@ namespace io {
 
 		  private:
 			Segments* segments;
-			size_t segmentSize, readIndex, writeIndex;
+			util::MemorySize segmentSize, readIndex, writeIndex;
 
 		  public:
-			DeleteSegments(Segments* segments, size_t segmentSize, size_t readIndex, size_t writeIndex)
+			DeleteSegments(Segments* segments, util::MemorySize segmentSize,
+					util::MemorySize readIndex, util::MemorySize writeIndex)
 					: segments(segments), segmentSize(segmentSize), readIndex(readIndex), writeIndex(writeIndex) {}
 
 			~DeleteSegments() {
@@ -31,12 +32,12 @@ namespace io {
 					return;
 				SegmentIterator begin(segments->begin()), end(segments->end());
 				for(; begin != end; ++begin) {
-					size_t killEnd = writeIndex > segmentSize ? segmentSize : writeIndex;
+					util::MemorySize killEnd = writeIndex > segmentSize ? segmentSize : writeIndex;
 					RecordT *kbegin = *begin + readIndex, *kend = *begin + killEnd;
 					for(; kbegin != kend; ++kbegin)
 						kbegin->~RecordT();
 					delete[] static_cast<char*>(*begin);
-					readIndex = static_cast<size_t>(0u);
+					readIndex = static_cast<util::MemorySize>(0u);
 					writeIndex -= killEnd;
 				}
 			}
@@ -51,14 +52,14 @@ namespace io {
 
 		  private:
 			RecordT* segment;
-			size_t offset;
+			util::MemorySize offset;
 
 		  public:
-			size_t count;
+			util::MemorySize count;
 
 		  public:
-			DeleteSegment(RecordT* segment, size_t offset)
-					: segment(segment), offset(offset), count(static_cast<size_t>(0u)) {}
+			DeleteSegment(RecordT* segment, util::MemorySize offset)
+					: segment(segment), offset(offset), count(static_cast<util::MemorySize>(0u)) {}
 
 			~DeleteSegment() {
 				if(!segment)
@@ -88,10 +89,10 @@ namespace io {
 			RecordT* buffer;
 
 		  public:
-			size_t count;
+			util::MemorySize count;
 
 		  public:
-			DestroyRecords(RecordT* buffer) : buffer(buffer), count(static_cast<size_t>(0u)) {}
+			DestroyRecords(RecordT* buffer) : buffer(buffer), count(static_cast<util::MemorySize>(0u)) {}
 
 			~DestroyRecords() {
 				if(!buffer)
@@ -108,18 +109,18 @@ namespace io {
 		};
 
 	  private:
-		size_t segmentSize, readIndex, writeIndex;
+		util::MemorySize segmentSize, readIndex, writeIndex;
 		Segments segments;
 
 	  protected:
-		virtual size_t readBlock(RecordT* buffer, size_t bufferSize) {
-			size_t restSize = getDataSize();
+		virtual util::MemorySize readBlock(RecordT* buffer, util::MemorySize bufferSize) {
+			util::MemorySize restSize = getDataSize();
 			if(bufferSize < restSize)
 				restSize = bufferSize;
 			if(!restSize)
-				return static_cast<size_t>(0u);
+				return static_cast<util::MemorySize>(0u);
 			DestroyRecords destroy(buffer);
-			size_t offset;
+			util::MemorySize offset;
 			const RecordT *src, *end;
 			RecordT *dest = buffer;
 			if(readIndex) {
@@ -138,14 +139,14 @@ namespace io {
 				if(readIndex == writeIndex) {
 					delete[] static_cast<char*>(segments.front());
 					segments.pop_front();
-					readIndex = writeIndex = static_cast<size_t>(0u);
+					readIndex = writeIndex = static_cast<util::MemorySize>(0u);
 					return offset;
 				}
 				// read the rest of this segment, more segments might follow
 				if(readIndex == segmentSize) {
 					delete[] static_cast<char*>(segments.front());
 					segments.pop_front();
-					readIndex = static_cast<size_t>(0u);
+					readIndex = static_cast<util::MemorySize>(0u);
 					writeIndex -= segmentSize;
 				}
 				// read only part of this segment, but there is still data in the stream
@@ -154,9 +155,9 @@ namespace io {
 					return offset;
 			}
 			else
-				offset = static_cast<size_t>(0u);
+				offset = static_cast<util::MemorySize>(0u);
 			while(offset < restSize) {
-				size_t chunkSize = offset + segmentSize > restSize ? restSize - offset : segmentSize;
+				util::MemorySize chunkSize = offset + segmentSize > restSize ? restSize - offset : segmentSize;
 				src = segments.front();
 				end = src + chunkSize;
 				for(; src != end; ++src, ++dest) {
@@ -169,7 +170,7 @@ namespace io {
 				if(chunkSize == segmentSize) {
 					delete[] static_cast<char*>(segments.front());
 					segments.pop_front();
-					readIndex = static_cast<size_t>(0u);
+					readIndex = static_cast<util::MemorySize>(0u);
 					writeIndex -= segmentSize;
 				}
 			}
@@ -177,10 +178,10 @@ namespace io {
 			return restSize;
 		}
 
-		virtual void writeBlock(const RecordT* buffer, size_t count) {
+		virtual void writeBlock(const RecordT* buffer, util::MemorySize count) {
 			if(!count)
 				return;
-			size_t segmentOffset = writeIndex % segmentSize, offset;
+			util::MemorySize segmentOffset = writeIndex % segmentSize, offset;
 			const RecordT *src = buffer, *end;
 			RecordT* dest;
 			if(segmentOffset) {
@@ -195,13 +196,17 @@ namespace io {
 				}
 			}
 			else
-				offset = static_cast<size_t>(0u);
+				offset = static_cast<util::MemorySize>(0u);
 			while(offset < count) {
-				size_t chunkSize = count - offset;
+				util::MemorySize chunkSize = count - offset;
 				if(segmentSize < chunkSize)
 					chunkSize = segmentSize;
-				DeleteSegment segment(static_cast<RecordT*>(new char[segmentSize * sizeof(RecordT)]),
-						static_cast<size_t>(0u));
+				// The allocator is pretty much forced to return a maximally aligned object,
+				// so the buffer *should* be suitable for storing RecordT objects in.
+				// We just shouldn't use new[], since that might shift the address to make
+				// room for a size specifier...
+				DeleteSegment segment(static_cast<RecordT*>(::operator new(static_cast<size_t>(segmentSize)
+						* sizeof(RecordT))), static_cast<util::MemorySize>(0u));
 				dest = *segment;
 				end = src + chunkSize;
 				for(; src != end; ++src, ++dest) {
@@ -216,20 +221,20 @@ namespace io {
 		}
 
 	  public:
-		GrowingBufferStream(size_t segmentSize =
-				static_cast<size_t>(REDSTRAIN_IO_GROWING_BUFFER_STREAM_DEFAULT_SEGMENT_SIZE))
+		GrowingBufferStream(util::MemorySize segmentSize =
+				static_cast<util::MemorySize>(REDSTRAIN_IO_GROWING_BUFFER_STREAM_DEFAULT_SEGMENT_SIZE))
 				: segmentSize(segmentSize ? segmentSize
-				: static_cast<size_t>(REDSTRAIN_IO_GROWING_BUFFER_STREAM_DEFAULT_SEGMENT_SIZE)),
-				readIndex(static_cast<size_t>(0u)), writeIndex(static_cast<size_t>(0u)) {}
+				: static_cast<util::MemorySize>(REDSTRAIN_IO_GROWING_BUFFER_STREAM_DEFAULT_SEGMENT_SIZE)),
+				readIndex(static_cast<util::MemorySize>(0u)), writeIndex(static_cast<util::MemorySize>(0u)) {}
 
 		GrowingBufferStream(const GrowingBufferStream& stream)
 				: Stream(stream), InputStream<RecordT>(stream), OutputStream<RecordT>(stream),
 				segmentSize(stream.segmentSize), readIndex(stream.readIndex), writeIndex(stream.writeIndex) {
 			DeleteSegments rollback(&segments, segmentSize, readIndex, writeIndex);
 			SegmentIterator begin(stream.segments.begin()), end(stream.segments.end());
-			size_t srcRead = readIndex, srcWrite = writeIndex;
+			util::MemorySize srcRead = readIndex, srcWrite = writeIndex;
 			for(; begin != end; ++begin) {
-				size_t copyEnd = srcWrite > segmentSize ? segmentSize : srcWrite;
+				util::MemorySize copyEnd = srcWrite > segmentSize ? segmentSize : srcWrite;
 				const RecordT *srcBegin = *begin + srcRead, *srcEnd = *begin + copyEnd;
 				DeleteSegment segment(static_cast<RecordT*>(new char[segmentSize * sizeof(RecordT)]), srcRead);
 				RecordT* dest = *segment + srcRead;
@@ -239,7 +244,7 @@ namespace io {
 				}
 				segments.push_back(*segment);
 				segment.release();
-				srcRead = static_cast<size_t>(0u);
+				srcRead = static_cast<util::MemorySize>(0u);
 				srcWrite -= copyEnd;
 			}
 			rollback.release();
@@ -248,41 +253,41 @@ namespace io {
 		virtual ~GrowingBufferStream() {
 			SegmentIterator begin(segments.begin()), end(segments.end());
 			for(; begin != end; ++begin) {
-				size_t killEnd = writeIndex > segmentSize ? segmentSize : writeIndex;
+				util::MemorySize killEnd = writeIndex > segmentSize ? segmentSize : writeIndex;
 				RecordT *kbegin = *begin + readIndex, *kend = *begin + killEnd;
 				for(; kbegin != kend; ++kbegin)
 					kbegin->~RecordT();
 				delete[] static_cast<char*>(*begin);
-				readIndex = static_cast<size_t>(0u);
+				readIndex = static_cast<util::MemorySize>(0u);
 				writeIndex -= killEnd;
 			}
 		}
 
-		inline size_t getSegmentSize() const {
+		inline util::MemorySize getSegmentSize() const {
 			return segmentSize;
 		}
 
-		inline size_t getDataSize() const {
+		inline util::MemorySize getDataSize() const {
 			return writeIndex - readIndex;
 		}
 
 		RecordT* getData() const {
-			size_t size = writeIndex - readIndex;
+			util::MemorySize size = writeIndex - readIndex;
 			if(!size)
 				return NULL;
 			DeleteSegment buffer(static_cast<RecordT*>(new char[segmentSize * sizeof(RecordT)]),
-					static_cast<size_t>(0u));
+					static_cast<util::MemorySize>(0u));
 			RecordT* dest = *buffer;
 			SegmentIterator begin(segments.begin()), end(segments.end());
-			size_t srcRead = readIndex, srcWrite = writeIndex;
+			util::MemorySize srcRead = readIndex, srcWrite = writeIndex;
 			for(; begin != end; ++begin) {
-				size_t copyEnd = srcWrite > segmentSize ? segmentSize : srcWrite;
+				util::MemorySize copyEnd = srcWrite > segmentSize ? segmentSize : srcWrite;
 				const RecordT *srcBegin = *begin + srcRead, *srcEnd = *begin + copyEnd;
 				for(; srcBegin != srcEnd; ++srcBegin, ++dest) {
 					new(dest) RecordT(*srcBegin);
 					++buffer.count;
 				}
-				srcRead = static_cast<size_t>(0u);
+				srcRead = static_cast<util::MemorySize>(0u);
 				srcWrite -= copyEnd;
 			}
 			return buffer.release();

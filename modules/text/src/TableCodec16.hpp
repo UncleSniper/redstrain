@@ -26,8 +26,10 @@ namespace text {
 			return table;
 		}
 
-		virtual size_t encodeBlock(const Char16*, size_t, char*, size_t, size_t&);
-		virtual size_t decodeBlock(const char*, size_t, Char16*, size_t, size_t&);
+		virtual util::MemorySize encodeBlock(const Char16*, util::MemorySize,
+				char*, util::MemorySize, util::MemorySize&);
+		virtual util::MemorySize decodeBlock(const char*, util::MemorySize,
+				Char16*, util::MemorySize, util::MemorySize&);
 
 	};
 

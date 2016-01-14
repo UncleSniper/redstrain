@@ -1,5 +1,6 @@
 #include "SocketOutputStream.hpp"
 
+using redengine::util::MemorySize;
 using redengine::platform::StreamSocket;
 
 namespace redengine {
@@ -10,7 +11,7 @@ namespace io {
 
 	SocketOutputStream::SocketOutputStream(StreamSocket& socket) : SocketBase(socket) {}
 
-	void SocketOutputStream::writeBlock(const char* buffer, size_t size) {
+	void SocketOutputStream::writeBlock(const char* buffer, MemorySize size) {
 		socket.write(buffer, size);
 	}
 

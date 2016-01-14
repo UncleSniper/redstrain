@@ -2,13 +2,14 @@
 #define REDSTRAIN_MOD_ALGORITHM_ALLOCATORS_HPP
 
 #include <cstddef>
+#include <redstrain/util/types.hpp>
 
 #include "api.hpp"
 
 namespace redengine {
 namespace algorithm {
 
-	REDSTRAIN_ALGORITHM_API void* standardAlloc(size_t);
+	REDSTRAIN_ALGORITHM_API void* standardAlloc(util::MemorySize);
 
 }}
 

@@ -12,7 +12,7 @@ namespace io {
 	  protected:
 		SocketInputStream(const SocketInputStream&);
 
-		virtual size_t readBlock(char*, size_t);
+		virtual util::MemorySize readBlock(char*, util::MemorySize);
 
 	  public:
 		SocketInputStream(platform::StreamSocket&);

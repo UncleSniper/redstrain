@@ -4,6 +4,8 @@
 #include "AddressSpaceExceededError.hpp"
 #include "AnnouncedSizeMismatchError.hpp"
 
+using redengine::util::MemorySize;
+
 namespace redengine {
 namespace protostr {
 
@@ -12,7 +14,7 @@ namespace protostr {
 	ProtocolOutputStream::ProtocolOutputStream(const ProtocolOutputStream& stream)
 			: Stream(stream), OutputStream(stream), writer(stream.writer) {}
 
-	void ProtocolOutputStream::writeBlock(const char* buffer, size_t bufferSize) {
+	void ProtocolOutputStream::writeBlock(const char* buffer, MemorySize bufferSize) {
 		try {
 			writer.writeChunk(buffer, bufferSize);
 		}

@@ -43,15 +43,15 @@ namespace platform {
 		ProcessBuilder(const std::list<std::string>&);
 		ProcessBuilder(const std::vector<std::string>&);
 		ProcessBuilder(const char *const*);
-		ProcessBuilder(const char *const*, size_t);
+		ProcessBuilder(const char *const*, util::MemorySize);
 		ProcessBuilder(const ProcessBuilder&);
 
 		void addArgument(const std::string&);
 		void addArguments(const std::list<std::string>&);
 		void addArguments(const std::vector<std::string>&);
 		void addArguments(const char *const*);
-		void addArguments(const char *const*, size_t);
-		size_t getArgumentCount() const;
+		void addArguments(const char *const*, util::MemorySize);
+		util::MemorySize getArgumentCount() const;
 		bool hasArguments() const;
 		void getArguments(ArgumentIterator&, ArgumentIterator&) const;
 

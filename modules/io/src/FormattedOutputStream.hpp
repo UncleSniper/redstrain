@@ -33,23 +33,23 @@ namespace io {
 			RecordT chars[2] = {LinebreakRecordsT::CARRIAGE_RETURN, LinebreakRecordsT::NEWLINE};
 			switch(linebreaks) {
 				case MACOS_LINEBREAKS:
-					this->writeBlock(chars, static_cast<size_t>(1u));
+					this->writeBlock(chars, static_cast<util::MemorySize>(1u));
 					break;
 				case WINDOWS_LINEBREAKS:
-					this->writeBlock(chars, static_cast<size_t>(2u));
+					this->writeBlock(chars, static_cast<util::MemorySize>(2u));
 					break;
 				default:
-					this->writeBlock(chars + 1, static_cast<size_t>(1u));
+					this->writeBlock(chars + 1, static_cast<util::MemorySize>(1u));
 					break;
 			}
 		}
 
 		void print(const RecordT& record) {
-			this->writeBlock(&record, static_cast<size_t>(1u));
+			this->writeBlock(&record, static_cast<util::MemorySize>(1u));
 		}
 
 		void print(const String& text) {
-			this->writeBlock(text.data(), static_cast<size_t>(text.length()));
+			this->writeBlock(text.data(), static_cast<util::MemorySize>(text.length()));
 		}
 
 		void println(const String& text) {
@@ -58,7 +58,7 @@ namespace io {
 		}
 
 		void print(const RecordT* text) {
-			size_t size = static_cast<size_t>(0u);
+			util::MemorySize size = static_cast<util::MemorySize>(0u);
 			const RecordT* ptr = text;
 			for(; *ptr; ++ptr)
 				++size;
@@ -70,18 +70,18 @@ namespace io {
 			endLine();
 		}
 
-		void print(const RecordT* text, size_t size) {
+		void print(const RecordT* text, util::MemorySize size) {
 			this->writeBlock(text, size);
 		}
 
-		void println(const RecordT* text, size_t size) {
+		void println(const RecordT* text, util::MemorySize size) {
 			this->writeBlock(text, size);
 			endLine();
 		}
 
-		void printMany(const RecordT& record, size_t count) {
+		void printMany(const RecordT& record, util::MemorySize count) {
 			for(; count; --count)
-				this->writeBlock(&record, static_cast<size_t>(1u));
+				this->writeBlock(&record, static_cast<util::MemorySize>(1u));
 		}
 
 	};

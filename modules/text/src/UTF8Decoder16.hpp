@@ -25,7 +25,8 @@ namespace text {
 		UTF8Decoder16();
 		UTF8Decoder16(const UTF8Decoder16&);
 
-		virtual size_t decodeBlock(const char*, size_t, Char16*, size_t, size_t&);
+		virtual util::MemorySize decodeBlock(const char*, util::MemorySize,
+				Char16*, util::MemorySize, util::MemorySize&);
 		virtual void endDecoding();
 
 	};

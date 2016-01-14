@@ -5,6 +5,7 @@
 #include <cstring>
 
 #include "api.hpp"
+#include "types.hpp"
 
 namespace redengine {
 namespace util {
@@ -12,12 +13,13 @@ namespace util {
 	class REDSTRAIN_UTIL_API BitArray {
 
 	  private:
-		size_t size, tainted;
+		MemorySize size, tainted;
 		unsigned* bits;
 
-		static const size_t ELEMENT_BITS = sizeof(unsigned) * static_cast<size_t>(8u);
+		static const MemorySize ELEMENT_BITS
+				= static_cast<MemorySize>(sizeof(unsigned)) * static_cast<MemorySize>(8u);
 
-		inline void taint(size_t threshold) {
+		inline void taint(MemorySize threshold) {
 			if(threshold > tainted) {
 				memset(bits + tainted, 0, (threshold - tainted) * sizeof(unsigned));
 				tainted = threshold;
@@ -25,23 +27,23 @@ namespace util {
 		}
 
 	  public:
-		BitArray(size_t);
+		BitArray(MemorySize);
 		BitArray(const BitArray&);
 		~BitArray();
 
-		inline size_t getSize() const {
+		inline MemorySize getSize() const {
 			return size * ELEMENT_BITS;
 		}
 
 		inline void clear() {
-			tainted = static_cast<size_t>(0u);
+			tainted = static_cast<MemorySize>(0u);
 		}
 
-		bool isSet(size_t) const;
-		void set(size_t);
-		void unset(size_t);
-		void set(size_t, bool);
-		void toggle(size_t);
+		bool isSet(MemorySize) const;
+		void set(MemorySize);
+		void unset(MemorySize);
+		void set(MemorySize, bool);
+		void toggle(MemorySize);
 		int compare(const BitArray&) const;
 		bool isClear() const;
 

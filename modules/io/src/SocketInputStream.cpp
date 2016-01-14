@@ -1,5 +1,6 @@
 #include "SocketInputStream.hpp"
 
+using redengine::util::MemorySize;
 using redengine::platform::StreamSocket;
 
 namespace redengine {
@@ -10,7 +11,7 @@ namespace io {
 
 	SocketInputStream::SocketInputStream(StreamSocket& socket) : SocketBase(socket) {}
 
-	size_t SocketInputStream::readBlock(char* buffer, size_t size) {
+	MemorySize SocketInputStream::readBlock(char* buffer, MemorySize size) {
 		return socket.read(buffer, size);
 	}
 

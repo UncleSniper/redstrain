@@ -6,6 +6,7 @@
 #include "BestEffortFileInfoMapper.hpp"
 #include "FileInfoIDAddressSpaceExceededError.hpp"
 
+using redengine::util::MemorySize;
 using redengine::util::StringUtils;
 using redengine::util::ClassifyType;
 using redengine::util::AddressSpace;
@@ -22,7 +23,7 @@ namespace vfs {
 	template<
 		typename HostID,
 		typename VirtualID,
-		size_t (MapFileInfoMapper::*SizeFunction)() const,
+		MemorySize (MapFileInfoMapper::*SizeFunction)() const,
 		FileInfoMappingError::IDType IDType
 	>
 	struct StrategyDispatcher {
@@ -31,8 +32,8 @@ namespace vfs {
 		struct ByTypeClass {
 
 			static VirtualID guessHostToVirtual(const BestEffortFileInfoMapper& mapper, const HostID& hostID) {
-				size_t count = (mapper.*SizeFunction)();
-				if(AddressSpace<VirtualID, size_t>::exceededBy(count))
+				MemorySize count = (mapper.*SizeFunction)();
+				if(AddressSpace<VirtualID, MemorySize>::exceededBy(count))
 					throw FileInfoIDAddressSpaceExceededError(IDType, FileInfoMappingError::HOST_ID,
 							StringUtils::toString(hostID));
 				return static_cast<VirtualID>(count);

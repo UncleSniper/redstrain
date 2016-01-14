@@ -1,9 +1,11 @@
 #include "FormatStringSyntaxError.hpp"
 
+using redengine::util::MemorySize;
+
 namespace redengine {
 namespace text {
 
-	FormatStringSyntaxError::FormatStringSyntaxError(size_t offset) : offset(offset) {}
+	FormatStringSyntaxError::FormatStringSyntaxError(MemorySize offset) : offset(offset) {}
 
 	FormatStringSyntaxError::FormatStringSyntaxError(const FormatStringSyntaxError& error)
 			: FormattingError(error), offset(error.offset) {}

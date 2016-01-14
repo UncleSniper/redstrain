@@ -7,7 +7,9 @@
 #include "UnexpectedEndOfStreamError.hpp"
 
 using std::string;
+using redengine::util::FileSize;
 using redengine::io::InputStream;
+using redengine::util::MemorySize;
 using redengine::platform::Endianness;
 
 namespace redengine {
@@ -19,12 +21,12 @@ namespace protostr {
 			: stream(reader.stream), gatherFill(reader.gatherFill), pendingSize(reader.pendingSize),
 			pendingChunkSize(reader.pendingChunkSize), state(reader.state) {
 		if(gatherFill)
-			memcpy(gatherBuffer, reader.gatherBuffer, gatherFill);
+			memcpy(gatherBuffer, reader.gatherBuffer, static_cast<size_t>(gatherFill));
 	}
 
-	void ProtocolReader::readRawElement(size_t size) {
+	void ProtocolReader::readRawElement(MemorySize size) {
 		while(gatherFill < size) {
-			size_t count = stream.read(gatherBuffer + gatherFill, size - gatherFill);
+			MemorySize count = stream.read(gatherBuffer + gatherFill, size - gatherFill);
 			if(!count)
 				throw UnexpectedEndOfStreamError();
 			gatherFill += count;
@@ -38,15 +40,15 @@ namespace protostr {
 	} while(0)
 #define gatherInto(var) \
 	do { \
-		gatherFill = static_cast<size_t>(0u); \
-		readRawElement(sizeof(var)); \
+		gatherFill = static_cast<MemorySize>(0u); \
+		readRawElement(static_cast<MemorySize>(sizeof(var))); \
 		memcpy(&var, gatherBuffer, sizeof(var)); \
 	} while(0)
 #define fromBig(var, type) (var = Endianness<type>::convertBig(var))
 #define fromLittle(var, type) (var = Endianness<type>::convertLittle(var))
 #define usePending(size, nextState) \
 	do { \
-		pendingSize = static_cast<size_t>(size); \
+		pendingSize = static_cast<FileSize>(size); \
 		state = STATE_ ## nextState; \
 	} while(0)
 
@@ -216,20 +218,22 @@ namespace protostr {
 		return value;
 	}
 
-	void ProtocolReader::readBlockBody(char* buffer, size_t bufferSize, size_t& chunkSize, size_t& remainingSize) {
-		if(bufferSize > pendingSize)
-			bufferSize = pendingSize;
+	void ProtocolReader::readBlockBody(char* buffer, MemorySize bufferSize, MemorySize& chunkSize,
+			FileSize& remainingSize) {
+		if(static_cast<FileSize>(bufferSize) > pendingSize)
+			bufferSize = static_cast<MemorySize>(pendingSize);
 		if(!bufferSize) {
-			chunkSize = static_cast<size_t>(0u);
+			chunkSize = static_cast<MemorySize>(0u);
 			remainingSize = pendingSize;
 			return;
 		}
 		chunkSize = stream.read(buffer, bufferSize);
-		pendingSize -= chunkSize;
+		pendingSize -= static_cast<FileSize>(chunkSize);
 		remainingSize = pendingSize;
 	}
 
-	void ProtocolReader::readBlock8(char* buffer, size_t bufferSize, size_t& chunkSize, size_t& remainingSize) {
+	void ProtocolReader::readBlock8(char* buffer, MemorySize bufferSize, MemorySize& chunkSize,
+			FileSize& remainingSize) {
 		uint8_t wireSize;
 		switch(state) {
 			case STATE_NONE:
@@ -243,7 +247,8 @@ namespace protostr {
 		}
 	}
 
-	void ProtocolReader::readBlock16(char* buffer, size_t bufferSize, size_t& chunkSize, size_t& remainingSize) {
+	void ProtocolReader::readBlock16(char* buffer, MemorySize bufferSize, MemorySize& chunkSize,
+			FileSize& remainingSize) {
 		uint16_t wireSize;
 		switch(state) {
 			case STATE_NONE:
@@ -257,7 +262,8 @@ namespace protostr {
 		}
 	}
 
-	void ProtocolReader::readBlock32(char* buffer, size_t bufferSize, size_t& chunkSize, size_t& remainingSize) {
+	void ProtocolReader::readBlock32(char* buffer, MemorySize bufferSize, MemorySize& chunkSize,
+			FileSize& remainingSize) {
 		uint32_t wireSize;
 		switch(state) {
 			case STATE_NONE:
@@ -273,7 +279,8 @@ namespace protostr {
 
 	void ProtocolReader::readString8(string& buffer) {
 		char byteBuffer[STRING_BUFFER_SIZE];
-		size_t chunkSize, remainingSize;
+		MemorySize chunkSize;
+		FileSize remainingSize;
 		do {
 			readBlock8(byteBuffer, STRING_BUFFER_SIZE, chunkSize, remainingSize);
 			buffer.append(byteBuffer, static_cast<string::size_type>(chunkSize));
@@ -282,7 +289,8 @@ namespace protostr {
 
 	void ProtocolReader::readString16(string& buffer) {
 		char byteBuffer[STRING_BUFFER_SIZE];
-		size_t chunkSize, remainingSize;
+		MemorySize chunkSize;
+		FileSize remainingSize;
 		do {
 			readBlock16(byteBuffer, STRING_BUFFER_SIZE, chunkSize, remainingSize);
 			buffer.append(byteBuffer, static_cast<string::size_type>(chunkSize));
@@ -291,7 +299,8 @@ namespace protostr {
 
 	void ProtocolReader::readString32(string& buffer) {
 		char byteBuffer[STRING_BUFFER_SIZE];
-		size_t chunkSize, remainingSize;
+		MemorySize chunkSize;
+		FileSize remainingSize;
 		do {
 			readBlock32(byteBuffer, STRING_BUFFER_SIZE, chunkSize, remainingSize);
 			buffer.append(byteBuffer, static_cast<string::size_type>(chunkSize));
@@ -334,8 +343,9 @@ namespace protostr {
 		state = STATE_READING_UNSIZED_STREAM32_CHUNK_SIZE;
 	}
 
-	size_t ProtocolReader::readChunk(char* buffer, size_t bufferSize) {
-		size_t chunkSize, remainingSize;
+	MemorySize ProtocolReader::readChunk(char* buffer, MemorySize bufferSize) {
+		MemorySize chunkSize;
+		FileSize remainingSize;
 		uint8_t wireSize8;
 		uint16_t wireSize16;
 		uint32_t wireSize32;
@@ -348,7 +358,7 @@ namespace protostr {
 				usePending(wireSize8, READING_UNSIZED_STREAM8_CHUNK);
 				if(!pendingSize) {
 					state = STATE_READING_UNSIZED_STREAM8_CHUNK_SIZE;
-					return static_cast<size_t>(0u);
+					return static_cast<MemorySize>(0u);
 				}
 			case STATE_READING_UNSIZED_STREAM8_CHUNK:
 				readBlockBody(buffer, bufferSize, chunkSize, remainingSize);
@@ -361,7 +371,7 @@ namespace protostr {
 				usePending(wireSize16, READING_UNSIZED_STREAM16_CHUNK);
 				if(!pendingSize) {
 					state = STATE_READING_UNSIZED_STREAM16_CHUNK_SIZE;
-					return static_cast<size_t>(0u);
+					return static_cast<MemorySize>(0u);
 				}
 			case STATE_READING_UNSIZED_STREAM16_CHUNK:
 				readBlockBody(buffer, bufferSize, chunkSize, remainingSize);
@@ -374,7 +384,7 @@ namespace protostr {
 				usePending(wireSize32, READING_UNSIZED_STREAM32_CHUNK);
 				if(!pendingSize) {
 					state = STATE_READING_UNSIZED_STREAM32_CHUNK_SIZE;
-					return static_cast<size_t>(0u);
+					return static_cast<MemorySize>(0u);
 				}
 			case STATE_READING_UNSIZED_STREAM32_CHUNK:
 				readBlockBody(buffer, bufferSize, chunkSize, remainingSize);

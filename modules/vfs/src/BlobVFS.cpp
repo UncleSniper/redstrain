@@ -15,9 +15,11 @@
 using std::string;
 using redengine::util::Ref;
 using redengine::util::Delete;
+using redengine::util::FileSize;
 using redengine::text::String16;
 using redengine::io::InputStream;
 using redengine::io::OutputStream;
+using redengine::util::MemorySize;
 using redengine::util::StringUtils;
 using redengine::io::MemoryInputStream;
 using redengine::platform::ObjectLocker;
@@ -32,7 +34,7 @@ namespace vfs {
 
 	// ======== BlobMemoryFile ========
 
-	BlobVFS::BlobMemoryFile::BlobMemoryFile(MemoryBase& fs, int permissions, const char* data, size_t size)
+	BlobVFS::BlobMemoryFile::BlobMemoryFile(MemoryBase& fs, int permissions, const char* data, MemorySize size)
 			: MemoryFile(fs, permissions), data(data), size(size) {}
 
 	BlobVFS::BlobMemoryFile::BlobMemoryFile(const BlobMemoryFile& file)
@@ -43,10 +45,10 @@ namespace vfs {
 	}
 
 	void BlobVFS::BlobMemoryFile::stat(Stat& info) {
-		info.setSize(size);
+		info.setSize(static_cast<FileSize>(size));
 	}
 
-	void BlobVFS::BlobMemoryFile::truncate(size_t) {
+	void BlobVFS::BlobMemoryFile::truncate(FileSize) {
 		throw ReadOnlyFilesystemError();
 	}
 
@@ -70,7 +72,7 @@ namespace vfs {
 
 	// ======== BlobInjector ========
 
-	BlobVFS::BlobInjector::BlobInjector(const char* data, size_t size, const string& path)
+	BlobVFS::BlobInjector::BlobInjector(const char* data, MemorySize size, const string& path)
 			: data(data), size(size), path(path) {
 		BlobVFS::addBlobEmitter(this);
 	}
@@ -108,19 +110,19 @@ namespace vfs {
 	BlobVFS::BlobVFS(const BlobVFS& vfs) : MemoryBase(vfs),
 			defaultDirectoryPermissions(vfs.defaultDirectoryPermissions) {}
 
-	void BlobVFS::putBlob(const string& path, const char* data, size_t size) {
+	void BlobVFS::putBlob(const string& path, const char* data, MemorySize size) {
 		Pathname parts;
 		deconstructPathname(path, parts);
 		putBlob(parts, data, size);
 	}
 
-	void BlobVFS::putBlob(const String16& path, const char* data, size_t size) {
+	void BlobVFS::putBlob(const String16& path, const char* data, MemorySize size) {
 		Pathname parts;
 		VFS::deconstructPathname(path, parts);
 		putBlob(parts, data, size);
 	}
 
-	void BlobVFS::putBlob(const Pathname& path, const char* data, size_t size) {
+	void BlobVFS::putBlob(const Pathname& path, const char* data, MemorySize size) {
 		if(path.empty())
 			throw FileAlreadyExistsError("/");
 		PathIterator begin(path.begin()), end(path.end());
@@ -231,7 +233,7 @@ namespace vfs {
 	}
 
 	MemoryBase::MemoryFile* BlobVFS::createRegularFile(int permissions) {
-		return new BlobMemoryFile(*this, permissions, NULL, static_cast<size_t>(0u));
+		return new BlobMemoryFile(*this, permissions, NULL, static_cast<MemorySize>(0u));
 	}
 
 	void BlobVFS::addBlobEmitter(BlobEmitter* emitter) {

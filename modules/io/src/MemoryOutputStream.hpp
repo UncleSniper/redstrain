@@ -16,11 +16,11 @@ namespace io {
 
 	  private:
 		RecordT* data;
-		size_t dataSize, writeIndex;
+		util::MemorySize dataSize, writeIndex;
 
 	  protected:
-		virtual void writeBlock(const RecordT* buffer, size_t count) {
-			size_t restSize = dataSize - writeIndex;
+		virtual void writeBlock(const RecordT* buffer, util::MemorySize count) {
+			util::MemorySize restSize = dataSize - writeIndex;
 			if(restSize <= count)
 				throw StreamBufferFullError();
 			RecordT* dest = data + writeIndex;
@@ -32,8 +32,8 @@ namespace io {
 		}
 
 	  public:
-		MemoryOutputStream(RecordT* data, size_t dataSize) : data(data), dataSize(dataSize),
-				writeIndex(static_cast<size_t>(0u)) {}
+		MemoryOutputStream(RecordT* data, util::MemorySize dataSize) : data(data), dataSize(dataSize),
+				writeIndex(static_cast<util::MemorySize>(0u)) {}
 		MemoryOutputStream(const MemoryOutputStream& stream) : Stream(stream), OutputStream<RecordT>(stream),
 				data(stream.data), dataSize(stream.dataSize), writeIndex(stream.writeIndex) {}
 
@@ -41,32 +41,33 @@ namespace io {
 			return data;
 		}
 
-		inline size_t getBufferSize() const {
+		inline util::MemorySize getBufferSize() const {
 			return dataSize;
 		}
 
-		virtual size_t tell() const {
-			return writeIndex;
+		virtual util::FileSize tell() const {
+			return static_cast<util::FileSize>(writeIndex);
 		}
 
-		virtual void seek(off_t offset, Stream::SeekWhence whence) {
-			off_t target;
+		virtual void seek(util::FileOffset offset, Stream::SeekWhence whence) {
+			util::FileOffset target;
 			switch(whence) {
 				case Stream::OFFSET_FROM_START:
 					target = offset;
 					break;
 				case Stream::OFFSET_FROM_HERE:
-					target = static_cast<off_t>(writeIndex) + offset;
+					target = static_cast<util::FileOffset>(writeIndex) + offset;
 					break;
 				case Stream::OFFSET_FROM_END:
-					target = static_cast<off_t>(dataSize) + offset;
+					target = static_cast<util::FileOffset>(dataSize) + offset;
 					break;
 				default:
 					throw IllegalSeekWhenceError(whence);
 			}
-			if(target < static_cast<off_t>(0) || static_cast<size_t>(target) > dataSize)
+			if(target < static_cast<util::FileOffset>(0)
+					|| static_cast<util::FileSize>(target) > static_cast<util::FileSize>(dataSize))
 				throw SeekOffsetOutOfBoundsError(target);
-			writeIndex = static_cast<size_t>(target);
+			writeIndex = static_cast<util::MemorySize>(target);
 		}
 
 	};

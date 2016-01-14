@@ -18,12 +18,12 @@ namespace text {
 		io::InputStream<char>& input;
 		Decoder16& decoder;
 		char byteBuffer[REDSTRAIN_TEXT_CODEC_STREAM_BUFFER_SIZE];
-		size_t bufferFill, bufferOffset;
+		util::MemorySize bufferFill, bufferOffset;
 
 	  protected:
 		Decoder16InputStream(const Decoder16InputStream&);
 
-		virtual size_t readBlock(Char16*, size_t);
+		virtual util::MemorySize readBlock(Char16*, util::MemorySize);
 
 	  public:
 		Decoder16InputStream(io::InputStream<char>&, Decoder16&);
