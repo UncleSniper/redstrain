@@ -45,6 +45,7 @@ namespace crypto {
 				fill = static_cast<MemorySize>(0u);
 				processBlock(cipherText);
 				written += blockSize;
+				cipherText += blockSize;
 			}
 		}
 		return written;

@@ -6,7 +6,7 @@
 namespace redengine {
 namespace crypto {
 
-	class ANSIX939Padding : public Padding {
+	class REDSTRAIN_CRYPTO_API ANSIX939Padding : public Padding {
 
 	  public:
 		ANSIX939Padding();
