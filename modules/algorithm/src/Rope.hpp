@@ -1308,6 +1308,8 @@ namespace algorithm {
 				scat->left = node;
 				++scat->height;
 				++right->height;
+				right->weight += nodeSize - scat->weight;
+				scat->weight = nodeSize;
 				return right;
 			}
 			/* If 'scr' is not viable for increasing the heights, we
