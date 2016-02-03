@@ -1516,6 +1516,7 @@ namespace algorithm {
 				if(cat->left->height < cat->right->height) {
 					node = concatNodes(left, leftSize, cat->left, cat->weight, emergencyCat);
 					cat->left = node;
+					cat->weight += leftSize;
 					return left;
 				}
 				scat = static_cast<Concat*>(cat->left);
@@ -1573,6 +1574,7 @@ namespace algorithm {
 						// left may increase in height without fixup
 						tnode = insertElement(cat->left, cat->weight, index, value);
 						cat->left = tnode;
+						++cat->weight;
 						return cat;
 					}
 					scat = static_cast<Concat*>(cat->left);
