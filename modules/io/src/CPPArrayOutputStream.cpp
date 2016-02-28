@@ -103,7 +103,7 @@ namespace io {
 		}
 		output.print("const ::redengine::util::FileSize ");
 		output.print(lastPart);
-		output.print("_size = static_cast<::redengine::util::FileSize>(");
+		output.print("_size = static_cast< ::redengine::util::FileSize>(");
 		output.print(StringUtils::toString(size));
 		output.println("ul);");
 	}
@@ -132,7 +132,7 @@ namespace io {
 		output.print(lastPart);
 		output.print("_inject(");
 		output.print(lastPart);
-		output.print(", static_cast<::redengine::util::MemorySize>(");
+		output.print(", static_cast< ::redengine::util::MemorySize>(");
 		output.print(lastPart);
 		output.print("_size), \"");
 		output.print(blobPath);

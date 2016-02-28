@@ -278,7 +278,7 @@ namespace text {
 		formattedOutput << indent << "static ::redengine::text::BlobCodeTable16Registrar register" << nextID
 				<< '(' << endln << shift;
 		formattedOutput << indent << "::" << symbol << ',' << endln;
-		formattedOutput << indent << "static_cast<::redengine::util::MemorySize>(::" << symbol << "_size)," << endln;
+		formattedOutput << indent << "static_cast< ::redengine::util::MemorySize>(::" << symbol << "_size)," << endln;
 		formattedOutput << indent << "names" << nextID << ',' << endln;
 		formattedOutput << indent << CPPUtils::escapeString(blob, true) << endln << unshift;
 		formattedOutput << indent << ");" << endln;

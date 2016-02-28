@@ -154,7 +154,7 @@ namespace locale {
 		out << objectID << '(';
 		out << mappingSymbol << ", " << CPPUtils::escapeString(language, true);
 		out << ", " << CPPUtils::escapeString(country, true) << ", ";
-		out << blobSymbol << ", static_cast<::redengine::util::MemorySize>(" << blobSymbol << "_size));" << endln;
+		out << blobSymbol << ", static_cast< ::redengine::util::MemorySize>(" << blobSymbol << "_size));" << endln;
 	}
 
 	void MessageBlobRegistrar::generateBlobAliases(InputStream<char>& input, const string& inputStreamName,
