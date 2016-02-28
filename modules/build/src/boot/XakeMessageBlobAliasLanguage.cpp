@@ -52,8 +52,7 @@ namespace boot {
 	}
 
 	MessageBlobAliasLanguage::AliasConfiguration& XakeMessageBlobAliasLanguage::getAliasConfiguration(
-			FileArtifact& sourceArtifact, const Flavor&, FileArtifact&, const Flavor&, const Flavor&,
-			Component& component) {
+			FileArtifact&, const Flavor&, FileArtifact&, const Flavor&, const Flavor&, Component& component) {
 		// determine namespace
 		map<string, string> variables;
 		variables["project"] = CPPUtils::slugifySymbol(project.getProjectName());

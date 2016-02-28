@@ -15,8 +15,9 @@ namespace build {
 			: mappingSymbol(mappingSymbol), blobSymbol(blobSymbol), language(language), country(country) {}
 
 	MessageBlobRegisterLanguage::RegistrarConfiguration::RegistrarConfiguration(const
-			RegistrarConfiguration& configuration) : mappingSymbol(configuration.mappingSymbol),
-			blobSymbol(configuration.blobSymbol), language(configuration.language), country(configuration.country) {}
+			RegistrarConfiguration& configuration) : ReferenceCounted(configuration),
+			mappingSymbol(configuration.mappingSymbol), blobSymbol(configuration.blobSymbol),
+			language(configuration.language), country(configuration.country) {}
 
 	MessageBlobRegisterLanguage::RegistrarConfiguration::~RegistrarConfiguration() {}
 

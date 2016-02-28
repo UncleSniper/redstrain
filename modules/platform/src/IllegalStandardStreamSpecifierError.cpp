@@ -8,7 +8,7 @@ namespace platform {
 
 	IllegalStandardStreamSpecifierError::IllegalStandardStreamSpecifierError(const
 			IllegalStandardStreamSpecifierError& error)
-			: Error(error), IllegalArgumentError(error), specifier(specifier) {}
+			: Error(error), IllegalArgumentError(error), specifier(error.specifier) {}
 
 	REDSTRAIN_DEFINE_ERROR(IllegalStandardStreamSpecifierError) {
 		out << "Illegal standard stream specifier: " << static_cast<int>(specifier);
