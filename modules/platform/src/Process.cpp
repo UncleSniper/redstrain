@@ -88,6 +88,13 @@ namespace platform {
 			if(!access(piece.c_str(), X_OK))
 				return piece;
 		}
+		string lastPiece(ps.substr(old));
+		if(!lastPiece.empty()) {
+			lastPiece += '/';
+			lastPiece += name;
+			if(!access(lastPiece.c_str(), X_OK))
+				return lastPiece;
+		}
 		return "";
 	}
 
