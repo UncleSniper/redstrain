@@ -56,6 +56,10 @@ namespace build {
 			command.addArgument("-fPIC");
 			command.addArgument("-DPIC");
 		}
+		command.addArgument("-pedantic");
+		command.addArgument("-Wall");
+		command.addArgument("-Wextra");
+		command.addArgument("-Wno-long-long");
 	}
 
 	GCC::GCCCompilation::GCCCompilation(const GCCCompilation& compilation)
