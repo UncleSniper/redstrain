@@ -613,6 +613,12 @@ namespace text {
 					case IS_ZERO:
 						zstate = STARTS_WITH_ZERO_BUT_IS_NOT_ZERO;
 						break;
+					case DOES_NOT_START_WITH_ZERO:
+					case STARTS_WITH_ZERO_BUT_IS_NOT_ZERO:
+						break;
+					default:
+						throw error::ProgrammingError("Unrecognized state in Formatter::parseInt(): "
+								+ util::StringUtils::toString(static_cast<int>(zstate)));
 				}
 			}
 			switch(zstate) {

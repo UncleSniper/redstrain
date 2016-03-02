@@ -6,6 +6,7 @@
 #include <redstrain/util/IntegerBits.hpp>
 #include <redstrain/util/IntegerBounds.hpp>
 #include <redstrain/error/ProgrammingError.hpp>
+#include <redstrain/util/vlarray.hpp>
 
 #include "FormattingOptions.hpp"
 
@@ -69,8 +70,8 @@ namespace text {
 				++digits;
 			for(; options.integralWidth > static_cast<int32_t>(length + digits); ++length)
 				result += options.integerPadChar;
-			CharT buffer[digits];
-			CharT* insert = buffer + digits;
+			REDSTRAIN_VLARRAY_DEFINE(CharT, buffer, digits)
+			CharT* insert = REDSTRAIN_VLARRAY_ACCESS(buffer) + digits;
 			if(value) {
 				for(; value; value /= static_cast<IntegerT>(options.base)) {
 					*--insert = RenditionT::digit(

@@ -1,3 +1,5 @@
+#include <redstrain/util/vlarray.hpp>
+
 #include "TrieView.hpp"
 #include "Database.hpp"
 
@@ -89,7 +91,8 @@ namespace core {
 			return NULL;
 		MemorySize bcount = key.getKeyByteCount(), nbSize = valueSize > static_cast<MemorySize>(8u)
 				? valueSize : static_cast<MemorySize>(8u);
-		char nodeBuffer[nbSize];
+		REDSTRAIN_VLARRAY_DEFINE(char, nodeBufferBackend, nbSize)
+		char* nodeBuffer = REDSTRAIN_VLARRAY_ACCESS(nodeBufferBackend);
 		FileSize at = rootOffset;
 		const char* read = dbase.readBlock(nodeBuffer, at, static_cast<MemorySize>(4u));
 		uint32_t flags = Database::getInt<uint32_t>(read);
@@ -120,11 +123,14 @@ namespace core {
 
 	TrieView::PutResult TrieView::putImpl(BinaryKey& key, const char* value) {
 		MemorySize bcount = key.getKeyByteCount(), noffset, ncount = bcount * static_cast<MemorySize>(2u);
-		FileSize nodeStack[ncount + static_cast<MemorySize>(1u)];
+		MemorySize nsSize = ncount + static_cast<MemorySize>(1u);
+		REDSTRAIN_VLARRAY_DEFINE(FileSize, nodeStack, nsSize)
 		MemorySize prefixLength = static_cast<MemorySize>(0u);
 		unsigned bvalue, nibble;
 		PutResult result = CREATED;
-		char nodeBuffer[nodeBaseSize + valueSize];
+		MemorySize nbSize = nodeBaseSize + valueSize;
+		REDSTRAIN_VLARRAY_DEFINE(char, nodeBufferBackend, nbSize)
+		char* nodeBuffer = REDSTRAIN_VLARRAY_ACCESS(nodeBufferBackend);
 		const char* read;
 		// find loop
 		if(elementCount) {
@@ -132,7 +138,7 @@ namespace core {
 			read = dbase.readBlock(nodeBuffer, at, static_cast<MemorySize>(4u));
 			uint32_t flags = Database::getInt<uint32_t>(read);
 			for(noffset = static_cast<MemorySize>(0u); noffset < ncount; ++noffset) {
-				nodeStack[prefixLength++] = at;
+				REDSTRAIN_VLARRAY_ACCESS(nodeStack)[prefixLength++] = at;
 				if(noffset % static_cast<MemorySize>(2u))
 					nibble = bvalue & 0xFu;
 				else {
@@ -149,7 +155,7 @@ namespace core {
 				flags = Database::getInt<uint32_t>(read);
 			}
 			if(noffset == ncount) {
-				nodeStack[prefixLength++] = at;
+				REDSTRAIN_VLARRAY_ACCESS(nodeStack)[prefixLength++] = at;
 				if((flags >> 16) & static_cast<uint32_t>(1u)) {
 					if(!valueSize)
 						return NOT_MODIFIED;
@@ -164,7 +170,7 @@ namespace core {
 		}
 		// update loop
 		if(prefixLength > ncount) {
-			read = dbase.readBlock(nodeBuffer, nodeStack[ncount], nodeBaseSize);
+			read = dbase.readBlock(nodeBuffer, REDSTRAIN_VLARRAY_ACCESS(nodeStack)[ncount], nodeBaseSize);
 			Database::putInt<uint32_t>(nodeBuffer,
 					Database::getInt<uint32_t>(read) | static_cast<uint32_t>(0x10000u));
 			if(read != nodeBuffer)
@@ -186,7 +192,8 @@ namespace core {
 			else
 				nibble = bvalue & 0xFu;
 			if(noffset < prefixLength) {
-				read = dbase.readBlock(nodeBuffer, nodeStack[noffset], nodeBaseSize + valueSize);
+				read = dbase.readBlock(nodeBuffer, REDSTRAIN_VLARRAY_ACCESS(nodeStack)[noffset],
+						nodeBaseSize + valueSize);
 				Database::putInt<uint32_t>(nodeBuffer,
 						Database::getInt<uint32_t>(read) | (static_cast<uint32_t>(1u) << nibble));
 				if(read != nodeBuffer)
@@ -213,15 +220,18 @@ namespace core {
 		if(!elementCount)
 			return false;
 		MemorySize bcount = key.getKeyByteCount(), noffset, ncount = bcount * static_cast<MemorySize>(2u);
-		FileSize nodeStack[ncount + static_cast<MemorySize>(1u)];
+		MemorySize nsSize = ncount + static_cast<MemorySize>(1u);
+		REDSTRAIN_VLARRAY_DEFINE(FileSize, nodeStack, nsSize)
 		unsigned bvalue, nibble;
-		char nodeBuffer[nodeBaseSize + valueSize];
+		MemorySize nbSize = nodeBaseSize + valueSize;
+		REDSTRAIN_VLARRAY_DEFINE(char, nodeBufferBackend, nbSize)
+		char* nodeBuffer = REDSTRAIN_VLARRAY_ACCESS(nodeBufferBackend);
 		// descend
 		FileSize at = rootOffset;
 		const char* read = dbase.readBlock(nodeBuffer, at, static_cast<MemorySize>(4u));
 		uint32_t flags = Database::getInt<uint32_t>(read);
 		for(noffset = static_cast<MemorySize>(0u); noffset < ncount; ++noffset) {
-			nodeStack[noffset] = at;
+			REDSTRAIN_VLARRAY_ACCESS(nodeStack)[noffset] = at;
 			if(noffset % static_cast<MemorySize>(2u))
 				nibble = bvalue & 0xFu;
 			else {
@@ -261,7 +271,8 @@ namespace core {
 			}
 			else
 				nibble = bvalue & 0xFu;
-			read = dbase.readBlock(nodeBuffer, nodeStack[noffset], nodeBaseSize + valueSize);
+			read = dbase.readBlock(nodeBuffer, REDSTRAIN_VLARRAY_ACCESS(nodeStack)[noffset],
+					nodeBaseSize + valueSize);
 			if(newRoot == Database::INVALID_OFFSET) {
 				flags = Database::getInt<uint32_t>(read) & ~(static_cast<uint32_t>(1u) << nibble);
 				if(flags) {

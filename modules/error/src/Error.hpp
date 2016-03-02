@@ -94,7 +94,7 @@ namespace error {
 		return #type; \
 	}
 
-#define REDSTRAIN_LOCALIZE_ERROR16(type) \
+#define _REDSTRAIN_LOCALIZE_ERROR16_BASE(type) \
 	static void localize ## type ## 16( \
 		const type&, \
 		const ::redengine::locale::Locale&, \
@@ -103,9 +103,20 @@ namespace error {
 	static ::redengine::redmond::LocalizerInjector<type::type ## LocalizerFunction> inject ## type ## Localizer16( \
 		type::localize ## type ## 16, \
 		localize ## type ## 16 \
-	); \
+	);
+
+#define REDSTRAIN_LOCALIZE_ERROR16(type) \
+	_REDSTRAIN_LOCALIZE_ERROR16_BASE(type) \
 	static void localize ## type ## 16( \
 		const type& error, \
+		const ::redengine::locale::Locale& locale, \
+		::redengine::text::StreamSink16& sink \
+	)
+
+#define REDSTRAIN_LOCALIZE_ERROR16_NOUSE(type) \
+	_REDSTRAIN_LOCALIZE_ERROR16_BASE(type) \
+	static void localize ## type ## 16( \
+		const type&, \
 		const ::redengine::locale::Locale& locale, \
 		::redengine::text::StreamSink16& sink \
 	)
