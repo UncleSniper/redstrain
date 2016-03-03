@@ -26,7 +26,7 @@ namespace platform {
 
 		MutexPoolLocker(const SubjectT& object, MutexPool* pool = NULL)
 				: pool(pool ? *pool : MutexPool::getDefaultMutexPool()), object(object), unlocked(false) {
-			this->pool.lockObject<SubjectT>(&object);
+			this->pool.template lockObject<SubjectT>(&object);
 		}
 
 		~MutexPoolLocker() {

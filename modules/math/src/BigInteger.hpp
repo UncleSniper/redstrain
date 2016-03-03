@@ -41,11 +41,11 @@ namespace math {
 		}
 
 		inline bool isNegative() const {
-			return data.sign;
+			return intData.sign;
 		}
 
 		int signum() const {
-			return data.signum();
+			return intData.signum();
 		}
 
 		template<ArbitraryPrecision::CopyPolicy CopyPolicy>
@@ -213,8 +213,8 @@ namespace math {
 				util::MemorySize size;
 				sharedOp(*intData, other, sign, digits, size);
 				util::DeleteArray<unsigned> deleteDigits(digits);
-				ArbitraryPrecision::SharedIntegerData* newData
-						= new ArbitraryPrecision(sign, digits, size, ArbitraryPrecision::INIT_MOVE);
+				ArbitraryPrecision::SharedIntegerData* newData = new ArbitraryPrecision::SharedIntegerData(sign,
+						digits, size, ArbitraryPrecision::INIT_MOVE);
 				deleteDigits.set();
 				intData->unref();
 				intData = newData;
@@ -251,16 +251,11 @@ namespace math {
 		}
 
 		inline bool isNegative() const {
-			return data->sign;
+			return intData->sign;
 		}
 
 		int signum() const {
-			return data->signum();
-		}
-
-		BigInteger& operator=(const BigInteger<ArbitraryPrecision::COPY_PRIVATE>& other) {
-			assignFromForeign(other.data());
-			return *this;
+			return intData->signum();
 		}
 
 		BigInteger& operator=(const BigInteger<ArbitraryPrecision::COPY_SHARED>& other) {
@@ -270,7 +265,8 @@ namespace math {
 			return *this;
 		}
 
-		BigInteger& operator=(const BigInteger<ArbitraryPrecision::COPY_THREADED>& other) {
+		template<ArbitraryPrecision::CopyPolicy CopyPolicy>
+		BigInteger& operator=(const BigInteger<CopyPolicy>& other) {
 			assignFromForeign(other.data());
 			return *this;
 		}
@@ -419,13 +415,11 @@ namespace math {
 			if(intData->getReferenceCount() > 1u) {
 				ArbitraryPrecision::SharedIntegerData* newData = new ArbitraryPrecision::SharedIntegerData(other);
 				intData->unref();
-				lock.release();
 				intData = newData;
 			}
-			else {
+			else
 				intData->assign(other);
-				lock.release();
-			}
+			lock.release();
 		}
 
 		typedef void (*SharedOperator)(
@@ -450,17 +444,15 @@ namespace math {
 				util::MemorySize size;
 				sharedOp(*intData, other, sign, digits, size);
 				util::DeleteArray<unsigned> deleteDigits(digits);
-				ArbitraryPrecision::SharedIntegerData* newData
-						= new ArbitraryPrecision(sign, digits, size, ArbitraryPrecision::INIT_MOVE);
+				ArbitraryPrecision::SharedIntegerData* newData = new ArbitraryPrecision::SharedIntegerData(sign,
+						digits, size, ArbitraryPrecision::INIT_MOVE);
 				deleteDigits.set();
 				intData->unref();
-				lock.release();
 				intData = newData;
 			}
-			else {
+			else
 				privateOp(*intData, other);
-				lock.release();
-			}
+			lock.release();
 		}
 
 	  public:
@@ -479,10 +471,13 @@ namespace math {
 				: intData(new ArbitraryPrecision::SharedIntegerData(sign, digits, size, initPolicy)) {}
 
 		BigInteger(const BigInteger& value) : intData(value.intData) {
+			platform::MutexPoolLocker<ArbitraryPrecision::IntegerData> lock(*intData);
 			intData->ref();
+			lock.release();
 		}
 
 		~BigInteger() {
+			platform::MutexPoolLocker<ArbitraryPrecision::IntegerData> lock(*intData);
 			intData->unref();
 		}
 
@@ -491,26 +486,27 @@ namespace math {
 		}
 
 		inline bool isNegative() const {
-			return data->sign;
+			return intData->sign;
 		}
 
 		int signum() const {
-			return data->signum();
-		}
-
-		BigInteger& operator=(const BigInteger<ArbitraryPrecision::COPY_PRIVATE>& other) {
-			assignFromForeign(other.data());
-			return *this;
-		}
-
-		BigInteger& operator=(const BigInteger<ArbitraryPrecision::COPY_SHARED>& other) {
-			other.intData->ref();
-			intData->unref();
-			intData = other.intData;
-			return *this;
+			return intData->signum();
 		}
 
 		BigInteger& operator=(const BigInteger<ArbitraryPrecision::COPY_THREADED>& other) {
+			ArbitraryPrecision::SharedIntegerData* odata = other.intData;
+			platform::MutexPoolLocker<ArbitraryPrecision::IntegerData> lock(*intData);
+			platform::MutexPoolLocker<ArbitraryPrecision::IntegerData> olock(*odata);
+			odata->ref();
+			intData->unref();
+			intData = odata;
+			olock.release();
+			lock.release();
+			return *this;
+		}
+
+		template<ArbitraryPrecision::CopyPolicy CopyPolicy>
+		BigInteger& operator=(const BigInteger<CopyPolicy>& other) {
 			assignFromForeign(other.data());
 			return *this;
 		}
@@ -560,6 +556,7 @@ namespace math {
 			intData->compact(digits, size);
 			if(!size)
 				return;
+			platform::MutexPoolLocker<ArbitraryPrecision::IntegerData> lock(*intData);
 			if(intData->getReferenceCount() > 1u) {
 				ArbitraryPrecision::SharedIntegerData* newData
 						= new ArbitraryPrecision::SharedIntegerData(!intData->sign, digits, size);
@@ -568,6 +565,7 @@ namespace math {
 			}
 			else
 				intData->sign = !intData->sign;
+			lock.release();
 		}
 
 		template<ArbitraryPrecision::CopyPolicy CopyPolicy>
