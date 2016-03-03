@@ -1,6 +1,7 @@
 #ifndef REDSTRAIN_MOD_MATH_ARBITRARYPRECISION_HPP
 #define REDSTRAIN_MOD_MATH_ARBITRARYPRECISION_HPP
 
+#include <redstrain/util/ReferenceCounted.hpp>
 #include <redstrain/util/types.hpp>
 
 #include "api.hpp"
@@ -39,10 +40,23 @@ namespace math {
 			void assign(const IntegerData&);
 			void assign(IntegerData&, InitPolicy);
 			void assign(bool, unsigned*, util::MemorySize, InitPolicy = INIT_COPY);
+			void clear();
 
 			util::MemorySize usedSize() const;
 			void compact(const unsigned*&, util::MemorySize&) const;
-			int sign() const;
+			int signum() const;
+
+		};
+
+		struct REDSTRAIN_MATH_API SharedIntegerData : IntegerData, util::ReferenceCounted {
+
+			SharedIntegerData();
+			SharedIntegerData(bool, const unsigned*, util::MemorySize);
+			SharedIntegerData(bool, unsigned*, util::MemorySize, InitPolicy);
+			SharedIntegerData(IntegerData&, InitPolicy);
+			SharedIntegerData(const IntegerData&);
+			SharedIntegerData(const SharedIntegerData&);
+			virtual ~SharedIntegerData();
 
 		};
 

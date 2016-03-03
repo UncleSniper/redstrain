@@ -88,6 +88,10 @@ namespace util {
 				delete this;
 		}
 
+		inline unsigned getReferenceCount() const {
+			return refcount;
+		}
+
 	};
 
 }}
