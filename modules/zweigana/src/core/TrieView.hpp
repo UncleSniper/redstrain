@@ -41,7 +41,7 @@ namespace core {
 			const char* object;
 
 		  public:
-			DefaultReferenceBinaryKey(const T& object) : object(static_cast<const char*>(&object)) {}
+			DefaultReferenceBinaryKey(const T& object) : object(reinterpret_cast<const char*>(&object)) {}
 
 			DefaultReferenceBinaryKey(const DefaultReferenceBinaryKey& key) : BinaryKey(key), object(key.object) {}
 
@@ -81,7 +81,7 @@ namespace core {
 			virtual char getKeyByte(util::MemorySize index) {
 				if(index >= static_cast<util::MemorySize>(sizeof(T)))
 					throw error::IndexOutOfBoundsError(index);
-				return static_cast<const char*>(&object)[index];
+				return reinterpret_cast<const char*>(&object)[index];
 			}
 
 		};

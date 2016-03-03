@@ -21,27 +21,29 @@ namespace core {
 		struct DispatcherImpl<Dummy, T, util::TCLS_INTEGER> {
 
 			template<typename BaseT, typename ReturnT>
-			static inline ReturnT withBinaryKey1(BaseT& base, ReturnT (BaseT::*function)(), T key) {
+			static inline ReturnT withBinaryKey1(BaseT& base,
+					ReturnT (BaseT::*function)(TrieView::BinaryKey&), T key) {
 				TrieView::DefaultCopyBinaryKey<T> wrapper(key);
 				return (base.*function)(wrapper);
 			}
 
 			template<typename BaseT, typename ReturnT>
-			static inline ReturnT withBinaryKey1(const BaseT& base, ReturnT (BaseT::*function)() const, T key) {
+			static inline ReturnT withBinaryKey1(const BaseT& base,
+					ReturnT (BaseT::*function)(TrieView::BinaryKey&) const, T key) {
 				TrieView::DefaultCopyBinaryKey<T> wrapper(key);
 				return (base.*function)(wrapper);
 			}
 
 			template<typename BaseT, typename ReturnT, typename ArgumentT>
-			static inline ReturnT withBinaryKey2(BaseT& base, ReturnT (BaseT::*function)(), T key,
-					ArgumentT argument) {
+			static inline ReturnT withBinaryKey2(BaseT& base,
+					ReturnT (BaseT::*function)(TrieView::BinaryKey&, ArgumentT), T key, ArgumentT argument) {
 				TrieView::DefaultCopyBinaryKey<T> wrapper(key);
 				return (base.*function)(wrapper, argument);
 			}
 
 			template<typename BaseT, typename ReturnT, typename ArgumentT>
-			static inline ReturnT withBinaryKey2(const BaseT& base, ReturnT (BaseT::*function)() const, T key,
-					ArgumentT argument) {
+			static inline ReturnT withBinaryKey2(const BaseT& base,
+					ReturnT (BaseT::*function)(TrieView::BinaryKey&, ArgumentT) const, T key, ArgumentT argument) {
 				TrieView::DefaultCopyBinaryKey<T> wrapper(key);
 				return (base.*function)(wrapper, argument);
 			}
