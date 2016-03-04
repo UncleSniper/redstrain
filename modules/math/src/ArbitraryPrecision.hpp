@@ -39,7 +39,8 @@ namespace math {
 			IntegerData& operator=(const IntegerData&);
 			void assign(const IntegerData&);
 			void assign(IntegerData&, InitPolicy);
-			void assign(bool, unsigned*, util::MemorySize, InitPolicy = INIT_COPY);
+			void assign(bool, const unsigned*, util::MemorySize);
+			void assign(bool, unsigned*, util::MemorySize, InitPolicy);
 			void clear();
 
 			util::MemorySize usedSize() const;
