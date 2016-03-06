@@ -47,6 +47,8 @@ namespace math {
 			void compact(const unsigned*&, util::MemorySize&) const;
 			int signum() const;
 
+			static util::MemorySize bitCount(const unsigned*, util::MemorySize);
+
 		};
 
 		struct REDSTRAIN_MATH_API SharedIntegerData : IntegerData, util::ReferenceCounted {

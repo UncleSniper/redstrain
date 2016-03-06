@@ -1,8 +1,10 @@
 #include <cstring>
+#include <redstrain/util/IntegerSplit.hpp>
 
 #include "ArbitraryPrecision.hpp"
 
 using redengine::util::MemorySize;
+using redengine::util::IntegerSplit;
 
 namespace redengine {
 namespace math {
@@ -178,6 +180,13 @@ namespace math {
 				return 1;
 		}
 		return 0;
+	}
+
+	MemorySize ArbitraryPrecision::IntegerData::bitCount(const unsigned* digits, MemorySize size) {
+		if(!size)
+			return size;
+		return size * static_cast<MemorySize>(IntegerSplit<unsigned>::WIDTH)
+				- static_cast<MemorySize>(IntegerSplit<unsigned>::countLeadingZeroes(*digits));
 	}
 
 	// ======== SharedIntegerData ========

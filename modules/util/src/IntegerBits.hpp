@@ -39,8 +39,8 @@ namespace util {
 		typedef IntegerT Integer;
 
 	  private:
-		template<int, typename IntT>
-		struct BitsImpl {};
+		template<int, typename>
+		struct BitsImpl;
 
 #define REDSTRAIN_UTIL_INTEGERBITS_IMPL(subject, sig, unsig) \
 		template<int Dummy> \
