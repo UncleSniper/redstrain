@@ -22,7 +22,7 @@ namespace util {
 			static inline unsigned countLeadingZeroes(T value) {
 				if(!value)
 					return WIDTH;
-				const AsUnsigned v = static_cast<AsUnsigned>(value);
+				AsUnsigned v = static_cast<AsUnsigned>(value);
 				unsigned size = WIDTH, offset = 0u;
 				while((size /= 2u)) {
 					if(!(v >> (WIDTH - size))) {
@@ -36,7 +36,7 @@ namespace util {
 			static inline unsigned countTrailingZeroes(T value) {
 				if(!value)
 					return WIDTH;
-				const AsUnsigned v = static_cast<AsUnsigned>(value);
+				AsUnsigned v = static_cast<AsUnsigned>(value);
 				unsigned size = WIDTH, offset = 0u;
 				while((size /= 2u)) {
 					if(!(v << (WIDTH - size))) {
