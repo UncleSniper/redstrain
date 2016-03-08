@@ -248,8 +248,151 @@ namespace math {
 		return 0;
 	}
 
-	void ArbitraryPrecision::intAdd(const IntegerData&, const IntegerData&, bool&, unsigned*&, MemorySize&) {
+	static inline MemorySize digitsNeededForBits(MemorySize bits) {
+		return (bits + static_cast<MemorySize>(IntegerSplit<unsigned>::WIDTH - 1u))
+				/ static_cast<MemorySize>(IntegerSplit<unsigned>::WIDTH);
+	}
+
+	static void intAddImpl(const ArbitraryPrecision::IntegerData& a, const ArbitraryPrecision::IntegerData& b,
+			unsigned*& resultDigits, MemorySize& resultSize) {
+		const unsigned *aDigits, *bDigits;
+		MemorySize aSize, bSize;
+		a.compact(aDigits, aSize);
+		b.compact(bDigits, bSize);
+		if(!aSize) {
+			if(!bSize) {
+				resultDigits = NULL;
+				resultSize = static_cast<MemorySize>(0u);
+			}
+			else {
+				resultDigits = new unsigned[bSize];
+				memcpy(resultDigits, bDigits, static_cast<size_t>(bSize) * sizeof(unsigned));
+				resultSize = bSize;
+			}
+			return;
+		}
+		if(!bSize) {
+			resultDigits = new unsigned[aSize];
+			memcpy(resultDigits, aDigits, static_cast<size_t>(aSize) * sizeof(unsigned));
+			resultSize = aSize;
+			return;
+		}
+		MemorySize aBits = ArbitraryPrecision::IntegerData::bitCount(aDigits, aSize);
+		MemorySize bBits = ArbitraryPrecision::IntegerData::bitCount(bDigits, bSize);
+		MemorySize commonSize, restSize;
+		if(aBits > bBits) {
+			resultSize = digitsNeededForBits(aBits + static_cast<MemorySize>(1u));
+			commonSize = bSize;
+			restSize = aSize - bSize;
+		}
+		else {
+			resultSize = digitsNeededForBits(bBits + static_cast<MemorySize>(1u));
+			commonSize = aSize;
+			restSize = bSize - aSize;
+		}
+		unsigned* digits = (resultDigits = new unsigned[resultSize]) + resultSize;
+		aDigits += aSize;
+		bDigits += bSize;
+		bool carry = false, nextCarry;
+		for(; commonSize; --commonSize) {
+			*--digits = *--aDigits + *--bDigits;
+			nextCarry = *digits < *aDigits;
+			if(carry) {
+				if(!++*digits)
+					nextCarry = true;
+			}
+			carry = nextCarry;
+		}
+		const unsigned* restDigits = aSize > bSize ? aDigits : bDigits;
+		for(; carry && restSize; --restSize)
+			carry = !(*--digits = *--restDigits + 1u);
+		for(; restSize; --restSize)
+			*--digits = *--restDigits;
+		if(digits != resultDigits)
+			*resultDigits = static_cast<unsigned>(carry);
+	}
+
+	static void intSubOrdered(const unsigned* aDigits, MemorySize aSize, const unsigned* bDigits, MemorySize bSize,
+			unsigned*& resultDigits, MemorySize& resultSize) {
 		//TODO
+	}
+
+	static void intSubImpl(const ArbitraryPrecision::IntegerData& a, const ArbitraryPrecision::IntegerData& b,
+			bool& resultSign, unsigned*& resultDigits, MemorySize& resultSize) {
+		const unsigned *aDigits, *bDigits;
+		MemorySize aSize, bSize;
+		a.compact(aDigits, aSize);
+		b.compact(bDigits, bSize);
+		if(!aSize) {
+			if(!bSize) {
+				resultSign = false;
+				resultDigits = NULL;
+				resultSize = static_cast<MemorySize>(0u);
+			}
+			else {
+				resultSign = true;
+				resultDigits = new unsigned[bSize];
+				memcpy(resultDigits, bDigits, static_cast<size_t>(bSize) * sizeof(unsigned));
+				resultSize = bSize;
+			}
+			return;
+		}
+		if(!bSize) {
+			resultSign = false;
+			resultDigits = new unsigned[aSize];
+			memcpy(resultDigits, aDigits, static_cast<size_t>(aSize) * sizeof(unsigned));
+			resultSize = aSize;
+			return;
+		}
+		MemorySize aBits = ArbitraryPrecision::IntegerData::bitCount(aDigits, aSize);
+		MemorySize bBits = ArbitraryPrecision::IntegerData::bitCount(bDigits, bSize);
+		if(aBits > bBits) {
+			intSubOrdered(aDigits, aSize, bDigits, bSize, resultDigits, resultSize);
+			resultSign = false;
+		}
+		else if(bBits > aBits) {
+			intSubOrdered(bDigits, bSize, aDigits, aSize, resultDigits, resultSize);
+			resultSign = true;
+		}
+		else {
+			for(; aSize; --aSize) {
+				if(*aDigits > *bDigits) {
+					intSubOrdered(aDigits, aSize, bDigits, aSize, resultDigits, resultSize);
+					resultSign = false;
+					return;
+				}
+				if(*bDigits > *aDigits) {
+					intSubOrdered(bDigits, aSize, aDigits, aSize, resultDigits, resultSize);
+					resultSign = true;
+					return;
+				}
+				++aDigits;
+				++bDigits;
+			}
+			resultSign = false;
+			resultDigits = NULL;
+			resultSize = static_cast<MemorySize>(0u);
+		}
+	}
+
+	void ArbitraryPrecision::intAdd(const IntegerData& a, const IntegerData& b,
+			bool& resultSign, unsigned*& resultDigits, MemorySize& resultSize) {
+		if(a.sign) {
+			if(b.sign) {
+				intAddImpl(a, b, resultDigits, resultSize);
+				resultSign = true;
+			}
+			else
+				intSubImpl(b, a, resultSign, resultDigits, resultSize);
+		}
+		else {
+			if(b.sign)
+				intSubImpl(a, b, resultSign, resultDigits, resultSize);
+			else {
+				intAddImpl(a, b, resultDigits, resultSize);
+				resultSign = false;
+			}
+		}
 	}
 
 	void ArbitraryPrecision::intAdd(IntegerData& a, const IntegerData& b) {
@@ -260,8 +403,24 @@ namespace math {
 		a.assign(sign, digits, size, ArbitraryPrecision::INIT_MOVE);
 	}
 
-	void ArbitraryPrecision::intSub(const IntegerData&, const IntegerData&, bool&, unsigned*&, MemorySize&) {
-		//TODO
+	void ArbitraryPrecision::intSub(const IntegerData& a, const IntegerData& b,
+			bool& resultSign, unsigned*& resultDigits, MemorySize& resultSize) {
+		if(a.sign) {
+			if(b.sign)
+				intSubImpl(b, a, resultSign, resultDigits, resultSize);
+			else {
+				intAddImpl(a, b, resultDigits, resultSize);
+				resultSign = true;
+			}
+		}
+		else {
+			if(b.sign) {
+				intAddImpl(a, b, resultDigits, resultSize);
+				resultSign = false;
+			}
+			else
+				intSubImpl(a, b, resultSign, resultDigits, resultSize);
+		}
 	}
 
 	void ArbitraryPrecision::intSub(IntegerData& a, const IntegerData& b) {
