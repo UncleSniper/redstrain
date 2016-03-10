@@ -314,7 +314,25 @@ namespace math {
 
 	static void intSubOrdered(const unsigned* aDigits, MemorySize aSize, const unsigned* bDigits, MemorySize bSize,
 			unsigned*& resultDigits, MemorySize& resultSize) {
-		//TODO
+		// note that aSize && bSize && aSize >= bSize and, generally, a > b
+		resultSize = aSize;
+		resultDigits = new unsigned[aSize];
+		const unsigned *a = aDigits + aSize, *b = bDigits + bSize;
+		unsigned* r = resultDigits + aSize;
+		MemorySize commonSize = bSize;
+		bool carryIn, carryOut = false;
+		do {
+			--a;
+			unsigned bd = *--b;
+			carryIn = (carryOut && !++bd) || bd > *a;
+			*--r = carryIn ? -(bd - *a) : *a - bd;
+			carryOut = carryIn;
+		} while(--commonSize);
+		MemorySize restSize = aSize - bSize;
+		for(; carryOut && restSize; --restSize)
+			*--r = (carryOut = !*--a) ? ~0u : *a - 1u;
+		for(; restSize; --restSize)
+			*--r = *--a;
 	}
 
 	static void intSubImpl(const ArbitraryPrecision::IntegerData& a, const ArbitraryPrecision::IntegerData& b,
@@ -431,7 +449,21 @@ namespace math {
 		a.assign(sign, digits, size, ArbitraryPrecision::INIT_MOVE);
 	}
 
-	void ArbitraryPrecision::intMul(const IntegerData&, const IntegerData&, bool&, unsigned*&, MemorySize&) {
+	void ArbitraryPrecision::intMul(const IntegerData& a, const IntegerData& b,
+			bool& resultSign, unsigned*& resultDigits, MemorySize& resultSize) {
+		const unsigned *aDigits, *bDigits;
+		MemorySize aSize, bSize;
+		a.compact(aDigits, aSize);
+		b.compact(bDigits, bSize);
+		if(!aSize || !bSize) {
+			resultSign = false;
+			resultDigits = NULL;
+			resultSize = static_cast<MemorySize>(0u);
+			return;
+		}
+		resultSign = a.sign != b.sign;
+		resultSize = aSize + bSize;
+		resultDigits = new unsigned[resultSize];
 		//TODO
 	}
 
