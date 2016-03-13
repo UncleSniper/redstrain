@@ -449,6 +449,33 @@ namespace math {
 		a.assign(sign, digits, size, ArbitraryPrecision::INIT_MOVE);
 	}
 
+	static const unsigned lowHalfDigitMask = ~0u >> (static_cast<unsigned>(sizeof(unsigned)) * 4u);
+	static const unsigned highHalfDigitMask = ~0u << (static_cast<unsigned>(sizeof(unsigned)) * 4u);
+
+	static unsigned mul2(unsigned a, unsigned b, unsigned& carry) {
+		// ab * cd + ef
+		// -------
+		//      bd
+		// +   ad
+		// +   bc
+		// +  ac
+		// +    ef
+		#define lol(x) ((x) & lowHalfDigitMask)
+		#define loh(x) ((x) << (static_cast<unsigned>(sizeof(unsigned)) * 4u))
+		#define hil(x) ((x) >> (static_cast<unsigned>(sizeof(unsigned)) * 4u))
+		unsigned pa = hil(a), pb = lol(a), pc = hil(b), pd = lol(b);
+		unsigned bd = pb * pd, ad = pa * pd, bc = pb * pc, ac = pa * pc;
+		unsigned r0 = lol(bd) + lol(carry);
+		unsigned r1 = hil(bd) + lol(ad) + lol(bc) + hil(carry) + hil(r0);
+		unsigned r2 = hil(ad) + hil(bc) + lol(ac) + hil(r1);
+		unsigned r3 = hil(ac) + hil(r2);
+		carry = loh(r3) | lol(r2);
+		return loh(r1) | lol(r0);
+		#undef lol
+		#undef loh
+		#undef hil
+	}
+
 	void ArbitraryPrecision::intMul(const IntegerData& a, const IntegerData& b,
 			bool& resultSign, unsigned*& resultDigits, MemorySize& resultSize) {
 		const unsigned *aDigits, *bDigits;
@@ -464,7 +491,23 @@ namespace math {
 		resultSign = a.sign != b.sign;
 		resultSize = aSize + bSize;
 		resultDigits = new unsigned[resultSize];
-		//TODO
+		memset(resultDigits, 0, static_cast<size_t>(resultSize) * sizeof(unsigned));
+		unsigned *rEndA = resultDigits + resultSize, *rEndB;
+		const unsigned *aEnd = aDigits + aSize, *bEnd;
+		while(--aEnd >= aDigits) {
+			rEndB = --rEndA;
+			bEnd = bDigits + bSize;
+			while(--bEnd >= bDigits) {
+				unsigned carry = *rEndB;
+				unsigned *rAdd = rEndB;
+				*rAdd = mul2(*aEnd, *bEnd, carry);
+				if(carry) {
+					if((*--rAdd += carry) < carry)
+						while(!++*--rAdd) {}
+				}
+				--rEndB;
+			}
+		}
 	}
 
 	void ArbitraryPrecision::intMul(IntegerData& a, const IntegerData& b) {
