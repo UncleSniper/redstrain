@@ -84,6 +84,11 @@ namespace math {
 			return ArbitraryPrecision::intCmp(intData, other.data()) >= 0;
 		}
 
+		template<ArbitraryPrecision::CopyPolicy CopyPolicy>
+		int compare(const BigInteger<CopyPolicy>& other) const {
+			return ArbitraryPrecision::intCmp(intData, other.data());
+		}
+
 		BigInteger operator-() const {
 			const unsigned* digits;
 			util::MemorySize size;
@@ -132,6 +137,16 @@ namespace math {
 			util::MemorySize size;
 			ArbitraryPrecision::intDiv(intData, other.data(), sign, digits, size);
 			return BigInteger(sign, digits, size, ArbitraryPrecision::INIT_MOVE);
+		}
+
+		template<ArbitraryPrecision::CopyPolicy CopyPolicy>
+		void div(const BigInteger<CopyPolicy>& denominator, BigInteger& quotient, BigInteger& remainder) const {
+			bool qsign, rsign;
+			unsigned *qdigits, *rdigits;
+			util::MemorySize qsize, rsize;
+			ArbitraryPrecision::intDiv(intData, denominator.data(), qsign, qdigits, qsize, rsign, rdigits, rsize);
+			quotient.intData.assign(qsign, qdigits, qsize, ArbitraryPrecision::INIT_MOVE);
+			remainder.intData.assign(rsign, rdigits, rsize, ArbitraryPrecision::INIT_MOVE);
 		}
 
 		template<ArbitraryPrecision::CopyPolicy CopyPolicy>
@@ -301,6 +316,11 @@ namespace math {
 			return ArbitraryPrecision::intCmp(*intData, other.data()) >= 0;
 		}
 
+		template<ArbitraryPrecision::CopyPolicy CopyPolicy>
+		int compare(const BigInteger<CopyPolicy>& other) const {
+			return ArbitraryPrecision::intCmp(*intData, other.data());
+		}
+
 		BigInteger operator-() const {
 			const unsigned* digits;
 			util::MemorySize size;
@@ -369,6 +389,36 @@ namespace math {
 			util::MemorySize size;
 			ArbitraryPrecision::intMod(*intData, other.data(), sign, digits, size);
 			return BigInteger(sign, digits, size, ArbitraryPrecision::INIT_MOVE);
+		}
+
+		template<ArbitraryPrecision::CopyPolicy CopyPolicy>
+		void div(const BigInteger<CopyPolicy>& denominator, BigInteger& quotient, BigInteger& remainder) const {
+			bool qsign, rsign;
+			unsigned *qdigits, *rdigits;
+			util::MemorySize qsize, rsize;
+			ArbitraryPrecision::intDiv(*intData, denominator.data(), qsign, qdigits, qsize, rsign, rdigits, rsize);
+			if(quotient.intData->getReferenceCount() > 1u) {
+				util::DeleteArray<unsigned> deleteQuotient(qdigits);
+				util::DeleteArray<unsigned> deleteRemainder(rdigits);
+				ArbitraryPrecision::SharedIntegerData* qData = new ArbitraryPrecision::SharedIntegerData(qsign,
+						qdigits, qsize, ArbitraryPrecision::INIT_MOVE);
+				deleteQuotient.set();
+				deleteRemainder.set();
+				quotient.intData->unref();
+				quotient.intData = qData;
+			}
+			else
+				quotient.intData->assign(qsign, qdigits, qsize, ArbitraryPrecision::INIT_MOVE);
+			if(remainder.intData->getReferenceCount() > 1u) {
+				util::DeleteArray<unsigned> deleteRemainder(rdigits);
+				ArbitraryPrecision::SharedIntegerData* rData = new ArbitraryPrecision::SharedIntegerData(rsign,
+						rdigits, rsize, ArbitraryPrecision::INIT_MOVE);
+				deleteRemainder.set();
+				remainder.intData->unref();
+				remainder.intData = rData;
+			}
+			else
+				remainder.intData->assign(rsign, rdigits, rsize, ArbitraryPrecision::INIT_MOVE);
 		}
 
 		template<ArbitraryPrecision::CopyPolicy CopyPolicy>
@@ -541,6 +591,11 @@ namespace math {
 			return ArbitraryPrecision::intCmp(*intData, other.data()) >= 0;
 		}
 
+		template<ArbitraryPrecision::CopyPolicy CopyPolicy>
+		int compare(const BigInteger<CopyPolicy>& other) const {
+			return ArbitraryPrecision::intCmp(*intData, other.data());
+		}
+
 		BigInteger operator-() const {
 			const unsigned* digits;
 			util::MemorySize size;
@@ -611,6 +666,38 @@ namespace math {
 			util::MemorySize size;
 			ArbitraryPrecision::intMod(*intData, other.data(), sign, digits, size);
 			return BigInteger(sign, digits, size, ArbitraryPrecision::INIT_MOVE);
+		}
+
+		template<ArbitraryPrecision::CopyPolicy CopyPolicy>
+		void div(const BigInteger<CopyPolicy>& denominator, BigInteger& quotient, BigInteger& remainder) const {
+			bool qsign, rsign;
+			unsigned *qdigits, *rdigits;
+			util::MemorySize qsize, rsize;
+			ArbitraryPrecision::intDiv(*intData, denominator.data(), qsign, qdigits, qsize, rsign, rdigits, rsize);
+			util::DeleteArray<unsigned> deleteQuotient(qdigits);
+			util::DeleteArray<unsigned> deleteRemainder(rdigits);
+			platform::MutexPoolLocker<ArbitraryPrecision::IntegerData> qlock(*quotient.intData);
+			if(quotient.intData->getReferenceCount() > 1u) {
+				ArbitraryPrecision::SharedIntegerData* qData = new ArbitraryPrecision::SharedIntegerData(qsign,
+						qdigits, qsize, ArbitraryPrecision::INIT_MOVE);
+				quotient.intData->unref();
+				quotient.intData = qData;
+			}
+			else
+				quotient.intData->assign(qsign, qdigits, qsize, ArbitraryPrecision::INIT_MOVE);
+			deleteQuotient.set();
+			qlock.release();
+			platform::MutexPoolLocker<ArbitraryPrecision::IntegerData> rlock(*remainder.intData);
+			if(remainder.intData->getReferenceCount() > 1u) {
+				ArbitraryPrecision::SharedIntegerData* rData = new ArbitraryPrecision::SharedIntegerData(rsign,
+						rdigits, rsize, ArbitraryPrecision::INIT_MOVE);
+				remainder.intData->unref();
+				remainder.intData = rData;
+			}
+			else
+				remainder.intData->assign(rsign, rdigits, rsize, ArbitraryPrecision::INIT_MOVE);
+			deleteRemainder.set();
+			rlock.release();
 		}
 
 		template<ArbitraryPrecision::CopyPolicy CopyPolicy>
