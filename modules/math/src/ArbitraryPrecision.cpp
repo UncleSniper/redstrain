@@ -1,9 +1,12 @@
 #include <cstring>
+#include <redstrain/util/DeleteArray.hpp>
 #include <redstrain/util/IntegerSplit.hpp>
 
 #include "ArbitraryPrecision.hpp"
+#include "DivisionByZeroError.hpp"
 
 using redengine::util::MemorySize;
+using redengine::util::DeleteArray;
 using redengine::util::IntegerSplit;
 
 namespace redengine {
@@ -211,6 +214,13 @@ namespace math {
 
 	// ======== ArbitraryPrecision ========
 
+	static inline MemorySize digitsNeededForBits(MemorySize bits) {
+		return (bits + static_cast<MemorySize>(IntegerSplit<unsigned>::WIDTH - 1u))
+				/ static_cast<MemorySize>(IntegerSplit<unsigned>::WIDTH);
+	}
+
+	// ---- integer arithmetic ----
+
 	int ArbitraryPrecision::intCmp(const IntegerData& a, const IntegerData& b) {
 		if(a.sign != b.sign)
 			return a.sign ? -1 : 1;
@@ -246,11 +256,6 @@ namespace math {
 			--commonSize;
 		}
 		return 0;
-	}
-
-	static inline MemorySize digitsNeededForBits(MemorySize bits) {
-		return (bits + static_cast<MemorySize>(IntegerSplit<unsigned>::WIDTH - 1u))
-				/ static_cast<MemorySize>(IntegerSplit<unsigned>::WIDTH);
 	}
 
 	static void intAddImpl(const ArbitraryPrecision::IntegerData& a, const ArbitraryPrecision::IntegerData& b,
@@ -518,8 +523,155 @@ namespace math {
 		a.assign(sign, digits, size, ArbitraryPrecision::INIT_MOVE);
 	}
 
-	void ArbitraryPrecision::intDiv(const IntegerData&, const IntegerData&, bool&, unsigned*&, MemorySize&) {
+	static bool intDivGreaterEqual(const unsigned* rDigits, MemorySize rPrefix,
+			const unsigned* dDigits, MemorySize dBits) {
+		MemorySize protrudeBits = rPrefix - dBits;
+		MemorySize protrudeDigits = protrudeBits / static_cast<MemorySize>(IntegerSplit<unsigned>::WIDTH);
+		MemorySize protrudeBitsRest = protrudeBits % static_cast<MemorySize>(IntegerSplit<unsigned>::WIDTH);
+		MemorySize u;
+		for(u = static_cast<MemorySize>(0u); u < protrudeDigits; ++u) {
+			if(rDigits[u])
+				return true;
+		}
+		if(protrudeBitsRest && rDigits[protrudeDigits]
+				>> (static_cast<MemorySize>(IntegerSplit<unsigned>::WIDTH) - protrudeBitsRest))
+			return true;
+		/*         +--------+--------+
+		 * rDigits |        |        |
+		 *         +--------+--------+
+		 *         <------------->
+		 *             rPrefix
+		 *            <---------->
+		 *              rPrefix - protrudeBits
+		 *
+		 *         +--------+--------+
+		 * dDigits |000     |        |
+		 *         +--------+--------+
+		 *             <------------->
+		 *                  dBits
+		 */
+		MemorySize dSize = digitsNeededForBits(dBits);
+		MemorySize dZeroBits = dSize * static_cast<MemorySize>(IntegerSplit<unsigned>::WIDTH) - dBits;
+		MemorySize compareDigits = dBits / static_cast<MemorySize>(IntegerSplit<unsigned>::WIDTH);
+		MemorySize compareBitsRest = dBits / static_cast<MemorySize>(IntegerSplit<unsigned>::WIDTH);
+		// whole digit compare: rDigits[(protrudeBits + u * WIDTH)..(protrudeBits + (u + 1) * WIDTH]
+		//                  <=> dDigits[(dZeroBits + u * WIDTH)..(dZeroBits + (u + 1) * WIDTH)]
+		unsigned r, d;
+		for(u = static_cast<MemorySize>(0u); u < compareDigits; ++u) {
+			r = rDigits[protrudeDigits + u];
+			if(protrudeBitsRest)
+				r = (r << protrudeBitsRest) | (rDigits[protrudeDigits + u + static_cast<MemorySize>(1u)]
+						>> (static_cast<MemorySize>(IntegerSplit<unsigned>::WIDTH) - protrudeBitsRest));
+			d = dDigits[u];
+			if(dZeroBits)
+				d = (d << dZeroBits) | (dDigits[u + static_cast<MemorySize>(1u)]
+						>> (static_cast<MemorySize>(IntegerSplit<unsigned>::WIDTH) - dZeroBits));
+			if(r > d)
+				return true;
+			if(r < d)
+				return false;
+		}
+		if(!compareBitsRest)
+			return true;
+		r = rDigits[protrudeDigits + compareDigits] << protrudeBitsRest;
+		d = dDigits[compareDigits] << dZeroBits;
+		return r >= d;
+	}
+
+	static void intDivSub(unsigned* rDigits, MemorySize rPrefix, const unsigned* dDigits, MemorySize dSize) {
 		//TODO
+	}
+
+	static void intDivImpl(const ArbitraryPrecision::IntegerData& n, const ArbitraryPrecision::IntegerData& d,
+			bool* quotientSign, unsigned** quotientDigits, MemorySize* quotientSize,
+			bool* remainderSign, unsigned** remainderDigits, MemorySize* remainderSize) {
+		const unsigned *nDigits, *dDigits;
+		MemorySize nSize, dSize;
+		n.compact(nDigits, nSize);
+		d.compact(dDigits, dSize);
+		if(!dSize)
+			throw DivisionByZeroError();
+		if(!nSize) {
+			if(quotientSign) {
+				*quotientSign = false;
+				*quotientDigits = NULL;
+				*quotientSize = static_cast<MemorySize>(0u);
+			}
+			if(remainderSign) {
+				*remainderSign = false;
+				*remainderDigits = NULL;
+				*remainderSize = static_cast<MemorySize>(0u);
+			}
+			return;
+		}
+		MemorySize nBits = ArbitraryPrecision::IntegerData::bitCount(nDigits, nSize);
+		MemorySize dBits = ArbitraryPrecision::IntegerData::bitCount(dDigits, dSize);
+		MemorySize qBits;
+		if(dBits > nBits) {
+			if(quotientSign) {
+				*quotientSign = false;
+				*quotientDigits = NULL;
+				*quotientSize = static_cast<MemorySize>(0u);
+			}
+			if(remainderSign) {
+				*remainderSign = n.sign;
+				*remainderDigits = new unsigned[nSize];
+				memcpy(*remainderDigits, nDigits, static_cast<size_t>(nSize) * sizeof(unsigned));
+				*remainderSize = nSize;
+			}
+			return;
+		}
+		qBits = nBits - dBits + static_cast<MemorySize>(1u);
+		unsigned *qDigits, *rDigits = new unsigned[nSize];
+		memcpy(rDigits, nDigits, static_cast<size_t>(nSize) * sizeof(unsigned));
+		MemorySize qSize;
+		DeleteArray<unsigned> deleteRemainder(rDigits);
+		if(quotientSign) {
+			*quotientSign = qBits && n.sign != d.sign;
+			if(qBits) {
+				*quotientSize = qSize = digitsNeededForBits(qBits);
+				*quotientDigits = qDigits = new unsigned[qSize];
+				memset(qDigits, 0, static_cast<size_t>(qSize) * sizeof(unsigned));
+			}
+			else {
+				*quotientSize = qSize = static_cast<MemorySize>(0u);
+				*quotientDigits = qDigits = NULL;
+			}
+		}
+		deleteRemainder.set();
+		// Algorithm:
+		//   for nStart in 0...(nBits - dBits) do
+		//     # considering bits nStart..(nStart + dBits)
+		//     #             -> really 0..(nStart + dBits)
+		//     if greaterEqualAlignLeast(r[0..(nStart + dBits)], d) then
+		//       emit 1
+		//       subAlignLeast(r[0..(nStart + dBits)], d)
+		//     else
+		//       emit 0
+		MemorySize nEnd, qEmitBit = qSize * static_cast<MemorySize>(IntegerSplit<unsigned>::WIDTH)
+			- (nBits - dBits + static_cast<MemorySize>(1u));
+		for(nEnd = dBits; nEnd <= nBits; ++nEnd) {
+			if(intDivGreaterEqual(rDigits, nEnd, dDigits, dBits)) {
+				qDigits[qEmitBit / static_cast<MemorySize>(IntegerSplit<unsigned>::WIDTH)]
+						|= 1u << (static_cast<MemorySize>(IntegerSplit<unsigned>::WIDTH
+						- (qEmitBit % static_cast<MemorySize>(IntegerSplit<unsigned>::WIDTH)
+						+ static_cast<MemorySize>(1u))));
+				intDivSub(rDigits, nEnd, dDigits, dSize);
+			}
+			++qEmitBit;
+		}
+		if(remainderSign) {
+			*remainderSign = n.sign;
+			*remainderDigits = rDigits;
+			*remainderSize = nSize;
+		}
+		else
+			delete[] rDigits;
+	}
+
+	void ArbitraryPrecision::intDiv(const IntegerData& a, const IntegerData& b,
+			bool& resultSign, unsigned*& resultDigits, MemorySize& resultSize) {
+		intDivImpl(a, b, &resultSign, &resultDigits, &resultSize, NULL, NULL, NULL);
 	}
 
 	void ArbitraryPrecision::intDiv(IntegerData& a, const IntegerData& b) {
@@ -530,8 +682,9 @@ namespace math {
 		a.assign(sign, digits, size, ArbitraryPrecision::INIT_MOVE);
 	}
 
-	void ArbitraryPrecision::intMod(const IntegerData&, const IntegerData&, bool&, unsigned*&, MemorySize&) {
-		//TODO
+	void ArbitraryPrecision::intMod(const IntegerData& a, const IntegerData& b,
+			bool& resultSign, unsigned*& resultDigits, MemorySize& resultSize) {
+		intDivImpl(a, b, NULL, NULL, NULL, &resultSign, &resultDigits, &resultSize);
 	}
 
 	void ArbitraryPrecision::intMod(IntegerData& a, const IntegerData& b) {
@@ -542,8 +695,11 @@ namespace math {
 		a.assign(sign, digits, size, ArbitraryPrecision::INIT_MOVE);
 	}
 
-	void ArbitraryPrecision::intDiv(const IntegerData&, const IntegerData&, bool&, unsigned*&, MemorySize&, bool&, unsigned*&, MemorySize&) {
-		//TODO
+	void ArbitraryPrecision::intDiv(const IntegerData& a, const IntegerData& b,
+			bool& quotientSign, unsigned*& quotientDigits, MemorySize& quotientSize,
+			bool& remainderSign, unsigned*& remainderDigits, MemorySize& remainderSize) {
+		intDivImpl(a, b, &quotientSign, &quotientDigits, &quotientSize,
+				&remainderSign, &remainderDigits, &remainderSize);
 	}
 
 }}
