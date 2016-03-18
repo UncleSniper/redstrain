@@ -578,7 +578,8 @@ namespace math {
 		return r >= d;
 	}
 
-	static void intDivSub(unsigned* rDigits, MemorySize rPrefix, const unsigned* dDigits, MemorySize dSize) {
+	//static void intDivSub(unsigned* rDigits, MemorySize rPrefix, const unsigned* dDigits, MemorySize dSize) {
+	static void intDivSub(unsigned*, MemorySize, const unsigned*, MemorySize) {
 		//TODO
 	}
 
