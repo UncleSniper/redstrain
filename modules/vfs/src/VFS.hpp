@@ -2,8 +2,7 @@
 #define REDSTRAIN_MOD_VFS_VFS_HPP
 
 #include <list>
-#include <redstrain/text/Encoder16.hpp>
-#include <redstrain/text/Decoder16.hpp>
+#include <redstrain/text/TextCodec.hpp>
 #include <redstrain/text/CodecFactory.hpp>
 #include <redstrain/platform/Filesystem.hpp>
 #include <redstrain/io/BidirectionalStream.hpp>

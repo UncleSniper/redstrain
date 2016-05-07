@@ -8,7 +8,7 @@
 #include <redstrain/io/MissingInputSeparatorError.hpp>
 #include <redstrain/io/streamoperators.hpp>
 
-#include "TableCodec16.hpp"
+#include "TableCodec.hpp"
 #include "CodecManager.hpp"
 #include "BlobTableCodecFactory.hpp"
 #include "BlobCodeTable16Registrar.hpp"
@@ -287,6 +287,7 @@ namespace text {
 
 	// ======== BlobCodeTable16Registrar ========
 
+	typedef TableCodec<Char16> TableCodec16;
 	typedef BlobTableCodecFactory<Char16, Encoder16, TableCodec16> EncoderFactory;
 	typedef BlobTableCodecFactory<Char16, Decoder16, TableCodec16> DecoderFactory;
 	typedef map<string, EncoderFactory*> EncoderFactories;

@@ -75,6 +75,39 @@ namespace text {
 
 	};
 
+	REDSTRAIN_TEXT_API extern const Char32 DEFAULT_FORMATTING_OPTION_STRING_NAN32[];
+	REDSTRAIN_TEXT_API extern const Char32 DEFAULT_FORMATTING_OPTION_STRING_POSITIVE_INFINITY32[];
+	REDSTRAIN_TEXT_API extern const Char32 DEFAULT_FORMATTING_OPTION_STRING_NEGATIVE_INFINITY32[];
+
+	template<>
+	class DefaultFormattingOptionStringEmitter<Char32> : public FormattingOptionStringEmitter<Char32> {
+
+	  public:
+		DefaultFormattingOptionStringEmitter() {}
+
+		DefaultFormattingOptionStringEmitter(const DefaultFormattingOptionStringEmitter& emitter)
+				: FormattingOptionStringEmitter<Char32>(emitter) {}
+
+		virtual String32 emitString(FormattingStringOption option) {
+			switch(option) {
+				case FSO_NAN:
+					return DEFAULT_FORMATTING_OPTION_STRING_NAN32;
+				case FSO_POSITIVE_INFINITY:
+					return DEFAULT_FORMATTING_OPTION_STRING_POSITIVE_INFINITY32;
+				case FSO_NEGATIVE_INFINITY:
+					return DEFAULT_FORMATTING_OPTION_STRING_NEGATIVE_INFINITY32;
+				default:
+					throw error::ProgrammingError("Unrecognized formatting string option in "
+							"DefaultFormattingOptionStringEmitter::emitString(): "
+							+ util::StringUtils::toString(static_cast<int>(option)));
+			}
+		}
+
+	  public:
+		static DefaultFormattingOptionStringEmitter<Char32> instance;
+
+	};
+
 }}
 
 #endif /* REDSTRAIN_MOD_TEXT_DEFAULTFORMATTINGOPTIONSTRINGEMITTER_HPP */

@@ -9,10 +9,10 @@ namespace text {
 	UTF8Decoder16::UTF8Decoder16() : state(ST_NONE) {}
 
 	UTF8Decoder16::UTF8Decoder16(const UTF8Decoder16& decoder)
-			: Decoder16(decoder), state(decoder.state), partial(decoder.partial) {}
+			: TextCodec<char, Char16>(decoder), state(decoder.state), partial(decoder.partial) {}
 
-	MemorySize UTF8Decoder16::decodeBlock(const char* input, MemorySize insize, Char16* output, MemorySize outsize,
-			MemorySize& outcount) {
+	MemorySize UTF8Decoder16::transcodeBlock(const char* input, MemorySize insize,
+			Char16* output, MemorySize outsize, MemorySize& outcount) {
 		const unsigned char* in = reinterpret_cast<const unsigned char*>(input);
 		outcount = static_cast<MemorySize>(0u);
 		MemorySize consumed = static_cast<MemorySize>(0u);
@@ -54,6 +54,7 @@ namespace text {
 						state = ST_ERROR;
 						throw IllegalCodeError();
 					}
+				case ST_ERROR:
 				default:
 					throw IllegalCodeError();
 			}
@@ -61,7 +62,7 @@ namespace text {
 		return consumed;
 	}
 
-	void UTF8Decoder16::endDecoding() {
+	void UTF8Decoder16::endCodeUnit() {
 		if(state != ST_NONE)
 			throw IllegalCodeError();
 	}

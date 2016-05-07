@@ -3,14 +3,12 @@
 
 #include <map>
 
+#include "TextCodec.hpp"
 #include "CodecResolver.hpp"
 #include "api.hpp"
 
 namespace redengine {
 namespace text {
-
-	class Encoder16;
-	class Decoder16;
 
 	class REDSTRAIN_TEXT_API CodecManager {
 

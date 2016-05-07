@@ -1,12 +1,13 @@
 #ifndef REDSTRAIN_MOD_TEXT_UTF8DECODER16_HPP
 #define REDSTRAIN_MOD_TEXT_UTF8DECODER16_HPP
 
-#include "Decoder16.hpp"
+#include "TextCodec.hpp"
+#include "api.hpp"
 
 namespace redengine {
 namespace text {
 
-	class REDSTRAIN_TEXT_API UTF8Decoder16 : public Decoder16 {
+	class REDSTRAIN_TEXT_API UTF8Decoder16 : public TextCodec<char, Char16> {
 
 	  private:
 		enum State {
@@ -25,9 +26,9 @@ namespace text {
 		UTF8Decoder16();
 		UTF8Decoder16(const UTF8Decoder16&);
 
-		virtual util::MemorySize decodeBlock(const char*, util::MemorySize,
+		virtual util::MemorySize transcodeBlock(const char*, util::MemorySize,
 				Char16*, util::MemorySize, util::MemorySize&);
-		virtual void endDecoding();
+		virtual void endCodeUnit();
 
 	};
 

@@ -1,7 +1,7 @@
 #include <redstrain/util/Delete.hpp>
 #include <redstrain/io/StreamCloser.hpp>
 #include <redstrain/text/UTF8Decoder16.hpp>
-#include <redstrain/text/Decoder16InputStream.hpp>
+#include <redstrain/text/TextCodecInputStream.hpp>
 #include <redstrain/locale/messages.hpp>
 #include <redstrain/io/streamoperators.hpp>
 

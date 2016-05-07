@@ -11,6 +11,7 @@
 
 using std::string;
 using redengine::util::Ref;
+using redengine::text::Char16;
 using redengine::util::Delete;
 using redengine::util::Appender;
 using redengine::util::FileSize;
@@ -81,7 +82,7 @@ namespace vfs {
 	String16 HostVFS::decodeHostPathname(const string& pathname) const {
 		Delete<Decoder16> decoder((hostDecoderFactory ? hostDecoderFactory : &defaultDecoderFactory)->newCodec());
 		String16 result;
-		Transcode::decode(pathname, result, **decoder);
+		Transcode::transcodeString2<char, Char16>(pathname, result, **decoder);
 		return result;
 	}
 
@@ -90,7 +91,7 @@ namespace vfs {
 	string HostVFS::encodeHostPathname(const String16& pathname) const {
 		Delete<Encoder16> encoder((hostEncoderFactory ? hostEncoderFactory : &defaultEncoderFactory)->newCodec());
 		string result;
-		Transcode::encode(pathname, result, **encoder);
+		Transcode::transcodeString2<Char16, char>(pathname, result, **encoder);
 		return result;
 	}
 

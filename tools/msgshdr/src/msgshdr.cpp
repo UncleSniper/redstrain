@@ -1,11 +1,11 @@
 #include <redstrain/util/Delete.hpp>
-#include <redstrain/text/Decoder16.hpp>
+#include <redstrain/text/TextCodec.hpp>
 #include <redstrain/io/StreamCloser.hpp>
 #include <redstrain/platform/Console.hpp>
 #include <redstrain/text/CodecManager.hpp>
 #include <redstrain/io/FileInputStream.hpp>
 #include <redstrain/io/FileOutputStream.hpp>
-#include <redstrain/text/Decoder16InputStream.hpp>
+#include <redstrain/text/TextCodecInputStream.hpp>
 #include <redstrain/locale/messages.hpp>
 #include <redstrain/cmdline/parseopt.hpp>
 

@@ -111,7 +111,7 @@ namespace vfs {
 	String16 VFS::decodePathname(const string& pathname) const {
 		Delete<Decoder16> decoder((decoderFactory ? decoderFactory : &defaultDecoderFactory)->newCodec());
 		String16 result;
-		Transcode::decode(pathname, result, **decoder);
+		Transcode::transcodeString2<char, Char16>(pathname, result, **decoder);
 		return result;
 	}
 
@@ -120,7 +120,7 @@ namespace vfs {
 	string VFS::encodePathname(const String16& pathname) const {
 		Delete<Encoder16> encoder((encoderFactory ? encoderFactory : &defaultEncoderFactory)->newCodec());
 		string result;
-		Transcode::encode(pathname, result, **encoder);
+		Transcode::transcodeString2<Char16, char>(pathname, result, **encoder);
 		return result;
 	}
 

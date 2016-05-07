@@ -1,15 +1,14 @@
 #include <iostream>
 #include <redstrain/util/Delete.hpp>
-#include <redstrain/text/Decoder16.hpp>
-#include <redstrain/text/Encoder16.hpp>
+#include <redstrain/text/TextCodec.hpp>
 #include <redstrain/io/StreamCloser.hpp>
 #include <redstrain/text/CodecManager.hpp>
 #include <redstrain/io/FileInputStream.hpp>
 #include <redstrain/io/FileOutputStream.hpp>
 #include <redstrain/platform/Filesystem.hpp>
 #include <redstrain/io/FormattedOutputStream.hpp>
-#include <redstrain/text/Decoder16InputStream.hpp>
-#include <redstrain/text/Encoder16OutputStream.hpp>
+#include <redstrain/text/TextCodecInputStream.hpp>
+#include <redstrain/text/TextCodecOutputStream.hpp>
 #include <redstrain/locale/messages.hpp>
 #include <redstrain/cmdline/parseopt.hpp>
 

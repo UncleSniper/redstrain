@@ -29,6 +29,16 @@ namespace text {
 
 	};
 
+	template<>
+	class TranscodeForError<Char32> {
+
+	  public:
+		static std::string toCharString(const String32& str) {
+			return Transcode::unicodeToUTF8(str);
+		}
+
+	};
+
 }}
 
 #endif /* REDSTRAIN_MOD_TEXT_TRANSCODEFORERROR_HPP */

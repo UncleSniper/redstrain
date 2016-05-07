@@ -10,13 +10,13 @@ namespace text {
 	class REDSTRAIN_TEXT_API UnrepresentableCharacterError : RenditionError {
 
 	  private:
-		const Char16 badChar;
+		const Char32 badChar;
 
 	  public:
-		UnrepresentableCharacterError(Char16);
+		UnrepresentableCharacterError(Char32);
 		UnrepresentableCharacterError(const UnrepresentableCharacterError&);
 
-		inline Char16 getBadChar16() const {
+		inline Char32 getBadChar32() const {
 			return badChar;
 		}
 

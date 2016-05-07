@@ -5,9 +5,9 @@
 #include <redstrain/util/types.hpp>
 #include <redstrain/platform/Endianness.hpp>
 
-#include "types.hpp"
 #include "CodeTable.hpp"
 #include "UnrepresentableCharacterError.hpp"
+#include "types.hpp"
 
 namespace redengine {
 namespace text {

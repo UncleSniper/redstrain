@@ -1,15 +1,12 @@
 #include <map>
 #include <iostream>
 #include <redstrain/util/Delete.hpp>
-#include <redstrain/text/Encoder16.hpp>
-#include <redstrain/text/Decoder16.hpp>
 #include <redstrain/text/Transcode.hpp>
 #include <redstrain/io/StreamCloser.hpp>
 #include <redstrain/platform/Console.hpp>
 #include <redstrain/text/CodecManager.hpp>
 #include <redstrain/io/FileInputStream.hpp>
 #include <redstrain/io/FileOutputStream.hpp>
-#include <redstrain/text/Encoder16OutputStream.hpp>
 #include <redstrain/cmdline/parseopt.hpp>
 
 #include "Options.hpp"
@@ -20,6 +17,7 @@ using std::cout;
 using std::endl;
 using std::string;
 using redengine::util::Delete;
+using redengine::text::Char16;
 using redengine::text::Encoder16;
 using redengine::text::Decoder16;
 using redengine::text::Transcode;
@@ -31,7 +29,6 @@ using redengine::text::CodecManager;
 using redengine::io::FileInputStream;
 using redengine::io::FileOutputStream;
 using redengine::cmdline::OptionLogic;
-using redengine::text::Encoder16OutputStream;
 using redengine::cmdline::ConfigurationObjectOptionLogic;
 using redengine::cmdline::runWithOptions;
 
@@ -73,11 +70,8 @@ int run(const string&, const Options& options) {
 	}
 	Delete<Decoder16> decoder(codecs.newDecoder16(inencoding));
 	Delete<Encoder16> encoder(codecs.newEncoder16(outencoding));
-	Encoder16OutputStream encodingOut(**out, **encoder);
-	StreamCloser encodingOutCloser(encodingOut);
-	outCloser.release();
-	Transcode::decode(**in, encodingOut, **decoder);
-	encodingOutCloser.close();
+	Transcode::transcodeStream3<char, Char16, char>(**in, **out, **decoder, **encoder);
+	outCloser.close();
 	inCloser.close();
 	return 0;
 }

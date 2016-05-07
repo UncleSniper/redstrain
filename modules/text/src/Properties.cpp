@@ -9,8 +9,8 @@
 #include "StringUtils.hpp"
 #include "UTF8Encoder16.hpp"
 #include "UTF8Decoder16.hpp"
-#include "Decoder16InputStream.hpp"
-#include "Encoder16OutputStream.hpp"
+#include "TextCodecInputStream.hpp"
+#include "TextCodecOutputStream.hpp"
 
 using std::string;
 using redengine::io::InputStream;
