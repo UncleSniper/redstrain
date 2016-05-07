@@ -1,0 +1,15 @@
+#ifndef REDSTRAIN_MOD_UTIL_BYTEORDER_HPP
+#define REDSTRAIN_MOD_UTIL_BYTEORDER_HPP
+
+namespace redengine {
+namespace util {
+
+	enum ByteOrder {
+		BO_BIG_ENDIAN,
+		BO_LITTLE_ENDIAN,
+		BO_AUTODETECT_ENDIANNESS
+	};
+
+}}
+
+#endif /* REDSTRAIN_MOD_UTIL_BYTEORDER_HPP */
