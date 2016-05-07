@@ -7,7 +7,7 @@
 #include "Transcode.hpp"
 #include "Properties.hpp"
 #include "StringUtils.hpp"
-#include "UTF8Encoder16.hpp"
+#include "UTF8Encoder.hpp"
 #include "UTF8Decoder16.hpp"
 #include "TextCodecInputStream.hpp"
 #include "TextCodecOutputStream.hpp"

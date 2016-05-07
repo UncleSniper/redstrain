@@ -2,8 +2,8 @@
 #include <redstrain/util/Delete.hpp>
 #include <redstrain/platform/SynchronizedSingleton.hpp>
 
+#include "UTF8Encoder.hpp"
 #include "CodecManager.hpp"
-#include "UTF8Encoder16.hpp"
 #include "UTF8Decoder16.hpp"
 #include "NoSuchEncoderError.hpp"
 #include "NoSuchDecoderError.hpp"
