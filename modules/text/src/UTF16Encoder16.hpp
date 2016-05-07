@@ -7,15 +7,15 @@
 namespace redengine {
 namespace text {
 
-	class REDSTRAIN_TEXT_API UTF16Encoder : public TextCodec<Char32, Char16> {
+	class REDSTRAIN_TEXT_API UTF16Encoder16 : public TextCodec<Char32, Char16> {
 
 	  private:
 		unsigned pending;
 		Char16 partial;
 
 	  public:
-		UTF16Encoder();
-		UTF16Encoder(const UTF16Encoder&);
+		UTF16Encoder16();
+		UTF16Encoder16(const UTF16Encoder16&);
 
 		virtual util::MemorySize transcodeBlock(const Char32*, util::MemorySize,
 				Char16*, util::MemorySize, util::MemorySize&);

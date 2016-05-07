@@ -1,4 +1,4 @@
-#include "UTF16Decoder.hpp"
+#include "UTF16Decoder16.hpp"
 #include "IllegalCodeError.hpp"
 
 using redengine::util::MemorySize;
@@ -6,12 +6,12 @@ using redengine::util::MemorySize;
 namespace redengine {
 namespace text {
 
-	UTF16Decoder::UTF16Decoder() : state(ST_NONE) {}
+	UTF16Decoder16::UTF16Decoder16() : state(ST_NONE) {}
 
-	UTF16Decoder::UTF16Decoder(const UTF16Decoder& decoder)
+	UTF16Decoder16::UTF16Decoder16(const UTF16Decoder16& decoder)
 			: TextCodec<Char16, Char32>(decoder), state(decoder.state), partial(decoder.partial) {}
 
-	MemorySize UTF16Decoder::transcodeBlock(const Char16* input, MemorySize insize,
+	MemorySize UTF16Decoder16::transcodeBlock(const Char16* input, MemorySize insize,
 			Char32* output, MemorySize outsize, MemorySize& outcount) {
 		outcount = static_cast<MemorySize>(0u);
 		MemorySize consumed = static_cast<MemorySize>(0u);
@@ -48,7 +48,7 @@ namespace text {
 		return consumed;
 	}
 
-	void UTF16Decoder::endCodeUnit() {
+	void UTF16Decoder16::endCodeUnit() {
 		if(state != ST_NONE)
 			throw IllegalCodeError();
 	}

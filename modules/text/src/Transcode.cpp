@@ -4,8 +4,8 @@
 #include "Transcode.hpp"
 #include "UTF8Encoder.hpp"
 #include "UTF8Decoder.hpp"
-#include "UTF16Encoder.hpp"
-#include "UTF16Decoder.hpp"
+#include "UTF16Encoder16.hpp"
+#include "UTF16Decoder16.hpp"
 #include "TextCodecInputStream.hpp"
 #include "tweaks.hpp"
 
@@ -36,14 +36,14 @@ namespace text {
 
 	String32 Transcode::utf8ToUnicode(const string& str) {
 		UTF8Decoder16 codec816;
-		UTF16Decoder codec1632;
+		UTF16Decoder16 codec1632;
 		String32 result;
 		Transcode::transcodeString3<char, Char16, Char32>(str, result, codec816, codec1632);
 		return result;
 	}
 
 	string Transcode::unicodeToUTF8(const String32& str) {
-		UTF16Encoder codec3216;
+		UTF16Encoder16 codec3216;
 		UTF8Encoder16 codec168;
 		string result;
 		Transcode::transcodeString3<Char32, Char16, char>(str, result, codec3216, codec168);
