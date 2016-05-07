@@ -4,7 +4,7 @@
 #include <redstrain/io/StreamCloser.hpp>
 #include <redstrain/util/StringUtils.hpp>
 #include <redstrain/text/UTF8Encoder.hpp>
-#include <redstrain/text/UTF8Decoder16.hpp>
+#include <redstrain/text/UTF8Decoder.hpp>
 #include <redstrain/error/ProgrammingError.hpp>
 #include <redstrain/text/DefaultCodecFactory.hpp>
 

@@ -3,7 +3,7 @@
 #include <redstrain/io/FileStream.hpp>
 #include <redstrain/text/Transcode.hpp>
 #include <redstrain/text/UTF8Encoder.hpp>
-#include <redstrain/text/UTF8Decoder16.hpp>
+#include <redstrain/text/UTF8Decoder.hpp>
 #include <redstrain/text/DefaultCodecFactory.hpp>
 
 #include "HostVFS.hpp"

@@ -3,9 +3,9 @@
 
 #include "Transcode.hpp"
 #include "UTF8Encoder.hpp"
+#include "UTF8Decoder.hpp"
 #include "UTF16Encoder.hpp"
 #include "UTF16Decoder.hpp"
-#include "UTF8Decoder16.hpp"
 #include "TextCodecInputStream.hpp"
 #include "tweaks.hpp"
 

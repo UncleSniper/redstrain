@@ -3,8 +3,8 @@
 #include <redstrain/platform/SynchronizedSingleton.hpp>
 
 #include "UTF8Encoder.hpp"
+#include "UTF8Decoder.hpp"
 #include "CodecManager.hpp"
-#include "UTF8Decoder16.hpp"
 #include "NoSuchEncoderError.hpp"
 #include "NoSuchDecoderError.hpp"
 #include "DefaultCodecFactory.hpp"
