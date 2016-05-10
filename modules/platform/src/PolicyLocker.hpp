@@ -1,7 +1,7 @@
 #ifndef REDSTRAIN_MOD_PLATFORM_POLICYLOCKER_HPP
 #define REDSTRAIN_MOD_PLATFORM_POLICYLOCKER_HPP
 
-#include <list>
+#include <cstddef>
 
 namespace redengine {
 namespace platform {
