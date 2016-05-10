@@ -11,6 +11,7 @@
 #include "UTF16Decoder8.hpp"
 #include "UTF16Encoder16.hpp"
 #include "UTF16Decoder16.hpp"
+#include "ChainedTextCodec.hpp"
 #include "NoSuchEncoderError.hpp"
 #include "NoSuchDecoderError.hpp"
 #include "DefaultCodecFactory.hpp"
@@ -116,10 +117,72 @@ namespace text {
 
 	makeGet(Encoder16, enc16reg, Encoder)
 	makeGet(Decoder16, dec16reg, Decoder)
-	makeGet(Encoder32, enc32reg, Encoder)
-	makeGet(Decoder32, dec32reg, Decoder)
 	makeGet(Transcoder1632, trc1632reg, Codec)
 	makeGet(Transcoder3216, trc3216reg, Codec)
+
+	Encoder32* CodecManager::getEncoder32(const string& name, bool allowIndirect) const {
+		ProviderLocker<CodecManager> locker(lockProvider, this);
+		Encoder32Iterator it32 = enc32reg.find(name);
+		if(it32 != enc32reg.end()) {
+			Encoder32* codec = it32->second->newCodec();
+			if(codec) {
+				locker.release();
+				return codec;
+			}
+		}
+		if(allowIndirect) {
+			Encoder16Iterator it16 = enc16reg.find(name);
+			if(it16 != enc16reg.end()) {
+				Delete<Encoder16> encoder16(it16->second->newCodec());
+				if(*encoder16) {
+					locker.release();
+					Delete<Transcoder3216> encoder32(new UTF16Encoder16);
+					ChainedTextCodec<Char32, Char16, char>* chained = new ChainedTextCodec<Char32, Char16, char>(
+						**encoder32,
+						**encoder16,
+						ChainedTextCodec<Char32, Char16, char>::FL_MANAGE_BOTH_CODECS
+					);
+					encoder16.set();
+					encoder32.set();
+					return chained;
+				}
+			}
+		}
+		locker.release();
+		throw NoSuchEncoderError(name);
+	}
+
+	Decoder32* CodecManager::getDecoder32(const string& name, bool allowIndirect) const {
+		ProviderLocker<CodecManager> locker(lockProvider, this);
+		Decoder32Iterator it32 = dec32reg.find(name);
+		if(it32 != dec32reg.end()) {
+			Decoder32* codec = it32->second->newCodec();
+			if(codec) {
+				locker.release();
+				return codec;
+			}
+		}
+		if(allowIndirect) {
+			Decoder16Iterator it16 = dec16reg.find(name);
+			if(it16 != dec16reg.end()) {
+				Delete<Decoder16> decoder16(it16->second->newCodec());
+				if(*decoder16) {
+					locker.release();
+					Delete<Transcoder1632> decoder32(new UTF16Decoder16);
+					ChainedTextCodec<char, Char16, Char32>* chained = new ChainedTextCodec<char, Char16, Char32>(
+						**decoder16,
+						**decoder32,
+						ChainedTextCodec<char, Char16, Char32>::FL_MANAGE_BOTH_CODECS
+					);
+					decoder16.set();
+					decoder32.set();
+					return chained;
+				}
+			}
+		}
+		locker.release();
+		throw NoSuchDecoderError(name);
+	}
 
 #define makeNew(ftype, regMember, resolvMember, except) \
 	ftype* CodecManager::new ## ftype(const string& name) { \
@@ -150,8 +213,6 @@ namespace text {
 
 	makeNew(Encoder16, enc16reg, enc16resolv, Encoder)
 	makeNew(Decoder16, dec16reg, dec16resolv, Decoder)
-	makeNew(Encoder32, enc32reg, enc32resolv, Encoder)
-	makeNew(Decoder32, dec32reg, dec32resolv, Decoder)
 	makeNew(Transcoder1632, trc1632reg, trc1632resolv, Codec)
 	makeNew(Transcoder3216, trc3216reg, trc3216resolv, Codec)
 

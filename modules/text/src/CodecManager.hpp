@@ -99,15 +99,15 @@ namespace text {
 
 		Encoder16* getEncoder16(const std::string&) const;
 		Decoder16* getDecoder16(const std::string&) const;
-		Encoder32* getEncoder32(const std::string&) const;
-		Decoder32* getDecoder32(const std::string&) const;
+		Encoder32* getEncoder32(const std::string&, bool) const;
+		Decoder32* getDecoder32(const std::string&, bool) const;
 		Transcoder1632* getTranscoder1632(const std::string&) const;
 		Transcoder3216* getTranscoder3216(const std::string&) const;
 
 		Encoder16* newEncoder16(const std::string&);
 		Decoder16* newDecoder16(const std::string&);
-		Encoder32* newEncoder32(const std::string&);
-		Decoder32* newDecoder32(const std::string&);
+		Encoder32* newEncoder32(const std::string&, bool);
+		Decoder32* newDecoder32(const std::string&, bool);
 		Transcoder1632* newTranscoder1632(const std::string&);
 		Transcoder3216* newTranscoder3216(const std::string&);
 
