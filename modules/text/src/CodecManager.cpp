@@ -1,5 +1,7 @@
 #include <redstrain/util/Unref.hpp>
 #include <redstrain/util/Delete.hpp>
+#include <redstrain/platform/ProviderLocker.hpp>
+#include <redstrain/platform/MutexLockProvider.hpp>
 #include <redstrain/platform/SynchronizedSingleton.hpp>
 
 #include "UTF8Encoder.hpp"
@@ -14,6 +16,9 @@ using std::set;
 using std::string;
 using redengine::util::Unref;
 using redengine::util::Delete;
+using redengine::platform::Mutex;
+using redengine::platform::ProviderLocker;
+using redengine::platform::MutexLockProvider;
 using redengine::platform::SynchronizedSingleton;
 
 namespace redengine {
@@ -30,16 +35,27 @@ namespace text {
 
 	CodecManager::CodecManager() {}
 
-	CodecManager::CodecManager(const CodecManager& manager)
-			: enc16reg(manager.enc16reg), dec16reg(manager.dec16reg),
-			enc32reg(manager.enc32reg), dec32reg(manager.dec32reg),
-			trc1632reg(manager.trc1632reg), trc3216reg(manager.trc3216reg),
-			enc16resolv(manager.enc16resolv), dec16resolv(manager.dec16resolv),
-			enc32resolv(manager.enc32resolv), dec32resolv(manager.dec32resolv),
-			trc1632resolv(manager.trc1632resolv), trc3216resolv(manager.trc3216resolv),
-			enc16cnames(manager.enc16cnames), dec16cnames(manager.dec16cnames),
-			enc32cnames(manager.enc32cnames), dec32cnames(manager.dec32cnames),
-			trc1632cnames(manager.trc1632cnames), trc3216cnames(manager.trc3216cnames) {
+	CodecManager::CodecManager(const CodecManager& manager) {
+		ProviderLocker<CodecManager> locker(manager.getLockProvider(), manager);
+		enc16reg = manager.enc16reg;
+		dec16reg = manager.dec16reg;
+		enc32reg = manager.enc32reg;
+		dec32reg = manager.dec32reg;
+		trc1632reg = manager.trc1632reg;
+		trc3216reg = manager.trc3216reg;
+		enc16resolv = manager.enc16resolv;
+		dec16resolv = manager.dec16resolv;
+		enc32resolv = manager.enc32resolv;
+		dec32resolv = manager.dec32resolv;
+		trc1632resolv = manager.trc1632resolv;
+		trc3216resolv = manager.trc3216resolv;
+		enc16cnames = manager.enc16cnames;
+		dec16cnames = manager.dec16cnames;
+		enc32cnames = manager.enc32cnames;
+		dec32cnames = manager.dec32cnames;
+		trc1632cnames = manager.trc1632cnames;
+		trc3216cnames = manager.trc3216cnames;
+		locker.release();
 		doMap(Encoder16, enc16reg, ref)
 		doMap(Decoder16, dec16reg, ref)
 		doMap(Encoder32, enc32reg, ref)
@@ -66,8 +82,11 @@ namespace text {
 
 #define makeGetFactory(ftype, member) \
 	CodecManager::ftype ## Factory* CodecManager::get ## ftype ## Factory(const string& name) const { \
+		ProviderLocker<CodecManager> locker(lockProvider, this); \
 		ftype ## Iterator it = member.find(name); \
-		return it == member.end() ? NULL : it->second; \
+		ftype ## Factory* factory = it == member.end() ? NULL : it->second; \
+		locker.release(); \
+		return factory; \
 	}
 
 	makeGetFactory(Encoder16, enc16reg)
@@ -77,9 +96,12 @@ namespace text {
 	makeGetFactory(Transcoder1632, trc1632reg)
 	makeGetFactory(Transcoder3216, trc3216reg)
 
-#define makeGet(ftype, except) \
+#define makeGet(ftype, member, except) \
 	ftype* CodecManager::get ## ftype(const string& name) const { \
-		ftype ## Factory* factory = get ## ftype ## Factory(name); \
+		ProviderLocker<CodecManager> locker(lockProvider, this); \
+		ftype ## Iterator it = member.find(name); \
+		ftype ## Factory* factory = it == member.end() ? NULL : it->second; \
+		locker.release(); \
 		if(!factory) \
 			throw NoSuch ## except ## Error(name); \
 		ftype* codec = factory->newCodec(); \
@@ -88,16 +110,18 @@ namespace text {
 		return codec; \
 	}
 
-	makeGet(Encoder16, Encoder)
-	makeGet(Decoder16, Decoder)
-	makeGet(Encoder32, Encoder)
-	makeGet(Decoder32, Decoder)
-	makeGet(Transcoder1632, Codec)
-	makeGet(Transcoder3216, Codec)
+	makeGet(Encoder16, enc16reg, Encoder)
+	makeGet(Decoder16, dec16reg, Decoder)
+	makeGet(Encoder32, enc32reg, Encoder)
+	makeGet(Decoder32, dec32reg, Decoder)
+	makeGet(Transcoder1632, trc1632reg, Codec)
+	makeGet(Transcoder3216, trc3216reg, Codec)
 
 #define makeNew(ftype, regMember, resolvMember, except) \
 	ftype* CodecManager::new ## ftype(const string& name) { \
-		ftype ## Factory* factory = get ## ftype ## Factory(name); \
+		ProviderLocker<CodecManager> locker(lockProvider, this); \
+		ftype ## Iterator it = regMember.find(name); \
+		ftype ## Factory* factory = it == regMember.end() ? NULL : it->second; \
 		if(!factory) { \
 			ftype ## ResolverIterator resbegin(resolvMember.begin()), resend(resolvMember.end()); \
 			for(; resbegin != resend; ++resbegin) { \
@@ -108,9 +132,12 @@ namespace text {
 					break; \
 				} \
 			} \
+			locker.release(); \
 			if(!factory) \
 				throw NoSuch ## except ## Error(name); \
 		} \
+		else \
+			locker.release(); \
 		ftype* codec = factory->newCodec(); \
 		if(!codec) \
 			throw NoSuch ## except ## Error(name); \
@@ -126,6 +153,7 @@ namespace text {
 
 #define makeSetFactory(ftype, member) \
 	void CodecManager::set ## ftype ## Factory(const string& name, ftype ## Factory* factory) { \
+		ProviderLocker<CodecManager> locker(lockProvider, this); \
 		ftype ## Registry::iterator it(member.find(name)); \
 		if(it != member.end()) { \
 			it->second->unref(); \
@@ -135,6 +163,7 @@ namespace text {
 			member[name] = factory; \
 			factory->ref(); \
 		} \
+		locker.release(); \
 	}
 
 	makeSetFactory(Encoder16, enc16reg)
@@ -158,19 +187,24 @@ namespace text {
 	makeGetFactories(Transcoder3216, trc3216reg)
 
 	void CodecManager::registerBuiltins() {
+		ProviderLocker<CodecManager> locker(lockProvider, this);
 		Unref<Encoder16Factory> enc16factory(new DefaultCodecFactory<Encoder16, UTF8Encoder16>);
 		setEncoder16Factory("UTF-8", *enc16factory);
 		enc16factory.set()->unref();
 		Unref<Decoder16Factory> dec16factory(new DefaultCodecFactory<Decoder16, UTF8Decoder16>);
 		setDecoder16Factory("UTF-8", *dec16factory);
 		dec16factory.set()->unref();
+		locker.release();
 	}
 
 	void CodecManager::registerBlobs() {
+		ProviderLocker<CodecManager> locker(lockProvider, this);
 		BlobCodeTable16Registrar::registerCodecs(*this);
+		locker.release();
 	}
 
 	void CodecManager::purge() {
+		ProviderLocker<CodecManager> locker(lockProvider, this);
 		doMap(Encoder16, enc16reg, unref)
 		enc16reg.clear();
 		doMap(Decoder16, dec16reg, unref)
@@ -183,6 +217,7 @@ namespace text {
 		trc1632reg.clear();
 		doMap(Transcoder3216, trc3216reg, unref)
 		trc3216reg.clear();
+		locker.release();
 	}
 
 #define makeGetResolvers(ftype, member) \
@@ -203,11 +238,15 @@ namespace text {
 	bool CodecManager::add ## ftype ## Resolver(ftype ## Resolver* resolver) { \
 		if(!resolver) \
 			return false; \
+		ProviderLocker<CodecManager> locker(lockProvider, this); \
 		ftype ## ResolverIterator it(member.find(resolver)); \
-		if(it != member.end()) \
+		if(it != member.end()) {\
+			locker.release(); \
 			return false; \
+		} \
 		member.insert(resolver); \
 		resolver->ref(); \
+		locker.release(); \
 		return true; \
 	}
 
@@ -220,11 +259,15 @@ namespace text {
 
 #define makeRemoveResolver(ftype, member) \
 	bool CodecManager::remove ## ftype ## Resolver(ftype ## Resolver* resolver) { \
+		ProviderLocker<CodecManager> locker(lockProvider, this); \
 		ftype ## ResolverIterator it(member.find(resolver)); \
-		if(it == member.end()) \
+		if(it == member.end()) {\
+			locker.release(); \
 			return false; \
+		} \
 		member.erase(it); \
 		resolver->unref(); \
+		locker.release(); \
 		return true; \
 	}
 
@@ -237,12 +280,14 @@ namespace text {
 
 #define makeListKnown(ftype, ptype, regMember, resolvMember) \
 	void CodecManager::listKnown ## ptype(set<string>& list) const { \
+		ProviderLocker<CodecManager> locker(lockProvider, this); \
 		ftype ## Iterator regbegin(regMember.begin()), regend(regMember.end()); \
 		for(; regbegin != regend; ++regbegin) \
 			list.insert(regbegin->first); \
 		ftype ## ResolverIterator resbegin(resolvMember.begin()), resend(resolvMember.end()); \
 		for(; resbegin != resend; ++resbegin) \
 			(*resbegin)->listKnownCodecs(list); \
+		locker.release(); \
 	}
 
 	makeListKnown(Encoder16, Encoders16, enc16reg, enc16resolv)
@@ -254,7 +299,9 @@ namespace text {
 
 #define makeSetCanonicalName(ftype, member) \
 	void CodecManager::set ## ftype ## CanonicalName(const string& alias, const string& canonical) { \
+		ProviderLocker<CodecManager> locker(lockProvider, this); \
 		member[alias] = canonical; \
+		locker.release(); \
 	}
 
 	makeSetCanonicalName(Encoder16, enc16cnames)
@@ -266,8 +313,11 @@ namespace text {
 
 #define makeGetCanonicalName(ftype, member) \
 	string CodecManager::get ## ftype ## CanonicalName(const string& alias) const { \
+		ProviderLocker<CodecManager> locker(lockProvider, this); \
 		CanonicalNameIterator it = member.find(alias); \
-		return it == member.end() ? "" : it->second; \
+		string result(it == member.end() ? "" : it->second); \
+		locker.release(); \
+		return result; \
 	}
 
 	makeGetCanonicalName(Encoder16, enc16cnames)
@@ -284,6 +334,9 @@ namespace text {
 			Delete<CodecManager> manager(new CodecManager);
 			manager->registerBuiltins();
 			manager->registerBlobs();
+			Delete<Mutex> mutex(new Mutex);
+			manager->setLockProvider(new MutexLockProvider<CodecManager>(**mutex, true));
+			mutex.set();
 			return manager.set();
 		}
 

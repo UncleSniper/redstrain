@@ -2,6 +2,7 @@
 #define REDSTRAIN_MOD_TEXT_CODECMANAGER_HPP
 
 #include <map>
+#include <redstrain/platform/LockProvider.hpp>
 
 #include "TextCodec.hpp"
 #include "CodecResolver.hpp"
@@ -74,11 +75,20 @@ namespace text {
 		CanonicalNames enc16cnames, dec16cnames;
 		CanonicalNames enc32cnames, dec32cnames;
 		CanonicalNames trc1632cnames, trc3216cnames;
+		platform::LockProvider<CodecManager>* lockProvider;
 
 	  public:
 		CodecManager();
 		CodecManager(const CodecManager&);
 		~CodecManager();
+
+		inline platform::LockProvider<CodecManager>* getLockProvider() const {
+			return lockProvider;
+		}
+
+		inline void setLockProvider(platform::LockProvider<CodecManager>* lockProvider) {
+			this->lockProvider = lockProvider;
+		}
 
 		Encoder16Factory* getEncoder16Factory(const std::string&) const;
 		Decoder16Factory* getDecoder16Factory(const std::string&) const;
