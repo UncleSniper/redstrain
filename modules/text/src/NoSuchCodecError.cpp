@@ -9,6 +9,8 @@ namespace text {
 
 	NoSuchCodecError::NoSuchCodecError(const NoSuchCodecError& error) : TextError(error), codec(error.codec) {}
 
-	REDSTRAIN_DEFINE_ABSTRACT_ERROR(NoSuchCodecError)
+	REDSTRAIN_DEFINE_ERROR(NoSuchCodecError) {
+		out << "No such text codec: " << codec;
+	}
 
 }}

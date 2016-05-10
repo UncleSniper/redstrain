@@ -19,7 +19,7 @@ namespace text {
 			return codec;
 		}
 
-		REDSTRAIN_DECLARE_ABSTRACT_ERROR(NoSuchCodecError)
+		REDSTRAIN_DECLARE_ERROR(NoSuchCodecError)
 
 	};
 
