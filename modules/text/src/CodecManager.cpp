@@ -7,6 +7,10 @@
 #include "UTF8Encoder.hpp"
 #include "UTF8Decoder.hpp"
 #include "CodecManager.hpp"
+#include "UTF16Encoder8.hpp"
+#include "UTF16Decoder8.hpp"
+#include "UTF16Encoder16.hpp"
+#include "UTF16Decoder16.hpp"
 #include "NoSuchEncoderError.hpp"
 #include "NoSuchDecoderError.hpp"
 #include "DefaultCodecFactory.hpp"
@@ -188,12 +192,30 @@ namespace text {
 
 	void CodecManager::registerBuiltins() {
 		ProviderLocker<CodecManager> locker(lockProvider, this);
+		// Encoder16
 		Unref<Encoder16Factory> enc16factory(new DefaultCodecFactory<Encoder16, UTF8Encoder16>);
 		setEncoder16Factory("UTF-8", *enc16factory);
 		enc16factory.set()->unref();
+		// Decoder16
 		Unref<Decoder16Factory> dec16factory(new DefaultCodecFactory<Decoder16, UTF8Decoder16>);
 		setDecoder16Factory("UTF-8", *dec16factory);
 		dec16factory.set()->unref();
+		// Encoder32
+		Unref<Encoder32Factory> enc32factory(new DefaultCodecFactory<Encoder32, UTF16Encoder8>);
+		setEncoder32Factory("UTF-16", *enc32factory);
+		enc32factory.set()->unref();
+		// Decoder32
+		Unref<Decoder32Factory> dec32factory(new DefaultCodecFactory<Decoder32, UTF16Decoder8>);
+		setDecoder32Factory("UTF-16", *dec32factory);
+		dec32factory.set()->unref();
+		// Transcoder1632
+		Unref<Transcoder1632Factory> trc1632factory(new DefaultCodecFactory<Transcoder1632, UTF16Decoder16>);
+		setTranscoder1632Factory("UTF-16", *trc1632factory);
+		trc1632factory.set()->unref();
+		// Transcoder3216
+		Unref<Transcoder3216Factory> trc3216factory(new DefaultCodecFactory<Transcoder3216, UTF16Encoder16>);
+		setTranscoder3216Factory("UTF-16", *trc3216factory);
+		trc3216factory.set()->unref();
 		locker.release();
 	}
 
