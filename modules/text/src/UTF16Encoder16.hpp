@@ -17,6 +17,7 @@ namespace text {
 		UTF16Encoder16();
 		UTF16Encoder16(const UTF16Encoder16&);
 
+		virtual Char32 getInverseBreakChar(Char16) const;
 		virtual util::MemorySize transcodeBlock(const Char32*, util::MemorySize,
 				Char16*, util::MemorySize, util::MemorySize&);
 		virtual void endCodeUnit();

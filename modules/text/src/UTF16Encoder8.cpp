@@ -4,6 +4,7 @@
 
 #include "UTF16Encoder8.hpp"
 #include "IllegalCodeError.hpp"
+#include "UnrepresentableCharacterError.hpp"
 
 using redengine::util::ByteOrder;
 using redengine::util::MemorySize;
@@ -40,11 +41,25 @@ namespace text {
 		}
 	}
 
+	Char32 UTF16Encoder8::getInverseBreakChar(char breakChar) const {
+		throw UnrepresentableCharacterError(static_cast<Char32>(static_cast<unsigned char>(breakChar)));
+	}
+
 	MemorySize UTF16Encoder8::transcodeBlock(const Char32* input, MemorySize insize,
 			char* output, MemorySize outsize, MemorySize& outcount) {
 		if(!(flags & UTF16Encoder8::IFL_BOM_EMITTED)) {
 			if(byteOrder != BO_AUTODETECT_ENDIANNESS && !(flags & UTF16Encoder8::FL_SUPPRESS_BOM)) {
-				*buffer.buffer16 = static_cast<Char16>(0xFEFFu);
+#if REDSTRAIN_PLATFORM_ENDIANNESS == REDSTRAIN_PLATFORM_BIG_ENDIAN
+				if(byteOrder == BO_LITTLE_ENDIAN)
+					*buffer.buffer16 = REDSTRAIN_PLATFORM_SWAB16(0xFEFFu);
+				else
+					*buffer.buffer16 = static_cast<Char16>(0xFEFFu);
+#else /* little endian platform */
+				if(byteOrder == BO_LITTLE_ENDIAN)
+					*buffer.buffer16 = static_cast<Char16>(0xFEFFu);
+				else
+					*buffer.buffer16 = REDSTRAIN_PLATFORM_SWAB16(0xFEFFu);
+#endif /* little endian platform */
 				bufferFill = static_cast<MemorySize>(2u);
 			}
 			flags |= UTF16Encoder8::IFL_BOM_EMITTED;

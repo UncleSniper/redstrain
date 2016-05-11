@@ -35,7 +35,23 @@ namespace text {
 		UTF8Decoder(const UTF8Decoder& decoder)
 				: TextCodec<char, TargetT>(decoder), state(decoder.state), partial(decoder.partial) {}
 
-		util::MemorySize transcodeBlock(const char* input, util::MemorySize insize,
+		virtual char getInverseBreakChar(TargetT breakChar) const {
+			Char32 c = static_cast<Char32>(breakChar);
+			if(c > static_cast<Char32>(0x001FFFFFul))
+				throw UnrepresentableCharacterError(c);
+			if(c < static_cast<Char32>(0x0080u))
+				return static_cast<char>(static_cast<unsigned char>(c));
+			if(c < static_cast<Char32>(0x0800u))
+				return static_cast<char>(static_cast<unsigned char>((c & static_cast<Char32>(0x003Fu))
+						| static_cast<Char32>(0x80u)));
+			if(c < static_cast<Char32>(0x00010000ul))
+				return static_cast<char>(static_cast<unsigned char>(((c & static_cast<Char32>(0x0FFFu)) >> 6)
+						| static_cast<Char32>(0x80u)));
+			return static_cast<char>(static_cast<unsigned char>(((c & static_cast<Char32>(0x0003FFFFul)) >> 12)
+					| static_cast<Char32>(0x80u)));
+		}
+
+		virtual util::MemorySize transcodeBlock(const char* input, util::MemorySize insize,
 				TargetT* output, util::MemorySize outsize, util::MemorySize& outcount) {
 			const unsigned char* in = reinterpret_cast<const unsigned char*>(input);
 			outcount = static_cast<util::MemorySize>(0u);
@@ -44,8 +60,12 @@ namespace text {
 				unsigned c = static_cast<unsigned>(in[consumed]);
 				switch(state) {
 					case ST_NONE:
-						if(!(c & 0x80u))
-							output[outcount++] = static_cast<TargetT>(c & 0x7Fu);
+						if(!(c & 0x80u)) {
+							TargetT oc = static_cast<TargetT>(c & 0x7Fu);
+							output[outcount++] = oc;
+							if(oc == this->breakChar)
+								insize = static_cast<util::MemorySize>(0u);
+						}
 						else if((c & 0xE0u) == 0xC0u) {
 							partial = static_cast<Char32>(c & 0x1Fu);
 							state = ST_SEQ2BYTE0;
@@ -84,6 +104,8 @@ namespace text {
 								throw UnrepresentableCharacterError(partial);
 							output[outcount++] = static_cast<TargetT>(partial);
 							state = ST_NONE;
+							if(static_cast<TargetT>(partial) == this->breakChar)
+								insize = static_cast<util::MemorySize>(0u);
 						}
 						else {
 							state = ST_ERROR;

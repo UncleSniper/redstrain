@@ -53,8 +53,30 @@ namespace text {
 		}
 	}
 
+	void UTF16Decoder8::setBreakChar(Char32 breakChar) {
+		codec1632.setBreakChar(breakChar);
+		this->breakChar = breakChar;
+	}
+
+	char UTF16Decoder8::getInverseBreakChar(Char32 breakChar) const {
+		Char16 c16 = codec1632.getInverseBreakChar(breakChar);
+		switch(byteOrder) {
+			case BO_LITTLE_ENDIAN:
+				return static_cast<char>(static_cast<unsigned char>(c16 >> 8));
+			case BO_BIG_ENDIAN:
+				return static_cast<char>(static_cast<unsigned char>(c16));
+			case BO_AUTODETECT_ENDIANNESS:
+			default:
+				if(defaultByteOrder == BO_LITTLE_ENDIAN)
+					return static_cast<char>(static_cast<unsigned char>(c16 >> 8));
+				else
+					return static_cast<char>(static_cast<unsigned char>(c16));
+		}
+	}
+
 	MemorySize UTF16Decoder8::transcodeBlock(const char* input, MemorySize insize,
 			Char32* output, MemorySize outsize, MemorySize& outcount) {
+		//TODO: heed breakChar
 		// invariant: bufferOffset is always even
 		MemorySize have = bufferFill - bufferOffset, consumed;
 		if(have < static_cast<MemorySize>(2u)) {

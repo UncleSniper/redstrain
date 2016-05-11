@@ -11,11 +11,23 @@ namespace text {
 	template<typename SourceT, typename TargetT>
 	class TextCodec {
 
+	  protected:
+		TargetT breakChar;
+
 	  public:
-		TextCodec() {}
-		TextCodec(const TextCodec&) {}
+		TextCodec() : breakChar(static_cast<TargetT>(0u)) {}
+		TextCodec(const TextCodec& codec) : breakChar(codec.breakChar) {}
 		virtual ~TextCodec() {}
 
+		inline TargetT getBreakChar() const {
+			return breakChar;
+		}
+
+		virtual void setBreakChar(TargetT breakChar) {
+			this->breakChar = breakChar;
+		}
+
+		virtual SourceT getInverseBreakChar(TargetT) const = 0;
 		virtual util::MemorySize transcodeBlock(const SourceT*, util::MemorySize,
 				TargetT*, util::MemorySize, util::MemorySize&) = 0;
 		virtual void endCodeUnit() {}

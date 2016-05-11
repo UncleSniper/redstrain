@@ -42,13 +42,32 @@ namespace text {
 			return table;
 		}
 
+		virtual char getInverseBreakChar(CharT breakChar) const {
+			platform::ObjectLocker<CodeTable<CharT> > locker(table.supportsConcurrentLookup() ? NULL : &table);
+			char ibc = table.encodeCharacter(breakChar);
+			locker.release();
+			return ibc;
+		}
+
+		virtual CharT getInverseBreakChar(char breakChar) const {
+			platform::ObjectLocker<CodeTable<CharT> > locker(table.supportsConcurrentLookup() ? NULL : &table);
+			CharT ibc = table.decodeCharacter(breakChar);
+			locker.release();
+			return ibc;
+		}
+
 		virtual util::MemorySize transcodeBlock(const CharT* input, util::MemorySize insize,
 				char* output, util::MemorySize outsize, util::MemorySize& outcount) {
 			if(outsize < insize)
 				insize = outsize;
+			char breakChar = static_cast<const TextCodec<CharT, char>*>(this)->getBreakChar();
 			platform::ObjectLocker<CodeTable<CharT> > locker(table.supportsConcurrentLookup() ? NULL : &table);
-			for(outcount = static_cast<util::MemorySize>(0u); outcount < insize; ++outcount)
-				output[outcount] = table.encodeCharacter(input[outcount]);
+			for(outcount = static_cast<util::MemorySize>(0u); outcount < insize; ++outcount) {
+				char c = table.encodeCharacter(input[outcount]);
+				output[outcount] = c;
+				if(c == breakChar)
+					break;
+			}
 			locker.release();
 			return insize;
 		}
@@ -57,9 +76,14 @@ namespace text {
 				CharT* output, util::MemorySize outsize, util::MemorySize& outcount) {
 			if(outsize < insize)
 				insize = outsize;
+			CharT breakChar = static_cast<const TextCodec<char, CharT>*>(this)->getBreakChar();
 			platform::ObjectLocker<CodeTable<CharT> > locker(table.supportsConcurrentLookup() ? NULL : &table);
-			for(outcount = static_cast<util::MemorySize>(0u); outcount < insize; ++outcount)
-				output[outcount] = table.decodeCharacter(input[outcount]);
+			for(outcount = static_cast<util::MemorySize>(0u); outcount < insize; ++outcount) {
+				CharT c = table.decodeCharacter(input[outcount]);
+				output[outcount] = c;
+				if(c == breakChar)
+					break;
+			}
 			locker.release();
 			return insize;
 		}

@@ -48,6 +48,7 @@ namespace text {
 			this->flags = (this->flags & UTF16Encoder8::IFL_MASK) | (flags & UTF16Encoder8::FL_MASK);
 		}
 
+		virtual Char32 getInverseBreakChar(char) const;
 		virtual util::MemorySize transcodeBlock(const Char32*, util::MemorySize,
 				char*, util::MemorySize, util::MemorySize&);
 		virtual void endCodeUnit();

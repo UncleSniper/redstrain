@@ -48,6 +48,17 @@ namespace text {
 				delete &secondCodec;
 		}
 
+		virtual void setBreakChar(TargetT breakChar) {
+			IntermediateT ibc = secondCodec.getInverseBreakChar(breakChar);
+			this->breakChar = breakChar;
+			firstCodec.setBreakChar(ibc);
+			secondCodec.setBreakChar(breakChar);
+		}
+
+		virtual SourceT getInverseBreakChar(TargetT breakChar) const {
+			return firstCodec.getInverseBreakChar(secondCodec.getInverseBreakChar(breakChar));
+		}
+
 		virtual util::MemorySize transcodeBlock(const SourceT* input, util::MemorySize insize,
 				TargetT* output, util::MemorySize outsize, util::MemorySize& outcount) {
 			util::MemorySize c = secondCodec.transcodeBlock(intBuffer + bufferOffset, bufferFill - bufferOffset,

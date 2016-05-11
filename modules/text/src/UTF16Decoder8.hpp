@@ -42,6 +42,8 @@ namespace text {
 
 		void setDefaultByteOrder(util::ByteOrder);
 
+		virtual void setBreakChar(Char32);
+		virtual char getInverseBreakChar(Char32) const;
 		virtual util::MemorySize transcodeBlock(const char*, util::MemorySize,
 				Char32*, util::MemorySize, util::MemorySize&);
 		virtual void endCodeUnit();

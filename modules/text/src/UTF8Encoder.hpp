@@ -21,6 +21,13 @@ namespace text {
 		UTF8Encoder(const UTF8Encoder& encoder)
 				: TextCodec<SourceT, char>(encoder), pending(encoder.pending), partial(encoder.partial) {}
 
+		virtual SourceT getInverseBreakChar(char breakChar) const {
+			unsigned c = static_cast<unsigned>(static_cast<unsigned char>(breakChar));
+			if(c >> 7)
+				throw UnrepresentableCharacterError(static_cast<Char32>(c));
+			return static_cast<SourceT>(c);
+		}
+
 		virtual util::MemorySize transcodeBlock(const SourceT* input, util::MemorySize insize,
 				char* output, util::MemorySize outsize, util::MemorySize& outcount) {
 			unsigned char* out = reinterpret_cast<unsigned char*>(output);
@@ -29,7 +36,7 @@ namespace text {
 			while((pending || consumed < insize) && outcount < outsize) {
 				if(pending) {
 					out[outcount++] = static_cast<unsigned char>(static_cast<Char32>(partial
-							& static_cast<Char32>(0x00EFu)) | static_cast<Char32>(0x80u));
+							& static_cast<Char32>(0x003Fu)) | static_cast<Char32>(0x80u));
 					partial >>= 6;
 					--pending;
 				}
@@ -37,8 +44,12 @@ namespace text {
 					Char32 c = static_cast<Char32>(input[consumed++]);
 					if(c > static_cast<Char32>(0x001FFFFFul))
 						throw UnrepresentableCharacterError(c);
-					if(c < static_cast<Char32>(0x0080u))
-						out[outcount++] = static_cast<unsigned char>(c);
+					if(c < static_cast<Char32>(0x0080u)) {
+						unsigned char uc = static_cast<unsigned char>(c);
+						out[outcount++] = uc;
+						if(this->breakChar == static_cast<char>(uc))
+							break;
+					}
 					else if(c < static_cast<Char32>(0x0800u)) {
 						partial = static_cast<Char32>(c & static_cast<Char32>(0x003Fu));
 						pending = 1u;
