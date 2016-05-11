@@ -35,6 +35,10 @@ namespace text {
 		UTF8Decoder(const UTF8Decoder& decoder)
 				: TextCodec<char, TargetT>(decoder), state(decoder.state), partial(decoder.partial) {}
 
+		void reset() {
+			state = ST_NONE;
+		}
+
 		virtual char getInverseBreakChar(TargetT breakChar) const {
 			Char32 c = static_cast<Char32>(breakChar);
 			if(c > static_cast<Char32>(0x001FFFFFul))

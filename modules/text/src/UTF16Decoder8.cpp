@@ -53,6 +53,12 @@ namespace text {
 		}
 	}
 
+	void UTF16Decoder8::reset() {
+		flags &= UTF16Decoder8::IFL_MASK;
+		bufferFill = bufferOffset = static_cast<MemorySize>(0u);
+		codec1632.reset();
+	}
+
 	void UTF16Decoder8::setBreakChar(Char32 breakChar) {
 		codec1632.setBreakChar(breakChar);
 		this->breakChar = breakChar;

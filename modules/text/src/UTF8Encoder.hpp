@@ -21,6 +21,10 @@ namespace text {
 		UTF8Encoder(const UTF8Encoder& encoder)
 				: TextCodec<SourceT, char>(encoder), pending(encoder.pending), partial(encoder.partial) {}
 
+		void reset() {
+			pending = 0u;
+		}
+
 		virtual SourceT getInverseBreakChar(char breakChar) const {
 			unsigned c = static_cast<unsigned>(static_cast<unsigned char>(breakChar));
 			if(c >> 7)

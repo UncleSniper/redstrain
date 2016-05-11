@@ -38,9 +38,9 @@ namespace text {
 	for(; member ## _begin != member ## _end; ++member ## _begin) \
 		(*member ## _begin)->func();
 
-	CodecManager::CodecManager() {}
+	CodecManager::CodecManager() : lockProvider(NULL) {}
 
-	CodecManager::CodecManager(const CodecManager& manager) {
+	CodecManager::CodecManager(const CodecManager& manager) : lockProvider(NULL) {
 		ProviderLocker<CodecManager> locker(manager.getLockProvider(), manager);
 		enc16reg = manager.enc16reg;
 		dec16reg = manager.dec16reg;
@@ -76,7 +76,12 @@ namespace text {
 	}
 
 	CodecManager::~CodecManager() {
-		purge();
+		doMap(Encoder16, enc16reg, unref)
+		doMap(Decoder16, dec16reg, unref)
+		doMap(Encoder32, enc32reg, unref)
+		doMap(Decoder32, dec32reg, unref)
+		doMap(Transcoder1632, trc1632reg, unref)
+		doMap(Transcoder3216, trc3216reg, unref)
 		doSet(Encoder16Resolver, enc16resolv, unref)
 		doSet(Decoder16Resolver, dec16resolv, unref)
 		doSet(Encoder32Resolver, enc32resolv, unref)

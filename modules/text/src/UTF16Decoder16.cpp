@@ -12,6 +12,10 @@ namespace text {
 	UTF16Decoder16::UTF16Decoder16(const UTF16Decoder16& decoder)
 			: TextCodec<Char16, Char32>(decoder), state(decoder.state), partial(decoder.partial) {}
 
+	void UTF16Decoder16::reset() {
+		state = ST_NONE;
+	}
+
 	Char16 UTF16Decoder16::getInverseBreakChar(Char32 breakChar) const {
 		if(breakChar >> 16) {
 			if(breakChar > static_cast<Char32>(0x0010FFFFul))

@@ -41,6 +41,12 @@ namespace text {
 		}
 	}
 
+	void UTF16Encoder8::reset() {
+		flags &= ~UTF16Encoder8::IFL_MASK;
+		bufferFill = bufferOffset = static_cast<MemorySize>(0u);
+		codec3216.reset();
+	}
+
 	Char32 UTF16Encoder8::getInverseBreakChar(char breakChar) const {
 		throw UnrepresentableCharacterError(static_cast<Char32>(static_cast<unsigned char>(breakChar)));
 	}
