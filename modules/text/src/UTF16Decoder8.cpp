@@ -76,10 +76,10 @@ namespace text {
 
 	MemorySize UTF16Decoder8::transcodeBlock(const char* input, MemorySize insize,
 			Char32* output, MemorySize outsize, MemorySize& outcount) {
-		//TODO: heed breakChar
 		// invariant: bufferOffset is always even
-		MemorySize have = bufferFill - bufferOffset, consumed;
+		MemorySize have = bufferFill - bufferOffset, consumed, bomcons = static_cast<MemorySize>(0u);
 		if(have < static_cast<MemorySize>(2u)) {
+			bool hadOne = !!have;
 			if(have && bufferOffset) {
 				*buffer.buffer8 = buffer.buffer8[bufferOffset];
 				bufferOffset = static_cast<MemorySize>(0u);
@@ -103,6 +103,7 @@ namespace text {
 					byteOrder = BO_LITTLE_ENDIAN;
 #endif /* little endian platform */
 					bufferOffset += static_cast<MemorySize>(2u);
+					bomcons = static_cast<MemorySize>(hadOne ? 1u : 2u);
 				}
 				else if(bom == static_cast<Char16>(0xFFFEu)) {
 #if REDSTRAIN_PLATFORM_ENDIANNESS == REDSTRAIN_PLATFORM_BIG_ENDIAN
@@ -111,9 +112,11 @@ namespace text {
 					byteOrder = BO_BIG_ENDIAN;
 #endif /* little endian platform */
 					bufferOffset += static_cast<MemorySize>(2u);
+					bomcons = static_cast<MemorySize>(hadOne ? 1u : 2u);
 				}
 				else
 					byteOrder = defaultByteOrder == BO_LITTLE_ENDIAN ? BO_LITTLE_ENDIAN : BO_BIG_ENDIAN;
+				flags |= UTF16Decoder8::IFL_BOM_READ;
 			}
 			if(byteOrder == BO_LITTLE_ENDIAN) {
 #if REDSTRAIN_PLATFORM_ENDIANNESS == REDSTRAIN_PLATFORM_BIG_ENDIAN
@@ -130,9 +133,18 @@ namespace text {
 		}
 		else
 			consumed = static_cast<MemorySize>(0u);
+		MemorySize tccount = (bufferFill - bufferOffset) / static_cast<MemorySize>(2u);
 		MemorySize c = codec1632.transcodeBlock(buffer.buffer16 + bufferOffset / static_cast<MemorySize>(2u),
-				have / static_cast<MemorySize>(2u), output, outsize, outcount);
+				tccount, output, outsize, outcount);
 		bufferOffset += c * static_cast<MemorySize>(2u);
+		if(outcount && output[outcount - static_cast<MemorySize>(1u)] == breakChar) {
+			MemorySize unfill = tccount - c, cpairs = (consumed - bomcons) / static_cast<MemorySize>(2u);
+			if(unfill > cpairs)
+				unfill = cpairs;
+			unfill *= static_cast<MemorySize>(2u);
+			bufferFill -= unfill;
+			consumed -= unfill;
+		}
 		return consumed;
 	}
 
