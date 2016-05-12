@@ -79,6 +79,45 @@ namespace text {
 				throw IllegalCodeError();
 		}
 
+		static util::MemorySize encodeSingleChar(SourceT input, char* output) {
+			Char32 c = static_cast<Char32>(input);
+			unsigned char* out = reinterpret_cast<unsigned char*>(output);
+			if(c > static_cast<Char32>(0x001FFFFFul))
+				throw UnrepresentableCharacterError(c);
+			if(c < static_cast<Char32>(0x0080u)) {
+				*out = static_cast<unsigned char>(c);
+				return static_cast<util::MemorySize>(1u);
+			}
+			if(c < static_cast<Char32>(0x0800u)) {
+				*out = static_cast<unsigned char>((c >> 6) | static_cast<Char32>(0xC0u));
+				c &= static_cast<Char32>(0x003Fu);
+				out[1] = static_cast<unsigned char>(static_cast<Char32>(c & static_cast<Char32>(0x003Fu))
+						| static_cast<Char32>(0x80u));
+				return static_cast<util::MemorySize>(2u);
+			}
+			if(c < static_cast<Char32>(0x00010000ul)) {
+				*out = static_cast<unsigned char>((c >> 12) | static_cast<Char32>(0xE0u));
+				c &= static_cast<Char32>(0x0FFFu);
+				out[1] = static_cast<unsigned char>(static_cast<Char32>(c & static_cast<Char32>(0x003Fu))
+						| static_cast<Char32>(0x80u));
+				c >>= 6;
+				out[2] = static_cast<unsigned char>(static_cast<Char32>(c & static_cast<Char32>(0x003Fu))
+						| static_cast<Char32>(0x80u));
+				return static_cast<util::MemorySize>(3u);
+			}
+			*out = static_cast<unsigned char>((c >> 18) | static_cast<Char32>(0xFCu));
+			c &= static_cast<Char32>(0x0003FFFFul);
+			out[1] = static_cast<unsigned char>(static_cast<Char32>(c & static_cast<Char32>(0x003Fu))
+					| static_cast<Char32>(0x80u));
+			c >>= 6;
+			out[2] = static_cast<unsigned char>(static_cast<Char32>(c & static_cast<Char32>(0x003Fu))
+					| static_cast<Char32>(0x80u));
+			c >>= 6;
+			out[3] = static_cast<unsigned char>(static_cast<Char32>(c & static_cast<Char32>(0x003Fu))
+					| static_cast<Char32>(0x80u));
+			return static_cast<util::MemorySize>(4u);
+		}
+
 	};
 
 	typedef UTF8Encoder<Char16> UTF8Encoder16;

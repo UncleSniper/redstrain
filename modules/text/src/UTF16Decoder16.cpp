@@ -78,4 +78,40 @@ namespace text {
 			throw IllegalCodeError();
 	}
 
+	MemorySize UTF16Decoder16::decodeSingleChar(const Char16* input, MemorySize insize, Char32& output) {
+		MemorySize consumed = static_cast<MemorySize>(0u);
+		bool complete = false;
+		State state = ST_NONE;
+		for(; !complete && consumed < insize; ++consumed) {
+			unsigned c = static_cast<unsigned>(input[consumed]);
+			switch(state) {
+				case ST_NONE:
+					if((c & 0xF800u) == 0xD800u) {
+						if(c & 0x0400u)
+							throw IllegalCodeError();
+						output = static_cast<Char32>(c & 0x07FFu);
+						state = ST_SPUNIT0;
+					}
+					else {
+						output = static_cast<Char32>(c);
+						complete = true;
+					}
+					break;
+				case ST_SPUNIT0:
+					if((c & 0xFC00u) != 0xDC00u)
+						throw IllegalCodeError();
+					output = static_cast<Char32>(static_cast<Char32>((output << 10)
+							| static_cast<Char32>(c & 0x03FFu)) + static_cast<Char32>(0x010000u));
+					complete = true;
+					break;
+				case ST_ERROR:
+				default:
+					throw IllegalCodeError();
+			}
+		}
+		if(!complete)
+			throw IllegalCodeError();
+		return consumed;
+	}
+
 }}

@@ -24,6 +24,8 @@ namespace text {
 				Char16*, util::MemorySize, util::MemorySize&);
 		virtual void endCodeUnit();
 
+		static util::MemorySize encodeSingleChar(Char32, Char16*);
+
 	};
 
 }}

@@ -60,4 +60,22 @@ namespace text {
 			throw IllegalCodeError();
 	}
 
+	MemorySize UTF16Encoder16::encodeSingleChar(Char32 input, Char16* output) {
+		if(input >> 16) {
+			if(input > static_cast<Char32>(0x0010FFFFul))
+				throw UnrepresentableCharacterError(input);
+			input -= static_cast<Char32>(0x00010000ul);
+			*output = static_cast<Char16>(static_cast<Char16>(input >> 10) | static_cast<Char16>(0xD800u));
+			output[1] = static_cast<Char16>(static_cast<Char16>(input & static_cast<Char32>(0x000003FFul))
+					| static_cast<Char16>(0xDC00u));
+			return static_cast<MemorySize>(2u);
+		}
+		else {
+			if((input & static_cast<Char32>(0xF800u)) == static_cast<Char32>(0xD800u))
+				throw UnrepresentableCharacterError(input);
+			*output = static_cast<Char16>(input);
+			return static_cast<MemorySize>(1u);
+		}
+	}
+
 }}

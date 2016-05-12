@@ -129,6 +129,66 @@ namespace text {
 				throw IllegalCodeError();
 		}
 
+		static util::MemorySize decodeSingleChar(const char* input, util::MemorySize insize, TargetT& output) {
+			const unsigned char* in = reinterpret_cast<const unsigned char*>(input);
+			util::MemorySize consumed = static_cast<util::MemorySize>(0u);
+			bool complete = false;
+			State state = ST_NONE;
+			for(; !complete && consumed < insize; ++consumed) {
+				unsigned c = static_cast<unsigned>(in[consumed]);
+				switch(state) {
+					case ST_NONE:
+						if(!(c & 0x80u)) {
+							output = static_cast<TargetT>(c & 0x7Fu);
+							complete = true;
+						}
+						else if((c & 0xE0u) == 0xC0u) {
+							output = static_cast<Char32>(c & 0x1Fu);
+							state = ST_SEQ2BYTE0;
+						}
+						else if((c & 0xF0u) == 0xE0u) {
+							output = static_cast<Char32>(c & 0x0Fu);
+							state = ST_SEQ3BYTE0;
+						}
+						else if((c & 0xF8u) == 0xF0u) {
+							output = static_cast<Char32>(c & 0x07u);
+							state = ST_SEQ4BYTE0;
+						}
+						else
+							throw IllegalCodeError();
+						break;
+					case ST_SEQ3BYTE0:
+					case ST_SEQ4BYTE0:
+					case ST_SEQ4BYTE1:
+						if((c & 0xC0u) == 0x80u) {
+							output = static_cast<Char32>((output << 6) | static_cast<Char32>(c & 0x3Fu));
+							state = static_cast<State>(static_cast<int>(state) + 1);
+						}
+						else
+							throw IllegalCodeError();
+						break;
+					case ST_SEQ2BYTE0:
+					case ST_SEQ3BYTE1:
+					case ST_SEQ4BYTE2:
+						if((c & 0xC0u) == 0x80u) {
+							output = static_cast<Char32>((output << 6) | static_cast<Char32>(c & 0x3Fu));
+							if(util::AddressSpace<TargetT, Char32>::exceededBy(output))
+								throw UnrepresentableCharacterError(output);
+							complete = true;
+						}
+						else
+							throw IllegalCodeError();
+						break;
+					case ST_ERROR:
+					default:
+						throw IllegalCodeError();
+				}
+			}
+			if(!complete)
+				throw IllegalCodeError();
+			return consumed;
+		}
+
 	};
 
 	typedef UTF8Decoder<Char16> UTF8Decoder16;
