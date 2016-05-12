@@ -24,7 +24,7 @@ namespace vfs {
 			: Error(error), URIEscapeError(error) {}
 
 	REDSTRAIN_DEFINE_ERROR(InvalidURIEscapeError) {
-		out << "Invalid escape sequence in URI component, starting at character " << escapeOffset32
+		out << "Invalid escape sequence in URI component, starting at character " << invalidPartOffset32
 				<< " of '" << Transcode::bmpToUTF8(getURI()) << '\'';
 	}
 

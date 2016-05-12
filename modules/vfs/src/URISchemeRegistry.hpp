@@ -3,7 +3,9 @@
 
 #include <map>
 #include <redstrain/text/TextCodec.hpp>
+#include <redstrain/util/StringUtils.hpp>
 #include <redstrain/platform/LockProvider.hpp>
+#include <redstrain/error/ProgrammingError.hpp>
 
 #include "api.hpp"
 
@@ -14,6 +16,13 @@ namespace vfs {
 	class URIScheme;
 
 	class REDSTRAIN_VFS_API URISchemeRegistry {
+
+	  public:
+		enum CharClass {
+			CC_RESERVED,
+			CC_UNRESERVED,
+			CC_ILLEGAL
+		};
 
 	  private:
 		typedef std::map<std::string, URIScheme*> Schemes8;
@@ -81,6 +90,128 @@ namespace vfs {
 		URI* newURI(const std::string&) const;
 		URI* newURI(const text::String16&) const;
 		URI* newURI(const text::String32&) const;
+
+		template<typename CharT>
+		static CharClass getCharClass(CharT c) {
+			switch(c) {
+				case static_cast<CharT>(';'):
+				case static_cast<CharT>('/'):
+				case static_cast<CharT>('?'):
+				case static_cast<CharT>(':'):
+				case static_cast<CharT>('@'):
+				case static_cast<CharT>('&'):
+				case static_cast<CharT>('='):
+				case static_cast<CharT>('+'):
+				case static_cast<CharT>('$'):
+				case static_cast<CharT>(','):
+					return CC_RESERVED;
+				case static_cast<CharT>('-'):
+				case static_cast<CharT>('_'):
+				case static_cast<CharT>('.'):
+				case static_cast<CharT>('!'):
+				case static_cast<CharT>('~'):
+				case static_cast<CharT>('*'):
+				case static_cast<CharT>('\''):
+				case static_cast<CharT>('('):
+				case static_cast<CharT>(')'):
+					return CC_UNRESERVED;
+				default:
+					if(c >= static_cast<CharT>('0') && c <= static_cast<CharT>('9'))
+						return CC_UNRESERVED;
+					if(c >= static_cast<CharT>('a') && c <= static_cast<CharT>('z'))
+						return CC_UNRESERVED;
+					if(c >= static_cast<CharT>('A') && c <= static_cast<CharT>('Z'))
+						return CC_UNRESERVED;
+					return CC_ILLEGAL;
+			}
+		}
+
+	  private:
+		static URI* makeRelativeURI(const std::string&);
+		static URI* makeRelativeURI(const text::String16&);
+		static URI* makeRelativeURI(const text::String32&);
+		URI* makeAbsoluteURI(const std::string&, std::string::size_type) const;
+		URI* makeAbsoluteURI(const text::String16&, text::String16::size_type) const;
+		URI* makeAbsoluteURI(const text::String32&, text::String32::size_type) const;
+		static void illegalURIHead(const std::string&, std::string::size_type);
+		static void illegalURIHead(const text::String16&, text::String16::size_type);
+		static void illegalURIHead(const text::String32&, text::String32::size_type);
+
+		template<typename CharT>
+		URI* parseURIHead(const std::basic_string<CharT>& specifier) const {
+			typedef std::basic_string<CharT> StringT;
+			typedef typename StringT::size_type StringSizeT;
+			if(specifier.empty())
+				return URISchemeRegistry::makeRelativeURI(specifier);
+			StringSizeT offset = static_cast<StringSizeT>(0u);
+			CharT c = specifier[offset];
+			if(c == static_cast<CharT>('/'))
+				return URISchemeRegistry::makeRelativeURI(specifier);
+			StringSizeT length = specifier.length();
+			// 2 = scheme, 1 = rel_segment
+			int couldBe = (
+				(c >= static_cast<CharT>('a') && c <= static_cast<CharT>('z'))
+				|| (c >= static_cast<CharT>('A') && c <= static_cast<CharT>('Z'))
+			) ? 3 : 1;
+			for(; offset < length; ++offset) {
+				c = specifier[offset];
+				// scheme = alpha *( alpha | digit | "+" | "-" | "." )
+				//                     U       U      R     U     U
+				// rel_path = rel_segment [ abs_path ]
+				// rel_segment = 1*( unreserved | escaped | ";" | "@" | "&" | "=" | "+" | "$" | ",")
+				//                                           R     R     R     R     R     R     R
+				switch(URISchemeRegistry::getCharClass<CharT>(c)) {
+					case CC_RESERVED:
+						if(c != static_cast<CharT>('+')) {
+							if(!(couldBe &= ~2))
+								URISchemeRegistry::illegalURIHead(specifier, offset);
+						}
+						switch(c) {
+							case static_cast<CharT>('/'):
+								if(couldBe & 1)
+									return URISchemeRegistry::makeRelativeURI(specifier);
+								URISchemeRegistry::illegalURIHead(specifier, offset);
+							case static_cast<CharT>(':'):
+								if(couldBe & 2)
+									return makeAbsoluteURI(specifier, offset);
+							case static_cast<CharT>('?'):
+								if(!(couldBe &= ~1))
+									URISchemeRegistry::illegalURIHead(specifier, offset);
+								break;
+							default:
+								break;
+						}
+						break;
+					case CC_UNRESERVED:
+						switch(c) {
+							case static_cast<CharT>('_'):
+							case static_cast<CharT>('!'):
+							case static_cast<CharT>('~'):
+							case static_cast<CharT>('*'):
+							case static_cast<CharT>('\''):
+							case static_cast<CharT>('('):
+							case static_cast<CharT>(')'):
+								if(!(couldBe &= ~2))
+									URISchemeRegistry::illegalURIHead(specifier, offset);
+								break;
+							default:
+								break;
+						}
+						break;
+					case CC_ILLEGAL:
+						if(c == static_cast<CharT>('%')) {
+							if(!(couldBe &= ~2))
+								URISchemeRegistry::illegalURIHead(specifier, offset);
+							break;
+						}
+					default:
+						URISchemeRegistry::illegalURIHead(specifier, offset);
+				}
+			}
+			if(!(couldBe & 1))
+				URISchemeRegistry::illegalURIHead(specifier, offset);
+			return URISchemeRegistry::makeRelativeURI(specifier);
+		}
 
 	};
 

@@ -3,28 +3,18 @@
 
 #include <redstrain/util/types.hpp>
 
-#include "InvalidURIError.hpp"
+#include "InvalidURIPartError.hpp"
 
 namespace redengine {
 namespace vfs {
 
-	class REDSTRAIN_VFS_API URIEscapeError : public InvalidURIError {
-
-	  private:
-		const util::MemorySize escapeOffset;
-
-	  protected:
-		const util::MemorySize escapeOffset32;
+	class REDSTRAIN_VFS_API URIEscapeError : public InvalidURIPartError {
 
 	  public:
 		URIEscapeError(const std::string&, util::MemorySize);
 		URIEscapeError(const text::String16&, util::MemorySize);
 		URIEscapeError(const text::String32&, util::MemorySize);
 		URIEscapeError(const URIEscapeError&);
-
-		inline util::MemorySize getEscapeOffset() const {
-			return escapeOffset;
-		}
 
 		REDSTRAIN_DECLARE_ABSTRACT_ERROR(URIEscapeError)
 

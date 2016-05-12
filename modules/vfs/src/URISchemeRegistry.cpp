@@ -9,8 +9,9 @@
 #include <redstrain/platform/ProviderLocker.hpp>
 
 #include "URIScheme.hpp"
+#include "EmptyURIError.hpp"
 #include "URISchemeRegistry.hpp"
-#include "MissingURISchemeError.hpp"
+#include "IllegalURIHeadError.hpp"
 #include "UnhandeledURISchemeError.hpp"
 
 using std::string;
@@ -201,19 +202,51 @@ namespace vfs {
 
 #define makeNewURI(bits, stype, ctype) \
 	URI* URISchemeRegistry::newURI(const stype& specifier) const { \
-		stype::size_type pos = specifier.find(static_cast<ctype>(':')); \
-		if(pos == stype::npos) \
-			throw MissingURISchemeError(specifier); \
-		stype ss(specifier.substr(static_cast<stype::size_type>(0u), pos)); \
-		URIScheme* parser = resolveScheme(ss); \
-		if(!parser) \
-			throw UnhandeledURISchemeError(ss); \
-		return parser->newURI(specifier, pos + static_cast<stype::size_type>(1u)); \
+		return parseURIHead<ctype>(specifier); \
 	}
 
 	makeNewURI(8, string, char)
 	makeNewURI(16, String16, Char16)
 	makeNewURI(32, String32, Char32)
+
+	URI* URISchemeRegistry::makeRelativeURI(const string& specifier) {
+		return URISchemeRegistry::makeRelativeURI(Transcode::utf8ToBMP(specifier));
+	}
+
+	URI* URISchemeRegistry::makeRelativeURI(const String16& specifier) {
+		if(specifier.empty())
+			throw EmptyURIError();
+		//TODO
+		return NULL;
+	}
+
+	URI* URISchemeRegistry::makeRelativeURI(const String32& specifier) {
+		UTF16Encoder16 utf16;
+		return URISchemeRegistry::makeRelativeURI(Transcode::transcodeShortString2<Char32, Char16>(specifier,
+				utf16));
+	}
+
+#define makeMakeAbsoluteURI(bits, stype) \
+	URI* URISchemeRegistry::makeAbsoluteURI(const stype& specifier, stype::size_type colonPosition) const { \
+		stype ss(specifier.substr(static_cast<stype::size_type>(0u), colonPosition)); \
+		URIScheme* parser = resolveScheme(ss); \
+		if(!parser) \
+			throw UnhandeledURISchemeError(ss); \
+		return parser->newURI(specifier, colonPosition + static_cast<stype::size_type>(1u)); \
+	}
+
+	makeMakeAbsoluteURI(8, string)
+	makeMakeAbsoluteURI(16, String16)
+	makeMakeAbsoluteURI(32, String32)
+
+#define makeIllegalURIHead(stype) \
+	void URISchemeRegistry::illegalURIHead(const stype& specifier, stype::size_type offset) { \
+		throw IllegalURIHeadError(specifier, offset); \
+	}
+
+	makeIllegalURIHead(string)
+	makeIllegalURIHead(String16)
+	makeIllegalURIHead(String32)
 
 }}
 
