@@ -115,4 +115,27 @@ namespace text {
 			throw IllegalCodeError();
 	}
 
+	MemorySize UTF16Encoder8::encodeSingleChar(Char32 input, char* output, ByteOrder byteOrder) {
+		union {
+			char buffer8[4];
+			Char16 buffer16[2];
+		} buffer;
+		MemorySize pairs = UTF16Encoder16::encodeSingleChar(input, buffer.buffer16), u;
+		if(byteOrder == BO_LITTLE_ENDIAN) {
+#if REDSTRAIN_PLATFORM_ENDIANNESS == REDSTRAIN_PLATFORM_BIG_ENDIAN
+			for(u = static_cast<MemorySize>(0u); u < pairs; ++u)
+				buffer.buffer16[u] = REDSTRAIN_PLATFORM_SWAB16(buffer.buffer16[u]);
+#endif /* big endian platform */
+		}
+		else {
+#if REDSTRAIN_PLATFORM_ENDIANNESS == REDSTRAIN_PLATFORM_LITTLE_ENDIAN
+			for(u = static_cast<MemorySize>(0u); u < pairs; ++u)
+				buffer.buffer16[u] = REDSTRAIN_PLATFORM_SWAB16(buffer.buffer16[u]);
+#endif /* little endian platform */
+		}
+		MemorySize bytes = pairs * static_cast<MemorySize>(2u);
+		memcpy(output, buffer.buffer8, static_cast<size_t>(bytes));
+		return bytes;
+	}
+
 }}

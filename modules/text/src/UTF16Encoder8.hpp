@@ -55,6 +55,8 @@ namespace text {
 				char*, util::MemorySize, util::MemorySize&);
 		virtual void endCodeUnit();
 
+		static util::MemorySize encodeSingleChar(Char32, char*, util::ByteOrder);
+
 	};
 
 }}

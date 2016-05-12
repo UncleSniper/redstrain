@@ -159,4 +159,30 @@ namespace text {
 			throw IllegalCodeError();
 	}
 
+	MemorySize UTF16Decoder8::decodeSingleChar(const char* input, MemorySize insize,
+			Char32& output, ByteOrder byteOrder) {
+		if(insize > static_cast<MemorySize>(4u))
+			insize = static_cast<MemorySize>(4u);
+		union {
+			char buffer8[4];
+			Char16 buffer16[2];
+		} buffer;
+		memcpy(buffer.buffer8, input, static_cast<size_t>(insize));
+		MemorySize pairs = insize / static_cast<MemorySize>(2u), u;
+		if(byteOrder == BO_LITTLE_ENDIAN) {
+#if REDSTRAIN_PLATFORM_ENDIANNESS == REDSTRAIN_PLATFORM_BIG_ENDIAN
+			for(u = static_cast<MemorySize>(0u); u < pairs; ++u)
+				buffer.buffer16[u] = REDSTRAIN_PLATFORM_SWAB16(buffer.buffer16[u]);
+#endif /* big endian platform */
+		}
+		else {
+#if REDSTRAIN_PLATFORM_ENDIANNESS == REDSTRAIN_PLATFORM_LITTLE_ENDIAN
+			for(u = static_cast<MemorySize>(0u); u < pairs; ++u)
+				buffer.buffer16[u] = REDSTRAIN_PLATFORM_SWAB16(buffer.buffer16[u]);
+#endif /* little endian platform */
+		}
+		MemorySize consumed = UTF16Decoder16::decodeSingleChar(buffer.buffer16, pairs, output);
+		return consumed * static_cast<MemorySize>(2u);
+	}
+
 }}

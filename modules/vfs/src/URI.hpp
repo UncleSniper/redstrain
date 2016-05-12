@@ -6,7 +6,8 @@
 #include <redstrain/text/types.hpp>
 
 #include "URIAcquisition.hpp"
-#include "api.hpp"
+#include "InvalidURIEscapeError.hpp"
+#include "IncompleteURIEscapeError.hpp"
 
 namespace redengine {
 namespace vfs {
@@ -17,6 +18,44 @@ namespace vfs {
 
 	  private:
 		static const char HEX_DIGITS[16];
+
+	  private:
+		template<typename RenditionCharT>
+		static unsigned decodeHexDigit(
+			const std::basic_string<RenditionCharT>& fullURI,
+			util::MemorySize subjectOffset,
+			RenditionCharT digit
+		) {
+			switch(digit) {
+				case static_cast<RenditionCharT>('0'):
+				case static_cast<RenditionCharT>('1'):
+				case static_cast<RenditionCharT>('2'):
+				case static_cast<RenditionCharT>('3'):
+				case static_cast<RenditionCharT>('4'):
+				case static_cast<RenditionCharT>('5'):
+				case static_cast<RenditionCharT>('6'):
+				case static_cast<RenditionCharT>('7'):
+				case static_cast<RenditionCharT>('8'):
+				case static_cast<RenditionCharT>('9'):
+					return static_cast<unsigned>(digit - static_cast<RenditionCharT>('0'));
+				case static_cast<RenditionCharT>('a'):
+				case static_cast<RenditionCharT>('b'):
+				case static_cast<RenditionCharT>('c'):
+				case static_cast<RenditionCharT>('d'):
+				case static_cast<RenditionCharT>('e'):
+				case static_cast<RenditionCharT>('f'):
+					return static_cast<unsigned>(digit - static_cast<RenditionCharT>('a')) + 10u;
+				case static_cast<RenditionCharT>('A'):
+				case static_cast<RenditionCharT>('B'):
+				case static_cast<RenditionCharT>('C'):
+				case static_cast<RenditionCharT>('D'):
+				case static_cast<RenditionCharT>('E'):
+				case static_cast<RenditionCharT>('F'):
+					return static_cast<unsigned>(digit - static_cast<RenditionCharT>('A')) + 10u;
+				default:
+					throw InvalidURIEscapeError(fullURI, subjectOffset);
+			}
+		}
 
 	  public:
 		URI();
@@ -158,19 +197,59 @@ namespace vfs {
 			}
 		}
 
-		/*TODO
 		template<typename RenditionCharT, typename OriginalCharT>
 		static void unescape(
+			const std::basic_string<RenditionCharT>& fullURI,
+			util::MemorySize subjectOffset,
 			const std::basic_string<RenditionCharT>& rendition,
-			std::basic_string<OriginalCharT>& original
-		)
-		*/
+			std::basic_string<OriginalCharT>& original,
+			void (*byteizeChar)(RenditionCharT, std::string&),
+			void (*decodeOriginal)(const std::string&, std::basic_string<OriginalCharT>&)
+		) {
+			std::string octets;
+			typename std::basic_string<RenditionCharT>::const_iterator
+					rbegin(rendition.begin()), rend(rendition.end());
+			for(; rbegin != rend; ++rbegin, ++subjectOffset) {
+				if(*rbegin == static_cast<RenditionCharT>('%')) {
+					++rbegin, ++subjectOffset;
+					if(rbegin == rend)
+						throw IncompleteURIEscapeError(fullURI, subjectOffset);
+					unsigned code = URI::decodeHexDigit<RenditionCharT>(fullURI, subjectOffset, *rbegin) << 4;
+					++rbegin, ++subjectOffset;
+					if(rbegin == rend)
+						throw IncompleteURIEscapeError(fullURI, subjectOffset);
+					code |= URI::decodeHexDigit<RenditionCharT>(fullURI, subjectOffset, *rbegin);
+					octets += static_cast<char>(static_cast<unsigned char>(code));
+				}
+				else
+					byteizeChar(*rbegin, octets);
+			}
+			decodeOriginal(octets, original);
+		}
 
 		static void byteizeID(const std::string&, std::string&);
 		static void byteizeUTF8(const text::String16&, std::string&);
 		static void byteizeUTF16BE(const text::String32&, std::string&);
 		static void byteizeUTF16LE(const text::String32&, std::string&);
 		static void byteizeUTF16UTF8(const text::String32&, std::string&);
+
+		static void byteizeCharID(char, std::string&);
+		static void byteizeCharUTF8(text::Char16, std::string&);
+		static void byteizeCharUTF16BE(text::Char32, std::string&);
+		static void byteizeCharUTF16LE(text::Char32, std::string&);
+		static void byteizeCharUTF16UTF8(text::Char32, std::string&);
+
+		static void renderID(const std::string&, std::string&);
+		static void renderUTF8(const std::string&, text::String16&);
+		static void renderUTF16BE(const std::string&, text::String32&);
+		static void renderUTF16LE(const std::string&, text::String32&);
+		static void renderUTF8UTF16(const std::string&, text::String32&);
+
+		static util::MemorySize renderCharID(const char*, util::MemorySize, char&);
+		static util::MemorySize renderCharUTF8(const char*, util::MemorySize, text::Char16&);
+		static util::MemorySize renderCharUTF16BE(const char*, util::MemorySize, text::Char32&);
+		static util::MemorySize renderCharUTF16LE(const char*, util::MemorySize, text::Char32&);
+		static util::MemorySize renderCharUTF8UTF16(const char*, util::MemorySize, text::Char32&);
 
 	};
 

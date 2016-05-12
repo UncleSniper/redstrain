@@ -50,6 +50,8 @@ namespace text {
 				Char32*, util::MemorySize, util::MemorySize&);
 		virtual void endCodeUnit();
 
+		static util::MemorySize decodeSingleChar(const char*, util::MemorySize, Char32&, util::ByteOrder);
+
 	};
 
 }}
