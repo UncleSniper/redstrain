@@ -197,16 +197,14 @@ namespace vfs {
 			}
 		}
 
-		template<typename RenditionCharT, typename OriginalCharT>
+		template<typename RenditionCharT>
 		static void unescape(
 			const std::basic_string<RenditionCharT>& fullURI,
 			util::MemorySize subjectOffset,
 			const std::basic_string<RenditionCharT>& rendition,
-			std::basic_string<OriginalCharT>& original,
-			void (*byteizeChar)(RenditionCharT, std::string&),
-			void (*decodeOriginal)(const std::string&, std::basic_string<OriginalCharT>&)
+			std::string& octets,
+			void (*byteizeChar)(RenditionCharT, std::string&)
 		) {
-			std::string octets;
 			typename std::basic_string<RenditionCharT>::const_iterator
 					rbegin(rendition.begin()), rend(rendition.end());
 			for(; rbegin != rend; ++rbegin, ++subjectOffset) {
@@ -224,6 +222,19 @@ namespace vfs {
 				else
 					byteizeChar(*rbegin, octets);
 			}
+		}
+
+		template<typename RenditionCharT, typename OriginalCharT>
+		static void unescape(
+			const std::basic_string<RenditionCharT>& fullURI,
+			util::MemorySize subjectOffset,
+			const std::basic_string<RenditionCharT>& rendition,
+			std::basic_string<OriginalCharT>& original,
+			void (*byteizeChar)(RenditionCharT, std::string&),
+			void (*decodeOriginal)(const std::string&, std::basic_string<OriginalCharT>&)
+		) {
+			std::string octets;
+			URI::unescape<RenditionCharT>(fullURI, subjectOffset, rendition, octets, byteizeChar);
 			decodeOriginal(octets, original);
 		}
 
