@@ -407,6 +407,7 @@ namespace text {
 								(*(state.items + state.itemIndex))->template as<ctype>(); \
 							++state.format; \
 							++state.fmtindex; \
+							++state.itemIndex; \
 							return;
 					#define REDSTRAIN_FORMATTER_INT_CONVERSION(cconst, ctype) \
 						REDSTRAIN_FORMATTER_NUMERIC_CONVERSION(cconst, ctype, IntegerFormatterT, formatInteger)
@@ -449,6 +450,7 @@ namespace text {
 						}
 						++state.format;
 						++state.fmtindex;
+						++state.itemIndex;
 						return;
 					case FormatRenditionT::GENERATOR_INITIATOR:
 						++state.fmtindex;

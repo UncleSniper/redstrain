@@ -6,7 +6,7 @@
 namespace redengine {
 namespace error {
 
-	class REDSTRAIN_ERROR_API IOError : virtual public Error {
+	class REDSTRAIN_ERROR_API IOError : public virtual Error {
 
 	  public:
 		IOError();

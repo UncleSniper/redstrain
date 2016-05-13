@@ -8,7 +8,7 @@
 namespace redengine {
 namespace vfs {
 
-	class REDSTRAIN_VFS_API VFSError : virtual public error::Error {
+	class REDSTRAIN_VFS_API VFSError : public virtual error::Error {
 
 	  public:
 		VFSError();

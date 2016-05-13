@@ -16,6 +16,13 @@ namespace vfs {
 
 	class REDSTRAIN_VFS_API URI {
 
+	  public:
+		enum PathMode {
+			PM_NONE,
+			PM_ABSOLUTE,
+			PM_RELATIVE
+		};
+
 	  private:
 		static const char HEX_DIGITS[16];
 
@@ -114,7 +121,19 @@ namespace vfs {
 		virtual text::String16 getHost16() const = 0;
 		virtual text::String32 getHost32() const = 0;
 
-		virtual uint16_t getPort() const = 0;
+		virtual std::string getRawHostName8() const = 0;
+		virtual text::String16 getRawHostName16() const = 0;
+		virtual text::String32 getRawHostName32() const = 0;
+		virtual std::string getHostName() const = 0;
+		virtual std::string getHostName8() const = 0;
+		virtual text::String16 getHostName16() const = 0;
+		virtual text::String32 getHostName32() const = 0;
+
+		virtual std::string getRawPort8() const = 0;
+		virtual text::String16 getRawPort16() const = 0;
+		virtual text::String32 getRawPort32() const = 0;
+		virtual std::string getPort() const = 0;
+		virtual uint16_t getPortNumber() const = 0;
 
 		virtual std::string getRawPath8() const = 0;
 		virtual text::String16 getRawPath16() const = 0;
@@ -144,6 +163,8 @@ namespace vfs {
 		virtual text::String16 toString16() const = 0;
 		virtual text::String32 toString32() const = 0;
 
+		virtual bool isRelativeReference() const;
+		virtual PathMode getPathMode() const = 0;
 		virtual URI* normalize() const = 0;
 		virtual URI* relativize(const URI&) const = 0;
 		virtual URI* resolve(const URI&) const = 0;

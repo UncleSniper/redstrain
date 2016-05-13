@@ -36,6 +36,10 @@ namespace vfs {
 
 	URI::~URI() {}
 
+	bool URI::isRelativeReference() const {
+		return false;
+	}
+
 	/* reserved = ";" | "/" | "?" | ":" | "@" | "&" | "=" | +"+" | "$" | ","
 	 * unreserved = alphanum | mark
 	 * mark = "-" | "_" | "." | "!" | "~" | "*" | "'" | "(" | ")"
