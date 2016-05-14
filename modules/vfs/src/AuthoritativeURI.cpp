@@ -63,7 +63,9 @@ namespace vfs {
 	}
 
 	AuthoritativeURI::AuthoritativeURI(const AuthoritativeURI& uri) : URI(uri), username(uri.username),
-			password(uri.password), hostname(uri.hostname), port(uri.port), portNumber(uri.portNumber) {}
+			password(uri.password), hostname(uri.hostname), port(uri.port), portNumber(uri.portNumber),
+			usernameOctets(uri.usernameOctets), passwordOctets(uri.passwordOctets),
+			hostnameOctets(uri.hostnameOctets), portOctets(uri.portOctets) {}
 
 	AuthoritativeURI::~AuthoritativeURI() {}
 
@@ -106,16 +108,19 @@ namespace vfs {
 		URI::unescape<Char16>(fullURI, portOffset, port, portOctets, byteizeChar);
 	}
 
-	void AuthoritativeURI::authoritativeDecodeOriginal(const string&, string&) const {
-		//TODO
+	void AuthoritativeURI::authoritativeDecodeOriginal(const string& octets, string& original) const {
+		original = octets;
 	}
 
-	void AuthoritativeURI::authoritativeDecodeOriginal(const string&, String16&) const {
-		//TODO
+	void AuthoritativeURI::authoritativeDecodeOriginal(const string& octets, String16& original) const {
+		UTF8Decoder16 utf8;
+		Transcode::transcodeString2<char, Char16>(octets, original, utf8);
 	}
 
-	void AuthoritativeURI::authoritativeDecodeOriginal(const string&, String32&) const {
-		//TODO
+	void AuthoritativeURI::authoritativeDecodeOriginal(const string& octets, String32& original) const {
+		UTF8Decoder16 utf8;
+		UTF16Decoder16 utf16;
+		Transcode::transcodeString3<char, Char16, Char32>(octets, original, utf8, utf16);
 	}
 
 	static const Formatter<char> formatter8;
