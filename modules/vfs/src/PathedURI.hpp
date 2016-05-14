@@ -34,6 +34,8 @@ namespace vfs {
 		virtual text::String16 getPath16() const;
 		virtual text::String32 getPath32() const;
 
+		virtual PathMode getPathMode() const;
+
 	};
 
 }}

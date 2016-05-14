@@ -75,4 +75,10 @@ namespace vfs {
 	makeGetOriginal(16, String16)
 	makeGetOriginal(32, String32)
 
+	URI::PathMode PathedURI::getPathMode() const {
+		if(path.empty())
+			return PM_NONE;
+		return path[static_cast<String16::size_type>(0u)] == static_cast<Char16>('/') ? PM_ABSOLUTE : PM_RELATIVE;
+	}
+
 }}

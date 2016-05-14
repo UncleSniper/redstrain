@@ -9,6 +9,7 @@ namespace vfs {
 	class REDSTRAIN_VFS_API QueriedURI : public virtual URI {
 
 	  protected:
+		bool queryDefined;
 		text::String16 query;
 		std::string queryOctets;
 
@@ -21,11 +22,12 @@ namespace vfs {
 		virtual void queriedDecodeOriginal(const std::string&, text::String32&) const;
 
 	  public:
-		QueriedURI();
+		QueriedURI(bool);
 		QueriedURI(const text::String16&);
 		QueriedURI(const QueriedURI&);
 		virtual ~QueriedURI();
 
+		virtual bool hasQuery() const;
 		virtual std::string getRawQuery8() const;
 		virtual text::String16 getRawQuery16() const;
 		virtual text::String32 getRawQuery32() const;

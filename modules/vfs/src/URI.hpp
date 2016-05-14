@@ -1,6 +1,7 @@
 #ifndef REDSTRAIN_MOD_VFS_URI_HPP
 #define REDSTRAIN_MOD_VFS_URI_HPP
 
+#include <deque>
 #include <stdint.h>
 #include <redstrain/io/InputStream.hpp>
 #include <redstrain/text/types.hpp>
@@ -64,11 +65,84 @@ namespace vfs {
 			}
 		}
 
+		template<typename CharT>
+		static void decomposePath(const std::basic_string<CharT>& path,
+				std::deque<std::basic_string<CharT> >& segmentStack,
+				typename std::basic_string<CharT>::size_type& stackLength,
+				bool& wasAbsolute) {
+			typedef typename std::basic_string<CharT>::size_type Index;
+			if(path.empty()) {
+				wasAbsolute = false;
+				return;
+			}
+			Index segmentStart = static_cast<Index>(0u), scanPos, length = path.length();
+			wasAbsolute = path[segmentStart] == static_cast<CharT>('/');
+			for(scanPos = static_cast<Index>(0u); scanPos <= length; ++scanPos) {
+				if(scanPos == length || path[scanPos] == static_cast<CharT>('/')) {
+					if(scanPos > segmentStart) {
+						Index segmentLength = scanPos - segmentStart;
+						if(segmentLength == static_cast<Index>(1u)
+								&& path[segmentStart] == static_cast<CharT>('.')) {
+							// ignore '.' segment
+						}
+						else if(stackLength && segmentLength == static_cast<Index>(2u)
+								&& path[segmentStart] == static_cast<CharT>('.')
+								&& path[segmentStart + static_cast<Index>(1u)] == static_cast<CharT>('.')) {
+							stackLength -= segmentStack.back().length();
+							segmentStack.pop_back();
+							if(!segmentStack.empty())
+								--stackLength;
+						}
+						else {
+							if(stackLength)
+								++stackLength;
+							segmentStack.push_back(path.substr(segmentStart, segmentLength));
+							stackLength += segmentLength;
+						}
+					}
+					segmentStart = scanPos + static_cast<Index>(1u);
+				}
+			}
+		}
+
+		template<typename CharT>
+		static void composePath(std::deque<std::basic_string<CharT> >& segmentStack,
+				typename std::basic_string<CharT>::size_type& stackLength,
+				bool absolute,
+				std::basic_string<CharT>& path) {
+			typedef typename std::basic_string<CharT>::size_type Index;
+			if(absolute) {
+				path.reserve(stackLength + static_cast<Index>(1u));
+				path += static_cast<CharT>('/');
+			}
+			else if(!stackLength)
+				path += static_cast<CharT>('.');
+			if(stackLength) {
+				if(segmentStack.front().find(static_cast<CharT>(':'))) {
+					path.reserve(path.length() + stackLength + static_cast<Index>(2u));
+					path += static_cast<CharT>('.');
+					path += static_cast<CharT>('/');
+				}
+				else
+					path.reserve(path.length() + stackLength);
+				bool first = true;
+				do {
+					if(first)
+						first = false;
+					else
+						path += '/';
+					path += segmentStack.front();
+					segmentStack.pop_front();
+				} while(!segmentStack.empty());
+			}
+		}
+
 	  public:
 		URI();
 		URI(const URI&);
 		virtual ~URI();
 
+		virtual bool hasScheme() const = 0;
 		virtual std::string getScheme8() const = 0;
 		virtual text::String16 getScheme16() const = 0;
 		virtual text::String32 getScheme32() const = 0;
@@ -81,6 +155,7 @@ namespace vfs {
 		virtual text::String16 getSchemeSpecificPart16() const = 0;
 		virtual text::String32 getSchemeSpecificPart32() const = 0;
 
+		virtual bool hasAuthority() const = 0;
 		virtual std::string getRawAuthority8() const = 0;
 		virtual text::String16 getRawAuthority16() const = 0;
 		virtual text::String32 getRawAuthority32() const = 0;
@@ -143,6 +218,7 @@ namespace vfs {
 		virtual text::String16 getPath16() const = 0;
 		virtual text::String32 getPath32() const = 0;
 
+		virtual bool hasQuery() const = 0;
 		virtual std::string getRawQuery8() const = 0;
 		virtual text::String16 getRawQuery16() const = 0;
 		virtual text::String32 getRawQuery32() const = 0;
@@ -151,6 +227,7 @@ namespace vfs {
 		virtual text::String16 getQuery16() const = 0;
 		virtual text::String32 getQuery32() const = 0;
 
+		virtual bool hasFragment() const = 0;
 		virtual std::string getRawFragment8() const = 0;
 		virtual text::String16 getRawFragment16() const = 0;
 		virtual text::String32 getRawFragment32() const = 0;
@@ -164,11 +241,15 @@ namespace vfs {
 		virtual text::String32 toString32() const = 0;
 
 		virtual bool isRelativeReference() const;
+		virtual bool isOpaque() const = 0;
 		virtual PathMode getPathMode() const = 0;
 		virtual URI* normalize() const = 0;
 		virtual URI* relativize(const URI&) const = 0;
 		virtual URI* resolve(const URI&) const = 0;
+		virtual URI* clone() const = 0;
 
+		virtual bool isRemote() const = 0;
+		virtual bool isLocator() const = 0;
 		virtual URIAcquisition<io::InputStream<char> >* acquireResource() const = 0;
 		virtual URIAcquisition<VFS>* acquireVFS() const = 0;
 
@@ -282,6 +363,94 @@ namespace vfs {
 		static util::MemorySize renderCharUTF16BE(const char*, util::MemorySize, text::Char32&);
 		static util::MemorySize renderCharUTF16LE(const char*, util::MemorySize, text::Char32&);
 		static util::MemorySize renderCharUTF8UTF16(const char*, util::MemorySize, text::Char32&);
+
+		template<typename CharT>
+		static void normalizePath(const std::basic_string<CharT>& oldPath, std::basic_string<CharT>& newPath) {
+			typedef std::basic_string<CharT> String;
+			typedef typename String::size_type Index;
+			newPath.clear();
+			if(oldPath.empty())
+				return;
+			bool wasAbsolute;
+			std::deque<String> segmentStack;
+			Index stackLength = static_cast<Index>(0u);
+			URI::decomposePath<CharT>(oldPath, segmentStack, stackLength, wasAbsolute);
+			URI::composePath<CharT>(segmentStack, stackLength, wasAbsolute, newPath);
+		}
+
+		template<typename CharT>
+		static void relativizePath(const std::basic_string<CharT>& basePath,
+				const std::basic_string<CharT>& childPath, std::basic_string<CharT>& newPath) {
+			typedef std::basic_string<CharT> String;
+			typedef typename String::size_type Index;
+			if(childPath.empty()) {
+				newPath.clear();
+				newPath += static_cast<CharT>('.');
+				return;
+			}
+			if(basePath.empty()) {
+				URI::normalizePath<CharT>(childPath, newPath);
+				return;
+			}
+			newPath.clear();
+			bool wasBaseAbsolute, wasChildAbsolute, hadChildTerminalSlash
+					= childPath[childPath.length() - static_cast<Index>(1u)];
+			std::deque<String> baseSegmentStack, childSegmentStack;
+			Index baseStackLength = static_cast<Index>(0u), childStackLength = static_cast<Index>(0u);
+			URI::decomposePath<CharT>(basePath, baseSegmentStack, baseStackLength, wasBaseAbsolute);
+			URI::decomposePath<CharT>(childPath, childSegmentStack, childStackLength, wasChildAbsolute);
+			if(wasChildAbsolute != wasBaseAbsolute) {
+				URI::composePath<CharT>(childSegmentStack, childStackLength, wasChildAbsolute, newPath);
+				return;
+			}
+			typename std::deque<String>::const_iterator
+					bbegin(baseSegmentStack.begin()), bend(baseSegmentStack.end());
+			typename std::deque<String>::iterator
+					cbegin(childSegmentStack.begin()), cend(childSegmentStack.end());
+			Index removedLength = static_cast<Index>(0u);
+			for(; bbegin != bend; ++bbegin, ++cbegin) {
+				if(cbegin == cend || *bbegin != *cbegin) {
+					URI::composePath<CharT>(childSegmentStack, childStackLength, wasChildAbsolute, newPath);
+					return;
+				}
+				if(removedLength)
+					++removedLength;
+				removedLength += bbegin->length();
+			}
+			childSegmentStack.erase(childSegmentStack.begin(), cbegin);
+			if(childSegmentStack.empty())
+				childStackLength = static_cast<Index>(0u);
+			else
+				childStackLength -= removedLength + static_cast<Index>(1u);
+			URI::composePath<CharT>(childSegmentStack, childStackLength, wasChildAbsolute, newPath);
+			if(hadChildTerminalSlash)
+				newPath += static_cast<CharT>('/');
+		}
+
+		template<typename CharT>
+		static void resolvePath(const std::basic_string<CharT>& basePath,
+				const std::basic_string<CharT>& childPath, std::basic_string<CharT>& newPath) {
+			typedef std::basic_string<CharT> String;
+			typedef typename String::size_type Index;
+			if(childPath.empty()) {
+				URI::normalizePath<CharT>(basePath, newPath);
+				return;
+			}
+			newPath.clear();
+			bool wasBaseAbsolute, wasChildAbsolute, hadBaseTerminalSlash
+					= !basePath.empty() && basePath[basePath.length() - static_cast<Index>(1u)];
+			std::deque<String> segmentStack;
+			Index stackLength = static_cast<Index>(0u);
+			URI::decomposePath<CharT>(basePath, segmentStack, stackLength, wasBaseAbsolute);
+			if(stackLength && !hadBaseTerminalSlash) {
+				stackLength -= segmentStack.back().length();
+				segmentStack.pop_back();
+				if(stackLength)
+					--stackLength;
+			}
+			URI::decomposePath<CharT>(childPath, segmentStack, stackLength, wasChildAbsolute);
+			URI::composePath<CharT>(segmentStack, stackLength, wasBaseAbsolute, newPath);
+		}
 
 	};
 

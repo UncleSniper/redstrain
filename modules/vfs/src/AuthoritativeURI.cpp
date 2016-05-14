@@ -32,37 +32,40 @@ using redengine::io::parseInteger;
 namespace redengine {
 namespace vfs {
 
-	AuthoritativeURI::AuthoritativeURI() : portNumber(static_cast<uint16_t>(0u)) {}
+	AuthoritativeURI::AuthoritativeURI(bool authorityDefined)
+			: authorityDefined(authorityDefined), portNumber(static_cast<uint16_t>(0u)) {}
 
 	AuthoritativeURI::AuthoritativeURI(const String16& hostname)
-			: hostname(hostname), portNumber(static_cast<uint16_t>(0u)) {}
+			: authorityDefined(true), hostname(hostname), portNumber(static_cast<uint16_t>(0u)) {}
 
 	AuthoritativeURI::AuthoritativeURI(const String16& hostname, const String16& port)
-			: hostname(hostname), port(port) {
+			: authorityDefined(true), hostname(hostname), port(port) {
 		parsePort();
 	}
 
 	AuthoritativeURI::AuthoritativeURI(const String16& hostname, uint16_t port)
-			: hostname(hostname), portNumber(port) {
+			: authorityDefined(true), hostname(hostname), portNumber(port) {
 		renderPort();
 	}
 
 	AuthoritativeURI::AuthoritativeURI(const String16& username, const String16& password, const String16& hostname)
-			: username(username), password(password), hostname(hostname), portNumber(static_cast<uint16_t>(0u)) {}
+			: authorityDefined(true), username(username), password(password), hostname(hostname),
+			portNumber(static_cast<uint16_t>(0u)) {}
 
 	AuthoritativeURI::AuthoritativeURI(const String16& username, const String16& password,
 			const String16& hostname, const String16& port)
-			: username(username), password(password), hostname(hostname), port(port) {
+			: authorityDefined(true), username(username), password(password), hostname(hostname), port(port) {
 		parsePort();
 	}
 
 	AuthoritativeURI::AuthoritativeURI(const String16& username, const String16& password,
 			const String16& hostname, uint16_t port)
-			: username(username), password(password), hostname(hostname), portNumber(port) {
+			: authorityDefined(true), username(username), password(password), hostname(hostname), portNumber(port) {
 		renderPort();
 	}
 
-	AuthoritativeURI::AuthoritativeURI(const AuthoritativeURI& uri) : URI(uri), username(uri.username),
+	AuthoritativeURI::AuthoritativeURI(const AuthoritativeURI& uri)
+			: URI(uri), authorityDefined(uri.authorityDefined), username(uri.username),
 			password(uri.password), hostname(uri.hostname), port(uri.port), portNumber(uri.portNumber),
 			usernameOctets(uri.usernameOctets), passwordOctets(uri.passwordOctets),
 			hostnameOctets(uri.hostnameOctets), portOctets(uri.portOctets) {}
@@ -121,6 +124,10 @@ namespace vfs {
 		UTF8Decoder16 utf8;
 		UTF16Decoder16 utf16;
 		Transcode::transcodeString3<char, Char16, Char32>(octets, original, utf8, utf16);
+	}
+
+	bool AuthoritativeURI::hasAuthority() const {
+		return authorityDefined;
 	}
 
 	static const Formatter<char> formatter8;

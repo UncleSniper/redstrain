@@ -17,11 +17,12 @@ using redengine::text::UTF16Decoder16;
 namespace redengine {
 namespace vfs {
 
-	QueriedURI::QueriedURI() {}
+	QueriedURI::QueriedURI(bool queryDefined) : queryDefined(queryDefined) {}
 
-	QueriedURI::QueriedURI(const String16& query) : query(query) {}
+	QueriedURI::QueriedURI(const String16& query) : queryDefined(true), query(query) {}
 
-	QueriedURI::QueriedURI(const QueriedURI& uri) : URI(uri), query(uri.query), queryOctets(uri.queryOctets) {}
+	QueriedURI::QueriedURI(const QueriedURI& uri) : URI(uri), queryDefined(uri.queryDefined), query(uri.query),
+			queryOctets(uri.queryOctets) {}
 
 	QueriedURI::~QueriedURI() {}
 
@@ -43,6 +44,10 @@ namespace vfs {
 		UTF8Decoder16 utf8;
 		UTF16Decoder16 utf16;
 		Transcode::transcodeString3<char, Char16, Char32>(octets, original, utf8, utf16);
+	}
+
+	bool QueriedURI::hasQuery() const {
+		return queryDefined;
 	}
 
 	string QueriedURI::getRawQuery8() const {

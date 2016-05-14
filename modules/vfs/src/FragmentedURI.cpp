@@ -17,12 +17,12 @@ using redengine::text::UTF16Decoder16;
 namespace redengine {
 namespace vfs {
 
-	FragmentedURI::FragmentedURI() {}
+	FragmentedURI::FragmentedURI(bool fragmentDefined) : fragmentDefined(fragmentDefined) {}
 
-	FragmentedURI::FragmentedURI(const String16& fragment) : fragment(fragment) {}
+	FragmentedURI::FragmentedURI(const String16& fragment) : fragmentDefined(true), fragment(fragment) {}
 
-	FragmentedURI::FragmentedURI(const FragmentedURI& uri)
-			: URI(uri), fragment(uri.fragment), fragmentOctets(uri.fragmentOctets) {}
+	FragmentedURI::FragmentedURI(const FragmentedURI& uri) : URI(uri), fragmentDefined(uri.fragmentDefined),
+			fragment(uri.fragment), fragmentOctets(uri.fragmentOctets) {}
 
 	FragmentedURI::~FragmentedURI() {}
 
@@ -44,6 +44,10 @@ namespace vfs {
 		UTF8Decoder16 utf8;
 		UTF16Decoder16 utf16;
 		Transcode::transcodeString3<char, Char16, Char32>(octets, original, utf8, utf16);
+	}
+
+	bool FragmentedURI::hasFragment() const {
+		return fragmentDefined;
 	}
 
 	string FragmentedURI::getRawFragment8() const {

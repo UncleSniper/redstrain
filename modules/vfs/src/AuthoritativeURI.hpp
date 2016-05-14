@@ -9,6 +9,7 @@ namespace vfs {
 	class REDSTRAIN_VFS_API AuthoritativeURI : public virtual URI {
 
 	  protected:
+		bool authorityDefined;
 		text::String16 username, password, hostname, port;
 		uint16_t portNumber;
 		std::string usernameOctets, passwordOctets, hostnameOctets, portOctets;
@@ -27,7 +28,7 @@ namespace vfs {
 		virtual void authoritativeDecodeOriginal(const std::string&, text::String32&) const;
 
 	  public:
-		AuthoritativeURI();
+		AuthoritativeURI(bool);
 		AuthoritativeURI(const text::String16&);
 		AuthoritativeURI(const text::String16&, const text::String16&);
 		AuthoritativeURI(const text::String16&, uint16_t);
@@ -37,6 +38,7 @@ namespace vfs {
 		AuthoritativeURI(const AuthoritativeURI&);
 		virtual ~AuthoritativeURI();
 
+		virtual bool hasAuthority() const;
 		virtual std::string getRawAuthority8() const;
 		virtual text::String16 getRawAuthority16() const;
 		virtual text::String32 getRawAuthority32() const;

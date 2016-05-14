@@ -1,6 +1,4 @@
 #include <redstrain/text/Transcode.hpp>
-#include <redstrain/text/UTF8Decoder.hpp>
-#include <redstrain/text/UTF16Decoder16.hpp>
 
 #include "AbstractURI.hpp"
 
@@ -10,8 +8,6 @@ using redengine::text::Char32;
 using redengine::text::String16;
 using redengine::text::String32;
 using redengine::text::Transcode;
-using redengine::text::UTF8Decoder16;
-using redengine::text::UTF16Decoder16;
 
 namespace redengine {
 namespace vfs {
@@ -22,6 +18,10 @@ namespace vfs {
 
 	AbstractURI::~AbstractURI() {}
 
+	bool AbstractURI::hasScheme() const {
+		return !scheme.empty();
+	}
+
 	string AbstractURI::getScheme8() const {
 		return scheme;
 	}
@@ -31,9 +31,7 @@ namespace vfs {
 	}
 
 	String32 AbstractURI::getScheme32() const {
-		UTF8Decoder16 utf8;
-		UTF16Decoder16 utf16;
-		return Transcode::transcodeShortString3<char, Char16, Char32>(scheme, utf8, utf16);
+		return Transcode::utf8ToUnicode(scheme);
 	}
 
 }}

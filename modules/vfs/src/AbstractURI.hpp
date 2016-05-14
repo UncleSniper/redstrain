@@ -16,6 +16,7 @@ namespace vfs {
 		AbstractURI(const AbstractURI&);
 		virtual ~AbstractURI();
 
+		virtual bool hasScheme() const;
 		virtual std::string getScheme8() const;
 		virtual text::String16 getScheme16() const;
 		virtual text::String32 getScheme32() const;

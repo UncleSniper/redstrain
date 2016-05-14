@@ -9,6 +9,7 @@ namespace vfs {
 	class REDSTRAIN_VFS_API FragmentedURI : public virtual URI {
 
 	  protected:
+		bool fragmentDefined;
 		text::String16 fragment;
 		std::string fragmentOctets;
 
@@ -21,11 +22,12 @@ namespace vfs {
 		virtual void fragmentedDecodeOriginal(const std::string&, text::String32&) const;
 
 	  public:
-		FragmentedURI();
+		FragmentedURI(bool);
 		FragmentedURI(const text::String16&);
 		FragmentedURI(const FragmentedURI&);
 		virtual ~FragmentedURI();
 
+		virtual bool hasFragment() const;
 		virtual std::string getRawFragment8() const;
 		virtual text::String16 getRawFragment16() const;
 		virtual text::String32 getRawFragment32() const;
