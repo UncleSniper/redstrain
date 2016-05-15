@@ -8,10 +8,11 @@ namespace vfs {
 
 	class REDSTRAIN_VFS_API AbstractURI : public virtual URI {
 
-	  private:
-		const std::string scheme;
+	  protected:
+		std::string scheme;
 
 	  public:
+		AbstractURI();
 		AbstractURI(const std::string&);
 		AbstractURI(const AbstractURI&);
 		virtual ~AbstractURI();

@@ -12,6 +12,8 @@ using redengine::text::Transcode;
 namespace redengine {
 namespace vfs {
 
+	AbstractURI::AbstractURI() {}
+
 	AbstractURI::AbstractURI(const string& scheme) : scheme(scheme) {}
 
 	AbstractURI::AbstractURI(const AbstractURI& uri) : URI(uri), scheme(uri.scheme) {}

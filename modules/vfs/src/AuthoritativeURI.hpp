@@ -14,11 +14,9 @@ namespace vfs {
 		uint16_t portNumber;
 		std::string usernameOctets, passwordOctets, hostnameOctets, portOctets;
 
-	  private:
+	  protected:
 		void parsePort();
 		void renderPort();
-
-	  protected:
 		void setAuthoritativeOctetsFromRendition(const text::String16&,
 				util::MemorySize, util::MemorySize, util::MemorySize, util::MemorySize,
 				void (*byteizeChar)(text::Char16, std::string&));
