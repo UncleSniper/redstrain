@@ -257,7 +257,6 @@ namespace text {
 	makeGetFactories(Transcoder3216, trc3216reg)
 
 	void CodecManager::registerBuiltins() {
-		ProviderLocker<CodecManager> locker(lockProvider, this);
 		// Encoder16
 		Unref<Encoder16Factory> enc16factory(new DefaultCodecFactory<Encoder16, UTF8Encoder16>);
 		setEncoder16Factory("UTF-8", *enc16factory);
@@ -282,7 +281,6 @@ namespace text {
 		Unref<Transcoder3216Factory> trc3216factory(new DefaultCodecFactory<Transcoder3216, UTF16Encoder16>);
 		setTranscoder3216Factory("UTF-16", *trc3216factory);
 		trc3216factory.set()->unref();
-		locker.release();
 	}
 
 	void CodecManager::registerBlobs() {
@@ -430,6 +428,9 @@ namespace text {
 
 	  public:
 		DefaultCodecManagerSynchronizedSingleton() {}
+
+		DefaultCodecManagerSynchronizedSingleton(const DefaultCodecManagerSynchronizedSingleton& singleton)
+				: SynchronizedSingleton<CodecManager>(singleton) {}
 
 	};
 

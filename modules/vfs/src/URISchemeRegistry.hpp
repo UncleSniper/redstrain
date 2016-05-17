@@ -91,6 +91,8 @@ namespace vfs {
 		URI* newURI(const text::String16&) const;
 		URI* newURI(const text::String32&) const;
 
+		void registerBuiltins();
+
 		template<typename CharT>
 		static CharClass getCharClass(CharT c) {
 			switch(c) {
@@ -212,6 +214,9 @@ namespace vfs {
 				URISchemeRegistry::illegalURIHead(specifier, offset);
 			return URISchemeRegistry::makeRelativeURI(specifier);
 		}
+
+	  public:
+		static URISchemeRegistry& getDefaultRegistry();
 
 	};
 

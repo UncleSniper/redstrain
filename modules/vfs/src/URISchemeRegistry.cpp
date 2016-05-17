@@ -1,21 +1,28 @@
 #ifndef REDSTRAIN_MOD_VFS_URISCHEMEREGISTRY_CPP
 #define REDSTRAIN_MOD_VFS_URISCHEMEREGISTRY_CPP
 
+#include <redstrain/util/Unref.hpp>
+#include <redstrain/util/Delete.hpp>
 #include <redstrain/text/Transcode.hpp>
 #include <redstrain/text/UTF8Encoder.hpp>
 #include <redstrain/text/UTF8Decoder.hpp>
 #include <redstrain/text/UTF16Encoder16.hpp>
 #include <redstrain/text/UTF16Decoder16.hpp>
 #include <redstrain/platform/ProviderLocker.hpp>
+#include <redstrain/platform/MutexLockProvider.hpp>
+#include <redstrain/platform/SynchronizedSingleton.hpp>
 
 #include "RelativeURI.hpp"
 #include "EmptyURIError.hpp"
+#include "FileURIScheme.hpp"
 #include "URISchemeRegistry.hpp"
 #include "IllegalURIHeadError.hpp"
 #include "HierarchicalURIScheme.hpp"
 #include "UnhandeledURISchemeError.hpp"
 
 using std::string;
+using redengine::util::Unref;
+using redengine::util::Delete;
 using redengine::text::Char16;
 using redengine::text::Char32;
 using redengine::text::String16;
@@ -25,6 +32,7 @@ using redengine::text::Encoder16;
 using redengine::text::Decoder16;
 using redengine::text::Encoder32;
 using redengine::text::Decoder32;
+using redengine::platform::Mutex;
 using redengine::text::UTF8Encoder16;
 using redengine::text::UTF8Decoder16;
 using redengine::text::Transcoder1632;
@@ -32,6 +40,8 @@ using redengine::text::Transcoder3216;
 using redengine::text::UTF16Encoder16;
 using redengine::text::UTF16Decoder16;
 using redengine::platform::ProviderLocker;
+using redengine::platform::MutexLockProvider;
+using redengine::platform::SynchronizedSingleton;
 
 namespace redengine {
 namespace vfs {
@@ -250,6 +260,38 @@ namespace vfs {
 	makeIllegalURIHead(string)
 	makeIllegalURIHead(String16)
 	makeIllegalURIHead(String32)
+
+	void URISchemeRegistry::registerBuiltins() {
+		Unref<URIScheme> scheme(new FileURIScheme);
+		setScheme("file", *scheme);
+		scheme.set()->unref();
+	}
+
+	class DefaultURISchemeRegistrySynchronizedSingleton : public SynchronizedSingleton<URISchemeRegistry> {
+
+	  protected:
+		virtual URISchemeRegistry* newInstance() {
+			Delete<URISchemeRegistry> registry(new URISchemeRegistry);
+			registry->registerBuiltins();
+			Delete<Mutex> mutex(new Mutex);
+			registry->setLockProvider(new MutexLockProvider<URISchemeRegistry>(**mutex, true));
+			mutex.set();
+			return registry.set();
+		}
+
+	  public:
+		DefaultURISchemeRegistrySynchronizedSingleton() {}
+
+		DefaultURISchemeRegistrySynchronizedSingleton(const DefaultURISchemeRegistrySynchronizedSingleton& singleton)
+				: SynchronizedSingleton<URISchemeRegistry>(singleton) {}
+
+	};
+
+	static DefaultURISchemeRegistrySynchronizedSingleton singleton;
+
+	URISchemeRegistry& URISchemeRegistry::getDefaultRegistry() {
+		return singleton.get();
+	}
 
 }}
 
