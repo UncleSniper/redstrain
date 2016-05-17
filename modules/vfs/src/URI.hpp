@@ -24,6 +24,11 @@ namespace vfs {
 			PM_RELATIVE
 		};
 
+		enum ComponentLevel {
+			CL_RENDITION,
+			CL_ORIGINAL
+		};
+
 	  private:
 		static const char HEX_DIGITS[16];
 
@@ -236,7 +241,7 @@ namespace vfs {
 		virtual text::String16 getFragment16() const = 0;
 		virtual text::String32 getFragment32() const = 0;
 
-		virtual std::string toString() const = 0;
+		virtual std::string toString8() const = 0;
 		virtual text::String16 toString16() const = 0;
 		virtual text::String32 toString32() const = 0;
 
