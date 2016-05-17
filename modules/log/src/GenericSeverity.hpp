@@ -1,0 +1,18 @@
+#ifndef REDSTRAIN_MOD_LOG_GENERICSEVERITY_HPP
+#define REDSTRAIN_MOD_LOG_GENERICSEVERITY_HPP
+
+namespace redengine {
+namespace log {
+
+	enum GenericSeverity {
+		SEV_DEBUG,
+		SEV_INFO,
+		SEV_NOTICE,
+		SEV_WARNING,
+		SEV_ERROR,
+		SEV_CRITICAL
+	};
+
+}}
+
+#endif /* REDSTRAIN_MOD_LOG_GENERICSEVERITY_HPP */
