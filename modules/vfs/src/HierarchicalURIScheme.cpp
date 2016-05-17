@@ -32,7 +32,7 @@ namespace vfs {
 
 	URI* HierarchicalURIScheme::newURI(const String16& specifier, String16::size_type sspIndex) {
 		HierarchicalURI::Decomposition decomposition;
-		HierarchicalURIScheme::parseHierarchicalURI<Char16>(specifier, sspIndex, decomposition);
+		HierarchicalURIScheme::parseHierarchicalURI<Char16>(specifier, sspIndex, decomposition, false);
 		return newURI(specifier, decomposition);
 	}
 

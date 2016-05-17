@@ -64,6 +64,9 @@ namespace vfs {
 		virtual io::OutputStream<char>* getOutputStream(PathIterator, PathIterator);
 		virtual io::BidirectionalStream<char>* getStream(PathIterator, PathIterator, bool);
 
+	  public:
+		static HostVFS instance;
+
 	};
 
 }}

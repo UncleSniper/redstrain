@@ -213,7 +213,8 @@ namespace vfs {
 		virtual void hierarchicalEncodeOriginal(const std::string&, std::string&) const;
 		virtual void hierarchicalEncodeOriginal(const text::String16&, std::string&) const;
 		virtual void hierarchicalEncodeOriginal(const text::String32&, std::string&) const;
-		virtual void hierarchicalDecodeRendition(const std::string&, text::String16&) const;
+		virtual void hierarchicalDecodeRendition(const std::string&, text::String16&,
+				bool (*escapePredicate)(text::Char16)) const;
 
 		virtual URI* makeNormalizedURI(const text::String16&) const;
 		virtual bool isSchemeAndAuthorityEqual(const URI&) const;
@@ -256,6 +257,35 @@ namespace vfs {
 		virtual bool isOpaque() const;
 		virtual bool isRemote() const;
 		virtual URI* clone() const;
+
+		template<typename CharT>
+		static bool userInfoEscapePredicate(CharT) {
+			//TODO
+			return false;
+		}
+
+		template<typename CharT>
+		static bool hostnameEscapePredicate(CharT) {
+			return false;
+		}
+
+		template<typename CharT>
+		static bool pathEscapePredicate(CharT) {
+			//TODO
+			return false;
+		}
+
+		template<typename CharT>
+		static bool queryEscapePredicate(CharT) {
+			//TODO
+			return false;
+		}
+
+		template<typename CharT>
+		static bool fragmentEscapePredicate(CharT) {
+			//TODO
+			return false;
+		}
 
 	};
 

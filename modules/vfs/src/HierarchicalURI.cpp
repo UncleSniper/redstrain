@@ -5,7 +5,7 @@
 #include <redstrain/text/UTF16Encoder16.hpp>
 #include <redstrain/text/UTF16Decoder16.hpp>
 
-#include "HierarchicalURI.hpp"
+#include "RelativeURI.hpp"
 
 using std::string;
 using redengine::text::Char16;
@@ -94,31 +94,37 @@ namespace vfs {
 		if(components.definedComponents & Decomposition::HAS_AUTHORITY) { \
 			if(components.definedComponents & Decomposition::HAS_USERNAME) { \
 				hierarchicalEncodeOriginal(components.username, usernameOctets); \
-				hierarchicalDecodeRendition(usernameOctets, username); \
+				hierarchicalDecodeRendition(usernameOctets, username, \
+						HierarchicalURI::userInfoEscapePredicate<Char16>); \
 				if(components.definedComponents & Decomposition::HAS_PASSWORD) { \
 					hierarchicalEncodeOriginal(components.password, passwordOctets); \
-					hierarchicalDecodeRendition(passwordOctets, password); \
+					hierarchicalDecodeRendition(passwordOctets, password, \
+							HierarchicalURI::userInfoEscapePredicate<Char16>); \
 				} \
 			} \
 			hierarchicalEncodeOriginal(components.hostname, hostnameOctets); \
-			hierarchicalDecodeRendition(hostnameOctets, hostname); \
+			hierarchicalDecodeRendition(hostnameOctets, hostname, \
+					HierarchicalURI::hostnameEscapePredicate<Char16>); \
 			if(components.definedComponents & Decomposition::HAS_PORT) { \
 				portNumber = components.port; \
 				if(portNumber) { \
 					portOctets = StringUtils::toString(components.port); \
-					hierarchicalDecodeRendition(portOctets, port); \
+					hierarchicalDecodeRendition(portOctets, port, \
+							HierarchicalURI::hostnameEscapePredicate<Char16>); \
 				} \
 			} \
 		} \
 		hierarchicalEncodeOriginal(components.path, pathOctets); \
-		hierarchicalDecodeRendition(pathOctets, path); \
+		hierarchicalDecodeRendition(pathOctets, path, HierarchicalURI::pathEscapePredicate<Char16>); \
 		if(components.definedComponents & Decomposition::HAS_QUERY) { \
 			hierarchicalEncodeOriginal(components.query, queryOctets); \
-			hierarchicalDecodeRendition(queryOctets, query); \
+			hierarchicalDecodeRendition(queryOctets, query, \
+					HierarchicalURI::queryEscapePredicate<Char16>); \
 		} \
 		if(components.definedComponents & Decomposition::HAS_FRAGMENT) { \
 			hierarchicalEncodeOriginal(components.fragment, fragmentOctets); \
-			hierarchicalDecodeRendition(fragmentOctets, fragment); \
+			hierarchicalDecodeRendition(fragmentOctets, fragment, \
+					HierarchicalURI::fragmentEscapePredicate<Char16>); \
 		} \
 	}
 
@@ -323,9 +329,9 @@ namespace vfs {
 		Transcode::transcodeString3<Char32, Char16, char>(original, octets, utf16, utf8);
 	}
 
-	void HierarchicalURI::hierarchicalDecodeRendition(const string& octets, String16& rendition) const {
-		UTF8Decoder16 utf8;
-		Transcode::transcodeString2<char, Char16>(octets, rendition, utf8);
+	void HierarchicalURI::hierarchicalDecodeRendition(const string& octets, String16& rendition,
+			bool (*escapePredicate)(Char16)) const {
+		URI::escape<char, Char16>(octets, rendition, URI::byteizeID, URI::renderCharUTF8, escapePredicate);
 	}
 
 	string HierarchicalURI::getRawSchemeSpecificPart8() const {
@@ -456,9 +462,16 @@ namespace vfs {
 #undef haveHere
 #undef isPresent
 
-	URI* HierarchicalURI::makeRelativizedURI(const URI&, const String16&) const {
-		//TODO: make RelativeURI
-		return NULL;
+	URI* HierarchicalURI::makeRelativizedURI(const URI& uri, const String16& path) const {
+		bool q = uri.hasQuery(), f = uri.hasFragment();
+		Components<Char16, CL_RENDITION> components((q ? Decomposition::HAS_QUERY : 0)
+				| (f ? Decomposition::HAS_FRAGMENT : 0));
+		components.path = path;
+		if(q)
+			components.query = uri.getRawQuery16();
+		if(f)
+			components.query = uri.getRawFragment16();
+		return new RelativeURI(components);
 	}
 
 	bool HierarchicalURI::isOpaque() const {
@@ -466,7 +479,7 @@ namespace vfs {
 	}
 
 	bool HierarchicalURI::isRemote() const {
-		return !hostname.empty();
+		return authorityDefined;
 	}
 
 }}

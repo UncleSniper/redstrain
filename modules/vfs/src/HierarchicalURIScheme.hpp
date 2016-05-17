@@ -489,29 +489,34 @@ namespace vfs {
 		template<typename CharT>
 		static void parseHierarchicalURI(const std::basic_string<CharT>& uri,
 				typename std::basic_string<CharT>::size_type sspIndex,
-				HierarchicalURI::Decomposition& decomposition) {
+				HierarchicalURI::Decomposition& decomposition, bool allowRelativePath) {
 			typedef typename std::basic_string<CharT>::size_type Index;
 			decomposition.schemeEnd = sspIndex ? sspIndex - static_cast<Index>(1u) : sspIndex;
 			ParseState<CharT> state(uri, sspIndex);
 			if(state.index >= state.length)
 				throw MissingSchemeSpecificURIPartError(uri);
-			if(uri[state.index] != static_cast<CharT>('/'))
-				state.bad();
-			Index nextIndex = state.index + static_cast<Index>(1u);
-			if(nextIndex >= state.length) {
-				decomposition.pathStart = state.index;
-				decomposition.pathEnd = nextIndex;
-				return;
-			}
-			if(uri[nextIndex] == static_cast<CharT>('/')) {
-				HierarchicalURIScheme::parseAuthority<CharT>(state, decomposition);
-				if(state.index < state.length && uri[state.index] == static_cast<CharT>('/'))
-					HierarchicalURIScheme::parseAbsPath<CharT>(state, decomposition);
-				else
-					decomposition.pathStart = decomposition.pathEnd = state.index;
-			}
-			else
+			if(uri[state.index] != static_cast<CharT>('/')) {
+				if(!allowRelativePath)
+					state.bad();
 				HierarchicalURIScheme::parseAbsPath<CharT>(state, decomposition);
+			}
+			else {
+				Index nextIndex = state.index + static_cast<Index>(1u);
+				if(nextIndex >= state.length) {
+					decomposition.pathStart = state.index;
+					decomposition.pathEnd = nextIndex;
+					return;
+				}
+				if(uri[nextIndex] == static_cast<CharT>('/')) {
+					HierarchicalURIScheme::parseAuthority<CharT>(state, decomposition);
+					if(state.index < state.length && uri[state.index] == static_cast<CharT>('/'))
+						HierarchicalURIScheme::parseAbsPath<CharT>(state, decomposition);
+					else
+						decomposition.pathStart = decomposition.pathEnd = state.index;
+				}
+				else
+					HierarchicalURIScheme::parseAbsPath<CharT>(state, decomposition);
+			}
 			if(state.index < state.length && uri[state.index] == static_cast<CharT>('?')) {
 				decomposition.definedComponents |= HierarchicalURI::Decomposition::HAS_QUERY;
 				decomposition.queryStart = ++state.index;

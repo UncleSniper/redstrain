@@ -8,10 +8,11 @@
 #include <redstrain/text/UTF16Decoder16.hpp>
 #include <redstrain/platform/ProviderLocker.hpp>
 
-#include "URIScheme.hpp"
+#include "RelativeURI.hpp"
 #include "EmptyURIError.hpp"
 #include "URISchemeRegistry.hpp"
 #include "IllegalURIHeadError.hpp"
+#include "HierarchicalURIScheme.hpp"
 #include "UnhandeledURISchemeError.hpp"
 
 using std::string;
@@ -216,8 +217,10 @@ namespace vfs {
 	URI* URISchemeRegistry::makeRelativeURI(const String16& specifier) {
 		if(specifier.empty())
 			throw EmptyURIError();
-		//TODO
-		return NULL;
+		HierarchicalURI::Decomposition decomposition;
+		HierarchicalURIScheme::parseHierarchicalURI<Char16>(specifier, static_cast<String16::size_type>(0u),
+				decomposition, true);
+		return new RelativeURI(specifier, decomposition);
 	}
 
 	URI* URISchemeRegistry::makeRelativeURI(const String32& specifier) {

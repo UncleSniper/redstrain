@@ -36,6 +36,8 @@ typedef redengine::platform::File PlatformFile;
 namespace redengine {
 namespace vfs {
 
+	HostVFS HostVFS::instance;
+
 	HostVFS::HostVFS() {}
 
 	HostVFS::HostVFS(const HostVFS& vfs)
