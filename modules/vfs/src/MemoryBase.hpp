@@ -223,6 +223,7 @@ namespace vfs {
 		  public:
 			MemoryVFile(MemoryDirectory*, const text::String16&, MemoryFile*, const Pathname&);
 			MemoryVFile(const MemoryVFile&);
+			virtual ~MemoryVFile();
 
 			inline MemoryDirectory* getParentDirectory() const {
 				return *parent;
@@ -259,6 +260,7 @@ namespace vfs {
 			virtual io::InputStream<char>* getInputStream();
 			virtual io::OutputStream<char>* getOutputStream();
 			virtual io::BidirectionalStream<char>* getStream(bool);
+			virtual VFile* cloneVFile() const;
 
 		};
 

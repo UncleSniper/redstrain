@@ -4,6 +4,8 @@
 
 #include "FileURI.hpp"
 #include "HostVFS.hpp"
+#include "RootedVFS.hpp"
+#include "NotADirectoryError.hpp"
 #include "URIResourceNotLocatableError.hpp"
 
 using std::string;
@@ -77,10 +79,16 @@ namespace vfs {
 	}
 
 	void FileURI::VFSAcquisition::requestResource() {
-		/*TODO
-		if(!rootedVFS)
-			rootedVFS = ...;
-		*/
+		if(!rootedVFS) {
+			String16 path(uri.getPath16());
+			VFS::Pathname pathname;
+			VFS::deconstructPathname(path, pathname);
+			Stat info;
+			vfs.stat(pathname, info, false);
+			if(info.getType() != Stat::DIRECTORY)
+				throw NotADirectoryError(pathname);
+			rootedVFS = new RootedVFS(vfs, false, pathname);
+		}
 	}
 
 	OutputStream<char>* FileURI::VFSAcquisition::getRequestStream() {

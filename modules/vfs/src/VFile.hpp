@@ -49,6 +49,7 @@ namespace vfs {
 		virtual io::InputStream<char>* getInputStream() = 0;
 		virtual io::OutputStream<char>* getOutputStream() = 0;
 		virtual io::BidirectionalStream<char>* getStream(bool) = 0;
+		virtual VFile* cloneVFile() const = 0;
 
 	};
 

@@ -106,4 +106,8 @@ namespace vfs {
 		return getVFS().getStream(path.begin(), path.end(), truncate);
 	}
 
+	VFile* GenericVFile::cloneVFile() const {
+		return new GenericVFile(*this);
+	}
+
 }}

@@ -383,6 +383,8 @@ namespace vfs {
 	MemoryBase::MemoryVFile::MemoryVFile(const MemoryVFile& file) : VFile(file),
 			basename(file.basename), fullpath(file.fullpath), parent(file.parent), child(file.child) {}
 
+	MemoryBase::MemoryVFile::~MemoryVFile() {}
+
 	MemoryBase::MemoryFile* MemoryBase::MemoryVFile::getOrMakeForOpen() {
 		MemoryBase& mbase = parent->getMemoryBase();
 		ObjectLocker<MemoryVFile> sync(mbase.getEffectiveMutexPool(), this);
@@ -923,6 +925,10 @@ namespace vfs {
 		Delete<BidirectionalStream<char> > stream(target->getStream(truncate));
 		target.move();
 		return stream.set();
+	}
+
+	VFile* MemoryBase::MemoryVFile::cloneVFile() const {
+		return new MemoryVFile(*this);
 	}
 
 	// ======== MemoryBase ========
