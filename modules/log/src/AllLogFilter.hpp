@@ -15,6 +15,9 @@ namespace log {
 		typedef typename Base::OperandIterator OperandIterator;
 
 	  public:
+		typedef typename Base::Message Message;
+
+	  public:
 		AllLogFilter(bool manageOperands)
 				: JunctorLogFilter<SeverityT, ComponentT, UnitT, ConcernT, LockingPolicyT>(manageOperands) {}
 
@@ -25,12 +28,11 @@ namespace log {
 		AllLogFilter(const AllLogFilter& filter)
 				: JunctorLogFilter<SeverityT, ComponentT, UnitT, ConcernT, LockingPolicyT>(filter) {}
 
-		virtual bool shouldLogMessage(const SeverityT& severity, const ComponentT& component, const UnitT& unit,
-				const ConcernT& concern, const text::String16& message) {
+		virtual bool shouldLogMessage(const Message& message) {
 			FilterLocker lock(this);
 			OperandIterator begin(this->operands.begin()), end(this->operands.end());
 			for(; begin != end; ++begin) {
-				if(!(*begin)->shouldLogMessage(severity, component, unit, concern, message)) {
+				if(!(*begin)->shouldLogMessage(message)) {
 					lock.release();
 					return false;
 				}

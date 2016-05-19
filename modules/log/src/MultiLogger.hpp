@@ -16,6 +16,7 @@ namespace log {
 		typedef Logger<SeverityT, ComponentT, UnitT, ConcernT> Child;
 		typedef std::set<Child*> Children;
 		typedef typename Children::const_iterator ChildIterator;
+		typedef typename Child::Message Message;
 
 	  protected:
 		typedef platform::PolicyLocker<LockingPolicyT> LoggerLocker;
@@ -98,12 +99,11 @@ namespace log {
 			lock.release();
 		}
 
-		virtual void log(const SeverityT& severity, const ComponentT& component, const UnitT& unit,
-				const ConcernT& concern, const text::String16& message) {
+		virtual void log(const Message& message) {
 			LoggerLocker lock(this);
 			ChildIterator begin(children.begin()), end(children.end());
 			for(; begin != end; ++begin)
-				(*begin)->log(severity, component, unit, concern, message);
+				(*begin)->log(message);
 			lock.release();
 		}
 

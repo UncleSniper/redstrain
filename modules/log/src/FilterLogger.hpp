@@ -11,14 +11,14 @@ namespace log {
 
 	  public:
 		typedef Logger<SeverityT, ComponentT, UnitT, ConcernT> Child;
+		typedef typename Child::Message Message;
 
 	  private:
 		Child& child;
 		bool manageChild;
 
 	  protected:
-		virtual bool shouldPropagateLogMessage(const SeverityT&, const ComponentT&, const UnitT&,
-				const ConcernT&, const text::String16&) = 0;
+		virtual bool shouldPropagateLogMessage(const Message&) = 0;
 
 	  public:
 		FilterLogger(Child& child, bool manageChild) : child(child), manageChild(manageChild) {}
@@ -47,10 +47,9 @@ namespace log {
 			this->manageChild = manageChild;
 		}
 
-		virtual void log(const SeverityT& severity, const ComponentT& component, const UnitT& unit,
-				const ConcernT& concern, const text::String16& message) {
-			if(shouldPropagateLogMessage(severity, component, unit, concern, message))
-				child.log(severity, component, unit, concern, message);
+		virtual void log(const Message& message) {
+			if(shouldPropagateLogMessage(message))
+				child.log(message);
 		}
 
 	};

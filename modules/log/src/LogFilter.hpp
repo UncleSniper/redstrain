@@ -1,7 +1,7 @@
 #ifndef REDSTRAIN_MOD_LOG_LOGFILTER_HPP
 #define REDSTRAIN_MOD_LOG_LOGFILTER_HPP
 
-#include <redstrain/text/types.hpp>
+#include "LogMessage.hpp"
 
 namespace redengine {
 namespace log {
@@ -10,12 +10,14 @@ namespace log {
 	class LogFilter {
 
 	  public:
+		typedef LogMessage<SeverityT, ComponentT, UnitT, ConcernT> Message;
+
+	  public:
 		LogFilter() {}
 		LogFilter(const LogFilter&) {}
 		virtual ~LogFilter() {}
 
-		virtual bool shouldLogMessage(const SeverityT&, const ComponentT&, const UnitT&,
-				const ConcernT&, const text::String16&) = 0;
+		virtual bool shouldLogMessage(const Message&) = 0;
 
 	};
 

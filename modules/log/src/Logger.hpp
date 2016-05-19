@@ -1,7 +1,7 @@
 #ifndef REDSTRAIN_MOD_LOG_LOGGER_HPP
 #define REDSTRAIN_MOD_LOG_LOGGER_HPP
 
-#include <redstrain/text/types.hpp>
+#include "LogMessage.hpp"
 
 namespace redengine {
 namespace log {
@@ -14,14 +14,19 @@ namespace log {
 		typedef ComponentT Component;
 		typedef UnitT Unit;
 		typedef ConcernT Concern;
+		typedef LogMessage<SeverityT, ComponentT, UnitT, ConcernT> Message;
 
 	  public:
 		Logger() {}
 		Logger(const Logger&) {}
 		virtual ~Logger() {}
 
-		virtual void log(const SeverityT&, const ComponentT&, const UnitT&,
-				const ConcernT&, const text::String16&) = 0;
+		void log(const SeverityT& severity, const ComponentT& component, const UnitT& unit,
+				const ConcernT& concern, const text::String16& message) {
+			log(Message(severity, component, unit, concern, message));
+		}
+
+		virtual void log(const Message&) = 0;
 
 	};
 

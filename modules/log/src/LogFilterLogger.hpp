@@ -13,15 +13,15 @@ namespace log {
 	  public:
 		typedef typename FilterLogger<SeverityT, ComponentT, UnitT, ConcernT>::Child Child;
 		typedef LogFilter<SeverityT, ComponentT, UnitT, ConcernT> Filter;
+		typedef typename Child::Message Message;
 
 	  private:
 		Filter& filter;
 		bool manageFilter;
 
 	  protected:
-		virtual bool shouldPropagateLogMessage(const SeverityT& severity, const ComponentT& component,
-				const UnitT& unit, const ConcernT& concern, const text::String16& message) {
-			return filter.shouldLogMessage(severity, component, unit, concern, message);
+		virtual bool shouldPropagateLogMessage(const Message& message) {
+			return filter.shouldLogMessage(message);
 		}
 
 	  public:

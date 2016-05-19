@@ -10,11 +10,13 @@ namespace log {
 	class NullLogger : public Logger<SeverityT, ComponentT, UnitT, ConcernT> {
 
 	  public:
+		typedef LogMessage<SeverityT, ComponentT, UnitT, ConcernT> Message;
+
+	  public:
 		NullLogger() {}
 		NullLogger(const NullLogger& logger) : Logger<SeverityT, ComponentT, UnitT, ConcernT>(logger) {}
 
-		virtual void log(const SeverityT&, const ComponentT&, const UnitT&,
-				const ConcernT&, const text::String16&) {}
+		virtual void log(const Message&) {}
 
 	};
 

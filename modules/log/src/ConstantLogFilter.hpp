@@ -10,6 +10,10 @@ namespace log {
 	class ConstantLogFilter : public LogFilter<SeverityT, ComponentT, UnitT, ConcernT> {
 
 	  private:
+		typedef LogFilter<SeverityT, ComponentT, UnitT, ConcernT> Base;
+		typedef typename Base::Message Message;
+
+	  private:
 		bool constantResult;
 
 	  public:
@@ -27,8 +31,7 @@ namespace log {
 			this->constantResult = constantResult;
 		}
 
-		virtual bool shouldLogMessage(const SeverityT&, const ComponentT&, const UnitT&,
-				const ConcernT&, const text::String16&) {
+		virtual bool shouldLogMessage(const Message&) {
 			return constantResult;
 		}
 
