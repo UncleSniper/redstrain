@@ -1,0 +1,15 @@
+#ifndef REDSTRAIN_MOD_CALENDAR_CALENDARMODULUS_HPP
+#define REDSTRAIN_MOD_CALENDAR_CALENDARMODULUS_HPP
+
+namespace redengine {
+namespace calendar {
+
+	enum CalendarModulus {
+		MOD_YEAR,
+		MOD_MONTH,
+		MOD_HOUR
+	};
+
+}}
+
+#endif /* REDSTRAIN_MOD_CALENDAR_CALENDARMODULUS_HPP */
