@@ -1,0 +1,18 @@
+#ifndef REDSTRAIN_MOD_UTIL_ORDERCONSTRAINT_HPP
+#define REDSTRAIN_MOD_UTIL_ORDERCONSTRAINT_HPP
+
+namespace redengine {
+namespace util {
+
+	enum OrderConstraint {
+		OC_LESS,
+		OC_LESS_EQUAL,
+		OC_GREATER,
+		OC_GREATER_EQUAL,
+		OC_EQUAL,
+		OC_UNEQUAL
+	};
+
+}}
+
+#endif /* REDSTRAIN_MOD_UTIL_ORDERCONSTRAINT_HPP */

@@ -18,6 +18,20 @@ namespace util {
 	class Function {
 
 	  public:
+		typedef ReturnT Return;
+		typedef Arg0T Arg0;
+		typedef Arg1T Arg1;
+		typedef Arg2T Arg2;
+		typedef Arg3T Arg3;
+		typedef Arg4T Arg4;
+		typedef Arg5T Arg5;
+		typedef Arg6T Arg6;
+		typedef Arg7T Arg7;
+
+	  public:
+		static const unsigned ARITY = 8u;
+
+	  public:
 		Function() {}
 		Function(const Function&) {}
 		virtual ~Function() {}
@@ -58,6 +72,20 @@ namespace util {
 	> {
 
 	  public:
+		typedef ReturnT Return;
+		typedef Arg0T Arg0;
+		typedef Arg1T Arg1;
+		typedef Arg2T Arg2;
+		typedef Arg3T Arg3;
+		typedef Arg4T Arg4;
+		typedef Arg5T Arg5;
+		typedef Arg6T Arg6;
+		typedef void Arg7;
+
+	  public:
+		static const unsigned ARITY = 7u;
+
+	  public:
 		Function() {}
 		Function(const Function&) {}
 		virtual ~Function() {}
@@ -96,6 +124,20 @@ namespace util {
 	> {
 
 	  public:
+		typedef ReturnT Return;
+		typedef Arg0T Arg0;
+		typedef Arg1T Arg1;
+		typedef Arg2T Arg2;
+		typedef Arg3T Arg3;
+		typedef Arg4T Arg4;
+		typedef Arg5T Arg5;
+		typedef void Arg6;
+		typedef void Arg7;
+
+	  public:
+		static const unsigned ARITY = 6u;
+
+	  public:
 		Function() {}
 		Function(const Function&) {}
 		virtual ~Function() {}
@@ -132,6 +174,20 @@ namespace util {
 	> {
 
 	  public:
+		typedef ReturnT Return;
+		typedef Arg0T Arg0;
+		typedef Arg1T Arg1;
+		typedef Arg2T Arg2;
+		typedef Arg3T Arg3;
+		typedef Arg4T Arg4;
+		typedef void Arg5;
+		typedef void Arg6;
+		typedef void Arg7;
+
+	  public:
+		static const unsigned ARITY = 5u;
+
+	  public:
 		Function() {}
 		Function(const Function&) {}
 		virtual ~Function() {}
@@ -166,6 +222,20 @@ namespace util {
 	> {
 
 	  public:
+		typedef ReturnT Return;
+		typedef Arg0T Arg0;
+		typedef Arg1T Arg1;
+		typedef Arg2T Arg2;
+		typedef Arg3T Arg3;
+		typedef void Arg4;
+		typedef void Arg5;
+		typedef void Arg6;
+		typedef void Arg7;
+
+	  public:
+		static const unsigned ARITY = 4u;
+
+	  public:
 		Function() {}
 		Function(const Function&) {}
 		virtual ~Function() {}
@@ -198,6 +268,20 @@ namespace util {
 	> {
 
 	  public:
+		typedef ReturnT Return;
+		typedef Arg0T Arg0;
+		typedef Arg1T Arg1;
+		typedef Arg2T Arg2;
+		typedef void Arg3;
+		typedef void Arg4;
+		typedef void Arg5;
+		typedef void Arg6;
+		typedef void Arg7;
+
+	  public:
+		static const unsigned ARITY = 3u;
+
+	  public:
 		Function() {}
 		Function(const Function&) {}
 		virtual ~Function() {}
@@ -228,6 +312,20 @@ namespace util {
 	> {
 
 	  public:
+		typedef ReturnT Return;
+		typedef Arg0T Arg0;
+		typedef Arg1T Arg1;
+		typedef void Arg2;
+		typedef void Arg3;
+		typedef void Arg4;
+		typedef void Arg5;
+		typedef void Arg6;
+		typedef void Arg7;
+
+	  public:
+		static const unsigned ARITY = 2u;
+
+	  public:
 		Function() {}
 		Function(const Function&) {}
 		virtual ~Function() {}
@@ -256,6 +354,20 @@ namespace util {
 	> {
 
 	  public:
+		typedef ReturnT Return;
+		typedef Arg0T Arg0;
+		typedef void Arg1;
+		typedef void Arg2;
+		typedef void Arg3;
+		typedef void Arg4;
+		typedef void Arg5;
+		typedef void Arg6;
+		typedef void Arg7;
+
+	  public:
+		static const unsigned ARITY = 1u;
+
+	  public:
 		Function() {}
 		Function(const Function&) {}
 		virtual ~Function() {}
@@ -280,6 +392,20 @@ namespace util {
 		void,
 		void
 	> {
+
+	  public:
+		typedef ReturnT Return;
+		typedef void Arg0;
+		typedef void Arg1;
+		typedef void Arg2;
+		typedef void Arg3;
+		typedef void Arg4;
+		typedef void Arg5;
+		typedef void Arg6;
+		typedef void Arg7;
+
+	  public:
+		static const unsigned ARITY = 0u;
 
 	  public:
 		Function() {}
