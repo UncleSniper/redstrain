@@ -21,7 +21,7 @@ namespace log {
 		Logger(const Logger&) {}
 		virtual ~Logger() {}
 
-		void log(const SeverityT& severity, const ComponentT& component, const UnitT& unit,
+		void logln(const SeverityT& severity, const ComponentT& component, const UnitT& unit,
 				const ConcernT& concern, const text::String16& message) {
 			log(Message(severity, component, unit, concern, message));
 		}
