@@ -1,13 +1,17 @@
 #define _LARGEFILE64_SOURCE
 #include <cstdlib>
+#include <redstrain/util/Delete.hpp>
 #include <redstrain/util/DeleteArray.hpp>
 #include <redstrain/util/IntegerBits.hpp>
 #include <redstrain/util/SortingAppender.hpp>
-#include <redstrain/util/random.hpp>
+#include <redstrain/util/MersenneTwisterRandom.hpp>
+#include <redstrain/util/SubscriptRandomChooser.hpp>
 
 #include "Thread.hpp"
 #include "Pathname.hpp"
+#include "NativeRandom.hpp"
 #include "NoSuchFileError.hpp"
+#include "SynchronizedSingleton.hpp"
 #include "FileAccessDeniedError.hpp"
 #include "ReadOnlyFilesystemError.hpp"
 
@@ -26,13 +30,15 @@
 #endif /* OS-specific includes */
 
 using std::string;
+using redengine::util::Delete;
+using redengine::util::Random;
 using redengine::util::Appender;
 using redengine::util::FileSize;
 using redengine::util::DeleteArray;
 using redengine::util::IntegerBits;
 using redengine::util::SortingAppender;
+using redengine::util::MersenneTwisterRandom;
 using redengine::util::SubscriptRandomChooser;
-using redengine::util::randomChosen;
 
 namespace redengine {
 namespace platform {
@@ -1237,6 +1243,24 @@ namespace platform {
 		mkdirrec(Pathname::tidy(Pathname::join(Pathname::getWorkingDirectory(), directory)));
 	}
 
+	class FilesystemMktempRandomSynchronizedSingleton : public SynchronizedSingleton<Random> {
+
+	  protected:
+		virtual Random* newInstance() {
+			Delete<MersenneTwisterRandom> mt(new MersenneTwisterRandom);
+			mt->seedFrom(NativeRandom::instance);
+			return mt.set();
+		}
+
+	  public:
+		FilesystemMktempRandomSynchronizedSingleton() {}
+		FilesystemMktempRandomSynchronizedSingleton(const FilesystemMktempRandomSynchronizedSingleton& singleton)
+				: SynchronizedSingleton<Random>(singleton) {}
+
+	};
+
+	static FilesystemMktempRandomSynchronizedSingleton mktempRandomSingleton;
+
 	static const char tempPatternChars[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 
 	static string makeTempEntry(const string& pathTemplate, int permissions,
@@ -1249,8 +1273,10 @@ namespace platform {
 		string dir(Filesystem::getSystemTempDirectory());
 		char junk[8];
 		SubscriptRandomChooser<const char *const, char, unsigned char> chooser(tempPatternChars);
+		Random& random = mktempRandomSingleton.get();
+		ObjectLocker<Random> rlock(&random);
 		for(;;) {
-			randomChosen(junk, junk + sizeof(junk), chooser, static_cast<unsigned char>(62u));
+			random.randomChosen(junk, junk + sizeof(junk), chooser, static_cast<unsigned char>(62u));
 			string path;
 			if(pathTemplate.empty())
 				path.assign(junk, static_cast<string::size_type>(sizeof(junk)));
@@ -1260,8 +1286,10 @@ namespace platform {
 				path += pathTemplate.substr(pos + static_cast<string::size_type>(1u));
 			}
 			path = Pathname::join(dir, path);
-			if(tryCreate(path, permissions, false))
+			if(tryCreate(path, permissions, false)) {
+				rlock.release();
 				return path;
+			}
 		}
 	}
 
