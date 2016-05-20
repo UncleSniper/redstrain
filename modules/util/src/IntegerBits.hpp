@@ -182,7 +182,7 @@ namespace util {
 
 		};
 
-	  private:
+	  public:
 		static const unsigned WIDTH = static_cast<unsigned>(sizeof(IntegerT)) * 8u;
 
 	  public:
