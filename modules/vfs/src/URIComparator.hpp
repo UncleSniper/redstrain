@@ -11,15 +11,11 @@ namespace vfs {
 	class REDSTRAIN_VFS_API URIComparator {
 
 	  private:
-		URI& uri;
+		const URI& uri;
 
 	  public:
-		URIComparator(URI&);
+		URIComparator(const URI&);
 		URIComparator(const URIComparator&);
-
-		inline URI& getURI() {
-			return uri;
-		}
 
 		inline const URI& getURI() const {
 			return uri;

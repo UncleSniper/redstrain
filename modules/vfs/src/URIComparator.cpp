@@ -4,7 +4,7 @@
 namespace redengine {
 namespace vfs {
 
-	URIComparator::URIComparator(URI& uri) : uri(uri) {}
+	URIComparator::URIComparator(const URI& uri) : uri(uri) {}
 
 	URIComparator::URIComparator(const URIComparator& comparator) : uri(comparator.uri) {}
 
