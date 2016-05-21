@@ -28,8 +28,8 @@ namespace calendar {
 	REDSTRAIN_CALENDAR_API DayInMonth numberOfDaysInMonth(Month);
 	REDSTRAIN_CALENDAR_API DayInMonth numberOfDaysInMonth(Month, Year);
 
-	REDSTRAIN_CALENDAR_API DayInMonth aggregateNumberOfDaysInMonth(Month);
-	REDSTRAIN_CALENDAR_API DayInMonth aggregateNumberOfDaysInMonth(Month, Year);
+	REDSTRAIN_CALENDAR_API unsigned aggregateNumberOfDaysInMonth(Month);
+	REDSTRAIN_CALENDAR_API unsigned aggregateNumberOfDaysInMonth(Month, Year);
 
 	REDSTRAIN_CALENDAR_API DayInTime yearMonthDayInMonthToDayInTime(Year, Month, DayInMonth);
 	REDSTRAIN_CALENDAR_API void dayInTimeToYearMonthDayInMonth(DayInTime, Year&, Month&, DayInMonth&);

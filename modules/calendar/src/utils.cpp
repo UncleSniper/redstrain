@@ -1,3 +1,4 @@
+#include <iostream>
 #include "utils.hpp"
 
 namespace redengine {
@@ -21,16 +22,17 @@ namespace calendar {
 		return static_cast<DayInMonth>(month > static_cast<Month>(11u) ? 0u : daysInMonth[month]);
 	}
 
-	REDSTRAIN_CALENDAR_API DayInMonth aggregateNumberOfDaysInMonth(Month month) {
-		return static_cast<DayInMonth>(month > static_cast<Month>(11u) ? 0u : aggregateDaysInMonth[month]);
+	REDSTRAIN_CALENDAR_API unsigned aggregateNumberOfDaysInMonth(Month month) {
+		return month > static_cast<Month>(11u) ? 0u : aggregateDaysInMonth[month];
 	}
 
-	REDSTRAIN_CALENDAR_API DayInMonth aggregateNumberOfDaysInMonth(Month month, Year year) {
-		return static_cast<DayInMonth>(month > static_cast<Month>(11u)
-				? 0u : (isLeapYear<Year>(year) ? aggregateDaysInMonthLeap : aggregateDaysInMonth)[month]);
+	REDSTRAIN_CALENDAR_API unsigned aggregateNumberOfDaysInMonth(Month month, Year year) {
+		return month > static_cast<Month>(11u) ? 0u
+				: (isLeapYear<Year>(year) ? aggregateDaysInMonthLeap : aggregateDaysInMonth)[month];
 	}
 
 	REDSTRAIN_CALENDAR_API DayInTime yearMonthDayInMonthToDayInTime(Year year, Month month, DayInMonth day) {
+std::cout << "yearMonthDayInMonthToDayInTime(" << year << ", " << (unsigned)month << ", " << (unsigned)day << ") = " << ((year - 1) * 365) << " + " << numberOfLeapYearsBefore<Year>(year) << " + " << (unsigned)(month ? static_cast<DayInTime>(aggregateNumberOfDaysInMonth(month - static_cast<Month>(1u), year)) : static_cast<DayInTime>(0u)) << " + " << (unsigned)day << " = " << (static_cast<DayInTime>(year - static_cast<Year>(1u)) * static_cast<DayInTime>(365u) + static_cast<DayInTime>(numberOfLeapYearsBefore<Year>(year)) + (month ? static_cast<DayInTime>(aggregateNumberOfDaysInMonth(month - static_cast<Month>(1u), year)) : static_cast<DayInTime>(0u)) + static_cast<DayInTime>(day)) << std::endl;
 		return static_cast<DayInTime>(year - static_cast<Year>(1u)) * static_cast<DayInTime>(365u)
 				+ static_cast<DayInTime>(numberOfLeapYearsBefore<Year>(year))
 				+ (month ? static_cast<DayInTime>(aggregateNumberOfDaysInMonth(month - static_cast<Month>(1u), year))
@@ -48,12 +50,19 @@ namespace calendar {
 		//     y = n / (365 + 1/4 - 1/100 + 1/400)
 		//       = n / ((365 * 400 + 100 - 4 + 1) / 400)
 		//       = n * 400 / (365 * 400 + 100 - 4 + 1)
-		year = static_cast<Year>(dayInTime * static_cast<DayInTime>(400u) / static_cast<DayInTime>(146097u));
+		year = static_cast<Year>(dayInTime * static_cast<DayInTime>(400u) / static_cast<DayInTime>(146097u))
+				+ static_cast<Year>(1u);
+//std::cout << "***DEBUG: dayInTime before = " << dayInTime << std::endl;
 		dayInTime -= static_cast<DayInTime>(year - static_cast<Year>(1u)) * static_cast<DayInTime>(365u)
-				+ static_cast<DayInTime>(numberOfLeapYearsBefore<Year>(year));
-		//TODO
-		month = 0;
-		dayInMonth = 0;
+				+ static_cast<DayInTime>(numberOfLeapYearsBefore<Year>(year)) - static_cast<DayInTime>(1u);
+				           // Year 0 is a leap year, but doesn't count here --^
+//std::cout << "***DEBUG: dayInTime after = " << dayInTime << std::endl;
+		month = static_cast<Month>((dayInTime * static_cast<DayInTime>(100u) + static_cast<DayInTime>(52u))
+				/ static_cast<DayInTime>(3060u));
+		if(month)
+			dayInTime -= static_cast<DayInTime>(aggregateNumberOfDaysInMonth(static_cast<Month>(month
+					- static_cast<Month>(1u)), year));
+		dayInMonth = static_cast<DayInMonth>(dayInTime - static_cast<DayInTime>(1u));
 	}
 
 }}
