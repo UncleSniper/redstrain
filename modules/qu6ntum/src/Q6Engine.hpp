@@ -61,8 +61,7 @@ namespace qu6ntum {
 		bool removeProviderSource(ProviderSource&);
 		void clearProviderSources();
 
-		void notifyProviderCodeChange(const vfs::URI&, const text::String16&, ManifestSource*, FileStateChange);
-		void notifyProviderManifestChange(const vfs::URI&, ManifestSource&, FileStateChange);
+		void notifyProviderChange(const vfs::URI&, FileStateChange);
 
 	};
 

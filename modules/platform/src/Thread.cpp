@@ -1,3 +1,5 @@
+#include <redstrain/util/IntegerBounds.hpp>
+
 #include "MutexPool.hpp"
 #include "ThreadOperationError.hpp"
 #include "IllegalThreadStateError.hpp"
@@ -6,9 +8,11 @@
 #include <errno.h>
 #include <signal.h>
 #include <string.h>
+#include <unistd.h>
 #endif /* OS-specific includes */
 
 using std::string;
+using redengine::util::IntegerBounds;
 
 namespace redengine {
 namespace platform {
@@ -27,6 +31,8 @@ namespace platform {
 	Thread::Thread() : state(PRISTINE) {}
 
 	Thread::Thread(const Thread& thread) : handle(thread.handle), state(thread.state) {}
+
+	Thread::~Thread() {}
 
 #if REDSTRAIN_PLATFORM_OS == REDSTRAIN_PLATFORM_OS_UNIX
 
@@ -104,6 +110,21 @@ namespace platform {
 
 	string Thread::getErrorMessage(ErrorCode error) {
 		return strerror(error);
+	}
+
+	static const uint64_t SLEEP_BOUND = static_cast<uint64_t>(IntegerBounds<useconds_t>::MAX);
+	static const uint64_t MAX_SLEEP = static_cast<uint64_t>(1000000u) < SLEEP_BOUND
+			? static_cast<uint64_t>(1000000u) : SLEEP_BOUND;
+
+	void Thread::sleep(uint64_t millis) {
+		millis *= static_cast<uint64_t>(1000u);
+		do {
+			uint64_t chunk = millis;
+			if(chunk > MAX_SLEEP)
+				chunk = MAX_SLEEP;
+			usleep(static_cast<useconds_t>(chunk));
+			millis -= chunk;
+		} while(millis);
 	}
 
 #elif REDSTRAIN_PLATFORM_OS == REDSTRAIN_PLATFORM_OS_WINDOWS
@@ -189,6 +210,18 @@ namespace platform {
 		string msg(buffer);
 		LocalFree(buffer);
 		return msg;
+	}
+
+	static const uint64_t MAX_SLEEP = static_cast<uint64_t>(IntegerBounds<DWORD>::MAX);
+
+	void Thread::sleep(uint64_t millis) {
+		do {
+			uint64_t chunk = millis;
+			if(chunk > MAX_SLEEP)
+				chunk = MAX_SLEEP;
+			Sleep(static_cast<DWORD>(chunk));
+			millis -= chunk;
+		} while(millis);
 	}
 
 #else /* OS not implemented */

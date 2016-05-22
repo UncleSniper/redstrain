@@ -2,6 +2,7 @@
 #define REDSTRAIN_MOD_PLATFORM_THREAD_HPP
 
 #include <string>
+#include <stdint.h>
 
 #include "api.hpp"
 #include "platform.hpp"
@@ -281,6 +282,7 @@ namespace platform {
 		 */
 		Thread();
 		Thread(const Thread&);
+		virtual ~Thread();
 
 		/**
 		 * TODO.
@@ -303,6 +305,8 @@ namespace platform {
 		 * TODO.
 		 */
 		static std::string getErrorMessage(ErrorCode);
+
+		static void sleep(uint64_t);
 
 	};
 
