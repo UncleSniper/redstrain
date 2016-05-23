@@ -1,5 +1,6 @@
 #include <redstrain/io/modinfo.hpp>
 #include <redstrain/vfs/modinfo.hpp>
+#include <redstrain/log/modinfo.hpp>
 #include <redstrain/text/modinfo.hpp>
 #include <redstrain/util/modinfo.hpp>
 #include <redstrain/error/modinfo.hpp>
@@ -30,5 +31,7 @@ namespace qu6ntum {
 			RedStrain/Qu6ntum, RedStrain/Text, REDSTRAIN_MOD_TEXT, ::redengine::text)
 	REDSTRAIN_DEPEND_MODULE(VFS,
 			RedStrain/Qu6ntum, RedStrain/VFS, REDSTRAIN_MOD_VFS, ::redengine::vfs)
+	REDSTRAIN_DEPEND_MODULE(Log,
+			RedStrain/Qu6ntum, RedStrain/Log, REDSTRAIN_MOD_LOG, ::redengine::log)
 
 }}

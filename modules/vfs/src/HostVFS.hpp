@@ -41,6 +41,8 @@ namespace vfs {
 		text::String16 decodeHostPathname(const std::string&) const;
 		std::string encodeHostPathname(const text::String16&) const;
 
+		text::String16 getWorkingDirectory() const;
+
 		virtual void stat(PathIterator, PathIterator, Stat&, bool);
 		virtual void chmod(PathIterator, PathIterator, int);
 		virtual void chown(PathIterator, PathIterator, Stat::UserID, bool);

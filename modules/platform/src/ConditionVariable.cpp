@@ -35,7 +35,7 @@ namespace platform {
 		if(destroyed)
 			throw IllegalConditionVariableStateError(ConditionVariableOperationError::WAIT);
 		int err;
-		if(timeout == INFINITY)
+		if(timeout == INFINITE_TIMEOUT)
 			err = pthread_cond_wait(&handle, &const_cast<Mutex::Handle&>(mutex.getHandle()));
 		else {
 			struct timespec abstime;

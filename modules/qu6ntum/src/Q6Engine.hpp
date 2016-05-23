@@ -4,6 +4,9 @@
 #include <set>
 #include <deque>
 #include <redstrain/vfs/URI.hpp>
+#include <redstrain/error/Error.hpp>
+#include <redstrain/platform/TypedThread.hpp>
+#include <redstrain/platform/ConditionVariable.hpp>
 
 #include "api.hpp"
 
@@ -12,6 +15,7 @@ namespace qu6ntum {
 
 	class ProviderSource;
 	class ManifestSource;
+	class EngineListener;
 
 	class REDSTRAIN_QU6NTUM_API Q6Engine {
 
@@ -29,17 +33,70 @@ namespace qu6ntum {
 			FSC_REMOVED
 		};
 
+	  private:
+		class REDSTRAIN_QU6NTUM_API Init : public platform::TypedThread<> {
+
+		  public:
+			enum QueuedAction {
+				QA_START_UP,
+				QA_SHUT_DOWN
+			};
+
+		  private:
+			typedef std::deque<QueuedAction> ActionQueue;
+
+		  private:
+			Q6Engine& engine;
+			QueuedAction initialAction;
+			ActionQueue actionQueue;
+
+		  protected:
+			virtual void run();
+
+		  public:
+			Init(Q6Engine&, QueuedAction);
+			Init(const Init&);
+			virtual ~Init();
+
+			void queueAction(QueuedAction);
+
+		};
+
 	  public:
 		typedef std::set<ProviderSource*> ProviderSources;
+		typedef std::set<EngineListener*> EngineListeners;
 
 	  private:
 		vfs::URI* instanceHome;
-		EngineState engineState;
+		volatile EngineState engineState;
+		int engineStateLock;
 		ProviderSources providerSources;
+		Init *volatile initThread;
+		volatile bool shouldTerminate;
+		platform::ConditionVariable terminateCondition;
+		volatile EngineState providerSourcesState;
+		EngineListeners engineListeners;
+
+	  private:
+		void startupImpl();
+		void shutdownImpl();
+
+		void fireStartingUp();
+		void fireStartupComplete();
+		void fireShuttingDown();
+		void fireShutdownComplete();
+		void fireStartingProviderSource(ProviderSource&);
+		void fireStartingProviderSourceFailed(ProviderSource&, const error::Error&);
+		void fireStoppingProviderSource(ProviderSource&);
+		void fireStoppingProviderSourceFailed(ProviderSource&, const error::Error&);
+
+		void startProviderSource(ProviderSource&);
+		void stopProviderSource(ProviderSource&);
 
 	  public:
 		Q6Engine();
 		Q6Engine(const Q6Engine&);
+		~Q6Engine();
 
 		inline EngineState getEngineState() const {
 			return engineState;
@@ -53,8 +110,14 @@ namespace qu6ntum {
 		void setInstanceHome(const text::String16&);
 		void setInstanceHome(const std::string&);
 
+		void getEngineListeners(EngineListeners&);
+		bool addEngineListener(EngineListener&);
+		bool removeEngineListener(EngineListener&);
+		void clearEngineListeners();
+
 		bool startup();
 		bool shutdown();
+		void waitForTermination(bool);
 
 		void getProviderSources(ProviderSources&);
 		bool addProviderSource(ProviderSource&);

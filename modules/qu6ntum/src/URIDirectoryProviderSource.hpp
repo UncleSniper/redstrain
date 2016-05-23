@@ -40,6 +40,7 @@ namespace qu6ntum {
 
 		virtual void startProviderSource(Q6Engine&);
 		virtual void stopProviderSource(Q6Engine&);
+		virtual text::String16 getProviderSourceName();
 
 	};
 

@@ -4,6 +4,7 @@
 #include <redstrain/text/Transcode.hpp>
 #include <redstrain/text/UTF8Encoder.hpp>
 #include <redstrain/text/UTF8Decoder.hpp>
+#include <redstrain/platform/Pathname.hpp>
 #include <redstrain/text/DefaultCodecFactory.hpp>
 
 #include "HostVFS.hpp"
@@ -32,6 +33,7 @@ using redengine::io::BidirectionalStream;
 using redengine::text::DefaultCodecFactory;
 typedef redengine::platform::Stat PlatformStat;
 typedef redengine::platform::File PlatformFile;
+typedef redengine::platform::Pathname PlatformPathname;
 
 namespace redengine {
 namespace vfs {
@@ -102,6 +104,10 @@ namespace vfs {
 	}
 
 #if REDSTRAIN_PLATFORM_OS == REDSTRAIN_PLATFORM_OS_UNIX
+
+	String16 HostVFS::getWorkingDirectory() const {
+		return decodeHostPathname(PlatformPathname::getWorkingDirectory());
+	}
 
 	BestEffortFileInfoMapper bestEffortFileInfoMapper;
 
@@ -243,6 +249,10 @@ namespace vfs {
 #elif REDSTRAIN_PLATFORM_OS == REDSTRAIN_PLATFORM_OS_WINDOWS
 
 #error Not implemented yet
+
+	String16 HostVFS::getWorkingDirectory() {
+		//TODO
+	}
 
 	void HostVFS::stat(PathIterator pathBegin, PathIterator pathEnd, Stat& info, bool ofLink) {
 		//TODO

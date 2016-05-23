@@ -1,6 +1,8 @@
 #ifndef REDSTRAIN_MOD_QU6NTUM_PROVIDERSOURCE_HPP
 #define REDSTRAIN_MOD_QU6NTUM_PROVIDERSOURCE_HPP
 
+#include <redstrain/text/types.hpp>
+
 #include "api.hpp"
 
 namespace redengine {
@@ -17,6 +19,7 @@ namespace qu6ntum {
 
 		virtual void startProviderSource(Q6Engine&) = 0;
 		virtual void stopProviderSource(Q6Engine&) = 0;
+		virtual text::String16 getProviderSourceName() = 0;
 
 	};
 

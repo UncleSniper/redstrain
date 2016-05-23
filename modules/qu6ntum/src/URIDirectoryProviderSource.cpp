@@ -108,6 +108,13 @@ namespace qu6ntum {
 		}
 	}
 
+	String16 URIDirectoryProviderSource::getProviderSourceName() {
+		String16 result(Transcode::utf8ToBMP("URIDirectoryProviderSource("));
+		result += resolvedURI->toString16();
+		result += static_cast<Char16>(')');
+		return result;
+	}
+
 	void URIDirectoryProviderSource::pollProviders() {
 		if(!acquisition)
 			return;
@@ -121,7 +128,7 @@ namespace qu6ntum {
 	URI* URIDirectoryProviderSource::getProviderURIByName(const String16& name) {
 		if(!resolvedURI)
 			return NULL;
-		RelativeURI rel(name);
+		RelativeURI rel(name + providerSuffix);
 		return resolvedURI->resolve(rel);
 	}
 

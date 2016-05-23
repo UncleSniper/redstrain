@@ -33,7 +33,7 @@ namespace platform {
 #endif /* OS-specific types */
 
 	  public:
-		static const unsigned INFINITY = ~0u;
+		static const unsigned INFINITE_TIMEOUT = ~0u;
 
 	  private:
 		Handle handle;
@@ -49,7 +49,7 @@ namespace platform {
 		ConditionVariable();
 		~ConditionVariable();
 
-		bool wait(unsigned = INFINITY);
+		bool wait(unsigned = INFINITE_TIMEOUT);
 		void signal();
 		void broadcast();
 
