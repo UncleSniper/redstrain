@@ -13,6 +13,10 @@ namespace util {
 		typedef T& Ref;
 		typedef const T& ConstRef;
 
+	  public:
+		static const bool WAS_CONST = false;
+		static const bool WAS_REF = false;
+
 	};
 
 	template<typename T>
@@ -23,6 +27,10 @@ namespace util {
 		typedef const T Const;
 		typedef T& Ref;
 		typedef const T& ConstRef;
+
+	  public:
+		static const bool WAS_CONST = true;
+		static const bool WAS_REF = false;
 
 	};
 
@@ -35,6 +43,10 @@ namespace util {
 		typedef T& Ref;
 		typedef const T& ConstRef;
 
+	  public:
+		static const bool WAS_CONST = false;
+		static const bool WAS_REF = true;
+
 	};
 
 	template<typename T>
@@ -45,6 +57,10 @@ namespace util {
 		typedef const T Const;
 		typedef T& Ref;
 		typedef const T& ConstRef;
+
+	  public:
+		static const bool WAS_CONST = true;
+		static const bool WAS_REF = true;
 
 	};
 
