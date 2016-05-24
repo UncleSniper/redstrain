@@ -40,8 +40,8 @@ namespace platform {
 
 	  public:
 		Library(const std::string&);
-		Library(Handle handle) : handle(handle) {}
-		Library(const Library& lib) : handle(lib.handle) {}
+		Library(Handle);
+		Library(const Library&);
 
 		void* resolve(const std::string&) const;
 		void close();

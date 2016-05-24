@@ -14,6 +14,10 @@ using std::string;
 namespace redengine {
 namespace platform {
 
+	Library::Library(Handle handle) : handle(handle) {}
+
+	Library::Library(const Library& library) : handle(library.handle) {}
+
 #if REDSTRAIN_PLATFORM_OS == REDSTRAIN_PLATFORM_OS_UNIX
 
 	const Library::Handle Library::INVALID_HANDLE = NULL;
@@ -29,6 +33,8 @@ namespace platform {
 	}
 
 	void Library::close() {
+		if(handle == INVALID_HANDLE)
+			return;
 		if(dlclose(handle)) {
 			const char* msg = dlerror();
 			throw LibraryCloseError(msg ? msg : "Unknown error");
@@ -68,6 +74,8 @@ namespace platform {
 	}
 
 	void Library::close() {
+		if(handle == INVALID_HANDLE)
+			return;
 		if(!FreeLibrary(handle))
 			throw LibraryCloseError(Thread::getErrorMessage(GetLastError()));
 		handle = INVALID_HANDLE;

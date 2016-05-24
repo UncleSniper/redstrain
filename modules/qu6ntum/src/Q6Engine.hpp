@@ -9,6 +9,7 @@
 #include <redstrain/platform/ConditionVariable.hpp>
 
 #include "api.hpp"
+#include "types.hpp"
 
 namespace redengine {
 namespace qu6ntum {
@@ -76,6 +77,9 @@ namespace qu6ntum {
 		platform::ConditionVariable terminateCondition;
 		volatile EngineState providerSourcesState;
 		EngineListeners engineListeners;
+		std::string providerCacheDirectory;
+		volatile ProviderInstanceID nextProviderID;
+		int providerIDLock;
 
 	  private:
 		void startupImpl();
@@ -92,6 +96,8 @@ namespace qu6ntum {
 
 		void startProviderSource(ProviderSource&);
 		void stopProviderSource(ProviderSource&);
+
+		ProviderInstanceID cacheProviderCodebase(const vfs::URI&, std::string&);
 
 	  public:
 		Q6Engine();
@@ -114,6 +120,12 @@ namespace qu6ntum {
 		bool addEngineListener(EngineListener&);
 		bool removeEngineListener(EngineListener&);
 		void clearEngineListeners();
+
+		inline const std::string& getProviderCacheDirectory() const {
+			return providerCacheDirectory;
+		}
+
+		void setProviderCacheDirectory(const std::string&);
 
 		bool startup();
 		bool shutdown();

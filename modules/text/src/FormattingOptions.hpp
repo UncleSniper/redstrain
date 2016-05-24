@@ -68,9 +68,9 @@ namespace text {
 				CharT decimalPoint = RenditionT::DECIMAL_POINT, FloatFormatStyle floatStyle = FFS_PLAIN,
 				CharT groupSeparator = RenditionT::GROUP_SEPARATOR, uint32_t groupSize = static_cast<uint32_t>(0u))
 				: base(base), integralWidth(integralWidth), fractionWidth(fractionWidth), groupSize(groupSize),
-				flags(flags), integerPadChar(integerPadChar), decimalPoint(decimalPoint),
-				groupSeparator(groupSeparator), floatStyle(floatStyle), signStyle(SFS_OMIT),
-				stringEmitter(stringEmitter) {}
+				flags(flags), integerPadChar(integerPadChar), fractionPadChar(fractionPadChar),
+				fillChar(fillChar), decimalPoint(decimalPoint), groupSeparator(groupSeparator),
+				floatStyle(floatStyle), signStyle(signStyle), stringEmitter(stringEmitter) {}
 
 		FormattingOptions(const FormattingOptions& options) : base(options.base),
 				integralWidth(options.integralWidth), fractionWidth(options.fractionWidth),

@@ -1,11 +1,19 @@
+#include <redstrain/util/Delete.hpp>
 #include <redstrain/vfs/FileURI.hpp>
 #include <redstrain/vfs/HostVFS.hpp>
-#include <redstrain/util/Delete.hpp>
 #include <redstrain/vfs/RelativeURI.hpp>
+#include <redstrain/io/StreamCloser.hpp>
 #include <redstrain/util/StringUtils.hpp>
+#include <redstrain/platform/Library.hpp>
+#include <redstrain/platform/Pathname.hpp>
+#include <redstrain/io/FileOutputStream.hpp>
+#include <redstrain/platform/Filesystem.hpp>
 #include <redstrain/platform/MutexLocker.hpp>
 #include <redstrain/platform/ObjectLocker.hpp>
 #include <redstrain/error/ProgrammingError.hpp>
+#include <redstrain/text/DefaultIntegerFormatter.hpp>
+#include <redstrain/text/DefaultFormattingRendition.hpp>
+#include <redstrain/text/DefaultFormattingOptionStringEmitter.hpp>
 
 #include "Q6Engine.hpp"
 #include "ProviderSource.hpp"
@@ -18,12 +26,23 @@ using redengine::vfs::HostVFS;
 using redengine::error::Error;
 using redengine::util::Delete;
 using redengine::text::String16;
+using redengine::io::InputStream;
 using redengine::vfs::RelativeURI;
+using redengine::io::StreamCloser;
 using redengine::util::StringUtils;
+using redengine::platform::Library;
+using redengine::platform::Pathname;
+using redengine::vfs::URIAcquisition;
+using redengine::io::FileOutputStream;
+using redengine::platform::Filesystem;
 using redengine::platform::TypedThread;
 using redengine::platform::MutexLocker;
 using redengine::platform::ObjectLocker;
 using redengine::error::ProgrammingError;
+using redengine::text::FormattingOptions;
+using redengine::text::DefaultIntegerFormatter;
+using redengine::text::DefaultFormattingRendition;
+using redengine::text::DefaultFormattingOptionStringEmitter;
 
 namespace redengine {
 namespace qu6ntum {
@@ -81,13 +100,15 @@ namespace qu6ntum {
 	// ======== Q6Engine ========
 
 	Q6Engine::Q6Engine() : engineState(ES_SHUT_DOWN), initThread(NULL), shouldTerminate(false),
-			providerSourcesState(ES_SHUT_DOWN) {
+			providerSourcesState(ES_SHUT_DOWN), nextProviderID(static_cast<ProviderInstanceID>(0u)) {
+		setProviderCacheDirectory(string());
 		instanceHome = new FileURI(HostVFS::instance.getWorkingDirectory());
 	}
 
 	Q6Engine::Q6Engine(const Q6Engine& engine)
 			: engineState(engine.engineState), initThread(NULL), shouldTerminate(false),
-			providerSourcesState(ES_SHUT_DOWN) {
+			providerSourcesState(ES_SHUT_DOWN), providerCacheDirectory(engine.providerCacheDirectory),
+			nextProviderID(engine.nextProviderID) {
 		instanceHome = engine.instanceHome->clone();
 	}
 
@@ -222,6 +243,13 @@ namespace qu6ntum {
 			delete *begin;
 		engineListeners.clear();
 		lock.release();
+	}
+
+	void Q6Engine::setProviderCacheDirectory(const string& directory) {
+		if(directory.empty())
+			providerCacheDirectory = Filesystem::makeTempDirectory();
+		else
+			providerCacheDirectory = directory;
 	}
 
 	bool Q6Engine::startup() {
@@ -363,6 +391,32 @@ namespace qu6ntum {
 		}
 		providerSources.clear();
 		lock.release();
+	}
+
+	static FormattingOptions<char>
+			providerInstanceIDFormattingOptions(DefaultFormattingOptionStringEmitter<char>::instance,
+			static_cast<uint8_t>(16u), static_cast<int32_t>(16u));
+
+	ProviderInstanceID Q6Engine::cacheProviderCodebase(const URI& uri, string& dllPath) {
+		Filesystem::mkdirRecursive(providerCacheDirectory);
+		ObjectLocker<int> idLock(&providerIDLock);
+		ProviderInstanceID id = nextProviderID++;
+		idLock.release();
+		dllPath = Pathname::join(providerCacheDirectory,
+				DefaultIntegerFormatter<char>::formatInteger<ProviderInstanceID,
+				DefaultFormattingRendition<char> >(id,
+				providerInstanceIDFormattingOptions) + Library::FILENAME_SUFFIX);
+		Delete<URIAcquisition<InputStream<char> > > acquisition(uri.acquireResource());
+		acquisition->requestResource();
+		InputStream<char>* in = acquisition->getAcquiredResource();
+		StreamCloser inCloser(in);
+		FileOutputStream out(dllPath);
+		StreamCloser outCloser(out);
+		in->copyTo(out);
+		outCloser.close();
+		inCloser.close();
+		acquisition->releaseAcquiredResource();
+		return id;
 	}
 
 	void Q6Engine::notifyProviderChange(const URI&, FileStateChange) {
