@@ -10,8 +10,8 @@ namespace calendar {
 	template<typename IntegerT>
 	inline bool isLeapYear(IntegerT year) {
 		return !(year % static_cast<IntegerT>(4u))
-				&& year % static_cast<IntegerT>(100u)
-				&& !(year % static_cast<IntegerT>(400u));
+				&& (year % static_cast<IntegerT>(100u)
+				|| !(year % static_cast<IntegerT>(400u)));
 	}
 
 	template<typename IntegerT>
