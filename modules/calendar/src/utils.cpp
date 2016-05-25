@@ -1,3 +1,4 @@
+#include "CalendarComponentOutOfBoundsError.hpp"
 #include "utils.hpp"
 
 namespace redengine {
@@ -64,25 +65,52 @@ namespace calendar {
 	};
 
 	REDSTRAIN_CALENDAR_API DayInMonth numberOfDaysInMonth(Month month) {
-		return static_cast<DayInMonth>(month > static_cast<Month>(11u) ? 0u : daysInMonth[month]);
+		if(month > static_cast<Month>(11u))
+			throw CalendarComponentOutOfBoundsError(CalendarComponentOutOfBoundsError::COMP_MONTH,
+					static_cast<uint64_t>(month));
+		return static_cast<DayInMonth>(daysInMonth[month]);
 	}
 
 	REDSTRAIN_CALENDAR_API DayInMonth numberOfDaysInMonth(Month month, Year year) {
+		if(month > static_cast<Month>(11u))
+			throw CalendarComponentOutOfBoundsError(CalendarComponentOutOfBoundsError::COMP_MONTH,
+					static_cast<uint64_t>(month));
+		if(year > static_cast<Year>(100000u))
+			throw CalendarComponentOutOfBoundsError(CalendarComponentOutOfBoundsError::COMP_YEAR,
+					static_cast<uint64_t>(year));
 		if(month == static_cast<Month>(1u) && isLeapYear<Year>(year))
 			return static_cast<DayInMonth>(29u);
-		return static_cast<DayInMonth>(month > static_cast<Month>(11u) ? 0u : daysInMonth[month]);
+		return static_cast<DayInMonth>(daysInMonth[month]);
 	}
 
 	REDSTRAIN_CALENDAR_API unsigned aggregateNumberOfDaysInMonth(Month month) {
-		return month > static_cast<Month>(11u) ? 0u : aggregateDaysInMonth[month];
+		if(month > static_cast<Month>(11u))
+			throw CalendarComponentOutOfBoundsError(CalendarComponentOutOfBoundsError::COMP_MONTH,
+					static_cast<uint64_t>(month));
+		return aggregateDaysInMonth[month];
 	}
 
 	REDSTRAIN_CALENDAR_API unsigned aggregateNumberOfDaysInMonth(Month month, Year year) {
-		return month > static_cast<Month>(11u) ? 0u
-				: (isLeapYear<Year>(year) ? aggregateDaysInMonthLeap : aggregateDaysInMonth)[month];
+		if(month > static_cast<Month>(11u))
+			throw CalendarComponentOutOfBoundsError(CalendarComponentOutOfBoundsError::COMP_MONTH,
+					static_cast<uint64_t>(month));
+		if(year > static_cast<Year>(100000u))
+			throw CalendarComponentOutOfBoundsError(CalendarComponentOutOfBoundsError::COMP_YEAR,
+					static_cast<uint64_t>(year));
+		return (isLeapYear<Year>(year) ? aggregateDaysInMonthLeap : aggregateDaysInMonth)[month];
 	}
 
 	REDSTRAIN_CALENDAR_API DayInTime yearMonthDayInMonthToDayInTime(Year year, Month month, DayInMonth day) {
+		if(!year || year > static_cast<Year>(100000u))
+			throw CalendarComponentOutOfBoundsError(CalendarComponentOutOfBoundsError::COMP_YEAR,
+					static_cast<uint64_t>(year));
+		if(month > static_cast<Month>(11u))
+			throw CalendarComponentOutOfBoundsError(CalendarComponentOutOfBoundsError::COMP_MONTH,
+					static_cast<uint64_t>(month));
+		if(day >= static_cast<DayInMonth>(month == static_cast<Month>(1u) && isLeapYear<Year>(year)
+				? 29u : daysInMonth[month]))
+			throw CalendarComponentOutOfBoundsError(CalendarComponentOutOfBoundsError::COMP_DAY_IN_MONTH,
+					static_cast<uint64_t>(day));
 		return static_cast<DayInTime>(year - static_cast<Year>(1u)) * static_cast<DayInTime>(365u)
 				+ static_cast<DayInTime>(numberOfLeapYearsBefore<Year>(year))
 				+ (month ? static_cast<DayInTime>(aggregateNumberOfDaysInMonth(month - static_cast<Month>(1u), year))
@@ -92,6 +120,9 @@ namespace calendar {
 
 	REDSTRAIN_CALENDAR_API void dayInTimeToYearMonthDayInMonth(DayInTime dayInTime,
 			Year& year, Month& month, DayInMonth& dayInMonth) {
+		if(!dayInTime)
+			throw CalendarComponentOutOfBoundsError(CalendarComponentOutOfBoundsError::COMP_DAY_IN_TIME,
+					static_cast<uint64_t>(dayInTime));
 		// Dear God in Heaven, this is garbage. Julius and Gregorius need to
 		// be beaten with a stick! Whoever heard of using variable moduli in
 		// a numbering system? The way humans write dates is just utterly

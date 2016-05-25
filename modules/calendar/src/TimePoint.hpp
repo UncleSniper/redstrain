@@ -3,6 +3,7 @@
 
 #include "CalendarModulus.hpp"
 #include "CalendarPrecision.hpp"
+#include "CalendarComponentOutOfBoundsError.hpp"
 #include "utils.hpp"
 
 namespace redengine {
@@ -19,22 +20,73 @@ namespace calendar {
 	//   - HH:mm:ss.mmm -> 0..86,400,000 -> uint32_t
 	//   - HH:mm:ss.mmmuuu -> 0..86,400,000,000 -> uint64_t
 
+#define REDSTRAIN_CALENDAR_BAD_COMPONENT(ctype, value) \
+	throw CalendarComponentOutOfBoundsError(CalendarComponentOutOfBoundsError::ctype, static_cast<uint64_t>(value))
+
 	// YYYY-mm-dd
 	template<>
 	class TimePoint<PREC_DAY, MOD_YEAR> {
 
 	  private:
-		DayInTime day;
+		DayInTime date;
 
 	  public:
-		TimePoint(DayInTime day) : day(day) {}
-		TimePoint(Year year, Month month, DayInMonth day) : day(yearMonthDayInMonthToDayInTime(year, month, day)) {}
+		TimePoint(DayInTime date) : date(date) {
+			if(!date)
+				REDSTRAIN_CALENDAR_BAD_COMPONENT(COMP_DAY_IN_TIME, date);
+		}
+
+		TimePoint(Year year, Month month, DayInMonth day)
+				: date(yearMonthDayInMonthToDayInTime(year, month, day)) {}
+
+		TimePoint(const TimePoint& point) : date(point.date) {}
 
 	};
 
 	// YYYY-mm-dd HH:mm
 	template<>
 	class TimePoint<PREC_MINUTE, MOD_YEAR> {
+
+	  private:
+		DayInTime date;
+		MinuteInDay time;
+
+	  public:
+		TimePoint(DayInTime date, MinuteInDay time) : date(date), time(time) {
+			if(!date)
+				REDSTRAIN_CALENDAR_BAD_COMPONENT(COMP_DAY_IN_TIME, date);
+			if(time >= static_cast<MinuteInDay>(1440u))
+				REDSTRAIN_CALENDAR_BAD_COMPONENT(COMP_MINUTE_IN_DAY, time);
+		}
+
+		TimePoint(DayInTime date, Hour hour, MinuteInHour minute)
+				: date(date), time(static_cast<MinuteInDay>(hour) * static_cast<MinuteInDay>(60u)
+				+ static_cast<MinuteInDay>(minute)) {
+			if(!date)
+				REDSTRAIN_CALENDAR_BAD_COMPONENT(COMP_DAY_IN_TIME, date);
+			if(hour >= static_cast<Hour>(24u))
+				REDSTRAIN_CALENDAR_BAD_COMPONENT(COMP_HOUR, hour);
+			if(minute >= static_cast<MinuteInHour>(60u))
+				REDSTRAIN_CALENDAR_BAD_COMPONENT(COMP_MINUTE_IN_HOUR, minute);
+		}
+
+		TimePoint(Year year, Month month, DayInMonth day, MinuteInDay time)
+				: date(yearMonthDayInMonthToDayInTime(year, month, day)), time(time) {
+			if(time >= static_cast<MinuteInDay>(1440u))
+				REDSTRAIN_CALENDAR_BAD_COMPONENT(COMP_MINUTE_IN_DAY, time);
+		}
+
+		TimePoint(Year year, Month month, DayInMonth day, Hour hour, MinuteInHour minute)
+				: date(yearMonthDayInMonthToDayInTime(year, month, day)),
+				time(static_cast<MinuteInDay>(hour) * static_cast<MinuteInDay>(60u)
+				+ static_cast<MinuteInDay>(minute)) {
+			if(hour >= static_cast<Hour>(24u))
+				REDSTRAIN_CALENDAR_BAD_COMPONENT(COMP_HOUR, hour);
+			if(minute >= static_cast<MinuteInHour>(60u))
+				REDSTRAIN_CALENDAR_BAD_COMPONENT(COMP_MINUTE_IN_HOUR, minute);
+		}
+
+		TimePoint(const TimePoint& point) : date(point.date), time(point.time) {}
 
 	};
 
@@ -109,6 +161,8 @@ namespace calendar {
 	class TimePoint<PREC_MICROSECOND, MOD_HOUR> {
 
 	};
+
+#undef REDSTRAIN_CALENDAR_BAD_COMPONENT
 
 	typedef TimePoint<PREC_DAY, MOD_YEAR> Date;
 	typedef TimePoint<PREC_SECOND, MOD_YEAR> DateTime;
