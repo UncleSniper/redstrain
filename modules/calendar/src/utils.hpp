@@ -25,6 +25,8 @@ namespace calendar {
 	const uint32_t numberOfMicrosecondsInMinute = static_cast<uint32_t>(60000000u);
 	const uint32_t numberOfMicrosecondsInSecond = static_cast<uint32_t>(1000000u);
 
+	const uint64_t numberOfMicrosecondsInHour = static_cast<uint64_t>(3600000000u);
+
 	template<typename IntegerT>
 	inline bool isLeapYear(IntegerT year) {
 		return !(year % static_cast<IntegerT>(4u))
