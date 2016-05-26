@@ -64,6 +64,23 @@ namespace calendar {
 		11u, 11u, 11u, 11u, 11u, 11u, 11u, 11u, 11u, 11u, 11u, 11u, 11u, 11u
 	};
 
+	REDSTRAIN_CALENDAR_API Year numberOfFeb29Before(Year year, Month month, DayInMonth day) {
+		if(year > maxYear)
+			throw CalendarComponentOutOfBoundsError(CalendarComponentOutOfBoundsError::COMP_YEAR,
+					static_cast<uint64_t>(year));
+		if(month > maxMonth)
+			throw CalendarComponentOutOfBoundsError(CalendarComponentOutOfBoundsError::COMP_MONTH,
+					static_cast<uint64_t>(month));
+		if(day >= static_cast<DayInMonth>(month == static_cast<Month>(1u) && isLeapYear<Year>(year)
+				? 29u : daysInMonth[month]))
+			throw CalendarComponentOutOfBoundsError(CalendarComponentOutOfBoundsError::COMP_DAY_IN_MONTH,
+					static_cast<uint64_t>(day));
+		Year result = numberOfLeapYearsBefore<Year>(year);
+		if(isLeapYear<Year>(year) && month > static_cast<Month>(1u))
+			++result;
+		return result;
+	}
+
 	REDSTRAIN_CALENDAR_API DayInMonth numberOfDaysInMonth(Month month) {
 		if(month > maxMonth)
 			throw CalendarComponentOutOfBoundsError(CalendarComponentOutOfBoundsError::COMP_MONTH,

@@ -13,20 +13,20 @@ namespace calendar {
 	class TimePoint;
 
 	// Valid combinations:
-	//   - PREC_DAY, MOD_YEAR
-	//   - PREC_MINUTE, MOD_YEAR
-	//   - PREC_SECOND, MOD_YEAR
-	//   - PREC_MILLISECOND, MOD_YEAR
-	//   - PREC_MICROSECOND, MOD_YEAR
-	//   - PREC_DAY, MOD_MONTH
-	//   - PREC_MINUTE, MOD_MONTH
-	//   - PREC_SECOND, MOD_MONTH
-	//   - PREC_MILLISECOND, MOD_MONTH
-	//   - PREC_MICROSECOND, MOD_MONTH
-	//   - PREC_MINUTE, MOD_HOUR
-	//   - PREC_SECOND, MOD_HOUR
-	//   - PREC_MILLISECOND, MOD_HOUR
-	//   - PREC_MICROSECOND, MOD_HOUR
+	//   - PREC_DAY, MOD_YEAR [YYYY-mm-dd]
+	//   - PREC_MINUTE, MOD_YEAR [YYYY-mm-dd HH:mm]
+	//   - PREC_SECOND, MOD_YEAR [YYYY-mm-dd HH:mm:ss]
+	//   - PREC_MILLISECOND, MOD_YEAR [YYYY-mm-dd HH:mm:ss.mmm]
+	//   - PREC_MICROSECOND, MOD_YEAR [YYYY-mm-dd HH:mm:ss.mmmuuu]
+	//   - PREC_DAY, MOD_MONTH [mm-dd]
+	//   - PREC_MINUTE, MOD_MONTH [mm-dd HH:mm]
+	//   - PREC_SECOND, MOD_MONTH [mm-dd HH:mm:ss]
+	//   - PREC_MILLISECOND, MOD_MONTH [mm-dd HH:mm:ss.mmm]
+	//   - PREC_MICROSECOND, MOD_MONTH [mm-dd HH:mm:ss.mmmuuu]
+	//   - PREC_MINUTE, MOD_HOUR [HH:mm]
+	//   - PREC_SECOND, MOD_HOUR [HH:mm:ss]
+	//   - PREC_MILLISECOND, MOD_HOUR [HH:mm:ss.mmm]
+	//   - PREC_MICROSECOND, MOD_HOUR [HH:mm:ss.mmmuuu]
 
 	// Component types:
 	//   - YYYY-mm-dd -> 0..inf -> uint64_t

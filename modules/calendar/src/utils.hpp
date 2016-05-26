@@ -45,6 +45,8 @@ namespace calendar {
 				+ static_cast<IntegerT>(1u);  // <-- Year 0 is a leap year!
 	}
 
+	REDSTRAIN_CALENDAR_API Year numberOfFeb29Before(Year, Month, DayInMonth);
+
 	REDSTRAIN_CALENDAR_API DayInMonth numberOfDaysInMonth(Month);
 	REDSTRAIN_CALENDAR_API DayInMonth numberOfDaysInMonth(Month, Year);
 
