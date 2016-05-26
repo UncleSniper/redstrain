@@ -58,6 +58,13 @@ namespace calendar {
 	// sane compiler) would do this, since it would mess
 	// with the required circuitry quite badly. I think.
 
+	// Just to be sure, let's go like this:
+	char _moduloSemanticsAssert[!(-1 / 2)];
+	// If, by the utter insanity of the target platform,
+	// the quotient is rounded towards negative infinity,
+	// the dimension will expand to compile-time zero
+	// and this file will not compile.
+
 	int64_t Duration::getDays() const {
 		return microseconds / static_cast<int64_t>(numberOfMicrosecondsInDay);
 	}
