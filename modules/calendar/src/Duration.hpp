@@ -25,6 +25,9 @@ namespace calendar {
 		Duration(int32_t, int32_t, int64_t, int64_t, int64_t, int64_t, int64_t);
 		// YYYY-mm-dd HH:mm:ss.mmmuuu
 		Duration(int32_t, int32_t, int64_t, int64_t, int64_t, int64_t, int64_t, int64_t);
+		Duration(const Duration&);
+
+		Duration& operator=(const Duration&);
 
 		inline int32_t getYears() const {
 			return years;

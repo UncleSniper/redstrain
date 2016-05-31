@@ -42,6 +42,16 @@ namespace calendar {
 		this->microseconds = this->microseconds * static_cast<int64_t>(1000) + microseconds;
 	}
 
+	Duration::Duration(const Duration& duration)
+			: years(duration.years), months(duration.months), microseconds(duration.microseconds) {}
+
+	Duration& Duration::operator=(const Duration& duration) {
+		years = duration.years;
+		months = duration.months;
+		microseconds = duration.microseconds;
+		return *this;
+	}
+
 	// "Gentlemen, it appears we're boned."
 	//        -- Turanga Leela
 	//

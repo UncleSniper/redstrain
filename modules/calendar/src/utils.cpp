@@ -368,4 +368,9 @@ namespace calendar {
 		hour = static_cast<Hour>(microsecondInDay / static_cast<MicrosecondInDay>(60u));
 	}
 
+	REDSTRAIN_CALENDAR_API DayInYear dayInNonLeapYear(DayInYear day, Year year) {
+		return day > static_cast<DayInYear>(59u) && isLeapYear<Year>(year)
+				? static_cast<DayInYear>(day - static_cast<DayInYear>(1u)) : day;
+	}
+
 }}

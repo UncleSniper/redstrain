@@ -82,7 +82,7 @@ namespace text {
 			}
 			else
 				*--insert = RenditionT::digit(0u, !!(options.flags & FOF_UPPERCASE_DIGITS));
-			result.append(insert, static_cast<typename String::size_type>(digits));
+			result.append(insert, static_cast<StringLength>(digits));
 			for(; fillSpace; --fillSpace)
 				result += options.fillChar;
 			return result;

@@ -57,6 +57,11 @@ namespace calendar {
 
 		TimePoint(const TimePoint& point) : date(point.date) {}
 
+		TimePoint& operator=(const TimePoint& point) {
+			date = point.date;
+			return *this;
+		}
+
 		inline DayInTime getDayInTime() const {
 			return date;
 		}
@@ -197,6 +202,12 @@ namespace calendar {
 
 		TimePoint(const TimePoint& point) : date(point.date), time(point.time) {}
 
+		TimePoint& operator=(const TimePoint& point) {
+			date = point.date;
+			time = point.time;
+			return *this;
+		}
+
 		inline DayInTime getDayInTime() const {
 			return date;
 		}
@@ -326,6 +337,12 @@ namespace calendar {
 				time(hourMinuteSecondToSecondInDay(hour, minute, second)) {}
 
 		TimePoint(const TimePoint& point) : date(point.date), time(point.time) {}
+
+		TimePoint& operator=(const TimePoint& point) {
+			date = point.date;
+			time = point.time;
+			return *this;
+		}
 
 		inline DayInTime getDayInTime() const {
 			return date;
@@ -474,6 +491,12 @@ namespace calendar {
 				time(hourMinuteSecondMillisecondToMillisecondInDay(hour, minute, second, millisecond)) {}
 
 		TimePoint(const TimePoint& point) : date(point.date), time(point.time) {}
+
+		TimePoint& operator=(const TimePoint& point) {
+			date = point.date;
+			time = point.time;
+			return *this;
+		}
 
 		inline DayInTime getDayInTime() const {
 			return date;
@@ -635,6 +658,12 @@ namespace calendar {
 
 		TimePoint(const TimePoint& point) : date(point.date), time(point.time) {}
 
+		TimePoint& operator=(const TimePoint& point) {
+			date = point.date;
+			time = point.time;
+			return *this;
+		}
+
 		inline DayInTime getDayInTime() const {
 			return date;
 		}
@@ -794,6 +823,11 @@ namespace calendar {
 
 		TimePoint(const TimePoint& point) : date(point.date) {}
 
+		TimePoint& operator=(const TimePoint& point) {
+			date = point.date;
+			return *this;
+		}
+
 		DayInTime getDayInTime() const {
 			return static_cast<DayInTime>(date) + static_cast<DayInTime>(1u);
 		}
@@ -911,6 +945,12 @@ namespace calendar {
 				: date(monthDayToDayInYear(month, day)), time(hourMinuteToMinuteInDay(hour, minute)) {}
 
 		TimePoint(const TimePoint& point) : date(point.date), time(point.time) {}
+
+		TimePoint& operator=(const TimePoint& point) {
+			date = point.date;
+			time = point.time;
+			return *this;
+		}
 
 		DayInTime getDayInTime() const {
 			return static_cast<DayInTime>(date) + static_cast<DayInTime>(1u);
@@ -1044,6 +1084,12 @@ namespace calendar {
 				time(hourMinuteSecondToSecondInDay(hour, minute, second)) {}
 
 		TimePoint(const TimePoint& point) : date(point.date), time(point.time) {}
+
+		TimePoint& operator=(const TimePoint& point) {
+			date = point.date;
+			time = point.time;
+			return *this;
+		}
 
 		DayInTime getDayInTime() const {
 			return static_cast<DayInTime>(date) + static_cast<DayInTime>(1u);
@@ -1183,6 +1229,12 @@ namespace calendar {
 				time(hourMinuteSecondMillisecondToMillisecondInDay(hour, minute, second, millisecond)) {}
 
 		TimePoint(const TimePoint& point) : date(point.date), time(point.time) {}
+
+		TimePoint& operator=(const TimePoint& point) {
+			date = point.date;
+			time = point.time;
+			return *this;
+		}
 
 		DayInTime getDayInTime() const {
 			return static_cast<DayInTime>(date) + static_cast<DayInTime>(1u);
@@ -1334,6 +1386,12 @@ namespace calendar {
 
 		TimePoint(const TimePoint& point) : date(point.date), time(point.time) {}
 
+		TimePoint& operator=(const TimePoint& point) {
+			date = point.date;
+			time = point.time;
+			return *this;
+		}
+
 		DayInTime getDayInTime() const {
 			return static_cast<DayInTime>(date) + static_cast<DayInTime>(1u);
 		}
@@ -1484,6 +1542,11 @@ namespace calendar {
 
 		TimePoint(const TimePoint& point) : time(point.time) {}
 
+		TimePoint& operator=(const TimePoint& point) {
+			time = point.time;
+			return *this;
+		}
+
 		inline DayInTime getDayInTime() const {
 			return static_cast<DayInTime>(1u);
 		}
@@ -1595,6 +1658,11 @@ namespace calendar {
 				: time(hourMinuteSecondToSecondInDay(hour, minute, second)) {}
 
 		TimePoint(const TimePoint& point) : time(point.time) {}
+
+		TimePoint& operator=(const TimePoint& point) {
+			time = point.time;
+			return *this;
+		}
 
 		inline DayInTime getDayInTime() const {
 			return static_cast<DayInTime>(1u);
@@ -1711,6 +1779,11 @@ namespace calendar {
 				: time(hourMinuteSecondMillisecondToMillisecondInDay(hour, minute, second, millisecond)) {}
 
 		TimePoint(const TimePoint& point) : time(point.time) {}
+
+		TimePoint& operator=(const TimePoint& point) {
+			time = point.time;
+			return *this;
+		}
 
 		inline DayInTime getDayInTime() const {
 			return static_cast<DayInTime>(1u);
@@ -1838,6 +1911,11 @@ namespace calendar {
 				millisecond, microsecond)) {}
 
 		TimePoint(const TimePoint& point) : time(point.time) {}
+
+		TimePoint& operator=(const TimePoint& point) {
+			time = point.time;
+			return *this;
+		}
 
 		inline DayInTime getDayInTime() const {
 			return static_cast<DayInTime>(1u);

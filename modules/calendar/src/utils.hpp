@@ -77,6 +77,8 @@ namespace calendar {
 	REDSTRAIN_CALENDAR_API void microsecondInDayToHourMinuteSecondMillisecondMicrosecond(MicrosecondInDay,
 			Hour&, MinuteInHour&, SecondInMinute&, MillisecondInSecond&, MicrosecondInMillisecond&);
 
+	REDSTRAIN_CALENDAR_API DayInYear dayInNonLeapYear(DayInYear, Year);
+
 }}
 
 #endif /* REDSTRAIN_MOD_CALENDAR_UTILS_HPP */

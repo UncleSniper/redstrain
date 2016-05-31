@@ -134,7 +134,8 @@ namespace calendar {
 	}
 
 #define REDSTRAIN_CALENDAR_PLUSOPER(prec, mod) \
-	REDSTRAIN_CALENDAR_API TimePoint<prec, mod> operator+(const TimePoint<prec, mod>&, const Duration&);
+	REDSTRAIN_CALENDAR_API TimePoint<prec, mod> operator+(const TimePoint<prec, mod>&, const Duration&); \
+	REDSTRAIN_CALENDAR_API TimePoint<prec, mod>& operator+=(TimePoint<prec, mod>&, const Duration&);
 
 	REDSTRAIN_CALENDAR_PLUSOPER(PREC_DAY, MOD_YEAR)
 	REDSTRAIN_CALENDAR_PLUSOPER(PREC_MINUTE, MOD_YEAR)
@@ -152,6 +153,12 @@ namespace calendar {
 	REDSTRAIN_CALENDAR_PLUSOPER(PREC_MICROSECOND, MOD_HOUR)
 
 #undef REDSTRAIN_CALENDAR_PLUSOPER
+
+	REDSTRAIN_CALENDAR_API Duration operator-(const Duration&);
+	REDSTRAIN_CALENDAR_API Duration operator+(const Duration&, const Duration&);
+	REDSTRAIN_CALENDAR_API Duration operator-(const Duration&, const Duration&);
+	REDSTRAIN_CALENDAR_API Duration& operator+=(Duration&, const Duration&);
+	REDSTRAIN_CALENDAR_API Duration& operator-=(Duration&, const Duration&);
 
 }}
 
