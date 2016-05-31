@@ -55,6 +55,16 @@ namespace calendar {
 		int64_t modHour() const;
 		int64_t modDay() const;
 
+		static int64_t overMillisecond(int64_t);
+		static int64_t overSecond(int64_t);
+		static int64_t overMinute(int64_t);
+		static int64_t overHour(int64_t);
+
+		static int64_t modSecond(int64_t);
+		static int64_t modMinute(int64_t);
+		static int64_t modHour(int64_t);
+		static int64_t modDay(int64_t);
+
 	};
 
 }}

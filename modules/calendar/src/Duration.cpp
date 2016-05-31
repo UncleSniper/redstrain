@@ -125,4 +125,36 @@ namespace calendar {
 		return microseconds % static_cast<int64_t>(numberOfMicrosecondsInDay);
 	}
 
+	int64_t Duration::overMillisecond(int64_t microseconds) {
+		return microseconds / static_cast<int64_t>(numberOfMicrosecondsInMillisecond);
+	}
+
+	int64_t Duration::overSecond(int64_t microseconds) {
+		return microseconds / static_cast<int64_t>(numberOfMicrosecondsInSecond);
+	}
+
+	int64_t Duration::overMinute(int64_t microseconds) {
+		return microseconds / static_cast<int64_t>(numberOfMicrosecondsInMinute);
+	}
+
+	int64_t Duration::overHour(int64_t microseconds) {
+		return microseconds / static_cast<int64_t>(numberOfMicrosecondsInHour);
+	}
+
+	int64_t Duration::modSecond(int64_t microseconds) {
+		return microseconds % static_cast<int64_t>(numberOfMicrosecondsInSecond);
+	}
+
+	int64_t Duration::modMinute(int64_t microseconds) {
+		return microseconds % static_cast<int64_t>(numberOfMicrosecondsInMinute);
+	}
+
+	int64_t Duration::modHour(int64_t microseconds) {
+		return microseconds % static_cast<int64_t>(numberOfMicrosecondsInHour);
+	}
+
+	int64_t Duration::modDay(int64_t microseconds) {
+		return microseconds % static_cast<int64_t>(numberOfMicrosecondsInDay);
+	}
+
 }}
