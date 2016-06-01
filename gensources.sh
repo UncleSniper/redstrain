@@ -5,6 +5,7 @@ GRISUTABLES=modules/text/src/GrisuTables.cpp
 
 MSGSHDR=tools/msgshdr/redmsgshdr-static
 COREMSGKEY=modules/locale/src/CoreMessageKey.hpp
+CALFMTMSGKEY=modules/calendar/src/FormatMessageKey.hpp
 
 if [ -x "$MKGRISU" ]; then
 	echo "Generating '$GRISUTABLES'..."
@@ -26,6 +27,7 @@ function genModMsgsHdr {
 
 if [ -x "$MSGSHDR" ]; then
 	genMsgsHdr locale::CoreMessageKey CMK MOD_LOCALE_COREMESSAGEKEY data/locale-core "$COREMSGKEY"
+	genMsgsHdr calendar::FormatMessageKey FMK MOD_CALENDAR_FORMATMESSAGEKEY data/calendar-formats "$CALFMTMSGKEY"
 	genModMsgsHdr error Error ERROR
 	genModMsgsHdr platform Platform PLATFORM
 	genModMsgsHdr io IO IO

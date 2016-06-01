@@ -33,6 +33,8 @@ namespace locale {
 
 		const Locale& intern() const;
 
+		static const Locale& getSystemLocale();
+
 	};
 
 }}

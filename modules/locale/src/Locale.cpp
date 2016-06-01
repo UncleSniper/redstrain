@@ -1,4 +1,5 @@
 #include <set>
+#include <redstrain/text/l10n.hpp>
 #include <redstrain/platform/MutexLocker.hpp>
 #include <redstrain/platform/SynchronizedSingleton.hpp>
 
@@ -8,7 +9,9 @@ using std::set;
 using std::string;
 using redengine::platform::Mutex;
 using redengine::platform::MutexLocker;
+using redengine::platform::SynchronizedSingleton;
 using redengine::platform::DefaultSynchronizedSingleton;
+using redengine::text::guessSystemLocale;
 
 namespace redengine {
 namespace locale {
@@ -62,6 +65,42 @@ namespace locale {
 			locker.release();
 			return locale;
 		}
+	}
+
+	class SystemLocaleSingleton : public SynchronizedSingleton<const Locale> {
+
+	  protected:
+		virtual const Locale* newInstance();
+
+	  public:
+		SystemLocaleSingleton();
+		SystemLocaleSingleton(const SystemLocaleSingleton&);
+
+	};
+
+	SystemLocaleSingleton::SystemLocaleSingleton() {}
+
+	SystemLocaleSingleton::SystemLocaleSingleton(const SystemLocaleSingleton& singleton)
+			: SynchronizedSingleton<const Locale>(singleton) {}
+
+	const Locale* SystemLocaleSingleton::newInstance() {
+		string spec(guessSystemLocale());
+		string language, country;
+		string::size_type pos = spec.find('_');
+		if(pos == string::npos)
+			language = spec;
+		else {
+			language = spec.substr(static_cast<string::size_type>(0u), pos);
+			country = spec.substr(static_cast<string::size_type>(pos + static_cast<string::size_type>(1u)));
+		}
+		Locale locale(language, country);
+		return &locale.intern();
+	}
+
+	static SystemLocaleSingleton systemLocaleSingleton;
+
+	const Locale& Locale::getSystemLocale() {
+		return systemLocaleSingleton.get();
 	}
 
 }}

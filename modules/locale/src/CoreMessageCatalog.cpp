@@ -40,7 +40,7 @@ namespace locale {
 
 	static DefaultCoreMessageCatalog16Singleton defaultCoreMessageCatalog16;
 
-	CoreMessageCatalog16& getDefaultCoreMessageCatalog16() {
+	REDSTRAIN_LOCALE_API CoreMessageCatalog16& getDefaultCoreMessageCatalog16() {
 		return defaultCoreMessageCatalog16.get();
 	}
 

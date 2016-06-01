@@ -3,15 +3,16 @@
 
 #include <redstrain/error/Error.hpp>
 
+#include "api.hpp"
 #include "types.hpp"
 
 namespace redengine {
 namespace text {
 
-	std::string guessSystemLocale();
-	std::string guessTerminalCharset();
+	REDSTRAIN_TEXT_API std::string guessSystemLocale();
+	REDSTRAIN_TEXT_API std::string guessTerminalCharset();
 
-	String16 getErrorMessage(const error::Error&, const locale::Locale&);
+	REDSTRAIN_TEXT_API String16 getErrorMessage(const error::Error&, const locale::Locale&);
 
 }}
 

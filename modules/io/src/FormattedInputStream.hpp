@@ -18,6 +18,7 @@ namespace io {
 
 	  public:
 		typedef std::basic_string<RecordT> String;
+		typedef LinebreakRecordsT LinebreakRecords;
 
 	  private:
 		struct DeleteBuffer {

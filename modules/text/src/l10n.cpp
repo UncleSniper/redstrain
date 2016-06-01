@@ -26,7 +26,7 @@ namespace text {
 		return value && *value ? value : NULL;
 	}
 
-	void splitLCMessages(string& locale, string& charset) {
+	static void splitLCMessages(string& locale, string& charset) {
 		const char* lcMessages = getLCMessages();
 		if(!lcMessages)
 			return;
@@ -40,13 +40,16 @@ namespace text {
 			locale = s;
 	}
 
-	string guessSystemLocale() {
+	REDSTRAIN_TEXT_API string guessSystemLocale() {
 		string locale, charset;
 		splitLCMessages(locale, charset);
-		return StringUtils::trim(locale);
+		locale = StringUtils::trim(locale);
+		if(locale == "C")
+			return string();
+		return locale;
 	}
 
-	string guessTerminalCharset() {
+	REDSTRAIN_TEXT_API string guessTerminalCharset() {
 		string locale, charset;
 		splitLCMessages(locale, charset);
 		charset = StringUtils::trim(charset);
@@ -63,7 +66,7 @@ namespace text {
 #error Platform not supported
 #endif /* OS-specific implementations */
 
-	String16 getErrorMessage(const Error& error, const Locale& locale) {
+	REDSTRAIN_TEXT_API String16 getErrorMessage(const Error& error, const Locale& locale) {
 		String16 result;
 		StringOutputStream<Char16> stream(result);
 		StreamSink16 sink(stream);

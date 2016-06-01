@@ -1,0 +1,104 @@
+# Short name of Monday.
+TSO_MON=Mo
+# Short name of Tuesday.
+TSO_TUE=Di
+# Short name of Wednesday.
+TSO_WED=Mi
+# Short name of Thursday.
+TSO_THU=Do
+# Short name of Friday.
+TSO_FRI=Fr
+# Short name of Saturday.
+TSO_SAT=Sa
+# Short name of Sunday.
+TSO_SUN=So
+# Full name of Monday.
+TSO_MONDAY=Montag
+# Full name of Tuesday.
+TSO_TUESDAY=Dienstag
+# Full name of Wednesday.
+TSO_WEDNESDAY=Mittwoch
+# Full name of Thursday.
+TSO_THURSDAY=Donnerstag
+# Full name of Friday.
+TSO_FRIDAY=Freitag
+# Full name of Saturday.
+TSO_SATURDAY=Samstag
+# Full name of Sunday.
+TSO_SUNDAY=Sonntag
+# Short name of January.
+TSO_JAN=Jan
+# Short name of February.
+TSO_FEB=Feb
+# Short name of March.
+TSO_MAR=Mär
+# Short name of April.
+TSO_APR=Apr
+# Short name of May.
+TSO_MAY_S=Mai
+# Short name of June.
+TSO_JUN=Jun
+# Short name of July.
+TSO_JUL=Jul
+# Short name of August.
+TSO_AUG=Aug
+# Short name of September.
+TSO_SEP=Sep
+# Short name of October.
+TSO_OCT=Okt
+# Short name of November.
+TSO_NOV=Nov
+# Short name of December.
+TSO_DEC=Dez
+# Long name of January.
+TSO_JANUARY=Januar
+# Long name of February.
+TSO_FEBRUARY=Februar
+# Long name of March.
+TSO_MARCH=März
+# Long name of April.
+TSO_APRIL=April
+# Long name of May.
+TSO_MAY=Mai
+# Long name of June.
+TSO_JUNE=Juni
+# Long name of July.
+TSO_JULY=Juli
+# Long name of August.
+TSO_AUGUST=August
+# Long name of September.
+TSO_SEPTEMBER=September
+# Long name of October.
+TSO_OCTOBER=Oktober
+# Long name of November.
+TSO_NOVEMBER=November
+# Long name of December.
+TSO_DECEMBER=Dezember
+# The "ante meridiem" specifier in times-of-day, usually "AM".
+TSO_AM=AM
+# The "post meridiem" specifier in times-of-day, usually "PM".
+TSO_PM=PM
+# Format string for shortest possible date representation.
+FORMAT_SHORT_DATE=%%d.%%m.%%y
+# Format string for medium-long date representation.
+FORMAT_MEDIUM_DATE=%%d. %%b %%Y
+# Format string for long date representation.
+FORMAT_LONG_DATE=%%d. %%B %%Y
+# Format string for fully specified date representation.
+FORMAT_FULL_DATE=%%A, %%d. %%B %%Y
+# Format string for shortest possible time-of-day representation.
+FORMAT_SHORT_TIME=%%H:%%2M
+# Format string for medium-long time-of-day representation.
+FORMAT_MEDIUM_TIME=%%H:%%2M
+# Format string for long time-of-day representation.
+FORMAT_LONG_TIME=%%H:%%2M:%%2s
+# Format string for fully specified time-of-day representation.
+FORMAT_FULL_TIME=%%H:%%2M:%%2s
+# Format string for shortest possible date-and-time representation.
+FORMAT_SHORT_DATETIME=%%d.%%m.%%y %%H:%%2M
+# Format string for medium-long date-and-time representation.
+FORMAT_MEDIUM_DATETIME=%%d. %%b %%Y, %%H:%%2M
+# Format string for long date-and-time representation.
+FORMAT_LONG_DATETIME=%%d. %%B %%Y, %%H:%%2M:%%2s
+# Format string for fully specified date-and-time representation.
+FORMAT_FULL_DATETIME=%%A, %%d. %%B %%Y, %%H:%%2M:%%2s
