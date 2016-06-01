@@ -1,3 +1,11 @@
+#include <redstrain/platform/platform.hpp>
+
+#if REDSTRAIN_PLATFORM_OS == REDSTRAIN_PLATFORM_OS_UNIX
+#include <time.h>
+#elif REDSTRAIN_PLATFORM_OS == REDSTRAIN_PLATFORM_OS_WINDOWS
+//TODO: support Windows
+#endif /* OS-specific includes */
+
 #include "CalendarComponentOutOfBoundsError.hpp"
 #include "utils.hpp"
 
@@ -372,5 +380,41 @@ namespace calendar {
 		return day > static_cast<DayInYear>(59u) && isLeapYear<Year>(year)
 				? static_cast<DayInYear>(day - static_cast<DayInYear>(1u)) : day;
 	}
+
+#if REDSTRAIN_PLATFORM_OS == REDSTRAIN_PLATFORM_OS_UNIX
+
+	REDSTRAIN_CALENDAR_API void getCurrentTime(Year& year, Month& month, DayInMonth& day,
+			Hour& hour, MinuteInHour& minute, SecondInMinute& second,
+			MillisecondInSecond& millisecond, MicrosecondInMillisecond& microsecond) {
+		struct timespec spec;
+		const struct tm* broken;
+		if(clock_gettime(CLOCK_REALTIME, &spec) || !(broken = localtime(&spec.tv_sec))) {
+			year = static_cast<Year>(0u);
+			month = static_cast<Month>(0u);
+			day = static_cast<DayInMonth>(0u);
+			hour = static_cast<Hour>(0u);
+			minute = static_cast<MinuteInHour>(0u);
+			second = static_cast<SecondInMinute>(0u);
+			millisecond = static_cast<MillisecondInSecond>(0u);
+			microsecond = static_cast<MicrosecondInMillisecond>(0u);
+		}
+		year = static_cast<Year>(broken->tm_year + 1900);
+		month = static_cast<Month>(broken->tm_mon);
+		day = static_cast<DayInMonth>(broken->tm_mday - 1);
+		hour = static_cast<Hour>(broken->tm_hour);
+		minute = static_cast<MinuteInHour>(broken->tm_min);
+		// ugh, leap seconds...
+		second = static_cast<SecondInMinute>(broken->tm_sec > 59 ? 59 : broken->tm_sec);
+		long usec = spec.tv_nsec / 1000l;
+		millisecond = static_cast<MillisecondInSecond>(usec / 1000l);
+		microsecond = static_cast<MicrosecondInMillisecond>(usec % 1000l);
+	}
+
+#elif REDSTRAIN_PLATFORM_OS == REDSTRAIN_PLATFORM_OS_WINDOWS
+//TODO: support Windows
+#error Windows is not supported yet
+#else /* OS not implemented */
+#error Platform not supported
+#endif /* OS-specific implementations */
 
 }}

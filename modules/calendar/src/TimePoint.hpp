@@ -39,6 +39,17 @@ namespace calendar {
 #define REDSTRAIN_CALENDAR_BAD_COMPONENT(ctype, value) \
 	throw CalendarComponentOutOfBoundsError(CalendarComponentOutOfBoundsError::ctype, static_cast<uint64_t>(value))
 
+#define REDSTRAIN_CALENDAR_GET_NOW \
+	Year year; \
+	Month month; \
+	DayInMonth day; \
+	Hour hour; \
+	MinuteInHour minute; \
+	SecondInMinute second; \
+	MillisecondInSecond millisecond; \
+	MicrosecondInMillisecond microsecond; \
+	getCurrentTime(year, month, day, hour, minute, second, millisecond, microsecond);
+
 	// YYYY-mm-dd
 	template<>
 	class TimePoint<PREC_DAY, MOD_YEAR> {
@@ -47,6 +58,11 @@ namespace calendar {
 		DayInTime date;
 
 	  public:
+		TimePoint() {
+			REDSTRAIN_CALENDAR_GET_NOW
+			date = yearMonthDayToDayInTime(year, month, day);
+		}
+
 		TimePoint(DayInTime date) : date(date) {
 			if(!date)
 				REDSTRAIN_CALENDAR_BAD_COMPONENT(COMP_DAY_IN_TIME, date);
@@ -177,6 +193,12 @@ namespace calendar {
 		MinuteInDay time;
 
 	  public:
+		TimePoint() {
+			REDSTRAIN_CALENDAR_GET_NOW
+			date = yearMonthDayToDayInTime(year, month, day);
+			time = hourMinuteToMinuteInDay(hour, minute);
+		}
+
 		TimePoint(DayInTime date, MinuteInDay time) : date(date), time(time) {
 			if(!date)
 				REDSTRAIN_CALENDAR_BAD_COMPONENT(COMP_DAY_IN_TIME, date);
@@ -325,6 +347,12 @@ namespace calendar {
 		SecondInDay time;
 
 	  public:
+		TimePoint() {
+			REDSTRAIN_CALENDAR_GET_NOW
+			date = yearMonthDayToDayInTime(year, month, day);
+			time = hourMinuteSecondToSecondInDay(hour, minute, second);
+		}
+
 		TimePoint(DayInTime date, SecondInDay time) : date(date), time(time) {
 			if(!date)
 				REDSTRAIN_CALENDAR_BAD_COMPONENT(COMP_DAY_IN_TIME, date);
@@ -465,6 +493,12 @@ namespace calendar {
 		MillisecondInDay time;
 
 	  public:
+		TimePoint() {
+			REDSTRAIN_CALENDAR_GET_NOW
+			date = yearMonthDayToDayInTime(year, month, day);
+			time = hourMinuteSecondMillisecondToMillisecondInDay(hour, minute, second, millisecond);
+		}
+
 		TimePoint(DayInTime date, MillisecondInDay time) : date(date), time(time) {
 			if(!date)
 				REDSTRAIN_CALENDAR_BAD_COMPONENT(COMP_DAY_IN_TIME, date);
@@ -628,6 +662,13 @@ namespace calendar {
 		MicrosecondInDay time;
 
 	  public:
+		TimePoint() {
+			REDSTRAIN_CALENDAR_GET_NOW
+			date = yearMonthDayToDayInTime(year, month, day);
+			time = hourMinuteSecondMillisecondMicrosecondToMicrosecondInDay(hour, minute, second,
+					millisecond, microsecond);
+		}
+
 		TimePoint(DayInTime date, MicrosecondInDay time) : date(date), time(time) {
 			if(!date)
 				REDSTRAIN_CALENDAR_BAD_COMPONENT(COMP_DAY_IN_TIME, date);
@@ -814,6 +855,11 @@ namespace calendar {
 		DayInYear date;
 
 	  public:
+		TimePoint() {
+			REDSTRAIN_CALENDAR_GET_NOW
+			date = dayInNonLeapYear(monthDayToDayInYear(month, day, year), year);
+		}
+
 		TimePoint(DayInYear date) : date(date) {
 			if(date >= static_cast<DayInYear>(365u))
 				REDSTRAIN_CALENDAR_BAD_COMPONENT(COMP_DAY_IN_YEAR, date);
@@ -934,6 +980,12 @@ namespace calendar {
 		MinuteInDay time;
 
 	  public:
+		TimePoint() {
+			REDSTRAIN_CALENDAR_GET_NOW
+			date = dayInNonLeapYear(monthDayToDayInYear(month, day, year), year);
+			time = hourMinuteToMinuteInDay(hour, minute);
+		}
+
 		TimePoint(DayInYear date, MinuteInDay time) : date(date), time(time) {
 			if(date >= static_cast<DayInYear>(365u))
 				REDSTRAIN_CALENDAR_BAD_COMPONENT(COMP_DAY_IN_YEAR, date);
@@ -1060,6 +1112,12 @@ namespace calendar {
 		SecondInDay time;
 
 	  public:
+		TimePoint() {
+			REDSTRAIN_CALENDAR_GET_NOW
+			date = dayInNonLeapYear(monthDayToDayInYear(month, day, year), year);
+			time = hourMinuteSecondToSecondInDay(hour, minute, second);
+		}
+
 		TimePoint(DayInYear date, SecondInDay time) : date(date), time(time) {
 			if(date >= static_cast<DayInYear>(365u))
 				REDSTRAIN_CALENDAR_BAD_COMPONENT(COMP_DAY_IN_YEAR, date);
@@ -1203,6 +1261,12 @@ namespace calendar {
 		MillisecondInDay time;
 
 	  public:
+		TimePoint() {
+			REDSTRAIN_CALENDAR_GET_NOW
+			date = dayInNonLeapYear(monthDayToDayInYear(month, day, year), year);
+			time = hourMinuteSecondMillisecondToMillisecondInDay(hour, minute, second, millisecond);
+		}
+
 		TimePoint(DayInYear date, MillisecondInDay time) : date(date), time(time) {
 			if(date >= static_cast<DayInYear>(365u))
 				REDSTRAIN_CALENDAR_BAD_COMPONENT(COMP_DAY_IN_YEAR, date);
@@ -1357,6 +1421,13 @@ namespace calendar {
 		MicrosecondInDay time;
 
 	  public:
+		TimePoint() {
+			REDSTRAIN_CALENDAR_GET_NOW
+			date = dayInNonLeapYear(monthDayToDayInYear(month, day, year), year);
+			time = hourMinuteSecondMillisecondMicrosecondToMicrosecondInDay(hour, minute, second,
+					millisecond, microsecond);
+		}
+
 		TimePoint(DayInYear date, MicrosecondInDay time) : date(date), time(time) {
 			if(date >= static_cast<DayInYear>(365u))
 				REDSTRAIN_CALENDAR_BAD_COMPONENT(COMP_DAY_IN_YEAR, date);
@@ -1533,6 +1604,11 @@ namespace calendar {
 		MinuteInDay time;
 
 	  public:
+		TimePoint() {
+			REDSTRAIN_CALENDAR_GET_NOW
+			time = hourMinuteToMinuteInDay(hour, minute);
+		}
+
 		TimePoint(MinuteInDay time) : time(time) {
 			if(time >= numberOfMinutesInDay)
 				REDSTRAIN_CALENDAR_BAD_COMPONENT(COMP_MINUTE_IN_DAY, time);
@@ -1649,6 +1725,11 @@ namespace calendar {
 		SecondInDay time;
 
 	  public:
+		TimePoint() {
+			REDSTRAIN_CALENDAR_GET_NOW
+			time = hourMinuteSecondToSecondInDay(hour, minute, second);
+		}
+
 		TimePoint(SecondInDay time) : time(time) {
 			if(time >= numberOfSecondsInDay)
 				REDSTRAIN_CALENDAR_BAD_COMPONENT(COMP_SECOND_IN_DAY, time);
@@ -1770,6 +1851,11 @@ namespace calendar {
 		MillisecondInDay time;
 
 	  public:
+		TimePoint() {
+			REDSTRAIN_CALENDAR_GET_NOW
+			time = hourMinuteSecondMillisecondToMillisecondInDay(hour, minute, second, millisecond);
+		}
+
 		TimePoint(MillisecondInDay time) : time(time) {
 			if(time >= numberOfMillisecondsInDay)
 				REDSTRAIN_CALENDAR_BAD_COMPONENT(COMP_MILLISECOND_IN_DAY, time);
@@ -1900,6 +1986,12 @@ namespace calendar {
 		MicrosecondInDay time;
 
 	  public:
+		TimePoint() {
+			REDSTRAIN_CALENDAR_GET_NOW
+			time = hourMinuteSecondMillisecondMicrosecondToMicrosecondInDay(hour, minute, second,
+					millisecond, microsecond);
+		}
+
 		TimePoint(MicrosecondInDay time) : time(time) {
 			if(time >= numberOfMicrosecondsInDay)
 				REDSTRAIN_CALENDAR_BAD_COMPONENT(COMP_MICROSECOND_IN_DAY, time);
@@ -2046,6 +2138,7 @@ namespace calendar {
 	};
 
 #undef REDSTRAIN_CALENDAR_BAD_COMPONENT
+#undef REDSTRAIN_CALENDAR_GET_NOW
 
 	typedef TimePoint<PREC_DAY, MOD_YEAR> Date;
 	typedef TimePoint<PREC_SECOND, MOD_YEAR> DateTime;
