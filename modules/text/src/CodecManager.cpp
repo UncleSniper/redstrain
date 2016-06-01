@@ -260,26 +260,38 @@ namespace text {
 		// Encoder16
 		Unref<Encoder16Factory> enc16factory(new DefaultCodecFactory<Encoder16, UTF8Encoder16>);
 		setEncoder16Factory("UTF-8", *enc16factory);
+		setEncoder16Factory("utf8", *enc16factory);
+		setEncoder16CanonicalName("utf8", "UTF-8");
 		enc16factory.set()->unref();
 		// Decoder16
 		Unref<Decoder16Factory> dec16factory(new DefaultCodecFactory<Decoder16, UTF8Decoder16>);
 		setDecoder16Factory("UTF-8", *dec16factory);
+		setDecoder16Factory("utf8", *dec16factory);
+		setDecoder16CanonicalName("utf8", "UTF-8");
 		dec16factory.set()->unref();
 		// Encoder32
 		Unref<Encoder32Factory> enc32factory(new DefaultCodecFactory<Encoder32, UTF16Encoder8>);
 		setEncoder32Factory("UTF-16", *enc32factory);
+		setEncoder32Factory("utf16", *enc32factory);
+		setEncoder32CanonicalName("utf16", "UTF-16");
 		enc32factory.set()->unref();
 		// Decoder32
 		Unref<Decoder32Factory> dec32factory(new DefaultCodecFactory<Decoder32, UTF16Decoder8>);
 		setDecoder32Factory("UTF-16", *dec32factory);
+		setDecoder32Factory("utf16", *dec32factory);
+		setDecoder32CanonicalName("utf16", "UTF-16");
 		dec32factory.set()->unref();
 		// Transcoder1632
 		Unref<Transcoder1632Factory> trc1632factory(new DefaultCodecFactory<Transcoder1632, UTF16Decoder16>);
 		setTranscoder1632Factory("UTF-16", *trc1632factory);
+		setTranscoder1632Factory("utf16", *trc1632factory);
+		setTranscoder1632CanonicalName("utf16", "UTF-16");
 		trc1632factory.set()->unref();
 		// Transcoder3216
 		Unref<Transcoder3216Factory> trc3216factory(new DefaultCodecFactory<Transcoder3216, UTF16Encoder16>);
 		setTranscoder3216Factory("UTF-16", *trc3216factory);
+		setTranscoder3216Factory("utf16", *trc3216factory);
+		setTranscoder3216CanonicalName("utf16", "UTF-16");
 		trc3216factory.set()->unref();
 	}
 

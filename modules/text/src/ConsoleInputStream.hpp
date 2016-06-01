@@ -33,7 +33,9 @@ namespace text {
 				io::LineOriented::LinebreakPolicy linebreaks = io::LineOriented::AUTO_LINEBREAKS,
 				util::MemorySize bufferSize = static_cast<util::MemorySize>(0u))
 				: io::FormattedInputStream<RecordT, LinebreakRecordsT>(codecStream, linebreaks, bufferSize),
-				fileStream(handle), codec(codec), codecStream(fileStream, codec) {}
+				fileStream(handle), codec(codec), codecStream(fileStream, codec) {
+			fileStream.setCloseOnDestroy(false);
+		}
 
 		virtual ~ConsoleInputStream() {
 			delete &codec;

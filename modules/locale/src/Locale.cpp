@@ -22,7 +22,7 @@ namespace locale {
 
 	string Locale::getName() const {
 		if(language.empty() || country.empty())
-			return "";
+			return language;
 		return language + '_' + country;
 	}
 

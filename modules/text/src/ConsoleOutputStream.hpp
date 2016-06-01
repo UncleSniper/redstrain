@@ -44,7 +44,9 @@ namespace text {
 				: io::ConfigurableFormattedOutputStream<RecordT, LinebreakRecordsT,
 				io::StreamConfig2<io::NumberPrintingOutputStreamConfig<RecordT>,
 				io::IndentingOutputStreamConfig<RecordT> >::template ConfigTemplate>(codecStream, linebreaks),
-				fileStream(handle), codec(codec), codecStream(fileStream, codec) {}
+				fileStream(handle), codec(codec), codecStream(fileStream, codec) {
+			fileStream.setCloseOnDestroy(false);
+		}
 
 		virtual ~ConsoleOutputStream() {
 			delete &codec;
