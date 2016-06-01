@@ -82,6 +82,9 @@ namespace calendar {
 	REDSTRAIN_CALENDAR_API void getCurrentTime(Year&, Month&, DayInMonth&,
 			Hour&, MinuteInHour&, SecondInMinute&, MillisecondInSecond&, MicrosecondInMillisecond&);
 
+	REDSTRAIN_CALENDAR_API DayInWeek getDayInWeekMon(DayInTime);
+	REDSTRAIN_CALENDAR_API DayInWeek getDayInWeekSun(DayInTime);
+
 }}
 
 #endif /* REDSTRAIN_MOD_CALENDAR_UTILS_HPP */

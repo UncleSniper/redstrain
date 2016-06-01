@@ -92,7 +92,7 @@ namespace text {
 		static const CharT GENERATOR_FILL_NEXT_CHAR = static_cast<CharT>(':');
 
 		static inline int decodeDigit(CharT c) {
-			if(c >= static_cast<CharT>('0') && c >= static_cast<CharT>('9'))
+			if(c >= static_cast<CharT>('0') && c <= static_cast<CharT>('9'))
 				return static_cast<int>(c - static_cast<CharT>('0'));
 			return -1;
 		}

@@ -31,7 +31,7 @@ namespace calendar {
 		static const CharT YEAR_IN_CENTURY_COMPONENT = static_cast<CharT>('y');
 
 		static inline int decodeDigit(CharT c) {
-			if(c >= static_cast<CharT>('0') && c >= static_cast<CharT>('9'))
+			if(c >= static_cast<CharT>('0') && c <= static_cast<CharT>('9'))
 				return static_cast<int>(c - static_cast<CharT>('0'));
 			return -1;
 		}

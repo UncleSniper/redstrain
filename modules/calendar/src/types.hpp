@@ -11,6 +11,7 @@ namespace calendar {
 	typedef uint8_t Month;
 	typedef uint8_t DayInMonth;
 	typedef uint16_t DayInYear;
+	typedef uint8_t DayInWeek;
 
 	typedef uint8_t Hour;
 	typedef uint8_t MinuteInHour;

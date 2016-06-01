@@ -5,6 +5,7 @@
 #include <redstrain/error/ProgrammingError.hpp>
 
 #include "FormattingOptionStringEmitter.hpp"
+#include "api.hpp"
 #include "types.hpp"
 
 namespace redengine {

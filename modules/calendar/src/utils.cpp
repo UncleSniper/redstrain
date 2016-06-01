@@ -417,4 +417,12 @@ namespace calendar {
 #error Platform not supported
 #endif /* OS-specific implementations */
 
+	REDSTRAIN_CALENDAR_API DayInWeek getDayInWeekMon(DayInTime day) {
+		return static_cast<DayInWeek>((day + static_cast<DayInTime>(6u)) % static_cast<DayInTime>(7u));
+	}
+
+	REDSTRAIN_CALENDAR_API DayInWeek getDayInWeekSun(DayInTime day) {
+		return static_cast<DayInWeek>(day % static_cast<DayInTime>(7u));
+	}
+
 }}

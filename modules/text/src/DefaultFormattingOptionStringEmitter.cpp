@@ -1,5 +1,4 @@
 #include "DefaultFormattingOptionStringEmitter.hpp"
-#include "api.hpp"
 #include "types.hpp"
 
 namespace redengine {
@@ -7,7 +6,7 @@ namespace text {
 
 	DefaultFormattingOptionStringEmitter<char> DefaultFormattingOptionStringEmitter<char>::instance;
 
-	#define c16(c) static_cast<Char16>(c)
+#define c16(c) static_cast<Char16>(c)
 
 	REDSTRAIN_TEXT_API const Char16 DEFAULT_FORMATTING_OPTION_STRING_NAN16[] = {
 		c16('N'), c16('a'), c16('N'), c16('\0')
@@ -23,7 +22,7 @@ namespace text {
 
 	DefaultFormattingOptionStringEmitter<Char16> DefaultFormattingOptionStringEmitter<Char16>::instance;
 
-	#define c32(c) static_cast<Char32>(c)
+#define c32(c) static_cast<Char32>(c)
 
 	REDSTRAIN_TEXT_API const Char32 DEFAULT_FORMATTING_OPTION_STRING_NAN32[] = {
 		c32('N'), c32('a'), c32('N'), c32('\0')
