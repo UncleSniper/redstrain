@@ -6,11 +6,11 @@
 namespace redengine {
 namespace log {
 
-	template<typename SeverityT, typename ComponentT, typename UnitT, typename ConcernT>
+	template<typename TimestampT, typename SeverityT, typename ComponentT, typename UnitT, typename ConcernT>
 	class LogFilter {
 
 	  public:
-		typedef LogMessage<SeverityT, ComponentT, UnitT, ConcernT> Message;
+		typedef LogMessage<TimestampT, SeverityT, ComponentT, UnitT, ConcernT> Message;
 
 	  public:
 		LogFilter() {}

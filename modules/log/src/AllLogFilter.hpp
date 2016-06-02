@@ -6,11 +6,25 @@
 namespace redengine {
 namespace log {
 
-	template<typename SeverityT, typename ComponentT, typename UnitT, typename ConcernT, typename LockingPolicyT>
-	class AllLogFilter : public JunctorLogFilter<SeverityT, ComponentT, UnitT, ConcernT, LockingPolicyT> {
+	template<
+		typename TimestampT,
+		typename SeverityT,
+		typename ComponentT,
+		typename UnitT,
+		typename ConcernT,
+		typename LockingPolicyT
+	>
+	class AllLogFilter : public JunctorLogFilter<
+		TimestampT,
+		SeverityT,
+		ComponentT,
+		UnitT,
+		ConcernT,
+		LockingPolicyT
+	> {
 
 	  private:
-		typedef JunctorLogFilter<SeverityT, ComponentT, UnitT, ConcernT, LockingPolicyT> Base;
+		typedef JunctorLogFilter<TimestampT, SeverityT, ComponentT, UnitT, ConcernT, LockingPolicyT> Base;
 		typedef typename Base::FilterLocker FilterLocker;
 		typedef typename Base::OperandIterator OperandIterator;
 
@@ -19,14 +33,15 @@ namespace log {
 
 	  public:
 		AllLogFilter(bool manageOperands)
-				: JunctorLogFilter<SeverityT, ComponentT, UnitT, ConcernT, LockingPolicyT>(manageOperands) {}
+				: JunctorLogFilter<TimestampT, SeverityT, ComponentT, UnitT, ConcernT, LockingPolicyT>(manageOperands)
+				{}
 
 		AllLogFilter(bool manageOperands, typename LockingPolicyT::LockingPolicyInitializer lockInitializer)
-				: JunctorLogFilter<SeverityT, ComponentT, UnitT, ConcernT, LockingPolicyT>(manageOperands,
+				: JunctorLogFilter<TimestampT, SeverityT, ComponentT, UnitT, ConcernT, LockingPolicyT>(manageOperands,
 				lockInitializer) {}
 
 		AllLogFilter(const AllLogFilter& filter)
-				: JunctorLogFilter<SeverityT, ComponentT, UnitT, ConcernT, LockingPolicyT>(filter) {}
+				: JunctorLogFilter<TimestampT, SeverityT, ComponentT, UnitT, ConcernT, LockingPolicyT>(filter) {}
 
 		virtual bool shouldLogMessage(const Message& message) {
 			FilterLocker lock(this);

@@ -6,15 +6,15 @@
 namespace redengine {
 namespace log {
 
-	template<typename SeverityT, typename ComponentT, typename UnitT, typename ConcernT>
-	class NullLogger : public Logger<SeverityT, ComponentT, UnitT, ConcernT> {
+	template<typename TimestampT, typename SeverityT, typename ComponentT, typename UnitT, typename ConcernT>
+	class NullLogger : public Logger<TimestampT, SeverityT, ComponentT, UnitT, ConcernT> {
 
 	  public:
-		typedef LogMessage<SeverityT, ComponentT, UnitT, ConcernT> Message;
+		typedef LogMessage<TimestampT, SeverityT, ComponentT, UnitT, ConcernT> Message;
 
 	  public:
 		NullLogger() {}
-		NullLogger(const NullLogger& logger) : Logger<SeverityT, ComponentT, UnitT, ConcernT>(logger) {}
+		NullLogger(const NullLogger& logger) : Logger<TimestampT, SeverityT, ComponentT, UnitT, ConcernT>(logger) {}
 
 		virtual void log(const Message&) {}
 

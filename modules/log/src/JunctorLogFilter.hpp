@@ -9,11 +9,19 @@
 namespace redengine {
 namespace log {
 
-	template<typename SeverityT, typename ComponentT, typename UnitT, typename ConcernT, typename LockingPolicyT>
-	class JunctorLogFilter : protected LockingPolicyT, public LogFilter<SeverityT, ComponentT, UnitT, ConcernT> {
+	template<
+		typename TimestampT,
+		typename SeverityT,
+		typename ComponentT,
+		typename UnitT,
+		typename ConcernT,
+		typename LockingPolicyT
+	>
+	class JunctorLogFilter : protected LockingPolicyT,
+			public LogFilter<TimestampT, SeverityT, ComponentT, UnitT, ConcernT> {
 
 	  public:
-		typedef LogFilter<SeverityT, ComponentT, UnitT, ConcernT> Operand;
+		typedef LogFilter<TimestampT, SeverityT, ComponentT, UnitT, ConcernT> Operand;
 		typedef std::set<Operand*> Operands;
 		typedef typename Operands::const_iterator OperandIterator;
 
@@ -31,7 +39,7 @@ namespace log {
 				: LockingPolicyT(lockInitializer), manageOperands(manageOperands) {}
 
 		JunctorLogFilter(const JunctorLogFilter& filter) : LockingPolicyT(filter),
-				LogFilter<SeverityT, ComponentT, UnitT, ConcernT>(filter), manageOperands(false) {
+				LogFilter<TimestampT, SeverityT, ComponentT, UnitT, ConcernT>(filter), manageOperands(false) {
 			FilterLocker lock(filter);
 			operands = filter.operands;
 			lock.release();

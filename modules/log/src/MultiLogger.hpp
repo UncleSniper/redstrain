@@ -9,11 +9,19 @@
 namespace redengine {
 namespace log {
 
-	template<typename SeverityT, typename ComponentT, typename UnitT, typename ConcernT, typename LockingPolicyT>
-	class MultiLogger : protected LockingPolicyT, public Logger<SeverityT, ComponentT, UnitT, ConcernT> {
+	template<
+		typename TimestampT,
+		typename SeverityT,
+		typename ComponentT,
+		typename UnitT,
+		typename ConcernT,
+		typename LockingPolicyT
+	>
+	class MultiLogger : protected LockingPolicyT,
+			public Logger<TimestampT, SeverityT, ComponentT, UnitT, ConcernT> {
 
 	  public:
-		typedef Logger<SeverityT, ComponentT, UnitT, ConcernT> Child;
+		typedef Logger<TimestampT, SeverityT, ComponentT, UnitT, ConcernT> Child;
 		typedef std::set<Child*> Children;
 		typedef typename Children::const_iterator ChildIterator;
 		typedef typename Child::Message Message;
@@ -32,7 +40,7 @@ namespace log {
 				: LockingPolicyT(lockInitializer), manageChildren(manageChildren) {}
 
 		MultiLogger(const MultiLogger& logger) : LockingPolicyT(logger),
-				Logger<SeverityT, ComponentT, UnitT, ConcernT>(logger), manageChildren(false) {
+				Logger<TimestampT, SeverityT, ComponentT, UnitT, ConcernT>(logger), manageChildren(false) {
 			LoggerLocker lock(logger);
 			children = logger.children;
 			lock.release();

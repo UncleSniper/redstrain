@@ -6,11 +6,11 @@
 namespace redengine {
 namespace log {
 
-	template<typename SeverityT, typename ComponentT, typename UnitT, typename ConcernT>
-	class ConstantLogFilter : public LogFilter<SeverityT, ComponentT, UnitT, ConcernT> {
+	template<typename TimestampT, typename SeverityT, typename ComponentT, typename UnitT, typename ConcernT>
+	class ConstantLogFilter : public LogFilter<TimestampT, SeverityT, ComponentT, UnitT, ConcernT> {
 
 	  private:
-		typedef LogFilter<SeverityT, ComponentT, UnitT, ConcernT> Base;
+		typedef LogFilter<TimestampT, SeverityT, ComponentT, UnitT, ConcernT> Base;
 		typedef typename Base::Message Message;
 
 	  private:
@@ -20,7 +20,7 @@ namespace log {
 		ConstantLogFilter(bool constantResult) : constantResult(constantResult) {}
 
 		ConstantLogFilter(const ConstantLogFilter& filter)
-				: LogFilter<SeverityT, ComponentT, UnitT, ConcernT>(filter),
+				: LogFilter<TimestampT, SeverityT, ComponentT, UnitT, ConcernT>(filter),
 				constantResult(filter.constantResult) {}
 
 		inline bool getConstantResult() const {

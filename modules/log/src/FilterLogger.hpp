@@ -6,11 +6,11 @@
 namespace redengine {
 namespace log {
 
-	template<typename SeverityT, typename ComponentT, typename UnitT, typename ConcernT>
-	class FilterLogger : public Logger<SeverityT, ComponentT, UnitT, ConcernT> {
+	template<typename TimestampT, typename SeverityT, typename ComponentT, typename UnitT, typename ConcernT>
+	class FilterLogger : public Logger<TimestampT, SeverityT, ComponentT, UnitT, ConcernT> {
 
 	  public:
-		typedef Logger<SeverityT, ComponentT, UnitT, ConcernT> Child;
+		typedef Logger<TimestampT, SeverityT, ComponentT, UnitT, ConcernT> Child;
 		typedef typename Child::Message Message;
 
 	  private:
@@ -23,7 +23,7 @@ namespace log {
 	  public:
 		FilterLogger(Child& child, bool manageChild) : child(child), manageChild(manageChild) {}
 
-		FilterLogger(const FilterLogger& logger) : Logger<SeverityT, ComponentT, UnitT, ConcernT>(logger),
+		FilterLogger(const FilterLogger& logger) : Logger<TimestampT, SeverityT, ComponentT, UnitT, ConcernT>(logger),
 				child(logger.child), manageChild(false) {}
 
 		virtual ~FilterLogger() {

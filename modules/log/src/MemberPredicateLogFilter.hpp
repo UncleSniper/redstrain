@@ -8,11 +8,18 @@
 namespace redengine {
 namespace log {
 
-	template<typename SeverityT, typename ComponentT, typename UnitT, typename ConcernT, typename MemberT>
-	class MemberPredicateLogFilter : public LogFilter<SeverityT, ComponentT, UnitT, ConcernT> {
+	template<
+		typename TimestampT,
+		typename SeverityT,
+		typename ComponentT,
+		typename UnitT,
+		typename ConcernT,
+		typename MemberT
+	>
+	class MemberPredicateLogFilter : public LogFilter<TimestampT, SeverityT, ComponentT, UnitT, ConcernT> {
 
 	  private:
-		typedef LogFilter<SeverityT, ComponentT, UnitT, ConcernT> Base;
+		typedef LogFilter<TimestampT, SeverityT, ComponentT, UnitT, ConcernT> Base;
 
 	  public:
 		typedef util::Function<bool, const MemberT&> Predicate;
@@ -26,7 +33,7 @@ namespace log {
 				: predicate(predicate), managePredicate(managePredicate) {}
 
 		MemberPredicateLogFilter(const MemberPredicateLogFilter& filter)
-				: LogFilter<SeverityT, ComponentT, UnitT, ConcernT>(filter),
+				: LogFilter<TimestampT, SeverityT, ComponentT, UnitT, ConcernT>(filter),
 				predicate(filter.predicate), managePredicate(false) {}
 
 		virtual ~MemberPredicateLogFilter() {

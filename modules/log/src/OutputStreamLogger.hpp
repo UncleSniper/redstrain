@@ -12,28 +12,30 @@
 namespace redengine {
 namespace log {
 
-	template<typename SeverityT, typename ComponentT, typename UnitT, typename ConcernT>
-	class OutputStreamLogger : public Logger<SeverityT, ComponentT, UnitT, ConcernT> {
+	template<typename TimestampT, typename SeverityT, typename ComponentT, typename UnitT, typename ConcernT>
+	class OutputStreamLogger : public Logger<TimestampT, SeverityT, ComponentT, UnitT, ConcernT> {
 
 	  private:
-		typedef Logger<SeverityT, ComponentT, UnitT, ConcernT> Base;
+		typedef Logger<TimestampT, SeverityT, ComponentT, UnitT, ConcernT> Base;
 
 	  public:
 		typedef typename Base::Message Message;
 
 	  public:
 		static const int FL_MANAGE_STREAM              = 001;
-		static const int FL_MANAGE_SEVERITY_FORMATTER  = 002;
-		static const int FL_MANAGE_COMPONENT_FORMATTER = 004;
-		static const int FL_MANAGE_UNIT_FORMATTER      = 010;
-		static const int FL_MANAGE_CONCERN_FORMATTER   = 020;
-		static const int FL_MANAGE_ALL_FORMATTERS      = 036;
-		static const int FL_MANAGE_EVERYTHING          = 037;
-		static const int FL_MASK                       = 037;
+		static const int FL_MANAGE_TIMESTAMP_FORMATTER = 002;
+		static const int FL_MANAGE_SEVERITY_FORMATTER  = 004;
+		static const int FL_MANAGE_COMPONENT_FORMATTER = 010;
+		static const int FL_MANAGE_UNIT_FORMATTER      = 020;
+		static const int FL_MANAGE_CONCERN_FORMATTER   = 040;
+		static const int FL_MANAGE_ALL_FORMATTERS      = 076;
+		static const int FL_MANAGE_EVERYTHING          = 077;
+		static const int FL_MASK                       = 077;
 
 	  private:
 		io::OutputStream<text::Char16>& stream;
 		io::FormattedOutputStream<text::Char16> formatted;
+		MessageMemberFormatter<TimestampT>& timestampFormatter;
 		MessageMemberFormatter<SeverityT>& severityFormatter;
 		MessageMemberFormatter<ComponentT>& componentFormatter;
 		MessageMemberFormatter<UnitT>& unitFormatter;
@@ -44,25 +46,31 @@ namespace log {
 
 	  public:
 		OutputStreamLogger(io::OutputStream<text::Char16>& stream,
+				MessageMemberFormatter<TimestampT>& timestampFormatter,
 				MessageMemberFormatter<SeverityT>& severityFormatter,
 				MessageMemberFormatter<ComponentT>& componentFormatter,
 				MessageMemberFormatter<UnitT>& unitFormatter, MessageMemberFormatter<ConcernT>& concernFormatter,
-				int flags) : stream(stream), formatted(stream), severityFormatter(severityFormatter),
-				componentFormatter(componentFormatter), unitFormatter(unitFormatter),
-				concernFormatter(concernFormatter), formatString(text::Transcode::utf8ToBMP("[%s] {%s - %s} %s: %s")),
+				int flags) : stream(stream), formatted(stream), timestampFormatter(timestampFormatter),
+				severityFormatter(severityFormatter), componentFormatter(componentFormatter),
+				unitFormatter(unitFormatter), concernFormatter(concernFormatter),
+				formatString(text::Transcode::utf8ToBMP("[%s] [%s] {%s - %s} %s: %s")),
 				formatter(text::FormattingOptions<text::Char16>(
 				text::DefaultFormattingOptionStringEmitter<text::Char16>::instance)),
 				flags(flags & OutputStreamLogger::FL_MASK) {}
 
-		OutputStreamLogger(const OutputStreamLogger& logger) : Logger<SeverityT, ComponentT, UnitT, ConcernT>(logger),
-				stream(logger.stream), formatted(stream), severityFormatter(logger.severityFormatter),
-				componentFormatter(logger.componentFormatter), unitFormatter(logger.unitFormatter),
-				concernFormatter(logger.concernFormatter), formatString(logger.formatString),
-				formatter(logger.formatter), flags(logger.flags & ~OutputStreamLogger::FL_MANAGE_EVERYTHING) {}
+		OutputStreamLogger(const OutputStreamLogger& logger)
+				: Logger<TimestampT, SeverityT, ComponentT, UnitT, ConcernT>(logger),
+				stream(logger.stream), formatted(stream), timestampFormatter(logger.timestampFormatter),
+				severityFormatter(logger.severityFormatter), componentFormatter(logger.componentFormatter),
+				unitFormatter(logger.unitFormatter), concernFormatter(logger.concernFormatter),
+				formatString(logger.formatString), formatter(logger.formatter),
+				flags(logger.flags & ~OutputStreamLogger::FL_MANAGE_EVERYTHING) {}
 
 		virtual ~OutputStreamLogger() {
 			if(flags & OutputStreamLogger::FL_MANAGE_STREAM)
 				delete &stream;
+			if(flags & OutputStreamLogger::FL_MANAGE_TIMESTAMP_FORMATTER)
+				delete &timestampFormatter;
 			if(flags & OutputStreamLogger::FL_MANAGE_SEVERITY_FORMATTER)
 				delete &severityFormatter;
 			if(flags & OutputStreamLogger::FL_MANAGE_COMPONENT_FORMATTER)
@@ -79,6 +87,14 @@ namespace log {
 
 		inline const io::OutputStream<text::Char16>& getStream() const {
 			return stream;
+		}
+
+		inline MessageMemberFormatter<TimestampT>& getTimestampFormatter() {
+			return timestampFormatter;
+		}
+
+		inline const MessageMemberFormatter<TimestampT>& getTimestampFormatter() const {
+			return timestampFormatter;
 		}
 
 		inline MessageMemberFormatter<SeverityT>& getSeverityFormatter() {
@@ -140,6 +156,7 @@ namespace log {
 		virtual void log(const Message& message) {
 			formatted.println(formatter.format(
 				formatString,
+				timestampFormatter.formatMember(message.timestamp),
 				severityFormatter.formatMember(message.severity),
 				componentFormatter.formatMember(message.component),
 				unitFormatter.formatMember(message.unit),

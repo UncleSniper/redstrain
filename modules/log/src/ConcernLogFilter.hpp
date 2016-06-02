@@ -6,11 +6,18 @@
 namespace redengine {
 namespace log {
 
-	template<typename SeverityT, typename ComponentT, typename UnitT, typename ConcernT>
-	class ConcernLogFilter : public MemberPredicateLogFilter<SeverityT, ComponentT, UnitT, ConcernT, ConcernT> {
+	template<typename TimestampT, typename SeverityT, typename ComponentT, typename UnitT, typename ConcernT>
+	class ConcernLogFilter : public MemberPredicateLogFilter<
+		TimestampT,
+		SeverityT,
+		ComponentT,
+		UnitT,
+		ConcernT,
+		ConcernT
+	> {
 
 	  private:
-		typedef MemberPredicateLogFilter<SeverityT, ComponentT, UnitT, ConcernT, ConcernT> Base;
+		typedef MemberPredicateLogFilter<TimestampT, SeverityT, ComponentT, UnitT, ConcernT, ConcernT> Base;
 
 	  public:
 		typedef typename Base::Message Message;
@@ -18,11 +25,11 @@ namespace log {
 
 	  public:
 		ConcernLogFilter(Predicate& predicate, bool managePredicate)
-				: MemberPredicateLogFilter<SeverityT, ComponentT, UnitT, ConcernT, ConcernT>(predicate,
+				: MemberPredicateLogFilter<TimestampT, SeverityT, ComponentT, UnitT, ConcernT, ConcernT>(predicate,
 				managePredicate) {}
 
 		ConcernLogFilter(const ConcernLogFilter& filter)
-				: MemberPredicateLogFilter<SeverityT, ComponentT, UnitT, ConcernT, ConcernT>(filter) {}
+				: MemberPredicateLogFilter<TimestampT, SeverityT, ComponentT, UnitT, ConcernT, ConcernT>(filter) {}
 
 		virtual bool shouldLogMessage(const Message& message) {
 			return this->predicate.call(message.concern);
