@@ -293,6 +293,10 @@ namespace io {
 			return buffer.release();
 		}
 
+		void writeSingleRecordByValue(RecordT record) {
+			writeBlock(&record, static_cast<util::MemorySize>(1u));
+		}
+
 	};
 
 }}

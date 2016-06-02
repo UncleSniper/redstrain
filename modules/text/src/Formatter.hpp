@@ -3,7 +3,7 @@
 
 #include <list>
 #include <vector>
-#include <sstream>
+#include <redstrain/util/StringBuilder.hpp>
 #include <redstrain/util/StandardIntegerMapping.hpp>
 
 #include "Formattable.hpp"
@@ -86,12 +86,12 @@ namespace text {
 		template<typename IteratorT>
 		struct FormatState {
 
-			typedef std::basic_ostringstream<CharT> Stream;
+			typedef util::StringBuilder<CharT> Builder;
 			typedef typename String::const_iterator StringIterator;
 
 			const IteratorT& items;
 			util::MemorySize itemCount, itemIndex;
-			Stream stream;
+			Builder builder;
 			StringIterator format, endfmt;
 			util::MemorySize fmtindex;
 
@@ -196,7 +196,7 @@ namespace text {
 							case FormatRenditionT::FORMATTING_INITIATOR:
 							case FormatRenditionT::END_SUBGROUP:
 								if(emit)
-									state.stream << *state.format;
+									state.builder.append(*state.format);
 								++state.format;
 								++state.fmtindex;
 								break;
@@ -210,7 +210,7 @@ namespace text {
 							return;
 					default:
 						if(emit)
-							state.stream << *state.format;
+							state.builder.append(*state.format);
 						++state.format;
 						++state.fmtindex;
 						break;
@@ -401,8 +401,8 @@ namespace text {
 							if(state.itemIndex >= state.itemCount) \
 								throw InvalidFormattingItemReferenceError(state.itemIndex, state.fmtindex); \
 							if(emit) \
-								state.stream << ftype::template ffunc<ctype, NumericRenditionT>( \
-										(*(state.items + state.itemIndex))->template as<ctype>(), options); \
+								state.builder.append(ftype::template ffunc<ctype, NumericRenditionT>( \
+										(*(state.items + state.itemIndex))->template as<ctype>(), options)); \
 							else \
 								(*(state.items + state.itemIndex))->template as<ctype>(); \
 							++state.format; \
@@ -435,15 +435,15 @@ namespace text {
 							typename String::size_type slen = str.length();
 							if(options.integralWidth > static_cast<int32_t>(0)) {
 								while(static_cast<typename String::size_type>(options.integralWidth) > slen) {
-									state.stream << options.fillChar;
+									state.builder.append(options.fillChar);
 									--options.integralWidth;
 								}
 							}
-							state.stream << str;
+							state.builder.append(str);
 							if(options.integralWidth < static_cast<int32_t>(0)) {
 								options.integralWidth = -options.integralWidth;
 								while(static_cast<typename String::size_type>(options.integralWidth) > slen) {
-									state.stream << options.fillChar;
+									state.builder.append(options.fillChar);
 									--options.integralWidth;
 								}
 							}
@@ -462,7 +462,7 @@ namespace text {
 							  genFillChar:
 								if(emit) {
 									for(; options.integralWidth > static_cast<int32_t>(0); --options.integralWidth)
-										state.stream << genChar;
+										state.builder.append(genChar);
 								}
 								++state.format;
 								++state.fmtindex;
@@ -1001,7 +1001,7 @@ namespace text {
 		String formatIter(const String& format, const IteratorT& beginItems, util::MemorySize itemCount) const {
 			FormatState<IteratorT> state(beginItems, itemCount, format.begin(), format.end());
 			parseFormatString<IteratorT>(state, false, true);
-			return state.stream.str();
+			return state.builder.toString();
 		}
 
 		String format(const String& format, const std::list<const Item*>& items) const {
