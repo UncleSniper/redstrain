@@ -60,6 +60,7 @@ namespace build {
 		command.addArgument("-Wall");
 		command.addArgument("-Wextra");
 		command.addArgument("-Wno-long-long");
+		command.addArgument("-fno-omit-frame-pointer");
 	}
 
 	GCC::GCCCompilation::GCCCompilation(const GCCCompilation& compilation)
@@ -106,6 +107,8 @@ namespace build {
 			case STATIC_EXECUTABLE:
 				command.addArgument("-static");
 				command.addArgument("-Wl,-Bstatic");
+			case DYNAMIC_EXECUTABLE:
+				command.addArgument("-rdynamic");
 				break;
 			case DYNAMIC_LIBRARY:
 				command.addArgument("-shared");
