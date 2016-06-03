@@ -104,11 +104,12 @@ namespace build {
 	GCC::GCCLinkage::GCCLinkage(const string& executable, Architecture architecture,
 			const string& target, LinkMode mode) : ExternalLinkage(executable, target, mode) {
 		switch(mode) {
+			case DYNAMIC_EXECUTABLE:
+				command.addArgument("-rdynamic");
+				break;
 			case STATIC_EXECUTABLE:
 				command.addArgument("-static");
 				command.addArgument("-Wl,-Bstatic");
-			case DYNAMIC_EXECUTABLE:
-				command.addArgument("-rdynamic");
 				break;
 			case DYNAMIC_LIBRARY:
 				command.addArgument("-shared");

@@ -1,6 +1,7 @@
 #include <cstddef>
 
 #include "StackUnwinder.hpp"
+#include "environment.hpp"
 
 namespace redengine {
 namespace redmond {
@@ -16,7 +17,7 @@ namespace redmond {
 	struct BottomOfStackSetter {
 		BottomOfStackSetter() {
 			void* dummy;
-			bottomOfCallStack = static_cast<void*>(&dummy);
+			bottomOfCallStack = reinterpret_cast<void*>(&dummy);
 		}
 	};
 
@@ -28,7 +29,7 @@ namespace redmond {
 		void* bp = basePointer;
 		do {
 			++frameDepth;
-			bp = *static_cast<void**>(bp);
+			bp = *reinterpret_cast<void**>(bp);
 		} while(bp && bp <= bottomOfStack);
 	}
 
@@ -43,8 +44,8 @@ namespace redmond {
 			originalReturnAddress = NULL;
 		}
 		else if(basePointer && basePointer <= bottomOfStack) {
-			result = static_cast<void**>(basePointer)[1];
-			basePointer = *static_cast<void**>(basePointer);
+			result = reinterpret_cast<void**>(basePointer)[1];
+			basePointer = *reinterpret_cast<void**>(basePointer);
 		}
 		else
 			return NULL;
@@ -52,9 +53,46 @@ namespace redmond {
 		return result;
 	}
 
+#if defined(REDSTRAIN_ENV_ARCH_I686)
+
+	void* _unwind_getCallerBasePointer(int dummy) {
+		return reinterpret_cast<void**>(&dummy)[-2];
+	}
+
 	REDSTRAIN_REDMOND_API StackUnwinder* getStackUnwinder() {
-		//TODO
+		if(!bottomOfCallStackSource)
+			return NULL;
+		void* bottomOfStack = bottomOfCallStackSource();
+		if(!bottomOfStack)
+			return NULL;
+		void* bp = _unwind_getCallerBasePointer(0);
+		return new StackUnwinder(reinterpret_cast<void**>(bp)[1], *reinterpret_cast<void**>(bp), bottomOfStack);
+	}
+
+#elif defined(REDSTRAIN_ENV_ARCH_AMD64)
+
+	void* _unwind_getLocationOfSavedBPOfEnclosingCall() {
+		void* dummy;
+		return reinterpret_cast<void**>(&dummy)[2];
+	}
+
+	REDSTRAIN_REDMOND_API StackUnwinder* getStackUnwinder() {
+		if(!bottomOfCallStackSource)
+			return NULL;
+		void* bottomOfStack = bottomOfCallStackSource();
+		if(!bottomOfStack)
+			return NULL;
+		void* mySavedBPAddr = _unwind_getLocationOfSavedBPOfEnclosingCall();
+		return new StackUnwinder(reinterpret_cast<void**>(mySavedBPAddr)[1],
+				*reinterpret_cast<void**>(mySavedBPAddr), bottomOfStack);
+	}
+
+#else /* unknown architecture */
+
+	REDSTRAIN_REDMOND_API StackUnwinder* getStackUnwinder() {
 		return NULL;
 	}
+
+#endif /* architectures */
 
 }}
