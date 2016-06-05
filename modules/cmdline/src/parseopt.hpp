@@ -1,6 +1,7 @@
 #ifndef REDSTRAIN_MOD_CMDLINE_PARSEOPT_HPP
 #define REDSTRAIN_MOD_CMDLINE_PARSEOPT_HPP
 
+#include <cstdlib>
 #include <iostream>
 #include <redstrain/util/Delete.hpp>
 #include <redstrain/error/Error.hpp>
@@ -64,6 +65,8 @@ namespace cmdline {
 			std::cerr << platform::Pathname::basename(*argv) << ": " << error.getErrorType() << ": ";
 			error.printMessage(std::cerr);
 			std::cerr << std::endl;
+			if(getenv("REDSTRAIN_PRINT_STACK_TRACES"))
+				error.printStackTrace(std::cerr);
 		}
 		catch(const StopExecution& stop) {
 			return stop.getStatus();

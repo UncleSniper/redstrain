@@ -12,3 +12,5 @@ PROGRAMMING_ERROR=Programmer fsck(8)ed up: %s
 UNSUPPORTED_OPERATION=Operation not supported: %s
 # Error message for IllegalByteOrderError instances. Arguments: int32_t byteOrder
 ILLEGAL_BYTE_ORDER=Not a valid ByteOrder: %i
+# Error message for FrameIndexOutOfBoundsError instances. Arguments: uint64_t index
+FRAME_INDEX_OUT_OF_BOUNDS=Stack frame index out of bounds: %L

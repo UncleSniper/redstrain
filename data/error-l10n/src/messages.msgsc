@@ -5,3 +5,4 @@ NO_ERROR_LOCALIZER_REGISTERED=Error message for NoErrorLocalizerRegisteredError 
 PROGRAMMING_ERROR=Error message for ProgrammingError instances. Arguments: string message
 UNSUPPORTED_OPERATION=Error message for UnsupportedOperationError instances. Arguments: string operation
 ILLEGAL_BYTE_ORDER=Error message for IllegalByteOrderError instances. Arguments: int32_t byteOrder
+FRAME_INDEX_OUT_OF_BOUNDS=Error message for FrameIndexOutOfBoundsError instances. Arguments: uint64_t index

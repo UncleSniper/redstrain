@@ -11,10 +11,13 @@
 namespace redengine {
 namespace error {
 
+	class StackTrace;
+
 	class REDSTRAIN_ERROR_API Error {
 
 	  private:
 		unsigned refCount;
+		StackTrace* stackTrace;
 
 	  public:
 		Error();
@@ -23,6 +26,12 @@ namespace error {
 
 		void ref();
 		void unref();
+
+		inline StackTrace* getStackTrace() const {
+			return stackTrace;
+		}
+
+		void printStackTrace(std::ostream&) const;
 
 		virtual std::string getMessage() const;
 
