@@ -1,7 +1,15 @@
+#include <vector>
+
 #include "unmangle-utils.hpp"
-#include "unmangle/CPPSymbol.hpp"
+#include "unmangle/DataSymbol.hpp"
+#include "unmangle/TableSymbol.hpp"
+#include "unmangle/FunctionSymbol.hpp"
+#include "unmangle/GuardVariableSymbol.hpp"
+#include "unmangle/OverrideThunkSymbol.hpp"
+#include "unmangle/CovariantOverrideThunkSymbol.hpp"
 
 using std::string;
+using std::vector;
 using redengine::redmond::unmangle::CPPSymbol;
 
 namespace redengine {
@@ -97,7 +105,7 @@ namespace redmond {
 	//                ::= GV <object name>   # Guard variable for one-time initialization
 	//                ::= T <call-offset> <base encoding>   # virtual function override thunk
 	//                      # base is the nominal target function of thunk
-	//                ::= Tc <call-offset> <call-offset> <base encoding>
+	//                ::= Tc <call-offset> <call-offset> <base encoding>   # covariant virtual function override thunk
 	//                       # base is the nominal target function of thunk
 	//                       # first call-offset is 'this' adjustment
 	//                       # second call-offset is result adjustment
@@ -187,8 +195,19 @@ namespace redmond {
 	//                ::= So   # std::ostream (std::basic_ostream<char, std::char_traits<char> >)
 	//                ::= Sd   # std::iostream (std::basic_iostream<char, std::char_traits<char> >)
 
-	CPPSymbol* _unmangleGCC3_encoding(const char*& begin, const char* end) {
-		//TODO
+	typedef vector<string> SBox;
+
+	CPPSymbol* _unmangleGCC3_encoding(const char*& begin, const char* end, SBox& sbox) {
+		// FIRST(encoding) = FIRST(name) + FIRST(special-name)
+		// FIRST(name) = FIRST(nested-name) + FIRST(unscoped-name) + FIRST(unscoped-template-name) + FIRST(local-name)
+		// FIRST(special-name) = 'TV' + 'TT' + 'TI' + 'TS' + 'GV' + 'Th' + 'Tv' + 'Tc'
+		// FIRST(nested-name) = 'N'
+		// FIRST(unscoped-name) = FIRST(unqualified-name) + 'St'
+		// FIRST(unqualified-name) = FIRST(operator-name) + FIRST(ctor-dtor-name) + FIRST(source-name)
+		// FIRST(source-name) = <digit>
+		// FIRST(unscoped-template-name) = FIRST(unscoped-name) + FIRST(substitution)
+		// FIRST(local-name) = 'Z'
+		// FIRST(substitution) = 'S'
 	}
 
 	REDSTRAIN_REDMOND_API CPPSymbol* unmangleCPPSymbol_GCC3(const string& symbol) {
@@ -200,7 +219,8 @@ namespace redmond {
 			return NULL;
 		if(++begin == end)
 			return NULL;
-		CPPSymbol* symbol = _unmangleGCC3_encoding(begin, end);
+		SBox sbox;
+		CPPSymbol* symbol = _unmangleGCC3_encoding(begin, end, sbox);
 		if(begin != end) {
 			delete symbol;
 			return NULL;

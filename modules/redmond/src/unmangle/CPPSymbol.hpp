@@ -12,6 +12,13 @@ namespace unmangle {
 
 	class REDSTRAIN_REDMOND_API CPPSymbol {
 
+	  public:
+		enum SymbolType {
+			ST_FUNCTION,
+			ST_DATA,
+			ST_SPECIAL
+		};
+
 	  protected:
 		virtual void print(std::ostream&, bool&) const = 0;
 
@@ -23,7 +30,8 @@ namespace unmangle {
 		void print(std::ostream&) const;
 		std::string toString() const;
 
-		virtual CPPSymbol* clone() const = 0;
+		virtual SymbolType getSymbolType() const = 0;
+		virtual CPPSymbol* cloneSymbol() const = 0;
 
 	};
 
