@@ -14,6 +14,9 @@ namespace unmangle {
 		CallOffset thisAdjustment, resultAdjustment;
 		CPPSymbol* targetFunction;
 
+	  protected:
+		virtual void print(std::ostream&, bool&) const;
+
 	  public:
 		CovariantOverrideThunkSymbol(const CallOffset&, const CallOffset&, CPPSymbol*);
 		CovariantOverrideThunkSymbol(const CovariantOverrideThunkSymbol&);

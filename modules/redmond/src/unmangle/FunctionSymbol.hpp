@@ -16,6 +16,9 @@ namespace unmangle {
 		Name* name;
 		BareFunctionType* type;
 
+	  protected:
+		virtual void print(std::ostream&, bool&) const;
+
 	  public:
 		FunctionSymbol(Name*, BareFunctionType*);
 		FunctionSymbol(const FunctionSymbol&);

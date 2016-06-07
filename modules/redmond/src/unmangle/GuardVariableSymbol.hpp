@@ -14,6 +14,9 @@ namespace unmangle {
 	  private:
 		Name* objectName;
 
+	  protected:
+		virtual void print(std::ostream&, bool&) const;
+
 	  public:
 		GuardVariableSymbol(Name*);
 		GuardVariableSymbol(const GuardVariableSymbol&);

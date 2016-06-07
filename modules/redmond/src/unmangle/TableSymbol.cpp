@@ -23,4 +23,30 @@ namespace unmangle {
 		return new TableSymbol(*this);
 	}
 
+	void TableSymbol::print(ostream& out, bool& lastWasGreater) const {
+		switch(tableType) {
+			case TST_VIRTUAL_TABLE:
+				out << "<virtual table for ";
+				break;
+			case TST_VTT_STRUCTURE:
+				out << "<VTT structure for ";
+				break;
+			case TST_TYPEINFO_STRUCTURE:
+				out << "<typeinfo structure for ";
+				break;
+			case TST_TYPEINFO_NAME:
+				out << "<typeinfo name for ";
+				break;
+			default:
+				out << "<table object of unknown type, for type ";
+				break;
+		}
+		lastWasGreater = false;
+		targetType->print(out, lastWasGreater);
+		if(lastWasGreater)
+			out << ' ';
+		out << '>';
+		lastWasGreater = true;
+	}
+
 }}}

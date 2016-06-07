@@ -3,6 +3,8 @@
 #include "BareFunctionType.hpp"
 #include "../unmangle-utils.hpp"
 
+using std::ostream;
+
 namespace redengine {
 namespace redmond {
 namespace unmangle {
@@ -12,7 +14,7 @@ namespace unmangle {
 	FunctionSymbol::FunctionSymbol(const FunctionSymbol& symbol) : CPPSymbol(symbol) {
 		name = symbol.name->cloneName();
 		UnmanglePtr<Name> deleteName(name);
-		type = symbol.type->cloneBareFunctionType();
+		type = new BareFunctionType(*symbol.type);
 		deleteName.ptr = NULL;
 	}
 
@@ -27,6 +29,28 @@ namespace unmangle {
 
 	CPPSymbol* FunctionSymbol::cloneSymbol() const {
 		return new FunctionSymbol(*this);
+	}
+
+	void FunctionSymbol::print(ostream& out, bool& lastWasGreater) const {
+		bool hasReturn = ...; //TODO
+		name->print(out, lastWasGreater);
+		out << '(';
+		BareFunctionType::TypeIterator ptbegin, ptend;
+		if(hasReturn)
+			type->getRestTypes(ptbegin, ptend);
+		else
+			type->getTypes(ptbegin, ptend);
+		bool first = true;
+		for(; ptbegin != ptend; ++ptbegin) {
+			if(first)
+				first = false;
+			else
+				out << ", ";
+			lastWasGreater = false;
+			(*ptbegin)->print(out, lastWasGreater);
+		}
+		out << ')';
+		lastWasGreater = false;
 	}
 
 }}}

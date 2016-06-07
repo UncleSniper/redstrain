@@ -14,6 +14,9 @@ namespace unmangle {
 	  private:
 		Name* name;
 
+	  protected:
+		virtual void print(std::ostream&, bool&) const;
+
 	  public:
 		DataSymbol(Name*);
 		DataSymbol(const DataSymbol&);

@@ -1,5 +1,7 @@
 #include "CovariantOverrideThunkSymbol.hpp"
 
+using std::ostream;
+
 namespace redengine {
 namespace redmond {
 namespace unmangle {
@@ -22,6 +24,16 @@ namespace unmangle {
 
 	CPPSymbol* CovariantOverrideThunkSymbol::cloneSymbol() const {
 		return new CovariantOverrideThunkSymbol(*this);
+	}
+
+	void CovariantOverrideThunkSymbol::print(ostream& out, bool& lastWasGreater) const {
+		out << "<override thunk for ";
+		lastWasGreater = false;
+		targetFunction->print(out, lastWasGreater);
+		if(lastWasGreater)
+			out << ' ';
+		out << '>';
+		lastWasGreater = true;
 	}
 
 }}}

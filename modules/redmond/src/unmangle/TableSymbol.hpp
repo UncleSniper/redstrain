@@ -20,6 +20,9 @@ namespace unmangle {
 		TableSymbolType tableType;
 		Type* targetType;
 
+	  protected:
+		virtual void print(std::ostream&, bool&) const;
+
 	  public:
 		TableSymbol(TableSymbolType, Type*);
 		TableSymbol(const TableSymbol&);

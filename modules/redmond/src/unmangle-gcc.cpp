@@ -1,16 +1,30 @@
 #include <vector>
 
+#include "unmangle/Name.hpp"
 #include "unmangle-utils.hpp"
 #include "unmangle/DataSymbol.hpp"
 #include "unmangle/TableSymbol.hpp"
+#include "unmangle/BuiltinType.hpp"
 #include "unmangle/FunctionSymbol.hpp"
+#include "unmangle/BareFunctionType.hpp"
+#include "unmangle/VendorExtendedType.hpp"
 #include "unmangle/GuardVariableSymbol.hpp"
 #include "unmangle/OverrideThunkSymbol.hpp"
 #include "unmangle/CovariantOverrideThunkSymbol.hpp"
 
 using std::string;
 using std::vector;
+using redengine::redmond::unmangle::Name;
+using redengine::redmond::unmangle::Type;
 using redengine::redmond::unmangle::CPPSymbol;
+using redengine::redmond::unmangle::TableSymbol;
+using redengine::redmond::unmangle::BuiltinType;
+using redengine::redmond::unmangle::SpecialSymbol;
+using redengine::redmond::unmangle::BareFunctionType;
+using redengine::redmond::unmangle::VendorExtendedType;
+using redengine::redmond::unmangle::GuardVariableSymbol;
+using redengine::redmond::unmangle::OverrideThunkSymbol;
+using redengine::redmond::unmangle::CovariantOverrideThunkSymbol;
 
 namespace redengine {
 namespace redmond {
@@ -127,7 +141,7 @@ namespace redmond {
 	//        ::= <template-param>
 	//        ::= <template-template-param> <template-args>
 	//        ::= <substitution>
-	// <type> ::= <CV-qualifiers> <type>
+	//        ::= <CV-qualifiers> <type>
 	//        ::= P <type>   # pointer-to
 	//        ::= R <type>   # reference-to
 	//        ::= C <type>   # complex pair (C 2000)
@@ -197,6 +211,328 @@ namespace redmond {
 
 	typedef vector<string> SBox;
 
+	template<typename IntegerT>
+	bool _unmangleGCC3_number(const char*& begin, const char* end, IntegerT& result) {
+		if(begin == end)
+			return false;
+		bool negative;
+		if(*begin == 'n') {
+			negative = true;
+			if(++begin == end)
+				return false;
+		}
+		else
+			negative = false;
+		if(*begin < '0' || *begin > '9')
+			return false;
+		result = static_cast<IntegerT>(0);
+		do {
+			IntegerT digit = static_cast<IntegerT>(*begin - '0');
+			if(negative)
+				result = result * static_cast<IntegerT>(10) + digit;
+			else
+				result = result * static_cast<IntegerT>(10) - digit;
+		} while(++begin != end && *begin >= '0' && *begin <= '9');
+		return true;
+	}
+
+	bool _unmangleGCC3_sourceName(const char*& begin, const char* end, string& result) {
+		if(begin == end || *begin < '0' || *begin > '9')
+			return false;
+		unsigned length;
+		if(!_unmangleGCC3_number<unsigned>(begin, end, length))
+			return false;
+		const char* newBegin = begin + length;
+		if(newBegin >= end)
+			return false;
+		result.assign(begin, static_cast<string::size_type>(length));
+		begin = newBegin;
+		return true;
+	}
+
+	Name* _unmangleGCC3_name(const char*& begin, const char* end, SBox& sbox) {
+		//TODO
+	}
+
+	Type* _unmangleGCC3_type(const char*& begin, const char* end, SBox& sbox) {
+		// See _unmangleGCC3_startsType() for details of
+		// semantically invalid cases.
+		if(begin == end)
+			return NULL;
+		UnmanglePtr<Type> type(NULL);
+		switch(*begin) {
+			case 'v':   // builtin-type, [operator-name]
+				++begin;
+				return new BuiltinType(BuiltinType::P_VOID);
+			case 'w':   // builtin-type
+				++begin;
+				return new BuiltinType(BuiltinType::P_WCHAR_T);
+			case 'b':   // builtin-type
+				++begin;
+				return new BuiltinType(BuiltinType::P_BOOL);
+			case 'c':   // builtin-type, [operator-name]
+				++begin;
+				return new BuiltinType(BuiltinType::P_CHAR);
+			case 'a':   // builtin-type, [operator-name]
+				++begin;
+				return new BuiltinType(BuiltinType::P_SIGNED_CHAR);
+			case 'h':   // builtin-type
+				++begin;
+				return new BuiltinType(BuiltinType::P_UNSIGNED_CHAR);
+			case 's':   // builtin-type, [operator-name]
+				++begin;
+				return new BuiltinType(BuiltinType::P_SHORT);
+			case 't':   // builtin-type
+				++begin;
+				return new BuiltinType(BuiltinType::P_UNSIGNED_SHORT);
+			case 'i':   // builtin-type, [operator-name]
+				++begin;
+				return new BuiltinType(BuiltinType::P_INT);
+			case 'j':   // builtin-type
+				++begin;
+				return new BuiltinType(BuiltinType::P_UNSIGNED_INT);
+			case 'l':   // builtin-type, [operator-name]
+				++begin;
+				return new BuiltinType(BuiltinType::P_LONG);
+			case 'm':   // builtin-type, [operator-name]
+				++begin;
+				return new BuiltinType(BuiltinType::P_UNSIGNED_LONG);
+			case 'x':   // builtin-type
+				++begin;
+				return new BuiltinType(BuiltinType::P_LONG_LONG);
+			case 'y':   // builtin-type
+				++begin;
+				return new BuiltinType(BuiltinType::P_UNSIGNED_LONG_LONG);
+			case 'n':   // builtin-type, [operator-name]
+				++begin;
+				return new BuiltinType(BuiltinType::P_INT128);
+			case 'o':   // builtin-type, [operator-name]
+				++begin;
+				return new BuiltinType(BuiltinType::P_UNSIGNED_INT128);
+			case 'f':   // builtin-type
+				++begin;
+				return new BuiltinType(BuiltinType::P_FLOAT);
+			case 'd':   // builtin-type, [operator-name]
+				++begin;
+				return new BuiltinType(BuiltinType::P_DOUBLE);
+			case 'e':   // builtin-type, [operator-name]
+				++begin;
+				return new BuiltinType(BuiltinType::P_LONG_DOUBLE);
+			case 'g':   // builtin-type, [operator-name]
+				++begin;
+				return new BuiltinType(BuiltinType::P_FLOAT128);
+			case 'z':   // builtin-type
+				++begin;
+				return new BuiltinType(BuiltinType::P_ELLIPSIS);
+			case 'u':   // builtin-type
+				{
+					++begin;
+					string name;
+					if(!_unmangleGCC3_sourceName(begin, end, name))
+						return NULL;
+					type.ptr = new VendorExtendedType(name);
+				}
+				break;
+			case 'F':   // function-type
+			case 'A':   // array-type
+			case 'M':   // pointer-to-member-type
+			case 'V':   // CV-qualifiers
+			case 'K':   // CV-qualifiers
+			case 'r':   // [operator-name], CV-qualifiers
+			case 'P':   // pointer-to
+			case 'R':   // reference-to
+			case 'G':   // imaginary (C 2000)
+			case 'N':   // nested-name
+			case 'S':   // unscoped-name, substitution
+			//case 'q': // [operator-name]
+			case 'C':   // [ctor-dtor-name], complex pair (C 2000)
+			//case 'D': // [ctor-dtor-name]
+			case 'Z':   // local-name
+			case 'T':   // template-param, template-template-param
+			case 'U':   // vendor extended type qualifier
+			default:
+				if(c < '0' || c > '9')   // !source-name
+					return NULL;
+		}
+		//TODO: substitution stuff
+	}
+
+	bool _unmangleGCC3_startsType(char c) {
+		// The grammar allows a <type> to be a general <name>
+		// since the former could be a <class-enum-type>. This
+		// technically allows for some of rules to be drawn in
+		// (operator-name, ctor-dtor-name) that, semantically,
+		// cannot actually *be* a type. This function consequently
+		// excludes these cases -- hence the rule names in
+		// square brackets and the commented-out cases.
+		switch(c) {
+			case 'v':   // builtin-type, [operator-name]
+			case 'w':   // builtin-type
+			case 'b':   // builtin-type
+			case 'c':   // builtin-type, [operator-name]
+			case 'a':   // builtin-type, [operator-name]
+			case 'h':   // builtin-type
+			case 's':   // builtin-type, [operator-name]
+			case 't':   // builtin-type
+			case 'i':   // builtin-type, [operator-name]
+			case 'j':   // builtin-type
+			case 'l':   // builtin-type, [operator-name]
+			case 'm':   // builtin-type, [operator-name]
+			case 'x':   // builtin-type
+			case 'y':   // builtin-type
+			case 'n':   // builtin-type, [operator-name]
+			case 'o':   // builtin-type, [operator-name]
+			case 'f':   // builtin-type
+			case 'd':   // builtin-type, [operator-name]
+			case 'e':   // builtin-type, [operator-name]
+			case 'g':   // builtin-type, [operator-name]
+			case 'z':   // builtin-type
+			case 'u':   // builtin-type
+			case 'F':   // function-type
+			case 'N':   // nested-name
+			case 'S':   // unscoped-name, substitution
+			case 'r':   // [operator-name], CV-qualifiers
+			//case 'q': // [operator-name]
+			case 'C':   // [ctor-dtor-name], complex pair (C 2000)
+			//case 'D': // [ctor-dtor-name]
+			case 'Z':   // local-name
+			case 'A':   // array-type
+			case 'M':   // pointer-to-member-type
+			case 'T':   // template-param, template-template-param
+			case 'V':   // CV-qualifiers
+			case 'K':   // CV-qualifiers
+			case 'P':   // pointer-to
+			case 'R':   // reference-to
+			case 'G':   // imaginary (C 2000)
+			case 'U':   // vendor extended type qualifier
+				return true;
+			default:
+				return c >= '0' && c <= '9';   // source-name
+		}
+	}
+
+	BareFunctionType* _unmangleGCC3_bareFunctionType(const char*& begin, const char* end, SBox& sbox) {
+		UnmanglePtr<Type> type(_unmangleGCC3_type(begin, end, sbox));
+		if(!type.ptr)
+			return NULL;
+		UnmanglePtr<BareFunctionType> bare(new BareFunctionType);
+		bare.ptr->addType(*type.ptr);
+		type.ptr = NULL;
+		while(begin != end && _unmangleGCC3_startsType(*begin)) {
+			type.ptr = _unmangleGCC3_type(begin, end, sbox);
+			if(!type.ptr)
+				return NULL;
+			bare.ptr->addType(*type.ptr);
+			type.ptr = NULL;
+		}
+		BareFunctionType* bft = bare.ptr;
+		bare.ptr = NULL;
+		return bft;
+	}
+
+	CallOffset* _unmangleGCC3_callOffset(const char*& begin, const char* end, SBox& sbox) {
+		if(begin == end)
+			return NULL;
+		switch(*begin) {
+			case 'h':
+				{
+					int offset;
+					++begin;
+					if(!_unmangleGCC3_number<int>(begin, end, offset))
+						return NULL;
+					if(begin == end || *begin != '_')
+						return NULL;
+					++begin;
+					return new CallOffset(offset);
+				}
+			case 'v':
+				{
+					int offset, virtualOffset;
+					++begin;
+					if(!_unmangleGCC3_number<int>(begin, end, offset))
+						return NULL;
+					if(begin == end || *begin != '_')
+						return NULL;
+					++begin;
+					if(!_unmangleGCC3_number<int>(begin, end, virtualOffset))
+						return NULL;
+					if(begin == end || *begin != '_')
+						return NULL;
+					++begin;
+					return new CallOffset(offset, virtualOffset);
+				}
+			default:
+				return NULL;
+		}
+	}
+
+	SpecialSymbol* _unmangleGCC3_specialName(const char*& begin, const char* end, SBox& sbox) {
+		if(*begin == 'G') {
+			if(++begin == end || *begin != 'V')
+				return NULL;
+			++begin;
+			UnmanglePtr<Name> objectName(_unmangleGCC3_name(begin, end, sbox);
+			if(!objectName.ptr)
+				return NULL;
+			GuardVariableSymbol* gv = new GuardVariableSymbol(objectName.ptr);
+			objectName.ptr = NULL;
+			return gv;
+		}
+		if(++begin == end)
+			return NULL;
+		TableSymbol::TableSymbolType tstype;
+		switch(*begin) {
+			case 'V':
+				tstype = TableSymbol::TST_VIRTUAL_TABLE;
+				break;
+			case 'T':
+				tstype = TableSymbol::TST_VTT_STRUCTURE;
+				break;
+			case 'I':
+				tstype = TableSymbol::TST_TYPEINFO_STRUCTURE;
+				break;
+			case 'S':
+				tstype = TableSymbol::TST_TYPEINFO_NAME;
+				break;
+			case 'h':
+			case 'v':
+				{
+					UnmanglePtr<CallOffset> callOffset(_unmangleGCC3_callOffset(begin, end, sbox));
+					if(!callOffset.ptr || begin == end)
+						return NULL;
+					UnmanglePtr<CPPSymbol> targetFunction(_unmangleGCC3_encoding(begin, end, sbox));
+					OverrideThunkSymbol* thunk = new OverrideThunkSymbol(*callOffset.ptr, targetFunction.ptr);
+					targetFunction.ptr = NULL;
+					return thunk;
+				}
+			case 'c':
+				{
+					++begin;
+					UnmanglePtr<CallOffset> thisAdjustment(_unmangleGCC3_callOffset(begin, end, sbox));
+					if(!thisAdjustment.ptr)
+						return NULL;
+					UnmanglePtr<CallOffset> resultAdjustment(_unmangleGCC3_callOffset(begin, end, sbox));
+					if(!resultAdjustment.ptr || begin == end)
+						return NULL;
+					UnmanglePtr<CPPSymbol> targetFunction(_unmangleGCC3_encoding(begin, end, sbox));
+					CovariantOverrideThunkSymbol* thunk = new CovariantOverrideThunkSymbol(*thisAdjustment.ptr,
+							*resultAdjustment.ptr, targetFunction.ptr);
+					targetFunction.ptr = NULL;
+					return thunk;
+				}
+			default:
+				return NULL;
+		}
+		if(++begin == end)
+			return NULL;
+		UnmanglePtr<Type> targetType(_unmangleGCC3_type(begin, end, sbox));
+		if(!targetType.ptr)
+			return NULL;
+		TableSymbol* table = new TableSymbol(tstype, targetType.ptr);
+		targetType.ptr = NULL;
+		return table;
+	}
+
 	CPPSymbol* _unmangleGCC3_encoding(const char*& begin, const char* end, SBox& sbox) {
 		// FIRST(encoding) = FIRST(name) + FIRST(special-name)
 		// FIRST(name) = FIRST(nested-name) + FIRST(unscoped-name) + FIRST(unscoped-template-name) + FIRST(local-name)
@@ -208,6 +544,49 @@ namespace redmond {
 		// FIRST(unscoped-template-name) = FIRST(unscoped-name) + FIRST(substitution)
 		// FIRST(local-name) = 'Z'
 		// FIRST(substitution) = 'S'
+		switch(*begin) {
+			case 'N':   // nested-name
+			case 'S':   // unscoped-name, substitution
+			case 'n':   // operator-name
+			case 'd':   // operator-name
+			case 'p':   // operator-name
+			case 'a':   // operator-name
+			case 'c':   // operator-name
+			case 'm':   // operator-name
+			case 'r':   // operator-name
+			case 'o':   // operator-name
+			case 'e':   // operator-name
+			case 'l':   // operator-name
+			case 'g':   // operator-name
+			case 'i':   // operator-name
+			case 'q':   // operator-name
+			case 's':   // operator-name
+			case 'v':   // operator-name
+			case 'C':   // ctor-dtor-name
+			case 'D':   // ctor-dtor-name
+			case 'Z':   // local-name
+				break;
+			case 'T':   // special-name
+			case 'G':   // special-name
+				return _unmangleGCC3_specialName(begin, end, sbox);
+			default:
+				if(*begin < '0' || *begin > '9')   // !source-name
+					return NULL;
+				break;
+		}
+		UnmanglePtr<Name> name(_unmangleGCC3_name(begin, end, sbox));
+		if(!name.ptr)
+			return NULL;
+		if(begin == end) {
+			DataSymbol* data = new DataSymbol(name.ptr);
+			name.ptr = NULL;
+			return data;
+		}
+		UnmanglePtr<BareFunctionType> type(_unmangleGCC3_bareFunctionType(begin, end, sbox));
+		FunctionSymbol* function = new FunctionSymbol(name.ptr, type.ptr);
+		name.ptr = NULL;
+		type.ptr = NULL;
+		return function;
 	}
 
 	REDSTRAIN_REDMOND_API CPPSymbol* unmangleCPPSymbol_GCC3(const string& symbol) {
@@ -222,7 +601,8 @@ namespace redmond {
 		SBox sbox;
 		CPPSymbol* symbol = _unmangleGCC3_encoding(begin, end, sbox);
 		if(begin != end) {
-			delete symbol;
+			if(symbol)
+				delete symbol;
 			return NULL;
 		}
 		return symbol;

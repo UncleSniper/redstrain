@@ -1,6 +1,8 @@
 #include "Name.hpp"
 #include "DataSymbol.hpp"
 
+using std::ostream;
+
 namespace redengine {
 namespace redmond {
 namespace unmangle {
@@ -19,6 +21,10 @@ namespace unmangle {
 
 	CPPSymbol* DataSymbol::cloneSymbol() const {
 		return new DataSymbol(*this);
+	}
+
+	void DataSymbol::print(ostream& out, bool& lastWasGreater) const {
+		name->print(out, lastWasGreater);
 	}
 
 }}}

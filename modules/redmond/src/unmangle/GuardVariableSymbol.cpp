@@ -1,6 +1,8 @@
 #include "Name.hpp"
 #include "GuardVariableSymbol.hpp"
 
+using std::ostream;
+
 namespace redengine {
 namespace redmond {
 namespace unmangle {
@@ -20,6 +22,16 @@ namespace unmangle {
 
 	CPPSymbol* GuardVariableSymbol::cloneSymbol() const {
 		return new GuardVariableSymbol(*this);
+	}
+
+	void GuardVariableSymbol::print(ostream& out, bool& lastWasGreater) const {
+		out << "<guard variable for ";
+		lastWasGreater = false;
+		objectName->print(out, lastWasGreater);
+		if(lastWasGreater)
+			out << ' ';
+		out << '>';
+		lastWasGreater = true;
 	}
 
 }}}
