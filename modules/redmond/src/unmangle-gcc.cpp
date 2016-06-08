@@ -1,29 +1,58 @@
 #include <vector>
 
-#include "unmangle/Name.hpp"
 #include "unmangle-utils.hpp"
+#include "unmangle/EnumType.hpp"
+#include "unmangle/LocalName.hpp"
 #include "unmangle/DataSymbol.hpp"
+#include "unmangle/NestedName.hpp"
 #include "unmangle/TableSymbol.hpp"
 #include "unmangle/BuiltinType.hpp"
+#include "unmangle/FunctionType.hpp"
+#include "unmangle/ModifiedType.hpp"
 #include "unmangle/FunctionSymbol.hpp"
+#include "unmangle/CVQualifiedType.hpp"
+#include "unmangle/StaticArrayType.hpp"
+#include "unmangle/ComplexArrayType.hpp"
 #include "unmangle/BareFunctionType.hpp"
+#include "unmangle/VariableArrayType.hpp"
+#include "unmangle/TemplateParamType.hpp"
 #include "unmangle/VendorExtendedType.hpp"
 #include "unmangle/GuardVariableSymbol.hpp"
 #include "unmangle/OverrideThunkSymbol.hpp"
+#include "unmangle/PointerToMemberType.hpp"
+#include "unmangle/TemplateTemplateParamType.hpp"
+#include "unmangle/VendorExtendedQualifiedType.hpp"
 #include "unmangle/CovariantOverrideThunkSymbol.hpp"
 
 using std::string;
 using std::vector;
 using redengine::redmond::unmangle::Name;
 using redengine::redmond::unmangle::Type;
+using redengine::redmond::unmangle::EnumType;
 using redengine::redmond::unmangle::CPPSymbol;
+using redengine::redmond::unmangle::LocalName;
+using redengine::redmond::unmangle::DataSymbol;
+using redengine::redmond::unmangle::NestedName;
+using redengine::redmond::unmangle::Expression;
 using redengine::redmond::unmangle::TableSymbol;
 using redengine::redmond::unmangle::BuiltinType;
+using redengine::redmond::unmangle::FunctionType;
+using redengine::redmond::unmangle::ModifiedType;
 using redengine::redmond::unmangle::SpecialSymbol;
+using redengine::redmond::unmangle::UnqualifiedName;
+using redengine::redmond::unmangle::CVQualifiedType;
+using redengine::redmond::unmangle::StaticArrayType;
+using redengine::redmond::unmangle::ComplexArrayType;
 using redengine::redmond::unmangle::BareFunctionType;
+using redengine::redmond::unmangle::TemplateArgument;
+using redengine::redmond::unmangle::VariableArrayType;
+using redengine::redmond::unmangle::TemplateParamType;
 using redengine::redmond::unmangle::VendorExtendedType;
 using redengine::redmond::unmangle::GuardVariableSymbol;
 using redengine::redmond::unmangle::OverrideThunkSymbol;
+using redengine::redmond::unmangle::PointerToMemberType;
+using redengine::redmond::unmangle::TemplateTemplateParamType;
+using redengine::redmond::unmangle::VendorExtendedQualifiedType;
 using redengine::redmond::unmangle::CovariantOverrideThunkSymbol;
 
 namespace redengine {
@@ -209,7 +238,40 @@ namespace redmond {
 	//                ::= So   # std::ostream (std::basic_ostream<char, std::char_traits<char> >)
 	//                ::= Sd   # std::iostream (std::basic_iostream<char, std::char_traits<char> >)
 
-	typedef vector<string> SBox;
+	enum GCC3UnmangleSubstType {
+		GCC3UMST_TYPE,
+		GCC3UMST_UNSCOPED_TEMPLATE_NAME,
+		GCC3UMST_TEMPLATE_TEMPLATE_PARAM
+	};
+
+	struct GCC3UnmangleSubstitution {
+
+		GCC3UnmangleSubstType type;
+		const char* begin;
+		const char* end;
+
+		GCC3UnmangleSubstitution(GCC3UnmangleSubstType type, const char* begin, const char* end)
+				: type(type), begin(begin), end(end) {}
+
+		GCC3UnmangleSubstitution(const GCC3UnmangleSubstType& substitution)
+				: type(substitution.type), begin(substitution.begin), end(substitution.end) {}
+
+	};
+
+	enum GCC3UnmangleSubstRef {
+		GCC3UMSR_ID,
+		GCC3UMSR_STD,
+		GCC3UMSR_ALLOCATOR,
+		GCC3UMSR_BASIC_STRING,
+		GCC3UMSR_STRING,
+		GCC3UMSR_ISTREAM,
+		GCC3UMSR_OSTREAM,
+		GCC3UMSR_IOSTREAM
+	};
+
+	typedef vector<GCC3UnmangleSubstitution> SBox;
+
+	BareFunctionType* _unmangleGCC3_bareFunctionType(const char*&, const char*, SBox&);
 
 	template<typename IntegerT>
 	bool _unmangleGCC3_number(const char*& begin, const char* end, IntegerT& result) {
@@ -250,8 +312,141 @@ namespace redmond {
 		return true;
 	}
 
-	Name* _unmangleGCC3_name(const char*& begin, const char* end, SBox& sbox) {
+	bool _unmangleGCC3_substitution(const char*& begin, const char* end, GCC3UnmangleSubstRef& ref, unsigned& id) {
+		if(begin == end)
+			return false;
+		switch(*begin) {
+			case '_':
+				++begin;
+				id = 0u;
+				ref = GCC3UMSR_ID;
+				return true;
+			case 't':
+				++begin;
+				ref = GCC3UMSR_STD;
+				return true;
+			case 'a':
+				++begin;
+				ref = GCC3UMSR_ALLOCATOR;
+				return true;
+			case 'b':
+				++begin;
+				ref = GCC3UMSR_BASIC_STRING;
+				return true;
+			case 's':
+				++begin;
+				ref = GCC3UMSR_STRING;
+				return true;
+			case 'i':
+				++begin;
+				ref = GCC3UMSR_ISTREAM;
+				return true;
+			case 'o':
+				++begin;
+				ref = GCC3UMSR_OSTREAM;
+				return true;
+			case 'd':
+				++begin;
+				ref = GCC3UMSR_IOSTREAM;
+				return true;
+			default:
+				break;
+		}
+		if(*begin >= '0' && *begin <= '9')
+			id = static_cast<unsigned>(*begin - '0');
+		else if(*begin >= 'A' && *begin <= 'Z')
+			id = static_cast<unsigned>(*begin - '0') + 10u;
+		else
+			return false;
+		ref = GCC3UMSR_ID;
+		for(;;) {
+			if(++begin == end)
+				return false;
+			if(*begin == '_') {
+				++begin;
+				++id;
+				return true;
+			}
+			if(*begin >= '0' && *begin <= '9')
+				id = id * 36u + static_cast<unsigned>(*begin - '0');
+			else if(*begin >= 'A' && *begin <= 'Z')
+				id = id * 36u + static_cast<unsigned>(*begin - '0') + 10u;
+			else
+				return false;
+		}
+	}
+
+	Expression* _unmangleGCC3_expression(const char*& begin, const char* end, SBox& sbox) {
 		//TODO
+	}
+
+	TemplateArgument* _unmangleGCC3_templateArg(const char*& begin, const char* end, SBox& sbox) {
+		// only called on non-empty input
+		//TODO
+	}
+
+	NestedName* _unmangleGCC3_nestedName(const char*& begin, const char* end, SBox& sbox) {
+		// only called on non-empty input
+		//TODO
+	}
+
+	LocalName* _unmangleGCC3_localName(const char*& begin, const char* end, SBox& sbox) {
+		// only called on non-empty input
+		//TODO
+	}
+
+	UnqualifiedName* _unmangleGCC3_unqualifiedName(const char*& begin, const char* end, SBox& sbox) {
+		if(begin == end)
+			return NULL;
+		//TODO
+	}
+
+	Name* _unmangleGCC3_name(const char*& begin, const char* end, SBox& sbox) {
+		if(begin == end)
+			return NULL;
+		switch(*begin) {
+			case 'N':   // nested-name
+				return _unmangleGCC3_nestedName(begin, end, sbox);
+			case 'S':   // unscoped-name/unscoped-template-name, substitution
+				{
+					const char* next = begin + 1;
+					if(next == end)
+						return NULL;
+					if(*next == 't') {
+						//TODO: call _unmangleGCC3_unqualifiedName() and put result into a NestedName
+						//TODO: see if that is followed by <template-args> -- if so, make this
+						//      <unscoped-template-name> eligible for substitution and read the args
+					}
+					else {
+						//TODO: this must be an <unscoped-template-name>, since it is being substituted;
+						//      also read the following <template-args>
+					}
+				}
+			case 'n':   // operator-name
+			case 'd':   // operator-name
+			case 'p':   // operator-name
+			case 'a':   // operator-name
+			case 'c':   // operator-name
+			case 'm':   // operator-name
+			case 'r':   // operator-name
+			case 'o':   // operator-name
+			case 'e':   // operator-name
+			case 'l':   // operator-name
+			case 'g':   // operator-name
+			case 'i':   // operator-name
+			case 'q':   // operator-name
+			case 's':   // operator-name
+			case 'v':   // operator-name
+			case 'C':   // ctor-dtor-name
+			case 'D':   // ctor-dtor-name
+				return _unmangleGCC3_unqualifiedName(begin, end, sbox);
+			case 'Z':   // local-name
+				return _unmangleGCC3_localName(begin, end, sbox);
+			default:
+				if(*begin >= '0' && *begin <= '9')
+					return _unmangleGCC3_unqualifiedName(begin, end, sbox);
+				return NULL;
+		}
 	}
 
 	Type* _unmangleGCC3_type(const char*& begin, const char* end, SBox& sbox) {
@@ -259,7 +454,10 @@ namespace redmond {
 		// semantically invalid cases.
 		if(begin == end)
 			return NULL;
+		const char* beforeThisType = begin;
 		UnmanglePtr<Type> type(NULL);
+		int qualifiers = 0;
+		ModifiedType::Modifier modifier;
 		switch(*begin) {
 			case 'v':   // builtin-type, [operator-name]
 				++begin;
@@ -334,27 +532,304 @@ namespace redmond {
 				}
 				break;
 			case 'F':   // function-type
+				{
+					if(++begin == end)
+						return NULL;
+					bool externC;
+					if(*begin == 'Y') {
+						externC = true;
+						++begin;
+					}
+					else
+						externC = false;
+					UnmanglePtr<BareFunctionType> bare(_unmangleGCC3_bareFunctionType(begin, end, sbox));
+					if(!bare.ptr)
+						return NULL;
+					if(begin == end || *begin != 'E')
+						return NULL;
+					++begin;
+					type.ptr = new FunctionType(externC, bare.ptr);
+					bare.ptr = NULL;
+				}
+				break;
 			case 'A':   // array-type
+				{
+					UnmanglePtr<Type> elementType(NULL);
+					if(++begin == end)
+						return NULL;
+					if(*begin == '_') {
+						++begin;
+						elementType.ptr = _unmangleGCC3_type(begin, end, sbox);
+						if(!elementType.ptr)
+							return NULL;
+						type.ptr = new VariableArrayType(elementType.ptr);
+						elementType.ptr = NULL;
+					}
+					else if(*begin >= '0' && *begin <= '9') {
+						unsigned dimension;
+						if(!_unmangleGCC3_number(begin, end, dimension))
+							return NULL;
+						if(begin == end || *begin != '_')
+							return NULL;
+						++begin;
+						elementType.ptr = _unmangleGCC3_type(begin, end, sbox);
+						if(!elementType.ptr)
+							return NULL;
+						type.ptr = new StaticArrayType(elementType.ptr, dimension);
+						elementType.ptr = NULL;
+					}
+					else {
+						UnmanglePtr<Expression> dimension(_unmangleGCC3_expression(begin, end, sbox));
+						if(!dimension.ptr)
+							return NULL;
+						if(begin == end || *begin != '_')
+							return NULL;
+						++begin;
+						elementType.ptr = _unmangleGCC3_type(begin, end, sbox);
+						if(!elementType.ptr)
+							return NULL;
+						type.ptr = new ComplexArrayType(elementType.ptr, dimension.ptr);
+						elementType.ptr = NULL;
+						dimension.ptr = NULL;
+					}
+				}
+				break;
 			case 'M':   // pointer-to-member-type
-			case 'V':   // CV-qualifiers
-			case 'K':   // CV-qualifiers
+				{
+					++begin;
+					UnmanglePtr<Type> classType(_unmangleGCC3_type(begin, end, sbox));
+					if(!classType.ptr)
+						return NULL;
+					UnmanglePtr<Type> memberType(_unmangleGCC3_type(begin, end, sbox));
+					if(!memberType.ptr)
+						return NULL;
+					type.ptr = new PointerToMemberType(classType.ptr, memberType.ptr);
+					classType.ptr = memberType.ptr = NULL;
+				}
+				break;
 			case 'r':   // [operator-name], CV-qualifiers
+				qualifiers = CVQualifiedType::CVQ_RESTRICT;
+				if(++begin == end)
+					return NULL;
+				if(*begin == 'K')
+					goto atConstQual;
+				if(*begin != 'V')
+					goto flushCVQual;
+			case 'V':   // CV-qualifiers
+				qualifiers |= CVQualifiedType::CVQ_VOLATILE;
+				if(++begin == end)
+					return NULL;
+				if(*begin != 'K')
+					goto flushCVQual;
+			case 'K':   // CV-qualifiers
+			  atConstQual:
+				qualifiers |= CVQualifiedType::CVQ_CONST;
+				++begin;
+			  flushCVQual:
+				{
+					UnmanglePtr<Type> qtype(_unmangleGCC3_type(begin, end, sbox));
+					if(!qtype.ptr)
+						return NULL;
+					type.ptr = new CVQualifiedType(qualifiers, qtype.ptr);
+					qtype.ptr = NULL;
+				}
+				break;
 			case 'P':   // pointer-to
+				modifier = ModifiedType::MOD_POINTER;
+				goto flushModifier;
 			case 'R':   // reference-to
-			case 'G':   // imaginary (C 2000)
-			case 'N':   // nested-name
-			case 'S':   // unscoped-name, substitution
-			//case 'q': // [operator-name]
+				modifier = ModifiedType::MOD_REFERENCE;
+				goto flushModifier;
 			case 'C':   // [ctor-dtor-name], complex pair (C 2000)
+				modifier = ModifiedType::MOD_COMPLEX;
+				goto flushModifier;
+			case 'G':   // imaginary (C 2000)
+				modifier = ModifiedType::MOD_IMAGINARY;
+			  flushModifier:
+				{
+					++begin;
+					UnmanglePtr<Type> mtype(_unmangleGCC3_type(begin, end, sbox));
+					if(!mtype.ptr)
+						return NULL;
+					type.ptr = new ModifiedType(modifier, mtype.ptr);
+					mtype.ptr = NULL;
+				}
+				break;
+			case 'S':   // unscoped-name/unscoped-template-name, substitution
+				{
+					++begin;
+					const char* beforeSubst = begin;
+					GCC3UnmangleSubstRef ref;
+					unsigned id;
+					if(!_unmangleGCC3_substitution(begin, end, ref, id))
+						return NULL;
+					switch(ref) {
+						case GCC3UMSR_ID:
+							{
+								if(id >= static_cast<unsigned>(sbox.size()))
+									return NULL;
+								const GCC3UnmangleSubstitution& substitution = sbox[id];
+								const char* sbegin = substitution.begin;
+								SBox tmpSBox;
+								switch(substitution.type) {
+									case GCC3UMST_TYPE:
+										return _unmangleGCC3_type(sbegin, substitution.end, tmpSBox);
+									case GCC3UMST_UNSCOPED_TEMPLATE_NAME:
+										// see other cases of the enclosing switch
+										{
+											begin = beforeSubst;
+											UnmanglePtr<Name> etname(_unmangleGCC3_name(begin, end, sbox));
+											if(!etname.ptr)
+												return NULL;
+											type.ptr = new EnumType(etname.ptr);
+											etname.ptr = NULL;
+										}
+										break;
+									case GCC3UMST_TEMPLATE_TEMPLATE_PARAM:
+										{
+											if(*sbegin != 'T')
+												return NULL;
+											if(++sbegin == substitution.end)
+												return NULL;
+											if(*sbegin == '_')
+												pindex = 0u;
+											else if(*sbegin >= '0' && *sbegin <= '9') {
+												if(!_unmangleGCC3_number<unsigned>(sbegin, substitution.end, pindex))
+													return NULL;
+												++pindex;
+												if(sbegin == substitution.end || *sbegin != '_')
+													return NULL;
+											}
+											else
+												return NULL;
+											if(++sbegin != substitution.end)
+												return NULL;
+											if(begin == end || *begin != 'I')
+												return NULL;
+											if(++begin == end)
+												return NULL;
+											TemplateTemplateParamType* ttpt = new TemplateTemplateParamType(pindex);
+											type.ptr = ttpt;
+											UnmanglePtr<TemplateArgument> arg(NULL);
+											do {
+												arg.ptr = _unmangleGCC3_templateArg(begin, end, sbox);
+												if(!arg.ptr || begin == end)
+													return NULL;
+												ttpt->addArgument(arg.ptr);
+												arg.ptr = NULL;
+											} while(*begin != 'E');
+											++begin;
+										}
+										break;
+									default:
+										return NULL;
+								}
+							}
+							break;
+						case GCC3UMSR_STD:
+						case GCC3UMSR_ALLOCATOR:
+						case GCC3UMSR_BASIC_STRING:
+						case GCC3UMSR_STRING:
+						case GCC3UMSR_ISTREAM:
+						case GCC3UMSR_OSTREAM:
+						case GCC3UMSR_IOSTREAM:
+							// In all of these cases, the <class-enum-type> option
+							// *must* be what we need, so we'll just read a name
+							// and let the <name> rule perform the actual substitution.
+							// Also note that we can just let this fall through
+							// to the epilogue of this function such that this
+							// type will become eligible for substitution in and of
+							// itsself without fear of adding the same mangled
+							// substring to the s-box twice, since the <name> rule
+							// cannot derive <substitution> by itsself.
+							{
+								UnmanglePtr<Name> etname(_unmangleGCC3_name(begin, end, sbox));
+								if(!etname.ptr)
+									return NULL;
+								type.ptr = new EnumType(etname.ptr);
+								etname.ptr = NULL;
+							}
+							break;
+						default:
+							return NULL;
+					}
+				}
+				break;
+			case 'N':   // nested-name
+			//case 'q': // [operator-name]
 			//case 'D': // [ctor-dtor-name]
 			case 'Z':   // local-name
+				goto useEnumName;
 			case 'T':   // template-param, template-template-param
+				{
+					if(++begin == end)
+						return NULL;
+					const char* oldBegin = begin;
+					unsigned pindex;
+					if(*begin == '_')
+						pindex = 0u;
+					else if(*begin >= '0' && *begin <= '9') {
+						if(!_unmangleGCC3_number<unsigned>(begin, end, pindex))
+							return NULL;
+						++pindex;
+						if(begin == end || *begin != '_')
+							return NULL;
+					}
+					else
+						return NULL;
+					++begin;
+					if(begin != end && *begin == 'I') {
+						// <type> ::= <template-template-param> <template-args>
+						sbox.push_back(GCC3UnmangleSubstitution(GCC3UMST_TEMPLATE_TEMPLATE_PARAM, oldBegin, begin));
+						if(++begin == end)
+							return NULL;
+						TemplateTemplateParamType* ttpt = new TemplateTemplateParamType(pindex);
+						type.ptr = ttpt;
+						UnmanglePtr<TemplateArgument> arg(NULL);
+						do {
+							arg.ptr = _unmangleGCC3_templateArg(begin, end, sbox);
+							if(!arg.ptr || begin == end)
+								return NULL;
+							ttpt->addArgument(arg.ptr);
+							arg.ptr = NULL;
+						} while(*begin != 'E');
+						++begin;
+					}
+					else
+						// <type> ::= <template-param>
+						type.ptr = new TemplateParamType(pindex);
+				}
+				break;
 			case 'U':   // vendor extended type qualifier
+				{
+					++begin;
+					string veqname;
+					if(!_unmangleGCC3_sourceName(begin, end, veqname))
+						return NULL;
+					UnmanglePtr<Type> qtype(_unmangleGCC3_type(begin, end, sbox));
+					if(!qtype.ptr)
+						return NULL;
+					type.ptr = new VendorExtendedQualifiedType(veqname, qtype.ptr);
+					qtype.ptr = NULL;
+				}
+				break;
 			default:
 				if(c < '0' || c > '9')   // !source-name
 					return NULL;
+			  useEnumName:
+				{
+					UnmanglePtr<Name> etname(_unmangleGCC3_name(begin, end, sbox));
+					if(!etname.ptr)
+						return NULL;
+					type.ptr = new EnumType(etname.ptr);
+					etname.ptr = NULL;
+				}
+				break;
 		}
-		//TODO: substitution stuff
+		sbox.push_back(GCC3UnmangleSubstitution(GCC3UMST_TYPE, beforeThisType, begin));
+		Type* resultType = type.ptr;
+		type.ptr = NULL;
+		return resultType;
 	}
 
 	bool _unmangleGCC3_startsType(char c) {
@@ -390,7 +865,7 @@ namespace redmond {
 			case 'u':   // builtin-type
 			case 'F':   // function-type
 			case 'N':   // nested-name
-			case 'S':   // unscoped-name, substitution
+			case 'S':   // unscoped-name/unscoped-template-name, substitution
 			case 'r':   // [operator-name], CV-qualifiers
 			//case 'q': // [operator-name]
 			case 'C':   // [ctor-dtor-name], complex pair (C 2000)
@@ -546,7 +1021,7 @@ namespace redmond {
 		// FIRST(substitution) = 'S'
 		switch(*begin) {
 			case 'N':   // nested-name
-			case 'S':   // unscoped-name, substitution
+			case 'S':   // unscoped-name/unscoped-template-name, substitution
 			case 'n':   // operator-name
 			case 'd':   // operator-name
 			case 'p':   // operator-name

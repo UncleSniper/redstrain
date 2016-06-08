@@ -11,8 +11,12 @@ namespace unmangle {
 	BareFunctionType::BareFunctionType(const BareFunctionType& bare) {
 		UnmangleCollectionPtr<Types> clearTypes(&types);
 		TypeIterator begin(bare.types.begin()), end(bare.types.end());
-		for(; begin != end; ++begin)
-			types.push_back((*begin)->cloneType());
+		UnmanglePtr<Type> type(NULL);
+		for(; begin != end; ++begin) {
+			type.ptr = (*begin)->cloneType();
+			types.push_back(type.ptr);
+			type.ptr = NULL;
+		}
 		clearTypes.ptr = NULL;
 	}
 
