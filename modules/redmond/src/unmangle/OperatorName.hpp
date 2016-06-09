@@ -7,7 +7,7 @@ namespace redengine {
 namespace redmond {
 namespace unmangle {
 
-	class REDSTRAIN_REDMOND_API OperatorName {
+	class REDSTRAIN_REDMOND_API OperatorName : public UnqualifiedName {
 
 	  public:
 		enum Operator {
@@ -67,7 +67,7 @@ namespace unmangle {
 		OperatorName(const OperatorName&);
 
 		virtual NameType getNameType() const;
-		virtual void print(std::ostream&, bool&) const;
+		virtual void print(std::ostream&, bool&, const std::string*) const;
 		virtual Name* cloneName() const;
 
 	};

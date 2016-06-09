@@ -1,5 +1,6 @@
 #include "OperatorName.hpp"
 
+using std::string;
 using std::ostream;
 
 namespace redengine {
@@ -14,7 +15,7 @@ namespace unmangle {
 		return NT_OPERATOR;
 	}
 
-	void OperatorName::print(ostream& out, bool& lastWasGreater) const {
+	void OperatorName::print(ostream& out, bool& lastWasGreater, const string*) const {
 		out << "operator";
 		lastWasGreater = false;
 		switch(oper) {

@@ -1,6 +1,7 @@
 #ifndef REDSTRAIN_MOD_REDMOND_UNMANGLE_NAME_HPP
 #define REDSTRAIN_MOD_REDMOND_UNMANGLE_NAME_HPP
 
+#include <string>
 #include <iostream>
 
 #include "../api.hpp"
@@ -14,7 +15,11 @@ namespace unmangle {
 	  public:
 		enum NameType {
 			NT_OPERATOR,
-			NT_NESTED
+			NT_CTOR_DTOR,
+			NT_SOURCE,
+			NT_NESTED,
+			NT_LOCAL,
+			NT_TEMPLATE_PARAM
 		};
 
 	  public:
@@ -23,7 +28,7 @@ namespace unmangle {
 		virtual ~Name();
 
 		virtual NameType getNameType() const = 0;
-		virtual void print(std::ostream&, bool&) const = 0;
+		virtual void print(std::ostream&, bool&, const std::string*) const = 0;
 		virtual Name* cloneName() const = 0;
 
 	};

@@ -3,12 +3,15 @@
 #include "unmangle-utils.hpp"
 #include "unmangle/EnumType.hpp"
 #include "unmangle/LocalName.hpp"
+#include "unmangle/SourceName.hpp"
 #include "unmangle/DataSymbol.hpp"
 #include "unmangle/NestedName.hpp"
 #include "unmangle/TableSymbol.hpp"
 #include "unmangle/BuiltinType.hpp"
 #include "unmangle/FunctionType.hpp"
 #include "unmangle/ModifiedType.hpp"
+#include "unmangle/CtorDtorName.hpp"
+#include "unmangle/OperatorName.hpp"
 #include "unmangle/FunctionSymbol.hpp"
 #include "unmangle/CVQualifiedType.hpp"
 #include "unmangle/StaticArrayType.hpp"
@@ -16,6 +19,7 @@
 #include "unmangle/BareFunctionType.hpp"
 #include "unmangle/VariableArrayType.hpp"
 #include "unmangle/TemplateParamType.hpp"
+#include "unmangle/TemplateParamName.hpp"
 #include "unmangle/VendorExtendedType.hpp"
 #include "unmangle/GuardVariableSymbol.hpp"
 #include "unmangle/OverrideThunkSymbol.hpp"
@@ -32,12 +36,15 @@ using redengine::redmond::unmangle::EnumType;
 using redengine::redmond::unmangle::CPPSymbol;
 using redengine::redmond::unmangle::LocalName;
 using redengine::redmond::unmangle::DataSymbol;
+using redengine::redmond::unmangle::SourceName;
 using redengine::redmond::unmangle::NestedName;
 using redengine::redmond::unmangle::Expression;
 using redengine::redmond::unmangle::TableSymbol;
 using redengine::redmond::unmangle::BuiltinType;
 using redengine::redmond::unmangle::FunctionType;
 using redengine::redmond::unmangle::ModifiedType;
+using redengine::redmond::unmangle::CtorDtorName;
+using redengine::redmond::unmangle::OperatorName;
 using redengine::redmond::unmangle::SpecialSymbol;
 using redengine::redmond::unmangle::UnqualifiedName;
 using redengine::redmond::unmangle::CVQualifiedType;
@@ -47,6 +54,7 @@ using redengine::redmond::unmangle::BareFunctionType;
 using redengine::redmond::unmangle::TemplateArgument;
 using redengine::redmond::unmangle::VariableArrayType;
 using redengine::redmond::unmangle::TemplateParamType;
+using redengine::redmond::unmangle::TemplateParamName;
 using redengine::redmond::unmangle::VendorExtendedType;
 using redengine::redmond::unmangle::GuardVariableSymbol;
 using redengine::redmond::unmangle::OverrideThunkSymbol;
@@ -271,6 +279,8 @@ namespace redmond {
 
 	typedef vector<GCC3UnmangleSubstitution> SBox;
 
+	CPPSymbol* _unmangleGCC3_encoding(const char*&, const char*, SBox&);
+	Name* _unmangleGCC3_name(const char*&, const char*, SBox&);
 	BareFunctionType* _unmangleGCC3_bareFunctionType(const char*&, const char*, SBox&);
 
 	template<typename IntegerT>
@@ -385,20 +395,378 @@ namespace redmond {
 		//TODO
 	}
 
-	NestedName* _unmangleGCC3_nestedName(const char*& begin, const char* end, SBox& sbox) {
-		// only called on non-empty input
-		//TODO
-	}
-
-	LocalName* _unmangleGCC3_localName(const char*& begin, const char* end, SBox& sbox) {
-		// only called on non-empty input
-		//TODO
-	}
-
 	UnqualifiedName* _unmangleGCC3_unqualifiedName(const char*& begin, const char* end, SBox& sbox) {
 		if(begin == end)
 			return NULL;
-		//TODO
+		switch(*begin) {
+			case 'n':   // operator-name
+				if(++begin == end)
+					return NULL;
+				switch(*begin) {
+					case 'w':
+						++begin;
+						return new OperatorName(OperatorName::OP_NEW);
+					case 'a':
+						++begin;
+						return new OperatorName(OperatorName::OP_NEW_ARRAY);
+					case 'g':
+						++begin;
+						return new OperatorName(OperatorName::OP_NEGATIVE);
+					case 'e':
+						++begin;
+						return new OperatorName(OperatorName::OP_UNEQUAL);
+					case 't':
+						++begin;
+						return new OperatorName(OperatorName::OP_NOT);
+					default:
+						return NULL;
+				}
+			case 'd':   // operator-name
+				if(++begin == end)
+					return NULL;
+				switch(*begin) {
+					case 'l':
+						++begin;
+						return new OperatorName(OperatorName::OP_DELETE);
+					case 'a':
+						++begin;
+						return new OperatorName(OperatorName::OP_DELETE_ARRAY);
+					case 'e':
+						++begin;
+						return new OperatorName(OperatorName::OP_DEREFERENCE);
+					case 'v':
+						++begin;
+						return new OperatorName(OperatorName::OP_DIVIDE);
+					case 'V':
+						++begin;
+						return new OperatorName(OperatorName::OP_DIVIDE_ASSIGN);
+					default:
+						return NULL;
+				}
+			case 'p':   // operator-name
+				if(++begin == end)
+					return NULL;
+				switch(*begin) {
+					case 's':
+						++begin;
+						return new OperatorName(OperatorName::OP_POSITIVE);
+					case 'l':
+						++begin;
+						return new OperatorName(OperatorName::OP_PLUS);
+					case 'L':
+						++begin;
+						return new OperatorName(OperatorName::OP_PLUS_ASSIGN);
+					case 'p':
+						++begin;
+						return new OperatorName(OperatorName::OP_INCREMENT);
+					case 'm':
+						++begin;
+						return new OperatorName(OperatorName::OP_POINTER_TO_MEMBER);
+					case 't':
+						++begin;
+						return new OperatorName(OperatorName::OP_POINTER);
+					default:
+						return NULL;
+				}
+			case 'a':   // operator-name
+				if(++begin == end)
+					return NULL;
+				switch(*begin) {
+					case 'd':
+						++begin;
+						return new OperatorName(OperatorName::OP_ADDRESS_OF);
+					case 'n':
+						++begin;
+						return new OperatorName(OperatorName::OP_AND);
+					case 'S':
+						++begin;
+						return new OperatorName(OperatorName::OP_ASSIGN);
+					case 'N':
+						++begin;
+						return new OperatorName(OperatorName::OP_AND_ASSIGN);
+					case 'a':
+						++begin;
+						return new OperatorName(OperatorName::OP_LOGICAL_AND);
+					default:
+						return NULL;
+				}
+			case 'c':   // operator-name
+				if(++begin == end)
+					return NULL;
+				switch(*begin) {
+					case 'o':
+						++begin;
+						return new OperatorName(OperatorName::OP_COMPLEMENT);
+					case 'm':
+						++begin;
+						return new OperatorName(OperatorName::OP_COMMA);
+					case 'l':
+						++begin;
+						return new OperatorName(OperatorName::OP_CALL);
+					default:
+						return NULL;
+				}
+			case 'm':   // operator-name
+				if(++begin == end)
+					return NULL;
+				switch(*begin) {
+					case 'i':
+						++begin;
+						return new OperatorName(OperatorName::OP_MINUS);
+					case 'l':
+						++begin;
+						return new OperatorName(OperatorName::OP_MULTIPLY);
+					case 'I':
+						++begin;
+						return new OperatorName(OperatorName::OP_MINUS_ASSIGN);
+					case 'L':
+						++begin;
+						return new OperatorName(OperatorName::OP_MULTIPLY_ASSIGN);
+					case 'm':
+						++begin;
+						return new OperatorName(OperatorName::OP_DECREMENT);
+					default:
+						return NULL;
+				}
+			case 'r':   // operator-name
+				if(++begin == end)
+					return NULL;
+				switch(*begin) {
+					case 'm':
+						++begin;
+						return new OperatorName(OperatorName::OP_REMAINDER);
+					case 'M':
+						++begin;
+						return new OperatorName(OperatorName::OP_REMAINDER_ASSIGN);
+					case 's':
+						++begin;
+						return new OperatorName(OperatorName::OP_RIGHT_SHIFT);
+					case 'S':
+						++begin;
+						return new OperatorName(OperatorName::OP_RIGHT_SHIFT_ASSIGN);
+					default:
+						return NULL;
+				}
+			case 'o':   // operator-name
+				if(++begin == end)
+					return NULL;
+				switch(*begin) {
+					case 'r':
+						++begin;
+						return new OperatorName(OperatorName::OP_OR);
+					case 'R':
+						++begin;
+						return new OperatorName(OperatorName::OP_OR_ASSIGN);
+					case 'o':
+						++begin;
+						return new OperatorName(OperatorName::OP_LOGICAL_OR);
+					default:
+						return NULL;
+				}
+			case 'e':   // operator-name
+				if(++begin == end)
+					return NULL;
+				switch(*begin) {
+					case 'o':
+						++begin;
+						return new OperatorName(OperatorName::OP_XOR);
+					case 'O':
+						++begin;
+						return new OperatorName(OperatorName::OP_XOR_ASSIGN);
+					case 'q':
+						++begin;
+						return new OperatorName(OperatorName::OP_EQUAL);
+					default:
+						return NULL;
+				}
+			case 'l':   // operator-name
+				if(++begin == end)
+					return NULL;
+				switch(*begin) {
+					case 's':
+						++begin;
+						return new OperatorName(OperatorName::OP_LEFT_SHIFT);
+					case 'S':
+						++begin;
+						return new OperatorName(OperatorName::OP_LEFT_SHIFT_ASSIGN);
+					case 't':
+						++begin;
+						return new OperatorName(OperatorName::OP_LESS);
+					case 'e':
+						++begin;
+						return new OperatorName(OperatorName::OP_LESS_EQUAL);
+					default:
+						return NULL;
+				}
+			case 'g':   // operator-name
+				if(++begin == end)
+					return NULL;
+				switch(*begin) {
+					case 't':
+						++begin;
+						return new OperatorName(OperatorName::OP_GREATER);
+					case 'e':
+						++begin;
+						return new OperatorName(OperatorName::OP_GREATER_EQUAL);
+					default:
+						return NULL;
+				}
+			case 'i':   // operator-name
+				if(++begin == end)
+					return NULL;
+				if(*begin != 'x')
+					return NULL;
+				++begin;
+				return new OperatorName(OperatorName::OP_INDEX);
+			case 'C':   // ctor-dtor-name
+				if(++begin == end)
+					return NULL;
+				switch(*begin) {
+					case '1':
+						++begin;
+						return new CtorDtorName(CtorDtorName::FN_COMPLETE_CTOR);
+					case '2':
+						++begin;
+						return new CtorDtorName(CtorDtorName::FN_BASE_CTOR);
+					case '3':
+						++begin;
+						return new CtorDtorName(CtorDtorName::FN_ALLOCATING_CTOR);
+					default:
+						return NULL;
+				}
+			case 'D':   // ctor-dtor-name
+				if(++begin == end)
+					return NULL;
+				switch(*begin) {
+					case '0':
+						++begin;
+						return new CtorDtorName(CtorDtorName::FN_DELETING_DTOR);
+					case '1':
+						++begin;
+						return new CtorDtorName(CtorDtorName::FN_COMPLETE_DTOR);
+					case '2':
+						++begin;
+						return new CtorDtorName(CtorDtorName::FN_BASE_DTOR);
+					default:
+						return NULL;
+				}
+			default:
+				{
+					if(*begin < '0' || *begin > '9')
+						return NULL;
+					unsigned length;
+					if(!_unmangleGCC3_number<unsigned>(begin, end, length))
+						return NULL;
+					const char* newBegin = begin + length;
+					if(!length || newBegin >= end)
+						return NULL;
+					string segment(begin, static_cast<string::size_type>(length));
+					begin = newBegin;
+					return new SourceName(segment);
+				}
+		}
+	}
+
+	NestedName* _unmangleGCC3_nestedName(const char*& begin, const char* end, SBox& sbox) {
+		++begin;
+		int qualifiers = 0;
+		if(begin != end && *begin == 'r') {
+			qualifiers |= CVQualifiedType::CVQ_RESTRICT;
+			++begin;
+		}
+		if(begin != end && *begin == 'V') {
+			qualifiers |= CVQualifiedType::CVQ_VOLATILE;
+			++begin;
+		}
+		if(begin != end && *begin == 'K') {
+			qualifiers |= CVQualifiedType::CVQ_CONST;
+			++begin;
+		}
+		// token -v   state -> | empty | element-or-template | definite-element
+		// --------------------+-------+---------------------+-----------------
+		// unqualified-name    |   y   |          y          |        y
+		// template-param      |   y   |          n          |        n
+		// template-args       |   n   |          y          |        n
+		UnmanglePtr<NestedName> nested(new NestedName(qualifiers));
+		NestedName::Segment* argumentSink = NULL;
+		while(begin != end) {
+			switch(*begin) {
+				case 'n':   // operator-name
+				case 'd':   // operator-name
+				case 'p':   // operator-name
+				case 'a':   // operator-name
+				case 'c':   // operator-name
+				case 'm':   // operator-name
+				case 'r':   // operator-name
+				case 'o':   // operator-name
+				case 'e':   // operator-name
+				case 'l':   // operator-name
+				case 'g':   // operator-name
+				case 'i':   // operator-name
+				case 'q':   // operator-name
+				case 's':   // operator-name
+				case 'v':   // operator-name
+				case 'C':   // ctor-dtor-name
+				case 'D':   // ctor-dtor-name
+					// unqualified-name
+					goto unqualName;
+				default:
+					if(*begin < '0' || *begin > '9')
+						return NULL;
+				  unqualName:
+					//TODO
+				case 'T':
+					// template-param
+					//TODO
+				case 'I':
+					// template-args
+					//TODO
+				case 'E':
+					{
+						++begin;
+						if(!nested.ptr->hasSegments())
+							return NULL;
+						NestedName* nn = nested.ptr;
+						nested.ptr = NULL;
+						return nn;
+					}
+			}
+		}
+		return NULL;
+	}
+
+	LocalName* _unmangleGCC3_localName(const char*& begin, const char* end, SBox& sbox) {
+		if(++begin == end)
+			return NULL;
+		UnmanglePtr<CPPSymbol> function(_unmangleGCC3_encoding(begin, end, sbox));
+		if(!function.ptr)
+			return NULL;
+		if(begin == end || *begin != 'E')
+			return NULL;
+		if(++begin == end)
+			return NULL;
+		UnmanglePtr<Name> name(NULL);
+		if(*begin == 's')
+			++begin;
+		else {
+			name.ptr = _unmangleGCC3_name(begin, end, sbox);
+			if(!name.ptr)
+				return NULL;
+		}
+		unsigned discriminator;
+		if(begin == end || *begin != '_')
+			discriminator = 0u;
+		else {
+			if(++begin == end || *begin < '0' || *begin > '9')
+				return NULL;
+			if(!_unmangleGCC3_number<unsigned>(begin, end, discriminator))
+				return NULL;
+			++discriminator;
+		}
+		LocalName* ln = new LocalName(function.ptr, name.ptr, discriminator);
+		function.ptr = NULL;
+		name.ptr = NULL;
+		return ln;
 	}
 
 	Name* _unmangleGCC3_name(const char*& begin, const char* end, SBox& sbox) {
