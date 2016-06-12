@@ -24,7 +24,9 @@
 #include "unmangle/GuardVariableSymbol.hpp"
 #include "unmangle/OverrideThunkSymbol.hpp"
 #include "unmangle/PointerToMemberType.hpp"
+#include "unmangle/TypeTemplateArgument.hpp"
 #include "unmangle/TemplateTemplateParamType.hpp"
+#include "unmangle/ExpressionTemplateArgument.hpp"
 #include "unmangle/VendorExtendedQualifiedType.hpp"
 #include "unmangle/CovariantOverrideThunkSymbol.hpp"
 
@@ -59,7 +61,9 @@ using redengine::redmond::unmangle::VendorExtendedType;
 using redengine::redmond::unmangle::GuardVariableSymbol;
 using redengine::redmond::unmangle::OverrideThunkSymbol;
 using redengine::redmond::unmangle::PointerToMemberType;
+using redengine::redmond::unmangle::TypeTemplateArgument;
 using redengine::redmond::unmangle::TemplateTemplateParamType;
+using redengine::redmond::unmangle::ExpressionTemplateArgument;
 using redengine::redmond::unmangle::VendorExtendedQualifiedType;
 using redengine::redmond::unmangle::CovariantOverrideThunkSymbol;
 
@@ -282,6 +286,7 @@ namespace redmond {
 	CPPSymbol* _unmangleGCC3_encoding(const char*&, const char*, SBox&);
 	Name* _unmangleGCC3_name(const char*&, const char*, SBox&);
 	BareFunctionType* _unmangleGCC3_bareFunctionType(const char*&, const char*, SBox&);
+	bool _unmangleGCC3_startsType(char);
 
 	template<typename IntegerT>
 	bool _unmangleGCC3_number(const char*& begin, const char* end, IntegerT& result) {
@@ -391,8 +396,41 @@ namespace redmond {
 	}
 
 	TemplateArgument* _unmangleGCC3_templateArg(const char*& begin, const char* end, SBox& sbox) {
-		// only called on non-empty input
-		//TODO
+		switch(*begin) {
+			case 'X':
+				{
+					++begin;
+					UnmanglePtr<Expression> expr(_unmangleGCC3_expression(begin, end, sbox));
+					if(!expr.ptr)
+						return NULL;
+					if(begin == end || *begin != 'E')
+						return NULL;
+					++begin;
+					ExpressionTemplateArgument* arg = new ExpressionTemplateArgument(expr.ptr);
+					expr.ptr = NULL;
+					return arg;
+				}
+			case 'L':
+				{
+					UnmanglePtr<Expression> expr(_unmangleGCC3_expression(begin, end, sbox));
+					if(!expr.ptr)
+						return NULL;
+					ExpressionTemplateArgument* arg = new ExpressionTemplateArgument(expr.ptr);
+					expr.ptr = NULL;
+					return arg;
+				}
+			default:
+				if(!_unmangleGCC3_startsType(*begin))
+					return NULL;
+				{
+					UnmanglePtr<Type> type(_unmangleGCC3_type(begin, end, sbox));
+					if(!type.ptr)
+						return NULL;
+					TypeTemplateArgument* arg = new TypeTemplateArgument(type.ptr);
+					type.ptr = NULL;
+					return arg;
+				}
+		}
 	}
 
 	UnqualifiedName* _unmangleGCC3_unqualifiedName(const char*& begin, const char* end, SBox& sbox) {
@@ -689,6 +727,7 @@ namespace redmond {
 		// template-args       |   n   |          y          |        n
 		UnmanglePtr<NestedName> nested(new NestedName(qualifiers));
 		NestedName::Segment* argumentSink = NULL;
+		//TODO: grok substitution
 		while(begin != end) {
 			switch(*begin) {
 				case 'n':   // operator-name
@@ -714,13 +753,64 @@ namespace redmond {
 					if(*begin < '0' || *begin > '9')
 						return NULL;
 				  unqualName:
-					//TODO
+					{
+						UnmanglePtr<UnqualifiedName> uqname(_unmangleGCC3_unqualifiedName(begin, end, sbox));
+						if(!uqname.ptr)
+							return NULL;
+						UnmanglePtr<NestedName::Segment> segment(new NestedName::Segment(uqname.ptr));
+						uqname.ptr = NULL;
+						nested.ptr->addSegment(*segment.ptr);
+						argumentSink = segment.ptr;
+						segment.ptr = NULL;
+					}
+					break;
 				case 'T':
 					// template-param
-					//TODO
+					if(nested.ptr->hasSegments())
+						return NULL;
+					{
+						if(++begin == end)
+							return NULL;
+						unsigned pindex;
+						if(*begin == '_')
+							pindex = 0u;
+						else if(*begin >= '0' && *begin <= '9') {
+							if(!_unmangleGCC3_number<unsigned>(begin, end, pindex))
+								return NULL;
+							++pindex;
+							if(begin == end || *begin != '_')
+								return NULL;
+						}
+						else
+							return NULL;
+						++begin;
+						UnmanglePtr<TemplateParamName> tpname(new TemplateParamName(pindex));
+						UnmanglePtr<NestedName::Segment> segment(new NestedName::Segment(tpname.ptr));
+						tpname.ptr = NULL;
+						nested.ptr->addSegment(*segment.ptr);
+						argumentSink = segment.ptr;
+						segment.ptr = NULL;
+					}
+					break;
 				case 'I':
 					// template-args
-					//TODO
+					if(!argumentSink)
+						return NULL;
+					{
+						if(++begin == end)
+							return NULL;
+						UnmanglePtr<TemplateArgument> arg(NULL);
+						do {
+							arg.ptr = _unmangleGCC3_templateArg(begin, end, sbox);
+							if(!arg.ptr || begin == end)
+								return NULL;
+							argumentSink->addArgument(*arg.ptr);
+							arg.ptr = NULL;
+						} while(*begin != 'E');
+						++begin;
+						argumentSink = NULL;
+					}
+					break;
 				case 'E':
 					{
 						++begin;
@@ -777,17 +867,136 @@ namespace redmond {
 				return _unmangleGCC3_nestedName(begin, end, sbox);
 			case 'S':   // unscoped-name/unscoped-template-name, substitution
 				{
-					const char* next = begin + 1;
-					if(next == end)
+					const char* atS = begin;
+					++begin;
+					if(begin == end)
 						return NULL;
-					if(*next == 't') {
-						//TODO: call _unmangleGCC3_unqualifiedName() and put result into a NestedName
-						//TODO: see if that is followed by <template-args> -- if so, make this
-						//      <unscoped-template-name> eligible for substitution and read the args
+					if(*begin == 't') {
+						++begin;
+						UnmanglePtr<UnqualifiedName> uqname(_unmangleGCC3_unqualifiedName(begin, end, sbox));
+						if(!uqname.ptr || begin == end)
+							return NULL;
+						UnmanglePtr<SourceName> sname(new SourceName("std"));
+						UnmanglePtr<NestedName> nname(new NestedName(0));
+						UnmanglePtr<NestedName::Segment> segment(new NestedName::Segment(sname.ptr));
+						sname.ptr = NULL;
+						nname.ptr->addSegment(*segment.ptr);
+						segment.ptr = NULL;
+						NestedName::Segment* tailSegment = new NestedName::Segment(uqname.ptr);
+						segment.ptr = tailSegment;
+						uqname.ptr = NULL;
+						nname.ptr->addSegment(*tailSegment);
+						segment.ptr = NULL;
+						NestedName* nn = nname.ptr;
+						if(*begin != 'I') {
+							// it's "just" an <unscoped-name>
+							nname.ptr = NULL;
+							return nn;
+						}
+						// it's an <unscoped-template-name>, followed by <template-args>
+						sbox.push_back(GCC3UnmangleSubstitution(GCC3UMST_UNSCOPED_TEMPLATE_NAME, atS, begin));
+						if(++begin == end)
+							return NULL;
+						UnmanglePtr<TemplateArgument> arg(NULL);
+						do {
+							arg.ptr = _unmangleGCC3_templateArg(begin, end, sbox);
+							if(!arg.ptr || begin == end)
+								return NULL;
+							tailSegment->addArgument(*arg.ptr);
+							arg.ptr = NULL;
+						} while(*begin != 'E');
+						++begin;
+						nname.ptr = NULL;
+						return nn;
 					}
 					else {
-						//TODO: this must be an <unscoped-template-name>, since it is being substituted;
-						//      also read the following <template-args>
+						// This must be an <unscoped-template-name>, since it is being substituted.
+						GCC3UnmangleSubstRef ref;
+						unsigned sid;
+						if(!_unmangleGCC3_substitution(begin, end, ref, sid))
+							return NULL;
+						// Since <template-args> follow, this substitution can only be correct
+						// if it expands to a template, not a namespace or template instance.
+						UnmanglePtr<NestedName> nname(new NestedName(0));
+						const char* stdTplName;
+						NestedName::Segment* tailSegment;
+						switch(ref) {
+							case GCC3UMSR_ID:
+								{
+									if(sid >= static_cast<unsigned>(sbox.size()))
+										return NULL;
+									const GCC3UnmangleSubstitution& substitution = sbox[id];
+									if(substitution.type != GCC3UMST_UNSCOPED_TEMPLATE_NAME)
+										return NULL;
+									const char* sbegin = substitution.begin;
+									// As per what is being substituted,
+									// the expansion must be an <unscoped-name>.
+									UnmanglePtr<NestedName::Segment> segment(NULL);
+									if(*sbegin == 'S') {
+										if(++sbegin == substitution.end)
+											return NULL;
+										if(*sbegin != 't')
+											return NULL;
+										++sbegin;
+										UnmanglePtr<SourceName> sname(new SourceName("std"));
+										segment.ptr = new NestedName::Segment(sname.ptr);
+										sname.ptr = NULL;
+										nested.ptr->addSegment(*segment.ptr);
+										segment.ptr = NULL;
+									}
+									SBox tmpSBox(sbox);
+									UnmanglePtr<UnqualifiedName> uqname(_unmangleGCC3_unqualifiedName(sbegin,
+											substitution.end, tmpSBox));
+									if(!uqname.ptr || sbegin != substitution.end)
+										return NULL;
+									tailSegment = new NestedName::Segment(uqname.ptr);
+									segment.ptr = tailSegment;
+									nested.ptr->addSegment(*tailSegment);
+									segment.ptr = NULL;
+								}
+								break;
+							case GCC3UMSR_ALLOCATOR:
+								stdTplName = "allocator";
+								goto useStdTplName;
+							case GCC3UMSR_BASIC_STRING:
+								stdTplName = "basic_string";
+							  useStdTplName:
+								{
+									UnmanglePtr<SourceName> sname(new SourceName("std"));
+									UnmanglePtr<NestedName::Segment> segment(new NestedName::Segment(sname.ptr));
+									sname.ptr = NULL;
+									nname.ptr->addSegment(*segment.ptr);
+									segment.ptr = NULL;
+									sname.ptr = new SourceName(stdTplName);
+									tailSegment = new NestedName::Segment(sname.ptr);
+									segment.ptr = tailSegment;
+									sname.ptr = NULL;
+									nname.ptr->addSegment(*tailSegment);
+									segment.ptr = NULL;
+								}
+								break;
+							case GCC3UMSR_STD;
+							case GCC3UMSR_STRING:
+							case GCC3UMSR_ISTREAM:
+							case GCC3UMSR_OSTREAM:
+							case GCC3UMSR_IOSTREAM:
+							default:
+								return NULL;
+						}
+						if(begin == end || *begin != 'I')
+							return NULL;
+						UnmanglePtr<TemplateArgument> arg(NULL);
+						do {
+							arg.ptr = _unmangleGCC3_templateArg(begin, end, sbox);
+							if(!arg.ptr || begin == end)
+								return NULL;
+							tailSegment->addArgument(*arg.ptr);
+							arg.ptr = NULL;
+						} while(*begin != 'E');
+						++begin;
+						NestedName* nn = nested.ptr;
+						nested.ptr = NULL;
+						return nn;
 					}
 				}
 			case 'n':   // operator-name
@@ -807,13 +1016,43 @@ namespace redmond {
 			case 'v':   // operator-name
 			case 'C':   // ctor-dtor-name
 			case 'D':   // ctor-dtor-name
-				return _unmangleGCC3_unqualifiedName(begin, end, sbox);
+				goto plainUnqual;
 			case 'Z':   // local-name
 				return _unmangleGCC3_localName(begin, end, sbox);
 			default:
-				if(*begin >= '0' && *begin <= '9')
-					return _unmangleGCC3_unqualifiedName(begin, end, sbox);
-				return NULL;
+				if(*begin < '0' || *begin > '9')
+					return NULL;
+			  plainUnqual:
+				{
+					UnmanglePtr<UnqualifiedName> uqname(_unmangleGCC3_unqualifiedName(begin, end, sbox));
+					if(!uqname.ptr)
+						return NULL;
+					if(begin == end || *begin != 'I') {
+						UnqualifiedName* uq = uqname.ptr;
+						uqname.ptr = NULL;
+						return uq;
+					}
+					if(++begin == end)
+						return NULL;
+					UnmanglePtr<NestedName> nname(new NestedName(0));
+					NestedName::Segment* tailSegment = new NestedName::Segment(uqname.ptr);
+					UnmanglePtr<NestedName::Segment> segment(tailSegment);
+					uqname.ptr = NULL;
+					nname.ptr->addSegment(*tailSegment);
+					segment.ptr = NULL;
+					UnmanglePtr<TemplateArgument> arg(NULL);
+					do {
+						arg.ptr = _unmangleGCC3_templateArg(begin, end, sbox);
+						if(!arg.ptr || begin == end)
+							return NULL;
+						tailSegment->addArgument(*arg.ptr);
+						arg.ptr = NULL;
+					} while(*begin != 'E');
+					++begin;
+					NestedName* nn = nested.ptr;
+					nested.ptr = NULL;
+					return nn;
+				}
 		}
 	}
 
@@ -1038,10 +1277,19 @@ namespace redmond {
 									return NULL;
 								const GCC3UnmangleSubstitution& substitution = sbox[id];
 								const char* sbegin = substitution.begin;
-								SBox tmpSBox;
+								SBox tmpSBox(sbox);
 								switch(substitution.type) {
 									case GCC3UMST_TYPE:
-										return _unmangleGCC3_type(sbegin, substitution.end, tmpSBox);
+										{
+											Type* stype = _unmangleGCC3_type(sbegin, substitution.end, tmpSBox);
+											if(!stype)
+												return NULL;
+											if(sbegin != substitution.end) {
+												delete stype;
+												return NULL;
+											}
+											return stype;
+										}
 									case GCC3UMST_UNSCOPED_TEMPLATE_NAME:
 										// see other cases of the enclosing switch
 										{
