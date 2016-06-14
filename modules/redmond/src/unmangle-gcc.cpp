@@ -12,6 +12,7 @@
 #include "unmangle/ModifiedType.hpp"
 #include "unmangle/CtorDtorName.hpp"
 #include "unmangle/OperatorName.hpp"
+#include "unmangle/CastExpression.hpp"
 #include "unmangle/FunctionSymbol.hpp"
 #include "unmangle/CVQualifiedType.hpp"
 #include "unmangle/StaticArrayType.hpp"
@@ -25,7 +26,12 @@
 #include "unmangle/OverrideThunkSymbol.hpp"
 #include "unmangle/PointerToMemberType.hpp"
 #include "unmangle/TypeTemplateArgument.hpp"
+#include "unmangle/SizeOfTypeExpression.hpp"
+#include "unmangle/TemplateParamExpression.hpp"
+#include "unmangle/UnaryOperationExpression.hpp"
+#include "unmangle/BinaryOperationExpression.hpp"
 #include "unmangle/TemplateTemplateParamType.hpp"
+#include "unmangle/TernaryOperationExpression.hpp"
 #include "unmangle/ExpressionTemplateArgument.hpp"
 #include "unmangle/VendorExtendedQualifiedType.hpp"
 #include "unmangle/CovariantOverrideThunkSymbol.hpp"
@@ -48,6 +54,7 @@ using redengine::redmond::unmangle::ModifiedType;
 using redengine::redmond::unmangle::CtorDtorName;
 using redengine::redmond::unmangle::OperatorName;
 using redengine::redmond::unmangle::SpecialSymbol;
+using redengine::redmond::unmangle::CastExpression;
 using redengine::redmond::unmangle::UnqualifiedName;
 using redengine::redmond::unmangle::CVQualifiedType;
 using redengine::redmond::unmangle::StaticArrayType;
@@ -62,7 +69,12 @@ using redengine::redmond::unmangle::GuardVariableSymbol;
 using redengine::redmond::unmangle::OverrideThunkSymbol;
 using redengine::redmond::unmangle::PointerToMemberType;
 using redengine::redmond::unmangle::TypeTemplateArgument;
+using redengine::redmond::unmangle::SizeOfTypeExpression;
+using redengine::redmond::unmangle::TemplateParamExpression;
+using redengine::redmond::unmangle::UnaryOperationExpression;
+using redengine::redmond::unmangle::BinaryOperationExpression;
 using redengine::redmond::unmangle::TemplateTemplateParamType;
+using redengine::redmond::unmangle::TernaryOperationExpression;
 using redengine::redmond::unmangle::ExpressionTemplateArgument;
 using redengine::redmond::unmangle::VendorExtendedQualifiedType;
 using redengine::redmond::unmangle::CovariantOverrideThunkSymbol;
@@ -253,7 +265,9 @@ namespace redmond {
 	enum GCC3UnmangleSubstType {
 		GCC3UMST_TYPE,
 		GCC3UMST_UNSCOPED_TEMPLATE_NAME,
-		GCC3UMST_TEMPLATE_TEMPLATE_PARAM
+		GCC3UMST_TEMPLATE_TEMPLATE_PARAM,
+		GCC3UMST_NESTED_PREFIX,
+		GCC3UMST_NESTED_TEMPLATE_PREFIX
 	};
 
 	struct GCC3UnmangleSubstitution {
@@ -287,6 +301,7 @@ namespace redmond {
 	Name* _unmangleGCC3_name(const char*&, const char*, SBox&);
 	BareFunctionType* _unmangleGCC3_bareFunctionType(const char*&, const char*, SBox&);
 	bool _unmangleGCC3_startsType(char);
+	Type* _unmangleGCC3_type(const char*&, const char*, SBox&);
 
 	template<typename IntegerT>
 	bool _unmangleGCC3_number(const char*& begin, const char* end, IntegerT& result) {
@@ -392,7 +407,300 @@ namespace redmond {
 	}
 
 	Expression* _unmangleGCC3_expression(const char*& begin, const char* end, SBox& sbox) {
-		//TODO
+		if(begin == end)
+			return NULL;
+		UnaryOperationExpression::Operator op1;
+		BinaryOperationExpression::Operator op2;
+		switch(*begin) {
+			case 'p':
+				if(++begin == end)
+					return NULL;
+				switch(*begin) {
+					case 's':
+						op1 = UnaryOperationExpression::OP_POSITIVE;
+					  makeUnary:
+						{
+							++begin;
+							UnmanglePtr<Expression> operand(_unmangleGCC3_expression(begin, end, sbox));
+							if(!operand.ptr)
+								return NULL;
+							UnaryOperationExpression* unary = new UnaryOperationExpression(op1, operand.ptr);
+							operand.ptr = NULL;
+							return unary;
+						}
+					case 'p':
+						op1 = UnaryOperationExpression::OP_INCREMENT;
+						goto makeUnary;
+					case 'l':
+						op2 = BinaryOperationExpression::OP_PLUS;
+					  makeBinary:
+						{
+							++begin;
+							UnmanglePtr<Expression> leftOperand(_unmangleGCC3_expression(begin, end, sbox));
+							if(!leftOperand.ptr)
+								return NULL;
+							UnmanglePtr<Expression> rightOperand(_unmangleGCC3_expression(begin, end, sbox));
+							if(!rightOperand.ptr)
+								return NULL;
+							BinaryOperationExpression* binary = new BinaryOperationExpression(op2,
+									leftOperand.ptr, rightOperand.ptr);
+							leftOperand.ptr = rightOperand.ptr = NULL;
+							return binary;
+						}
+					case 'L':
+						op2 = BinaryOperationExpression::OP_PLUS;
+						goto makeBinary;
+					default:
+						return NULL;
+				}
+			case 'n':
+				if(++begin == end)
+					return NULL;
+				switch(*begin) {
+					case 'g':
+						op1 = UnaryOperationExpression::OP_NEGATIVE;
+						goto makeUnary;
+					case 't':
+						op1 = UnaryOperationExpression::OP_NOT;
+						goto makeUnary;
+					case 'e':
+						op2 = BinaryOperationExpression::OP_UNEQUAL;
+						goto makeBinary;
+					default:
+						return NULL;
+				}
+			case 'a':
+				if(++begin == end)
+					return NULL;
+				switch(*begin) {
+					case 'd':
+						op1 = UnaryOperationExpression::OP_ADDRESS_OF;
+						goto makeUnary;
+					case 'n':
+						op2 = BinaryOperationExpression::OP_AND;
+						goto makeBinary;
+					case 'S':
+						op2 = BinaryOperationExpression::OP_ASSIGN;
+						goto makeBinary;
+					case 'N':
+						op2 = BinaryOperationExpression::OP_AND_ASSIGN;
+						goto makeBinary;
+					case 'a':
+						op2 = BinaryOperationExpression::OP_LOGICAL_AND;
+						goto makeBinary;
+					default:
+						return NULL;
+				}
+			case 'd':
+				if(++begin == end)
+					return NULL;
+				switch(*begin) {
+					case 'e':
+						op1 = UnaryOperationExpression::OP_DEREFERENCE;
+						goto makeUnary;
+					case 'v':
+						op2 = BinaryOperationExpression::OP_DIVIDE;
+						goto makeBinary;
+					case 'V':
+						op2 = BinaryOperationExpression::OP_DIVIDE_ASSIGN;
+						goto makeBinary;
+					default:
+						return NULL;
+				}
+			case 'c':
+				if(++begin == end)
+					return NULL;
+				switch(*begin) {
+					case 'o':
+						op1 = UnaryOperationExpression::OP_COMPLEMENT;
+						goto makeUnary;
+					case 'm':
+						op2 = BinaryOperationExpression::OP_COMMA;
+						goto makeBinary;
+					case 'v':
+						{
+							++begin;
+							UnmanglePtr<Type> type(_unmangleGCC3_type(begin, end, sbox));
+							if(!type.ptr)
+								return NULL;
+							UnmanglePtr<Expression> operand(_unmangleGCC3_expression(begin, end, sbox));
+							if(!operand.ptr)
+								return NULL;
+							CastExpression* cast = new CastExpression(type.ptr, operand.ptr);
+							type.ptr = NULL;
+							operand.ptr = NULL;
+							return cast;
+						}
+					default:
+						return NULL;
+				}
+			case 's':
+				if(++begin == end)
+					return NULL;
+				switch(*begin) {
+					case 'z':
+						op1 = UnaryOperationExpression::OP_SIZEOF_EXPRESSION;
+						goto makeUnary;
+					case 't':
+						{
+							++begin;
+							UnmanglePtr<Type> type(_unmangleGCC3_type(begin, end, sbox));
+							if(!type.ptr)
+								return NULL;
+							SizeOfTypeExpression* sot = new SizeOfTypeExpression(type.ptr);
+							type.ptr = NULL;
+							return sot;
+						}
+					default:
+						return NULL;
+				}
+			case 'm':
+				if(++begin == end)
+					return NULL;
+				switch(*begin) {
+					case 'm':
+						op1 = UnaryOperationExpression::OP_DECREMENT;
+						goto makeUnary;
+					case 'i':
+						op2 = BinaryOperationExpression::OP_PLUS;
+						goto makeBinary;
+					case 'l':
+						op2 = BinaryOperationExpression::OP_MULTIPLY;
+						goto makeBinary;
+					case 'I':
+						op2 = BinaryOperationExpression::OP_MINUS_ASSIGN;
+						goto makeBinary;
+					case 'L':
+						op2 = BinaryOperationExpression::OP_MULTIPLY_ASSIGN;
+						goto makeBinary;
+					default:
+						return NULL;
+				}
+			case 'r':
+				if(++begin == end)
+					return NULL;
+				switch(*begin) {
+					case 'm':
+						op2 = BinaryOperationExpression::OP_REMAINDER;
+						goto makeBinary;
+					case 'M':
+						op2 = BinaryOperationExpression::OP_REMAINDER_ASSIGN;
+						goto makeBinary;
+					case 's':
+						op2 = BinaryOperationExpression::OP_RIGHT_SHIFT;
+						goto makeBinary;
+					case 'S':
+						op2 = BinaryOperationExpression::OP_RIGHT_SHIFT_ASSIGN;
+						goto makeBinary;
+					default:
+						return NULL;
+				}
+			case 'o':
+				if(++begin == end)
+					return NULL;
+				switch(*begin) {
+					case 'r':
+						op2 = BinaryOperationExpression::OP_OR;
+						goto makeBinary;
+					case 'R':
+						op2 = BinaryOperationExpression::OP_OR_ASSIGN;
+						goto makeBinary;
+					case 'o':
+						op2 = BinaryOperationExpression::OP_LOGICAL_OR;
+						goto makeBinary;
+					default:
+						return NULL;
+				}
+			case 'e':
+				if(++begin == end)
+					return NULL;
+				switch(*begin) {
+					case 'o':
+						op2 = BinaryOperationExpression::OP_XOR;
+						goto makeBinary;
+					case 'O':
+						op2 = BinaryOperationExpression::OP_XOR_ASSIGN;
+						goto makeBinary;
+					case 'q':
+						op2 = BinaryOperationExpression::OP_EQUAL;
+						goto makeBinary;
+					default:
+						return NULL;
+				}
+			case 'l':
+				if(++begin == end)
+					return NULL;
+				switch(*begin) {
+					case 's':
+						op2 = BinaryOperationExpression::OP_LEFT_SHIFT;
+						goto makeBinary;
+					case 'S':
+						op2 = BinaryOperationExpression::OP_LEFT_SHIFT_ASSIGN;
+						goto makeBinary;
+					case 't':
+						op2 = BinaryOperationExpression::OP_LESS;
+						goto makeBinary;
+					case 'e':
+						op2 = BinaryOperationExpression::OP_LESS_EQUAL;
+						goto makeBinary;
+					default:
+						return NULL;
+				}
+			case 'g':
+				if(++begin == end)
+					return NULL;
+				switch(*begin) {
+					case 't':
+						op2 = BinaryOperationExpression::OP_GREATER;
+						goto makeBinary;
+					case 'e':
+						op2 = BinaryOperationExpression::OP_GREATER_EQUAL;
+						goto makeBinary;
+					default:
+						return NULL;
+				}
+			case 'q':
+				if(++begin == end || *begin != 'u')
+					return NULL;
+				{
+					++begin;
+					UnmanglePtr<Expression> condition(_unmangleGCC3_expression(begin, end, sbox));
+					if(!condition.ptr)
+						return NULL;
+					UnmanglePtr<Expression> thenBranch(_unmangleGCC3_expression(begin, end, sbox));
+					if(!thenBranch.ptr)
+						return NULL;
+					UnmanglePtr<Expression> elseBranch(_unmangleGCC3_expression(begin, end, sbox));
+					if(!elseBranch.ptr)
+						return NULL;
+					TernaryOperationExpression* ternary = new TernaryOperationExpression(condition.ptr,
+							thenBranch.ptr, elseBranch.ptr);
+					condition.ptr = thenBranch.ptr = elseBranch.ptr = NULL;
+					return ternary;
+				}
+			case 'T':
+				{
+					if(++begin == end)
+						return NULL;
+					unsigned pindex;
+					if(*begin == '_')
+						pindex = 0u;
+					else if(*begin >= '0' && *begin <= '9') {
+						if(!_unmangleGCC3_number<unsigned>(begin, end, pindex))
+							return NULL;
+						++pindex;
+						if(begin == end || *begin != '_')
+							return NULL;
+					}
+					else
+						return NULL;
+					++begin;
+					return new TemplateParamExpression(pindex);
+				}
+			//TODO: dependent names and primaries
+			default:
+				return NULL;
+		}
 	}
 
 	TemplateArgument* _unmangleGCC3_templateArg(const char*& begin, const char* end, SBox& sbox) {
@@ -705,29 +1013,17 @@ namespace redmond {
 		}
 	}
 
-	NestedName* _unmangleGCC3_nestedName(const char*& begin, const char* end, SBox& sbox) {
-		++begin;
-		int qualifiers = 0;
-		if(begin != end && *begin == 'r') {
-			qualifiers |= CVQualifiedType::CVQ_RESTRICT;
-			++begin;
-		}
-		if(begin != end && *begin == 'V') {
-			qualifiers |= CVQualifiedType::CVQ_VOLATILE;
-			++begin;
-		}
-		if(begin != end && *begin == 'K') {
-			qualifiers |= CVQualifiedType::CVQ_CONST;
-			++begin;
-		}
+	NestedName* _unmangleGCC3_nestedNameImpl(const char*& begin, const char* end, SBox& sbox, bool writeSBox,
+			int qualifiers, NestedName::Segment*& argumentSink) {
 		// token -v   state -> | empty | element-or-template | definite-element
 		// --------------------+-------+---------------------+-----------------
 		// unqualified-name    |   y   |          y          |        y
 		// template-param      |   y   |          n          |        n
 		// template-args       |   n   |          y          |        n
 		UnmanglePtr<NestedName> nested(new NestedName(qualifiers));
-		NestedName::Segment* argumentSink = NULL;
-		//TODO: grok substitution
+		bool frontIsTemplateParam = false, frontIsSubstitution = false;
+		const char* stdTplName;
+		bool stdIsTemplate;
 		while(begin != end) {
 			switch(*begin) {
 				case 'n':   // operator-name
@@ -754,6 +1050,19 @@ namespace redmond {
 						return NULL;
 				  unqualName:
 					{
+						if(writeSBox && !frontIsSubstitution && nested.ptr->hasSegments()) {
+							if(frontIsTemplateParam)
+								sbox.push_back(GCC3UnmangleSubstitution(GCC3UMST_NESTED_TEMPLATE_PREFIX,
+										begin, end));
+							else if(!argumentSink)
+								sbox.push_back(GCC3UnmangleSubstitution(GCC3UMST_NESTED_PREFIX, begin, end));
+							else if(nested.ptr->getArgumentCount() == 1u)
+								sbox.push_back(GCC3UnmangleSubstitution(GCC3UMST_UNSCOPED_TEMPLATE_NAME,
+										begin, end));
+							else
+								sbox.push_back(GCC3UnmangleSubstitution(GCC3UMST_NESTED_TEMPLATE_PREFIX,
+										begin, end));
+						}
 						UnmanglePtr<UnqualifiedName> uqname(_unmangleGCC3_unqualifiedName(begin, end, sbox));
 						if(!uqname.ptr)
 							return NULL;
@@ -790,6 +1099,7 @@ namespace redmond {
 						nested.ptr->addSegment(*segment.ptr);
 						argumentSink = segment.ptr;
 						segment.ptr = NULL;
+						frontIsTemplateParam = true;
 					}
 					break;
 				case 'I':
@@ -797,6 +1107,8 @@ namespace redmond {
 					if(!argumentSink)
 						return NULL;
 					{
+						if(writeSBox && !frontIsSubstitution)
+							sbox.push_back(GCC3UnmangleSubstitution(GCC3UMST_NESTED_TEMPLATE_PREFIX, begin, end));
 						if(++begin == end)
 							return NULL;
 						UnmanglePtr<TemplateArgument> arg(NULL);
@@ -811,18 +1123,122 @@ namespace redmond {
 						argumentSink = NULL;
 					}
 					break;
-				case 'E':
+				case 'S':
+					if(nested.ptr->hasSegments())
+						return NULL;
 					{
-						++begin;
-						if(!nested.ptr->hasSegments())
+						GCC3UnmangleSubstRef ref;
+						unsigned sid;
+						if(!_unmangleGCC3_substitution(begin, end, ref, sid))
 							return NULL;
-						NestedName* nn = nested.ptr;
-						nested.ptr = NULL;
-						return nn;
+						switch(ref) {
+							case GCC3UMSR_ID:
+								{
+									if(sid >= static_cast<unsigned>(sbox.size()))
+										return NULL;
+									const GCC3UnmangleSubstitution& substitution = sbox[sid];
+									switch(substitution.type) {
+										case GCC3UMST_UNSCOPED_TEMPLATE_NAME:
+										case GCC3UMST_NESTED_PREFIX:
+										case GCC3UMST_NESTED_TEMPLATE_PREFIX:
+											break;
+										default:
+											return NULL;
+									}
+									delete nested.ptr;
+									nested.ptr = NULL;
+									const char* sbegin = substitution.begin;
+									nested.ptr = _unmangleGCC3_nestedNameImpl(sbegin, substitution.end, sbox,
+											false, qualifiers, argumentSink);
+									if(!nested.ptr || sbegin != substitution.end)
+										return NULL;
+								}
+								break;
+							case GCC3UMSR_STD:
+								stdTplName = NULL;
+								stdIsTemplate = false;
+								goto useStdTplName;
+							case GCC3UMSR_ALLOCATOR:
+								stdTplName = "allocator";
+								stdIsTemplate = true;
+								goto useStdTplName;
+							case GCC3UMSR_BASIC_STRING:
+								stdTplName = "basic_string";
+								stdIsTemplate = true;
+								goto useStdTplName;
+							case GCC3UMSR_STRING:
+								stdTplName = "string";
+								stdIsTemplate = false;
+								goto useStdTplName;
+							case GCC3UMSR_ISTREAM:
+								stdTplName = "istream";
+								stdIsTemplate = false;
+								goto useStdTplName;
+							case GCC3UMSR_OSTREAM:
+								stdTplName = "ostream";
+								stdIsTemplate = false;
+								goto useStdTplName;
+							case GCC3UMSR_IOSTREAM:
+								stdTplName = "iostream";
+								stdIsTemplate = false;
+							  useStdTplName:
+								UnmanglePtr<SourceName> sname(new SourceName("std"));
+								UnmanglePtr<NestedName::Segment> segment(new NestedName::Segment(sname.ptr));
+								sname.ptr = NULL;
+								nested.ptr->addSegment(&segment.ptr);
+								argumentSink = stdIsTemplate ? segment.ptr : NULL;
+								segment.ptr = NULL;
+								if(stdTplName) {
+									sname.ptr = new SourceName(stdTplName);
+									segment.ptr = new NestedName::Segment(sname.ptr);
+									sname.ptr = NULL;
+									nested.ptr->addSegment(&segment.ptr);
+									argumentSink = stdIsTemplate ? segment.ptr : NULL;
+									segment.ptr = NULL;
+								}
+								break;
+							default:
+								return NULL;
+						}
 					}
+					frontIsSubstitution = true;
+					break;
+				case 'E':
+					goto done;
 			}
 		}
-		return NULL;
+	  done:
+		if(!nested.ptr->hasSegments())
+			return NULL;
+		NestedName* nn = nested.ptr;
+		nested.ptr = NULL;
+		return nn;
+	}
+
+	NestedName* _unmangleGCC3_nestedName(const char*& begin, const char* end, SBox& sbox) {
+		++begin;
+		int qualifiers = 0;
+		if(begin != end && *begin == 'r') {
+			qualifiers |= CVQualifiedType::CVQ_RESTRICT;
+			++begin;
+		}
+		if(begin != end && *begin == 'V') {
+			qualifiers |= CVQualifiedType::CVQ_VOLATILE;
+			++begin;
+		}
+		if(begin != end && *begin == 'K') {
+			qualifiers |= CVQualifiedType::CVQ_CONST;
+			++begin;
+		}
+		NestedName::Segment* argumentSink = NULL;
+		UnmanglePtr<NestedName> nested(_unmangleGCC3_nestedNameImpl(begin, end, sbox,
+				true, qualifiers, argumentSink));
+		if(!nested.ptr || begin == end || *begin != 'E')
+			return NULL;
+		++begin;
+		NestedName* nn = nested.ptr;
+		nested.ptr = NULL;
+		return nn;
 	}
 
 	LocalName* _unmangleGCC3_localName(const char*& begin, const char* end, SBox& sbox) {

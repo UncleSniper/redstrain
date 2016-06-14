@@ -4,6 +4,7 @@
 #include <string>
 
 #include "constants.hpp"
+#include "environment.hpp"
 
 namespace redengine {
 namespace redmond {
@@ -62,13 +63,13 @@ namespace redmond {
 
 }}
 
-#if XAKE_COMPILER == XAKE_COMPILER_GCC
+#if defined(REDSTRAIN_ENV_COMPILER_GNU)
 #define REDSTRAIN_REDMOND_BUILD_COMPILER ::redengine::redmond::COMP_GCC
-#elif XAKE_COMPILER == XAKE_COMPILER_MSVC
+#elif defined(REDSTRAIN_ENV_COMPILER_MSVC)
 #define REDSTRAIN_REDMOND_BUILD_COMPILER ::redengine::redmond::COMP_MSVC
 #else /* unknown compiler */
 #define REDSTRAIN_REDMOND_BUILD_COMPILER ::redengine::redmond::COMP_UNKNOWN
-#endif /* XAKE_COMPILER switch */
+#endif /* build compiler switch */
 
 #define REDSTRAIN_DECLARE_MODULE_VERSION(exportMacro) \
 	exportMacro extern const unsigned dynamicVersionMajor; \

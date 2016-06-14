@@ -36,6 +36,10 @@ namespace util {
 
 	typedef IntegerTypeByTraits<sizeof(void*), false>::StandardType IntegerPointer;
 
+	typedef IntegerTypeByTraits<sizeof(float), false>::StandardType FloatBits;
+	typedef IntegerTypeByTraits<sizeof(double), false>::StandardType DoubleBits;
+	typedef IntegerTypeByTraits<sizeof(long double), false>::StandardType LongDoubleBits;
+
 }}
 
 #endif /* REDSTRAIN_MOD_UTIL_INTEGERTYPEBYTRAITS_HPP */

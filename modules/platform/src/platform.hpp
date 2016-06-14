@@ -3,7 +3,6 @@
 
 #define REDSTRAIN_PLATFORM_OS_UNIX 1
 #define REDSTRAIN_PLATFORM_OS_WINDOWS 2
-#define REDSTRAIN_PLATFORM_OS_DOXYGEN 3
 
 #ifndef REDSTRAIN_PLATFORM_OS
 #if defined(__unix__) || defined(__unix)
@@ -46,6 +45,12 @@
 #define REDSTRAIN_PLATFORM_ENDIANNESS REDSTRAIN_PLATFORM_LITTLE_ENDIAN
 #elif defined(_MIPSEL) || defined(__MIPSEL) || defined(__MIPSEL__)
 #define REDSTRAIN_PLATFORM_ENDIANNESS REDSTRAIN_PLATFORM_LITTLE_ENDIAN
+#elif defined(__amd64__) || defined(__amd64) || defined(__x86_64__) || defined(__x86_64)
+#define REDSTRAIN_PLATFORM_ENDIANNESS REDSTRAIN_PLATFORM_LITTLE_ENDIAN
+#elif defined(_M_X64) || defined(_M_AMD64)
+#define REDSTRAIN_PLATFORM_ENDIANNESS REDSTRAIN_PLATFORM_LITTLE_ENDIAN
+#elif defined(i386) || defined(__i386) || defined(__i386__) || defined(_M_IX86) || defined(_X86_)
+#define REDSTRAIN_PLATFORM_ENDIANNESS REDSTRAIN_PLATFORM_LITTLE_ENDIAN
 #elif defined(_WIN32) || defined(_WIN64) || defined(__WIN32__) || defined(__WINDOWS__)
 #define REDSTRAIN_PLATFORM_ENDIANNESS REDSTRAIN_PLATFORM_LITTLE_ENDIAN
 #else /* no known endianness */
@@ -56,6 +61,24 @@
 #if REDSTRAIN_PLATFORM_ENDIANNESS != REDSTRAIN_PLATFORM_BIG_ENDIAN && REDSTRAIN_PLATFORM_ENDIANNESS != REDSTRAIN_PLATFORM_LITTLE_ENDIAN
 #error Unknown endianness specified
 #endif /* unknown endianness specified */
+
+#ifndef REDSTRAIN_PLATFORM_FLOAT_ENDIANNESS
+#if defined(__amd64__) || defined(__amd64) || defined(__x86_64__) || defined(__x86_64)
+#define REDSTRAIN_PLATFORM_FLOAT_ENDIANNESS REDSTRAIN_PLATFORM_LITTLE_ENDIAN
+#elif defined(_M_X64) || defined(_M_AMD64)
+#define REDSTRAIN_PLATFORM_FLOAT_ENDIANNESS REDSTRAIN_PLATFORM_LITTLE_ENDIAN
+#elif defined(i386) || defined(__i386) || defined(__i386__) || defined(_M_IX86) || defined(_X86_)
+#define REDSTRAIN_PLATFORM_FLOAT_ENDIANNESS REDSTRAIN_PLATFORM_LITTLE_ENDIAN
+#elif defined(_WIN32) || defined(_WIN64) || defined(__WIN32__) || defined(__WINDOWS__)
+#define REDSTRAIN_PLATFORM_FLOAT_ENDIANNESS REDSTRAIN_PLATFORM_LITTLE_ENDIAN
+#else /* no known endianness */
+#error Failed to detect floating-point endianness, define REDSTRAIN_PLATFORM_FLOAT_ENDIANNESS manually
+#endif /* endianness detection */
+#endif /* !REDSTRAIN_PLATFORM_FLOAT_ENDIANNESS */
+
+#if REDSTRAIN_PLATFORM_FLOAT_ENDIANNESS != REDSTRAIN_PLATFORM_BIG_ENDIAN && REDSTRAIN_PLATFORM_FLOAT_ENDIANNESS != REDSTRAIN_PLATFORM_LITTLE_ENDIAN
+#error Unknown float endianness specified
+#endif /* unknown float endianness specified */
 
 #if REDSTRAIN_PLATFORM_OS == REDSTRAIN_PLATFORM_OS_WINDOWS
 #ifdef WINVER

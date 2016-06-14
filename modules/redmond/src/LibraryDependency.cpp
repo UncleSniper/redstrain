@@ -1,6 +1,8 @@
 #include <sstream>
 
-#if XAKE_HOST_OS == XAKE_OS_WINDOWS
+#include "environment.hpp"
+
+#if defined(REDSTRAIN_ENV_OS_WINDOWS)
 #include <windows.h>
 #else /* probably UNIX-like */
 #include <unistd.h>
@@ -65,7 +67,7 @@ namespace redmond {
 				<< "' of component '" << innerComponent << "', but found version '" << actual << '\'';
 		string msg(ss.str());
 		string caption("Software component version conflict");
-#if XAKE_HOST_OS == XAKE_OS_WINDOWS
+#if defined(REDSTRAIN_ENV_OS_WINDOWS)
 		MessageBoxA(NULL, msg.c_str(), caption.c_str(), MB_OK | MB_ICONERROR);
 		ExitProcess(static_cast<UINT>(1u));
 #else /* probably UNIX-like */
@@ -74,7 +76,7 @@ namespace redmond {
 		write(2, msg.c_str(), static_cast<size_t>(msg.length()));
 		write(2, "\n", static_cast<size_t>(1u));
 		_exit(1);
-#endif /* XAKE_HOST_OS switch */
+#endif /* OS switch */
 	}
 
 }}

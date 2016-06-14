@@ -1,26 +1,27 @@
 #include "constants.hpp"
+#include "environment.hpp"
 
 namespace redengine {
 namespace redmond {
 
 	extern const OperatingSystem buildHostOS =
-#if XAKE_HOST_OS == XAKE_OS_LINUX
+#if defined(REDSTRAIN_ENV_OS_LINUX)
 		OS_LINUX
-#elif XAKE_HOST_OS == XAKE_OS_WINDOWS
+#elif defined(REDSTRAIN_ENV_OS_WINDOWS)
 		OS_WINDOWS
 #else /* unknown OS */
 		OS_UNKNOWN
-#endif /* XAKE_HOST_OS switch */
+#endif /* host OS switch */
 	;
 
 	extern const CompilerFlavor buildCompiler =
-#if XAKE_COMPILER == XAKE_COMPILER_GCC
+#if defined(REDSTRAIN_ENV_COMPILER_GNU)
 		COMP_GCC
-#elif XAKE_COMPILER == XAKE_COMPILER_MSVC
+#elif defined(REDSTRAIN_ENV_COMPILER_MSVC)
 		COMP_MSVC
 #else /* unknown compiler */
 		COMP_UNKNOWN
-#endif /* XAKE_COMPILER switch */
+#endif /* build compiler switch */
 	;
 
 	//TODO: support cross-compilation

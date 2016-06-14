@@ -46,6 +46,9 @@ namespace protostr {
 	} while(0)
 #define fromBig(var, type) (var = Endianness<type>::convertBig(var))
 #define fromLittle(var, type) (var = Endianness<type>::convertLittle(var))
+#define fromBigFloat(fvar, ivar, type) type fvar = FloatEndianness<type>::fromBigBits(ivar)
+#define fromLittleFloat(fvar, ivar, type) type fvar = FloatEndianness<type>::fromLittleBits(ivar)
+#define fromNativeFloat(fvar, ivar, type) type fvar = FloatEndianness<type>::fromNativeBits(ivar)
 #define usePending(size, nextState) \
 	do { \
 		pendingSize = static_cast<FileSize>(size); \
@@ -115,16 +118,18 @@ namespace protostr {
 	}
 
 	float ProtocolReader::readFloat32() {
-		float value;
+		FloatBits value;
 		ensureClean;
 		gatherInto(value);
-		return value;
+		fromBigFloat(result, value, float);
+		return result;
 	}
 
 	double ProtocolReader::readFloat64() {
-		double value;
+		DoubleBits value;
 		ensureClean;
 		gatherInto(value);
+		fromBigFloat(result, value, double);
 		return value;
 	}
 
@@ -176,6 +181,22 @@ namespace protostr {
 		return value;
 	}
 
+	float ProtocolReader::readFloat32LE() {
+		FloatBits value;
+		ensureClean;
+		gatherInto(value);
+		fromLittleFloat(result, value, float);
+		return result;
+	}
+
+	double ProtocolReader::readFloat64LE() {
+		DoubleBits value;
+		ensureClean;
+		gatherInto(value);
+		fromLittleFloat(result, value, double);
+		return value;
+	}
+
 	int16_t ProtocolReader::readInt16NBO() {
 		int16_t value;
 		ensureClean;
@@ -215,6 +236,22 @@ namespace protostr {
 		uint64_t value;
 		ensureClean;
 		gatherInto(value);
+		return value;
+	}
+
+	float ProtocolReader::readFloat32NBO() {
+		FloatBits value;
+		ensureClean;
+		gatherInto(value);
+		fromNativeFloat(result, value, float);
+		return result;
+	}
+
+	double ProtocolReader::readFloat64NBO() {
+		DoubleBits value;
+		ensureClean;
+		gatherInto(value);
+		fromNativeFloat(result, value, double);
 		return value;
 	}
 

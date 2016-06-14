@@ -66,6 +66,9 @@ namespace platform {
 		static inline type convertLittle(type x) { \
 			return static_cast<type>(REDSTRAIN_PLATFORM_CONVERT_LITTLE_ENDIANNESS ## bits(x)); \
 		} \
+		static inline type swab(type x) { \
+			return static_cast<type>(REDSTRAIN_PLATFORM_SWAB ## bits(x)); \
+		} \
 	};
 
 		REDSTRAIN_PLATFORM_DEFINE_ENDIANNESS_CONVERTER(int8_t, 8)
@@ -86,6 +89,10 @@ namespace platform {
 
 		static inline IntegerT convertLittle(IntegerT x) {
 			return Convert<0, StandardType>::convertLittle(x);
+		}
+
+		static inline IntegerT swab(IntegerT x) {
+			return Convert<0, StandardType>::swab(x);
 		}
 
 	};

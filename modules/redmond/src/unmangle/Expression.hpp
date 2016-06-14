@@ -14,6 +14,7 @@ namespace unmangle {
 			ET_UNARY,
 			ET_BINARY,
 			ET_TERNARY,
+			ET_CAST,
 			ET_SIZEOF_TYPE,
 			ET_TEMPLATE_PARAM,
 			ET_DEPENDENT_NAME,

@@ -74,6 +74,8 @@ namespace protostr {
 		uint32_t readUInt32LE();
 		int64_t readInt64LE();
 		uint64_t readUInt64LE();
+		float readFloat32LE();
+		double readFloat64LE();
 
 		int16_t readInt16NBO();
 		uint16_t readUInt16NBO();
@@ -81,6 +83,8 @@ namespace protostr {
 		uint32_t readUInt32NBO();
 		int64_t readInt64NBO();
 		uint64_t readUInt64NBO();
+		float readFloat32NBO();
+		double readFloat64NBO();
 
 		void readBlock8(char*, util::MemorySize, util::MemorySize&, util::FileSize&);
 		void readBlock16(char*, util::MemorySize, util::MemorySize&, util::FileSize&);
@@ -103,10 +107,24 @@ namespace protostr {
 	template<typename PrimitiveT>
 	PrimitiveT readProtocolPrimitive(ProtocolReader&);
 
+	template<typename PrimitiveT>
+	PrimitiveT readProtocolPrimitiveLE(ProtocolReader&);
+
+	template<typename PrimitiveT>
+	PrimitiveT readProtocolPrimitiveNBO(ProtocolReader&);
+
 #define REDSTRAIN_PROTOSTR_DEFINE_PRIMITIVE(type, function) \
 	template<> \
 	inline type readProtocolPrimitive<type>(ProtocolReader& reader) { \
 		return reader.read ## function(); \
+	} \
+	template<> \
+	inline type readProtocolPrimitiveLE<type>(ProtocolReader& reader) { \
+		return reader.read ## function ## LE(); \
+	} \
+	template<> \
+	inline type readProtocolPrimitiveNBO<type>(ProtocolReader& reader) { \
+		return reader.read ## function ## NBO(); \
 	}
 
 	REDSTRAIN_PROTOSTR_DEFINE_PRIMITIVE(int8_t, Int8)
