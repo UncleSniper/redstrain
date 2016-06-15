@@ -1,4 +1,5 @@
 #include "Name.hpp"
+#include "Type.hpp"
 #include "FunctionSymbol.hpp"
 #include "BareFunctionType.hpp"
 #include "../unmangle-utils.hpp"
@@ -32,8 +33,8 @@ namespace unmangle {
 	}
 
 	void FunctionSymbol::print(ostream& out, bool& lastWasGreater) const {
-		bool hasReturn = ...; //TODO
-		name->print(out, lastWasGreater);
+		bool hasReturn = name->namesTemplate() && !name->namesReturnless();
+		name->print(out, lastWasGreater, NULL);
 		out << '(';
 		BareFunctionType::TypeIterator ptbegin, ptend;
 		if(hasReturn)

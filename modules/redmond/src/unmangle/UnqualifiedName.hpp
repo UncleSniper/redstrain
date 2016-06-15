@@ -13,7 +13,7 @@ namespace unmangle {
 		UnqualifiedName();
 		UnqualifiedName(const UnqualifiedName&);
 
-		virtual const string* getUnqualifiedClassNameData() const;
+		virtual const std::string* getUnqualifiedClassNameData() const;
 
 	};
 

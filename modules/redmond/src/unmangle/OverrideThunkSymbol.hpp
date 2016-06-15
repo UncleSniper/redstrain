@@ -14,15 +14,13 @@ namespace unmangle {
 		CallOffset callOffset;
 		CPPSymbol* targetFunction;
 
-	  protected:
-		virtual void print(std::ostream&, bool&) const;
-
 	  public:
 		OverrideThunkSymbol(const CallOffset&, CPPSymbol*);
 		OverrideThunkSymbol(const OverrideThunkSymbol&);
 		virtual ~OverrideThunkSymbol();
 
 		virtual SpecialSymbolType getSpecialSymbolType() const;
+		virtual void print(std::ostream&, bool&) const;
 		virtual CPPSymbol* cloneSymbol() const;
 
 	};

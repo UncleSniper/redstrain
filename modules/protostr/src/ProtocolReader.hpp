@@ -68,6 +68,8 @@ namespace protostr {
 		float readFloat32();
 		double readFloat64();
 
+		int8_t readInt8LE();
+		uint8_t readUInt8LE();
 		int16_t readInt16LE();
 		uint16_t readUInt16LE();
 		int32_t readInt32LE();
@@ -77,6 +79,8 @@ namespace protostr {
 		float readFloat32LE();
 		double readFloat64LE();
 
+		int8_t readInt8NBO();
+		uint8_t readUInt8NBO();
 		int16_t readInt16NBO();
 		uint16_t readUInt16NBO();
 		int32_t readInt32NBO();

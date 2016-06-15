@@ -14,9 +14,6 @@ namespace unmangle {
 	  private:
 		CPPSymbol* symbol;
 
-	  protected:
-		virtual void print(std::ostream&, int) const;
-
 	  public:
 		ExternalNameExpression(CPPSymbol*);
 		ExternalNameExpression(const ExternalNameExpression&);
@@ -27,6 +24,7 @@ namespace unmangle {
 		}
 
 		virtual ExpressionType getExpressionType() const;
+		virtual void print(std::ostream&, int) const;
 		virtual Expression* cloneExpression() const;
 
 	};

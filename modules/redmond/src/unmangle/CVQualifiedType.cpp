@@ -9,7 +9,7 @@ namespace unmangle {
 	CVQualifiedType::CVQualifiedType(int qualifiers, Type* type) : qualifiers(qualifiers), type(type) {}
 
 	CVQualifiedType::CVQualifiedType(const CVQualifiedType& type)
-			: Type(type), qualifiers(qualifiers), type(type.type->cloneType()) {}
+			: Type(type), qualifiers(type.qualifiers), type(type.type->cloneType()) {}
 
 	CVQualifiedType::~CVQualifiedType() {
 		delete type;

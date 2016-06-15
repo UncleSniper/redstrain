@@ -14,11 +14,6 @@ namespace unmangle {
 		BuiltinType::Primitive type;
 		FloatT value;
 
-	  protected:
-		virtual void print(std::ostream& out, int) const {
-			out << value;
-		}
-
 	  public:
 		FloatLiteralExpression(BuiltinType::Primitive type, FloatT value) : type(type), value(value) {}
 
@@ -27,6 +22,10 @@ namespace unmangle {
 
 		virtual BuiltinType::Primitive getIntegerType() const {
 			return type;
+		}
+
+		virtual void print(std::ostream& out, int) const {
+			out << value;
 		}
 
 		virtual Expression* cloneExpression() const {

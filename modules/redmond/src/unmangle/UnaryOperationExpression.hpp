@@ -26,9 +26,6 @@ namespace unmangle {
 		Operator oper;
 		Expression* operand;
 
-	  protected:
-		virtual void print(std::ostream&, int) const;
-
 	  public:
 		UnaryOperationExpression(Operator, Expression*);
 		UnaryOperationExpression(const UnaryOperationExpression&);
@@ -43,6 +40,7 @@ namespace unmangle {
 		}
 
 		virtual ExpressionType getExpressionType() const;
+		virtual void print(std::ostream&, int) const;
 		virtual Expression* cloneExpression() const;
 
 		static Precedence getPrecedenceOf(Operator);

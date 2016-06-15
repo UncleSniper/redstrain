@@ -3,6 +3,7 @@
 
 #include "LocalName.hpp"
 #include "CPPSymbol.hpp"
+#include "../unmangle-utils.hpp"
 
 using std::string;
 using std::ostream;
@@ -18,7 +19,7 @@ namespace unmangle {
 		UnmanglePtr<CPPSymbol> f(name.function->cloneSymbol());
 		UnmanglePtr<Name> n(name.name ? name.name->cloneName() : NULL);
 		function = f.ptr;
-		name = n.ptr;
+		this->name = n.ptr;
 		f.ptr = NULL;
 		n.ptr = NULL;
 	}
@@ -52,6 +53,14 @@ namespace unmangle {
 
 	Name* LocalName::cloneName() const {
 		return new LocalName(*this);
+	}
+
+	bool LocalName::namesTemplate() const {
+		return name->namesTemplate();
+	}
+
+	bool LocalName::namesReturnless() const {
+		return name->namesReturnless();
 	}
 
 }}}

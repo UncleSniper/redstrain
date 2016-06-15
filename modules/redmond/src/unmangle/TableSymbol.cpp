@@ -1,6 +1,8 @@
 #include "Type.hpp"
 #include "TableSymbol.hpp"
 
+using std::ostream;
+
 namespace redengine {
 namespace redmond {
 namespace unmangle {

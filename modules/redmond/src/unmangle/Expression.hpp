@@ -1,6 +1,8 @@
 #ifndef REDSTRAIN_MOD_REDMOND_UNMANGLE_EXPRESSION_HPP
 #define REDSTRAIN_MOD_REDMOND_UNMANGLE_EXPRESSION_HPP
 
+#include <iostream>
+
 #include "../api.hpp"
 
 namespace redengine {
@@ -22,7 +24,6 @@ namespace unmangle {
 			ET_EXTERNAL_NAME
 		};
 
-	  protected:
 		enum Precedence {
 			PREC_COMMA = 0,
 			PREC_ASSIGN = 1,
@@ -44,9 +45,6 @@ namespace unmangle {
 			PREC_PRIMARY = 16
 		};
 
-	  protected:
-		virtual void print(std::ostream&, int) const = 0;
-
 	  public:
 		Expression();
 		Expression(const Expression&);
@@ -55,6 +53,7 @@ namespace unmangle {
 		void print(std::ostream&) const;
 
 		virtual ExpressionType getExpressionType() const = 0;
+		virtual void print(std::ostream&, int) const = 0;
 		virtual Expression* cloneExpression() const = 0;
 
 	};

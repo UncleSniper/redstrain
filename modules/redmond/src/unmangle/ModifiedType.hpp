@@ -7,7 +7,7 @@ namespace redengine {
 namespace redmond {
 namespace unmangle {
 
-	class REDSTRAIN_REDMOND_API ModifiedType {
+	class REDSTRAIN_REDMOND_API ModifiedType : public Type {
 
 	  public:
 		enum Modifier {

@@ -1,5 +1,7 @@
 #include "TemplateParamType.hpp"
 
+using std::ostream;
+
 namespace redengine {
 namespace redmond {
 namespace unmangle {

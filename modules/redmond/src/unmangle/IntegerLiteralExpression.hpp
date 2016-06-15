@@ -28,7 +28,16 @@ namespace unmangle {
 		BuiltinType::Primitive type;
 		IntegerT value;
 
-	  protected:
+	  public:
+		IntegerLiteralExpression(BuiltinType::Primitive type, IntegerT value) : type(type), value(value) {}
+
+		IntegerLiteralExpression(const IntegerLiteralExpression& expression)
+				: IntegerLiteralBase(expression), type(expression.type), value(expression.value) {}
+
+		virtual BuiltinType::Primitive getIntegerType() const {
+			return type;
+		}
+
 		virtual void print(std::ostream& out, int) const {
 			typedef typename StreamType<0, SIGNED>::Printable Printable;
 			switch(type) {
@@ -45,16 +54,6 @@ namespace unmangle {
 					out << value;
 					break;
 			}
-		}
-
-	  public:
-		IntegerLiteralExpression(BuiltinType::Primitive type, IntegerT value) : type(type), value(value) {}
-
-		IntegerLiteralExpression(const IntegerLiteralExpression& expression)
-				: IntegerLiteralBase(expression), type(expression.type), value(expression.value) {}
-
-		virtual BuiltinType::Primitive getIntegerType() const {
-			return type;
 		}
 
 		virtual Expression* cloneExpression() const {

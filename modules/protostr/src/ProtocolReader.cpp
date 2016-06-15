@@ -1,5 +1,5 @@
 #include <cstring>
-#include <redstrain/platform/Endianness.hpp>
+#include <redstrain/platform/FloatEndianness.hpp>
 
 #include "ProtocolReader.hpp"
 #include "IllegalReaderStateError.hpp"
@@ -9,8 +9,11 @@
 using std::string;
 using redengine::util::FileSize;
 using redengine::io::InputStream;
+using redengine::util::FloatBits;
 using redengine::util::MemorySize;
+using redengine::util::DoubleBits;
 using redengine::platform::Endianness;
+using redengine::platform::FloatEndianness;
 
 namespace redengine {
 namespace protostr {
@@ -130,6 +133,20 @@ namespace protostr {
 		ensureClean;
 		gatherInto(value);
 		fromBigFloat(result, value, double);
+		return result;
+	}
+
+	int8_t ProtocolReader::readInt8LE() {
+		int8_t value;
+		ensureClean;
+		gatherInto(value);
+		return value;
+	}
+
+	uint8_t ProtocolReader::readUInt8LE() {
+		uint8_t value;
+		ensureClean;
+		gatherInto(value);
 		return value;
 	}
 
@@ -194,6 +211,20 @@ namespace protostr {
 		ensureClean;
 		gatherInto(value);
 		fromLittleFloat(result, value, double);
+		return result;
+	}
+
+	int8_t ProtocolReader::readInt8NBO() {
+		int8_t value;
+		ensureClean;
+		gatherInto(value);
+		return value;
+	}
+
+	uint8_t ProtocolReader::readUInt8NBO() {
+		uint8_t value;
+		ensureClean;
+		gatherInto(value);
 		return value;
 	}
 
@@ -252,7 +283,7 @@ namespace protostr {
 		ensureClean;
 		gatherInto(value);
 		fromNativeFloat(result, value, double);
-		return value;
+		return result;
 	}
 
 	void ProtocolReader::readBlockBody(char* buffer, MemorySize bufferSize, MemorySize& chunkSize,

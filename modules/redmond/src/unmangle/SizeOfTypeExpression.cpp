@@ -9,7 +9,7 @@ namespace unmangle {
 
 	SizeOfTypeExpression::SizeOfTypeExpression(Type* type) : type(type) {}
 
-	SizeOfTypeExpression::SizeOfTypeExpression(const SizeOfTypeExpression& expansion)
+	SizeOfTypeExpression::SizeOfTypeExpression(const SizeOfTypeExpression& expression)
 			: Expression(expression), type(expression.type->cloneType()) {}
 
 	SizeOfTypeExpression::~SizeOfTypeExpression() {

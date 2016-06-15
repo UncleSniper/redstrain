@@ -1,6 +1,6 @@
 #include <cstring>
 #include <redstrain/util/AddressSpace.hpp>
-#include <redstrain/platform/Endianness.hpp>
+#include <redstrain/platform/FloatEndianness.hpp>
 
 #include "ProtocolWriter.hpp"
 #include "IllegalWriterStateError.hpp"
@@ -13,6 +13,7 @@ using redengine::util::MemorySize;
 using redengine::io::OutputStream;
 using redengine::util::AddressSpace;
 using redengine::platform::Endianness;
+using redengine::platform::FloatEndianness;
 
 namespace redengine {
 namespace protostr {
@@ -62,6 +63,12 @@ namespace protostr {
 	(writeRawElement(reinterpret_cast<const char*>(&var), static_cast<MemorySize>(size ## u)))
 #define toBig(type) (value = Endianness<type>::convertBig(value))
 #define toLittle(type) (value = Endianness<type>::convertLittle(value))
+#define toBigFloat(ivar, fvar, type) \
+	typename FloatEndianness<type>::Bits ivar = FloatEndianness<type>::toBigBits(fvar)
+#define toLittleFloat(ivar, fvar, type) \
+	typename FloatEndianness<type>::Bits ivar = FloatEndianness<type>::toLittleBits(fvar)
+#define toNativeFloat(ivar, fvar, type) \
+	typename FloatEndianness<type>::Bits ivar = FloatEndianness<type>::toNativeBits(fvar)
 #define checkSizeSpace(size, wtype, stype) \
 	do { \
 		if(AddressSpace<wtype, stype>::exceededBy(size)) \
@@ -118,15 +125,27 @@ namespace protostr {
 
 	void ProtocolWriter::writeFloat32(float value) {
 		ensureClean;
-		writeDirect(value, 4);
+		toBigFloat(bits, value, float);
+		writeDirect(bits, 4);
 	}
 
 	void ProtocolWriter::writeFloat64(double value) {
 		ensureClean;
-		writeDirect(value, 8);
+		toBigFloat(bits, value, double);
+		writeDirect(bits, 8);
 	}
 
 	// little endian primitives
+
+	void ProtocolWriter::writeInt8LE(int8_t value) {
+		ensureClean;
+		writeDirect(value, 1);
+	}
+
+	void ProtocolWriter::writeUInt8LE(uint8_t value) {
+		ensureClean;
+		writeDirect(value, 1);
+	}
 
 	void ProtocolWriter::writeInt16LE(int16_t value) {
 		ensureClean;
@@ -164,7 +183,29 @@ namespace protostr {
 		writeDirect(value, 8);
 	}
 
+	void ProtocolWriter::writeFloat32LE(float value) {
+		ensureClean;
+		toLittleFloat(bits, value, float);
+		writeDirect(bits, 4);
+	}
+
+	void ProtocolWriter::writeFloat64LE(double value) {
+		ensureClean;
+		toLittleFloat(bits, value, double);
+		writeDirect(bits, 8);
+	}
+
 	// native byte order primitives
+
+	void ProtocolWriter::writeInt8NBO(int8_t value) {
+		ensureClean;
+		writeDirect(value, 1);
+	}
+
+	void ProtocolWriter::writeUInt8NBO(uint8_t value) {
+		ensureClean;
+		writeDirect(value, 1);
+	}
 
 	void ProtocolWriter::writeInt16NBO(int16_t value) {
 		ensureClean;
@@ -194,6 +235,18 @@ namespace protostr {
 	void ProtocolWriter::writeUInt64NBO(uint64_t value) {
 		ensureClean;
 		writeDirect(value, 8);
+	}
+
+	void ProtocolWriter::writeFloat32NBO(float value) {
+		ensureClean;
+		toNativeFloat(bits, value, float);
+		writeDirect(bits, 4);
+	}
+
+	void ProtocolWriter::writeFloat64NBO(double value) {
+		ensureClean;
+		toNativeFloat(bits, value, double);
+		writeDirect(bits, 8);
 	}
 
 	void ProtocolWriter::writeBlock8(const char* data, MemorySize size) {

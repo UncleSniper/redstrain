@@ -15,9 +15,6 @@ namespace unmangle {
 		Type* type;
 		Expression* operand;
 
-	  protected:
-		virtual void print(std::ostream&, int) const;
-
 	  public:
 		CastExpression(Type*, Expression*);
 		CastExpression(const CastExpression&);
@@ -32,6 +29,7 @@ namespace unmangle {
 		}
 
 		virtual ExpressionType getExpressionType() const;
+		virtual void print(std::ostream&, int) const;
 		virtual Expression* cloneExpression() const;
 
 	};

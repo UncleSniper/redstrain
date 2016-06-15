@@ -13,7 +13,7 @@ namespace unmangle {
 			: SpecialSymbol(symbol), objectName(symbol.objectName->cloneName()) {}
 
 	GuardVariableSymbol::~GuardVariableSymbol() {
-		delete name;
+		delete objectName;
 	}
 
 	SpecialSymbol::SpecialSymbolType GuardVariableSymbol::getSpecialSymbolType() const {
@@ -27,7 +27,7 @@ namespace unmangle {
 	void GuardVariableSymbol::print(ostream& out, bool& lastWasGreater) const {
 		out << "<guard variable for ";
 		lastWasGreater = false;
-		objectName->print(out, lastWasGreater);
+		objectName->print(out, lastWasGreater, NULL);
 		if(lastWasGreater)
 			out << ' ';
 		out << '>';

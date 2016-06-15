@@ -12,14 +12,12 @@ namespace unmangle {
 	  private:
 		unsigned parameter;
 
-	  protected:
-		virtual void print(std::ostream&, int) const;
-
 	  public:
 		TemplateParamExpression(unsigned);
 		TemplateParamExpression(const TemplateParamExpression&);
 
 		virtual ExpressionType getExpressionType() const;
+		virtual void print(std::ostream&, int) const;
 		virtual Expression* cloneExpression() const;
 
 	};

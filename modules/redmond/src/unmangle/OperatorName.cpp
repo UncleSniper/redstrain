@@ -170,4 +170,12 @@ namespace unmangle {
 		return new OperatorName(*this);
 	}
 
+	bool OperatorName::namesTemplate() const {
+		return false;
+	}
+
+	bool OperatorName::namesReturnless() const {
+		return false;
+	}
+
 }}}

@@ -28,6 +28,8 @@
 #include "unmangle/PointerToMemberType.hpp"
 #include "unmangle/TypeTemplateArgument.hpp"
 #include "unmangle/SizeOfTypeExpression.hpp"
+#include "unmangle/EnumLiteralExpression.hpp"
+#include "unmangle/ConversionOperatorName.hpp"
 #include "unmangle/FloatLiteralExpression.hpp"
 #include "unmangle/ExternalNameExpression.hpp"
 #include "unmangle/DependentNameExpression.hpp"
@@ -48,6 +50,7 @@ using redengine::redmond::unmangle::Type;
 using redengine::redmond::unmangle::EnumType;
 using redengine::redmond::unmangle::CPPSymbol;
 using redengine::redmond::unmangle::LocalName;
+using redengine::redmond::unmangle::CallOffset;
 using redengine::redmond::unmangle::DataSymbol;
 using redengine::redmond::unmangle::SourceName;
 using redengine::redmond::unmangle::NestedName;
@@ -60,6 +63,7 @@ using redengine::redmond::unmangle::CtorDtorName;
 using redengine::redmond::unmangle::OperatorName;
 using redengine::redmond::unmangle::SpecialSymbol;
 using redengine::redmond::unmangle::CastExpression;
+using redengine::redmond::unmangle::FunctionSymbol;
 using redengine::redmond::unmangle::UnqualifiedName;
 using redengine::redmond::unmangle::CVQualifiedType;
 using redengine::redmond::unmangle::StaticArrayType;
@@ -76,6 +80,8 @@ using redengine::redmond::unmangle::OverrideThunkSymbol;
 using redengine::redmond::unmangle::PointerToMemberType;
 using redengine::redmond::unmangle::TypeTemplateArgument;
 using redengine::redmond::unmangle::SizeOfTypeExpression;
+using redengine::redmond::unmangle::EnumLiteralExpression;
+using redengine::redmond::unmangle::ConversionOperatorName;
 using redengine::redmond::unmangle::FloatLiteralExpression;
 using redengine::redmond::unmangle::ExternalNameExpression;
 using redengine::redmond::unmangle::DependentNameExpression;
@@ -289,7 +295,7 @@ namespace redmond {
 		GCC3UnmangleSubstitution(GCC3UnmangleSubstType type, const char* begin, const char* end)
 				: type(type), begin(begin), end(end) {}
 
-		GCC3UnmangleSubstitution(const GCC3UnmangleSubstType& substitution)
+		GCC3UnmangleSubstitution(const GCC3UnmangleSubstitution& substitution)
 				: type(substitution.type), begin(substitution.begin), end(substitution.end) {}
 
 	};
@@ -313,6 +319,7 @@ namespace redmond {
 	bool _unmangleGCC3_startsType(char);
 	Type* _unmangleGCC3_type(const char*&, const char*, SBox&);
 	UnqualifiedName* _unmangleGCC3_unqualifiedName(const char*&, const char*, SBox&);
+	TemplateArgument* _unmangleGCC3_templateArg(const char*&, const char*, SBox&);
 
 	template<typename IntegerT>
 	bool _unmangleGCC3_number(const char*& begin, const char* end, IntegerT& result) {
@@ -429,38 +436,38 @@ namespace redmond {
 		return new IntegerLiteralExpression<IntegerT>(type, value);
 	}
 
-	LiteralExpression* _unmangleGCC3_literal(const Type& type, const char*& begin, const char* end, SBox& sbox) {
+	LiteralExpression* _unmangleGCC3_literal(const Type& type, const char*& begin, const char* end) {
 		switch(type.getTypeType()) {
 			case Type::TT_BUILTIN:
 				{
 					const BuiltinType& bt = static_cast<const BuiltinType&>(type);
 					BuiltinType::Primitive pt = bt.getPrimitive();
 					switch(pt) {
-						case P_WCHAR_T:
+						case BuiltinType::P_WCHAR_T:
 							return _unmangleGCC3_intLiteral<wchar_t>(pt, begin, end);
-						case P_BOOL:
+						case BuiltinType::P_BOOL:
 							return _unmangleGCC3_intLiteral<bool>(pt, begin, end);
-						case P_CHAR:
+						case BuiltinType::P_CHAR:
 							return _unmangleGCC3_intLiteral<char>(pt, begin, end);
-						case P_SIGNED_CHAR:
+						case BuiltinType::P_SIGNED_CHAR:
 							return _unmangleGCC3_intLiteral<signed char>(pt, begin, end);
-						case P_UNSIGNED_CHAR:
+						case BuiltinType::P_UNSIGNED_CHAR:
 							return _unmangleGCC3_intLiteral<unsigned char>(pt, begin, end);
-						case P_SHORT:
+						case BuiltinType::P_SHORT:
 							return _unmangleGCC3_intLiteral<short>(pt, begin, end);
-						case P_UNSIGNED_SHORT:
+						case BuiltinType::P_UNSIGNED_SHORT:
 							return _unmangleGCC3_intLiteral<unsigned short>(pt, begin, end);
-						case P_INT:
+						case BuiltinType::P_INT:
 							return _unmangleGCC3_intLiteral<int>(pt, begin, end);
-						case P_UNSIGNED_INT:
+						case BuiltinType::P_UNSIGNED_INT:
 							return _unmangleGCC3_intLiteral<unsigned>(pt, begin, end);
-						case P_LONG:
+						case BuiltinType::P_LONG:
 							return _unmangleGCC3_intLiteral<long>(pt, begin, end);
-						case P_UNSIGNED_LONG:
+						case BuiltinType::P_UNSIGNED_LONG:
 							return _unmangleGCC3_intLiteral<unsigned long>(pt, begin, end);
-						case P_LONG_LONG:
+						case BuiltinType::P_LONG_LONG:
 							return _unmangleGCC3_intLiteral<long long>(pt, begin, end);
-						case P_UNSIGNED_LONG_LONG:
+						case BuiltinType::P_UNSIGNED_LONG_LONG:
 							return _unmangleGCC3_intLiteral<unsigned long long>(pt, begin, end);
 						// Documentations differ in how floating-point literals work and
 						// I frankly don't see how they could even turn up in the mangling,
@@ -471,15 +478,16 @@ namespace redmond {
 				}
 			case Type::TT_ENUM:
 				{
+					const EnumType& et = static_cast<const EnumType&>(type);
 					int value;
 					if(!_unmangleGCC3_number<int>(begin, end, value))
 						return NULL;
 					if(begin == end || *begin != 'E')
 						return NULL;
 					++begin;
-					UnmanglePtr<Type> newType(type.cloneType());
-					EnumLiteralExpression ele = new EnumLiteralExpression(newType.ptr, value);
-					newType.ptr = NULL;
+					UnmanglePtr<Name> typeName(et.getName().cloneName());
+					EnumLiteralExpression* ele = new EnumLiteralExpression(typeName.ptr, value);
+					typeName.ptr = NULL;
 					return ele;
 				}
 			default:
@@ -819,14 +827,14 @@ namespace redmond {
 						if(begin == end || *begin != 'E')
 							return NULL;
 						++begin;
-						ExternalNameExpression ene = new ExternalNameExpression(symbol.ptr);
+						ExternalNameExpression* ene = new ExternalNameExpression(symbol.ptr);
 						symbol.ptr = NULL;
 						return ene;
 					}
 					UnmanglePtr<Type> type(_unmangleGCC3_type(begin, end, sbox));
 					if(!type.ptr)
 						return NULL;
-					return _unmangleGCC3_literal(*type.ptr, begin, end, sbox);
+					return _unmangleGCC3_literal(*type.ptr, begin, end);
 				}
 			default:
 				return NULL;
@@ -979,6 +987,16 @@ namespace redmond {
 					case 'l':
 						++begin;
 						return new OperatorName(OperatorName::OP_CALL);
+					case 'v':
+						{
+							++begin;
+							UnmanglePtr<Type> targetType(_unmangleGCC3_type(begin, end, sbox));
+							if(!targetType.ptr)
+								return NULL;
+							ConversionOperatorName* con = new ConversionOperatorName(targetType.ptr);
+							targetType.ptr = NULL;
+							return con;
+						}
 					default:
 						return NULL;
 				}
@@ -1186,7 +1204,7 @@ namespace redmond {
 										begin, end));
 							else if(!argumentSink)
 								sbox.push_back(GCC3UnmangleSubstitution(GCC3UMST_NESTED_PREFIX, begin, end));
-							else if(nested.ptr->getArgumentCount() == 1u)
+							else if(nested.ptr->getSegmentCount() == 1u)
 								sbox.push_back(GCC3UnmangleSubstitution(GCC3UMST_UNSCOPED_TEMPLATE_NAME,
 										begin, end));
 							else
@@ -1312,19 +1330,21 @@ namespace redmond {
 								stdTplName = "iostream";
 								stdIsTemplate = false;
 							  useStdTplName:
-								UnmanglePtr<SourceName> sname(new SourceName("std"));
-								UnmanglePtr<NestedName::Segment> segment(new NestedName::Segment(sname.ptr));
-								sname.ptr = NULL;
-								nested.ptr->addSegment(&segment.ptr);
-								argumentSink = stdIsTemplate ? segment.ptr : NULL;
-								segment.ptr = NULL;
-								if(stdTplName) {
-									sname.ptr = new SourceName(stdTplName);
-									segment.ptr = new NestedName::Segment(sname.ptr);
+								{
+									UnmanglePtr<SourceName> sname(new SourceName("std"));
+									UnmanglePtr<NestedName::Segment> segment(new NestedName::Segment(sname.ptr));
 									sname.ptr = NULL;
-									nested.ptr->addSegment(&segment.ptr);
+									nested.ptr->addSegment(*segment.ptr);
 									argumentSink = stdIsTemplate ? segment.ptr : NULL;
 									segment.ptr = NULL;
+									if(stdTplName) {
+										sname.ptr = new SourceName(stdTplName);
+										segment.ptr = new NestedName::Segment(sname.ptr);
+										sname.ptr = NULL;
+										nested.ptr->addSegment(*segment.ptr);
+										argumentSink = stdIsTemplate ? segment.ptr : NULL;
+										segment.ptr = NULL;
+									}
 								}
 								break;
 							default:
@@ -1471,7 +1491,7 @@ namespace redmond {
 								{
 									if(sid >= static_cast<unsigned>(sbox.size()))
 										return NULL;
-									const GCC3UnmangleSubstitution& substitution = sbox[id];
+									const GCC3UnmangleSubstitution& substitution = sbox[sid];
 									if(substitution.type != GCC3UMST_UNSCOPED_TEMPLATE_NAME)
 										return NULL;
 									const char* sbegin = substitution.begin;
@@ -1487,7 +1507,7 @@ namespace redmond {
 										UnmanglePtr<SourceName> sname(new SourceName("std"));
 										segment.ptr = new NestedName::Segment(sname.ptr);
 										sname.ptr = NULL;
-										nested.ptr->addSegment(*segment.ptr);
+										nname.ptr->addSegment(*segment.ptr);
 										segment.ptr = NULL;
 									}
 									SBox tmpSBox(sbox);
@@ -1497,7 +1517,7 @@ namespace redmond {
 										return NULL;
 									tailSegment = new NestedName::Segment(uqname.ptr);
 									segment.ptr = tailSegment;
-									nested.ptr->addSegment(*tailSegment);
+									nname.ptr->addSegment(*tailSegment);
 									segment.ptr = NULL;
 								}
 								break;
@@ -1521,7 +1541,7 @@ namespace redmond {
 									segment.ptr = NULL;
 								}
 								break;
-							case GCC3UMSR_STD;
+							case GCC3UMSR_STD:
 							case GCC3UMSR_STRING:
 							case GCC3UMSR_ISTREAM:
 							case GCC3UMSR_OSTREAM:
@@ -1540,8 +1560,8 @@ namespace redmond {
 							arg.ptr = NULL;
 						} while(*begin != 'E');
 						++begin;
-						NestedName* nn = nested.ptr;
-						nested.ptr = NULL;
+						NestedName* nn = nname.ptr;
+						nname.ptr = NULL;
 						return nn;
 					}
 				}
@@ -1595,8 +1615,8 @@ namespace redmond {
 						arg.ptr = NULL;
 					} while(*begin != 'E');
 					++begin;
-					NestedName* nn = nested.ptr;
-					nested.ptr = NULL;
+					NestedName* nn = nname.ptr;
+					nname.ptr = NULL;
 					return nn;
 				}
 		}
@@ -1853,6 +1873,7 @@ namespace redmond {
 												return NULL;
 											if(++sbegin == substitution.end)
 												return NULL;
+											unsigned pindex;
 											if(*sbegin == '_')
 												pindex = 0u;
 											else if(*sbegin >= '0' && *sbegin <= '9') {
@@ -1877,7 +1898,7 @@ namespace redmond {
 												arg.ptr = _unmangleGCC3_templateArg(begin, end, sbox);
 												if(!arg.ptr || begin == end)
 													return NULL;
-												ttpt->addArgument(arg.ptr);
+												ttpt->addArgument(*arg.ptr);
 												arg.ptr = NULL;
 											} while(*begin != 'E');
 											++begin;
@@ -1952,7 +1973,7 @@ namespace redmond {
 							arg.ptr = _unmangleGCC3_templateArg(begin, end, sbox);
 							if(!arg.ptr || begin == end)
 								return NULL;
-							ttpt->addArgument(arg.ptr);
+							ttpt->addArgument(*arg.ptr);
 							arg.ptr = NULL;
 						} while(*begin != 'E');
 						++begin;
@@ -1976,7 +1997,7 @@ namespace redmond {
 				}
 				break;
 			default:
-				if(c < '0' || c > '9')   // !source-name
+				if(*begin < '0' || *begin > '9')   // !source-name
 					return NULL;
 			  useEnumName:
 				{
@@ -2067,7 +2088,7 @@ namespace redmond {
 		return bft;
 	}
 
-	CallOffset* _unmangleGCC3_callOffset(const char*& begin, const char* end, SBox& sbox) {
+	CallOffset* _unmangleGCC3_callOffset(const char*& begin, const char* end) {
 		if(begin == end)
 			return NULL;
 		switch(*begin) {
@@ -2108,7 +2129,7 @@ namespace redmond {
 			if(++begin == end || *begin != 'V')
 				return NULL;
 			++begin;
-			UnmanglePtr<Name> objectName(_unmangleGCC3_name(begin, end, sbox);
+			UnmanglePtr<Name> objectName(_unmangleGCC3_name(begin, end, sbox));
 			if(!objectName.ptr)
 				return NULL;
 			GuardVariableSymbol* gv = new GuardVariableSymbol(objectName.ptr);
@@ -2134,7 +2155,7 @@ namespace redmond {
 			case 'h':
 			case 'v':
 				{
-					UnmanglePtr<CallOffset> callOffset(_unmangleGCC3_callOffset(begin, end, sbox));
+					UnmanglePtr<CallOffset> callOffset(_unmangleGCC3_callOffset(begin, end));
 					if(!callOffset.ptr || begin == end)
 						return NULL;
 					UnmanglePtr<CPPSymbol> targetFunction(_unmangleGCC3_encoding(begin, end, sbox));
@@ -2145,10 +2166,10 @@ namespace redmond {
 			case 'c':
 				{
 					++begin;
-					UnmanglePtr<CallOffset> thisAdjustment(_unmangleGCC3_callOffset(begin, end, sbox));
+					UnmanglePtr<CallOffset> thisAdjustment(_unmangleGCC3_callOffset(begin, end));
 					if(!thisAdjustment.ptr)
 						return NULL;
-					UnmanglePtr<CallOffset> resultAdjustment(_unmangleGCC3_callOffset(begin, end, sbox));
+					UnmanglePtr<CallOffset> resultAdjustment(_unmangleGCC3_callOffset(begin, end));
 					if(!resultAdjustment.ptr || begin == end)
 						return NULL;
 					UnmanglePtr<CPPSymbol> targetFunction(_unmangleGCC3_encoding(begin, end, sbox));
@@ -2236,13 +2257,13 @@ namespace redmond {
 		if(++begin == end)
 			return NULL;
 		SBox sbox;
-		CPPSymbol* symbol = _unmangleGCC3_encoding(begin, end, sbox);
+		CPPSymbol* sym = _unmangleGCC3_encoding(begin, end, sbox);
 		if(begin != end) {
-			if(symbol)
-				delete symbol;
+			if(sym)
+				delete sym;
 			return NULL;
 		}
-		return symbol;
+		return sym;
 	}
 
 }}

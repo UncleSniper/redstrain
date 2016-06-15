@@ -38,7 +38,6 @@ namespace util {
 
 	typedef IntegerTypeByTraits<sizeof(float), false>::StandardType FloatBits;
 	typedef IntegerTypeByTraits<sizeof(double), false>::StandardType DoubleBits;
-	typedef IntegerTypeByTraits<sizeof(long double), false>::StandardType LongDoubleBits;
 
 }}
 

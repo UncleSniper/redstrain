@@ -14,9 +14,6 @@ namespace unmangle {
 	  private:
 		Type* type;
 
-	  protected:
-		virtual void print(std::ostream&, int) const;
-
 	  public:
 		SizeOfTypeExpression(Type*);
 		SizeOfTypeExpression(const SizeOfTypeExpression&);
@@ -27,6 +24,7 @@ namespace unmangle {
 		}
 
 		virtual ExpressionType getExpressionType() const;
+		virtual void print(std::ostream&, int) const;
 		virtual Expression* cloneExpression() const;
 
 	};

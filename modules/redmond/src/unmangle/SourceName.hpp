@@ -20,7 +20,9 @@ namespace unmangle {
 		virtual NameType getNameType() const;
 		virtual void print(std::ostream&, bool&, const std::string*) const;
 		virtual Name* cloneName() const;
-		virtual const string* getUnqualifiedClassNameData() const;
+		virtual const std::string* getUnqualifiedClassNameData() const;
+		virtual bool namesTemplate() const;
+		virtual bool namesReturnless() const;
 
 	};
 

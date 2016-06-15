@@ -87,7 +87,7 @@ namespace unmangle {
 	}
 
 	void NestedName::addSegment(Segment& segment) {
-		segments.push_back(&segments);
+		segments.push_back(&segment);
 	}
 
 	Name::NameType NestedName::getNameType() const {
@@ -98,8 +98,8 @@ namespace unmangle {
 		const string* lastClassName = NULL;
 		SegmentIterator sbegin(segments.begin()), send(segments.end());
 		Segment::ArgumentIterator abegin, aend;
-		for(; begin != end; ++begin) {
-			const Segment& seg = **begin;
+		for(; sbegin != send; ++sbegin) {
+			const Segment& seg = **sbegin;
 			seg.getPrefix().print(out, lastWasGreater, lastClassName);
 			if(seg.hasArguments()) {
 				seg.getArguments(abegin, aend);
@@ -117,7 +117,7 @@ namespace unmangle {
 					out << ' ';
 				else
 					lastWasGreater = true;
-				out >> '>';
+				out << '>';
 			}
 			lastClassName = seg.getPrefix().getUnqualifiedClassNameData();
 		}
@@ -125,6 +125,18 @@ namespace unmangle {
 
 	Name* NestedName::cloneName() const {
 		return new NestedName(*this);
+	}
+
+	bool NestedName::namesTemplate() const {
+		if(segments.empty())
+			return false;
+		return segments.back()->hasArguments();
+	}
+
+	bool NestedName::namesReturnless() const {
+		if(segments.empty())
+			return false;
+		return segments.back()->getPrefix().namesReturnless();
 	}
 
 }}}

@@ -25,4 +25,12 @@ namespace unmangle {
 		return new TemplateParamName(*this);
 	}
 
+	bool TemplateParamName::namesTemplate() const {
+		return false;
+	}
+
+	bool TemplateParamName::namesReturnless() const {
+		return false;
+	}
+
 }}}

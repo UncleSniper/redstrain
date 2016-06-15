@@ -67,19 +67,27 @@ namespace protostr {
 		void writeFloat32(float);
 		void writeFloat64(double);
 
+		void writeInt8LE(int8_t);
+		void writeUInt8LE(uint8_t);
 		void writeInt16LE(int16_t);
 		void writeUInt16LE(uint16_t);
 		void writeInt32LE(int32_t);
 		void writeUInt32LE(uint32_t);
 		void writeInt64LE(int64_t);
 		void writeUInt64LE(uint64_t);
+		void writeFloat32LE(float);
+		void writeFloat64LE(double);
 
+		void writeInt8NBO(int8_t);
+		void writeUInt8NBO(uint8_t);
 		void writeInt16NBO(int16_t);
 		void writeUInt16NBO(uint16_t);
 		void writeInt32NBO(int32_t);
 		void writeUInt32NBO(uint32_t);
 		void writeInt64NBO(int64_t);
 		void writeUInt64NBO(uint64_t);
+		void writeFloat32NBO(float);
+		void writeFloat64NBO(double);
 
 		void writeBlock8(const char*, util::MemorySize);
 		void writeBlock16(const char*, util::MemorySize);
@@ -102,10 +110,24 @@ namespace protostr {
 	template<typename PrimitiveT>
 	void writeProtocolPrimitive(ProtocolWriter&, PrimitiveT);
 
+	template<typename PrimitiveT>
+	void writeProtocolPrimitiveLE(ProtocolWriter&, PrimitiveT);
+
+	template<typename PrimitiveT>
+	void writeProtocolPrimitiveNBO(ProtocolWriter&, PrimitiveT);
+
 #define REDSTRAIN_PROTOSTR_DEFINE_PRIMITIVE(type, function) \
 	template<> \
 	inline void writeProtocolPrimitive<type>(ProtocolWriter& writer, type value) { \
 		writer.write ## function(value); \
+	} \
+	template<> \
+	inline void writeProtocolPrimitiveLE<type>(ProtocolWriter& writer, type value) { \
+		writer.write ## function ## LE(value); \
+	} \
+	template<> \
+	inline void writeProtocolPrimitiveNBO<type>(ProtocolWriter& writer, type value) { \
+		writer.write ## function ## NBO(value); \
 	}
 
 	REDSTRAIN_PROTOSTR_DEFINE_PRIMITIVE(int8_t, Int8)

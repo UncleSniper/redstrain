@@ -20,7 +20,7 @@ namespace unmangle {
 	}
 
 	void EnumType::print(ostream& out, bool& lastWasGreater) const {
-		name->print(out, lastWasGreater);
+		name->print(out, lastWasGreater, NULL);
 	}
 
 	Type* EnumType::cloneType() const {

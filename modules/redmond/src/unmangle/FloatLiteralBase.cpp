@@ -6,7 +6,7 @@ namespace unmangle {
 
 	FloatLiteralBase::FloatLiteralBase() {}
 
-	FloatLiteralBase::FloatLiteralBase(const FloatLiteralBase& expression) : LiteralType(expression) {}
+	FloatLiteralBase::FloatLiteralBase(const FloatLiteralBase& expression) : LiteralExpression(expression) {}
 
 	LiteralExpression::LiteralType FloatLiteralBase::getLiteralType() const {
 		return LT_FLOAT;

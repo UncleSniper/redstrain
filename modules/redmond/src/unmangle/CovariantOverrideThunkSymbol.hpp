@@ -14,15 +14,13 @@ namespace unmangle {
 		CallOffset thisAdjustment, resultAdjustment;
 		CPPSymbol* targetFunction;
 
-	  protected:
-		virtual void print(std::ostream&, bool&) const;
-
 	  public:
 		CovariantOverrideThunkSymbol(const CallOffset&, const CallOffset&, CPPSymbol*);
 		CovariantOverrideThunkSymbol(const CovariantOverrideThunkSymbol&);
 		virtual ~CovariantOverrideThunkSymbol();
 
 		virtual SpecialSymbolType getSpecialSymbolType() const;
+		virtual void print(std::ostream&, bool&) const;
 		virtual CPPSymbol* cloneSymbol() const;
 
 	};

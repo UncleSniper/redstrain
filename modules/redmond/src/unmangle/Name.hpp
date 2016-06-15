@@ -15,6 +15,7 @@ namespace unmangle {
 	  public:
 		enum NameType {
 			NT_OPERATOR,
+			NT_CONVERSION_OPERATOR,
 			NT_CTOR_DTOR,
 			NT_SOURCE,
 			NT_NESTED,
@@ -30,6 +31,8 @@ namespace unmangle {
 		virtual NameType getNameType() const = 0;
 		virtual void print(std::ostream&, bool&, const std::string*) const = 0;
 		virtual Name* cloneName() const = 0;
+		virtual bool namesTemplate() const = 0;
+		virtual bool namesReturnless() const = 0;
 
 	};
 

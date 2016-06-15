@@ -47,9 +47,6 @@ namespace unmangle {
 		Operator oper;
 		Expression *leftOperand, *rightOperand;
 
-	  protected:
-		virtual void print(std::ostream&, int) const;
-
 	  public:
 		BinaryOperationExpression(Operator, Expression*, Expression*);
 		BinaryOperationExpression(const BinaryOperationExpression&);
@@ -68,6 +65,7 @@ namespace unmangle {
 		}
 
 		virtual ExpressionType getExpressionType() const;
+		virtual void print(std::ostream&, int) const;
 		virtual Expression* cloneExpression() const;
 
 		static Precedence getPrecedenceOf(Operator);

@@ -19,9 +19,6 @@ namespace unmangle {
 			ST_SPECIAL
 		};
 
-	  protected:
-		virtual void print(std::ostream&, bool&) const = 0;
-
 	  public:
 		CPPSymbol();
 		CPPSymbol(const CPPSymbol&);
@@ -31,6 +28,7 @@ namespace unmangle {
 		std::string toString() const;
 
 		virtual SymbolType getSymbolType() const = 0;
+		virtual void print(std::ostream&, bool&) const = 0;
 		virtual CPPSymbol* cloneSymbol() const = 0;
 
 	};

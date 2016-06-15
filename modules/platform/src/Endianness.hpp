@@ -6,6 +6,7 @@
 
 #include "platform.hpp"
 
+#define REDSTRAIN_PLATFORM_SWAB8(x) (x)
 #define REDSTRAIN_PLATFORM_SWAB16(x) static_cast<uint16_t>( \
 	(static_cast<uint16_t>(x) >> 8) \
 	| (static_cast<uint16_t>(x) << 8) \

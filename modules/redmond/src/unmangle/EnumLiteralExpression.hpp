@@ -15,15 +15,13 @@ namespace unmangle {
 		Name* typeName;
 		int value;
 
-	  protected:
-		virtual void print(std::ostream&, int) const;
-
 	  public:
 		EnumLiteralExpression(Name*, int);
 		EnumLiteralExpression(const EnumLiteralExpression&);
 		virtual ~EnumLiteralExpression();
 
 		virtual LiteralType getLiteralType() const;
+		virtual void print(std::ostream&, int) const;
 		virtual Expression* cloneExpression() const;
 
 	};

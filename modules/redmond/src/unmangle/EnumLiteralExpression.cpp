@@ -19,7 +19,7 @@ namespace unmangle {
 		delete typeName;
 	}
 
-	LiteralType EnumLiteralExpression::getLiteralType() const {
+	LiteralExpression::LiteralType EnumLiteralExpression::getLiteralType() const {
 		return LT_ENUM;
 	}
 
@@ -29,7 +29,7 @@ namespace unmangle {
 			out << '(';
 		out << '(';
 		bool lastWasGreater = false;
-		typeName->print(out, lastWasGreater);
+		typeName->print(out, lastWasGreater, NULL);
 		out << ')' << value;
 		if(myPrecedence < minPrecedence)
 			out << ')';

@@ -11,6 +11,7 @@ namespace unmangle {
 
 	class Type;
 	class UnqualifiedName;
+	class TemplateArgument;
 
 	class REDSTRAIN_REDMOND_API DependentNameExpression : public Expression {
 
@@ -24,9 +25,6 @@ namespace unmangle {
 		Type* type;
 		UnqualifiedName* name;
 		Arguments arguments;
-
-	  protected:
-		virtual void print(std::ostream&, int) const;
 
 	  public:
 		DependentNameExpression(Type*, UnqualifiedName*);
@@ -47,6 +45,7 @@ namespace unmangle {
 		void addArgument(TemplateArgument&);
 
 		virtual ExpressionType getExpressionType() const;
+		virtual void print(std::ostream&, int) const;
 		virtual Expression* cloneExpression() const;
 
 	};

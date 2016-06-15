@@ -9,7 +9,7 @@ namespace unmangle {
 	TemplateParamExpression::TemplateParamExpression(unsigned parameter) : parameter(parameter) {}
 
 	TemplateParamExpression::TemplateParamExpression(const TemplateParamExpression& expression)
-			: Expression(expression), parameter(parameter) {}
+			: Expression(expression), parameter(expression.parameter) {}
 
 	Expression::ExpressionType TemplateParamExpression::getExpressionType() const {
 		return ET_TEMPLATE_PARAM;

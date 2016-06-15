@@ -12,9 +12,6 @@ namespace unmangle {
 	  private:
 		Expression *condition, *thenBranch, *elseBranch;
 
-	  protected:
-		virtual void print(std::ostream&, int) const;
-
 	  public:
 		TernaryOperationExpression(Expression*, Expression*, Expression*);
 		TernaryOperationExpression(const TernaryOperationExpression&);
@@ -33,6 +30,7 @@ namespace unmangle {
 		}
 
 		virtual ExpressionType getExpressionType() const;
+		virtual void print(std::ostream&, int) const;
 		virtual Expression* cloneExpression() const;
 
 	};

@@ -14,15 +14,13 @@ namespace unmangle {
 	  private:
 		Name* objectName;
 
-	  protected:
-		virtual void print(std::ostream&, bool&) const;
-
 	  public:
 		GuardVariableSymbol(Name*);
 		GuardVariableSymbol(const GuardVariableSymbol&);
 		virtual ~GuardVariableSymbol();
 
 		virtual SpecialSymbolType getSpecialSymbolType() const;
+		virtual void print(std::ostream&, bool&) const;
 		virtual CPPSymbol* cloneSymbol() const;
 
 	};

@@ -1,6 +1,10 @@
 #include "Type.hpp"
 #include "UnqualifiedName.hpp"
+#include "TemplateArgument.hpp"
 #include "DependentNameExpression.hpp"
+#include "../unmangle-utils.hpp"
+
+using std::ostream;
 
 namespace redengine {
 namespace redmond {
@@ -11,7 +15,7 @@ namespace unmangle {
 	DependentNameExpression::DependentNameExpression(const DependentNameExpression& expression)
 			: Expression(expression), type(expression.type), name(expression.name) {
 		UnmangleCollectionPtr<Arguments> delArgs(&arguments);
-		ArgumentIterator begin(segment.arguments.begin()), end(segment.arguments.end());
+		ArgumentIterator begin(expression.arguments.begin()), end(expression.arguments.end());
 		UnmanglePtr<TemplateArgument> arg(NULL);
 		for(; begin != end; ++begin) {
 			arg.ptr = (*begin)->cloneTemplateArgument();
@@ -46,18 +50,18 @@ namespace unmangle {
 		arguments.push_back(&argument);
 	}
 
-	ExpressionType DependentNameExpression::getExpressionType() const {
+	Expression::ExpressionType DependentNameExpression::getExpressionType() const {
 		return ET_DEPENDENT_NAME;
 	}
 
-	void DependentNameExpression::print(ostream& out, int minPrecedence) const {
+	void DependentNameExpression::print(ostream& out, int) const {
 		bool lastWasGreater = false;
 		type->print(out, lastWasGreater);
 		out << "::";
 		lastWasGreater = false;
-		name->print(out, lastWasGreater);
+		name->print(out, lastWasGreater, NULL);
 		if(!arguments.empty()) {
-			ArgumentIterator abegin(arguments.begin()), end(arguments.end());
+			ArgumentIterator abegin(arguments.begin()), aend(arguments.end());
 			out << '<';
 			bool first = true;
 			for(; abegin != aend; ++abegin) {
@@ -70,7 +74,7 @@ namespace unmangle {
 			}
 			if(lastWasGreater)
 				out << ' ';
-			out >> '>';
+			out << '>';
 		}
 	}
 

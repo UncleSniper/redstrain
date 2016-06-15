@@ -30,4 +30,12 @@ namespace unmangle {
 		return &segment;
 	}
 
+	bool SourceName::namesTemplate() const {
+		return false;
+	}
+
+	bool SourceName::namesReturnless() const {
+		return false;
+	}
+
 }}}

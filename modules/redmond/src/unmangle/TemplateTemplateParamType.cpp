@@ -47,7 +47,23 @@ namespace unmangle {
 	}
 
 	void TemplateTemplateParamType::print(ostream& out, bool& lastWasGreater) const {
-		//TODO
+		out << '$' << parameter << '<';
+		lastWasGreater = false;
+		ArgumentIterator abegin(arguments.begin()), aend(arguments.end());
+		bool first = true;
+		for(; abegin != aend; ++abegin) {
+			if(first)
+				first = false;
+			else
+				out << ", ";
+			lastWasGreater = false;
+			(*abegin)->print(out, lastWasGreater);
+		}
+		if(lastWasGreater)
+			out << ' ';
+		else
+			lastWasGreater = true;
+		out << '>';
 	}
 
 	Type* TemplateTemplateParamType::cloneType() const {

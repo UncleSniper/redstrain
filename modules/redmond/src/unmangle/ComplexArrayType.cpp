@@ -11,7 +11,7 @@ namespace unmangle {
 			: ArrayType(elementType), dimension(dimension) {}
 
 	ComplexArrayType::ComplexArrayType(const ComplexArrayType& type)
-			: ArrayType(type), dimension(type.dimension->cloneType()) {}
+			: ArrayType(type), dimension(type.dimension->cloneExpression()) {}
 
 	ComplexArrayType::~ComplexArrayType() {
 		delete dimension;

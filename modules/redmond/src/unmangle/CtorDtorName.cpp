@@ -33,7 +33,7 @@ namespace unmangle {
 			case FN_COMPLETE_DTOR:
 			case FN_BASE_DTOR:
 				if(className && !className->empty()) {
-					out << '~' << << *className;
+					out << '~' << *className;
 					lastWasGreater = false;
 				}
 				else {
@@ -50,6 +50,14 @@ namespace unmangle {
 
 	Name* CtorDtorName::cloneName() const {
 		return new CtorDtorName(*this);
+	}
+
+	bool CtorDtorName::namesTemplate() const {
+		return false;
+	}
+
+	bool CtorDtorName::namesReturnless() const {
+		return true;
 	}
 
 }}}

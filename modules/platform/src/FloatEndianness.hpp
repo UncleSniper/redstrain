@@ -65,7 +65,6 @@ namespace platform {
 
 		REDSTRAIN_PLATFORM_DEFINED_FLOAT_ENDIANNESS_CONVERTER(float, util::FloatBits)
 		REDSTRAIN_PLATFORM_DEFINED_FLOAT_ENDIANNESS_CONVERTER(double, util::DoubleBits)
-		REDSTRAIN_PLATFORM_DEFINED_FLOAT_ENDIANNESS_CONVERTER(long double, util::LongDoubleBits)
 
 	  public:
 		typedef typename Convert<0, FloatT>::Integer Bits;
