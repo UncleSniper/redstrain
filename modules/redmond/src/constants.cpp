@@ -5,9 +5,9 @@ namespace redengine {
 namespace redmond {
 
 	extern const OperatingSystem buildHostOS =
-#if defined(REDSTRAIN_ENV_OS_LINUX)
+#if defined(XAKE_HOST_OS) && defined(XAKE_OS_LINUX) && XAKE_HOST_OS == XAKE_OS_LINUX
 		OS_LINUX
-#elif defined(REDSTRAIN_ENV_OS_WINDOWS)
+#elif defined(XAKE_HOST_OS) && defined(XAKE_OS_WINDOWS) && XAKE_HOST_OS == XAKE_OS_WINDOWS
 		OS_WINDOWS
 #else /* unknown OS */
 		OS_UNKNOWN
@@ -24,8 +24,15 @@ namespace redmond {
 #endif /* build compiler switch */
 	;
 
-	//TODO: support cross-compilation
-	extern const OperatingSystem buildTargetOS = buildHostOS;
+	extern const OperatingSystem buildTargetOS =
+#if defined(REDSTRAIN_ENV_OS_LINUX)
+		OS_LINUX
+#elif defined(REDSTRAIN_ENV_OS_WINDOWS)
+		OS_WINDOWS
+#else /* unknown OS */
+		OS_UNKNOWN
+#endif /* target OS switch */
+	;
 
 	extern const Architecture buildArchitecture =
 #if defined(REDSTRAIN_ENV_ARCH_I686)
