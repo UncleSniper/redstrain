@@ -6,6 +6,7 @@ using redengine::redmond::OperatingSystem;
 using redengine::redmond::OS_LINUX;
 using redengine::redmond::ARCH_I686;
 using redengine::redmond::OS_WINDOWS;
+using redengine::redmond::ARCH_X86_64;
 
 namespace redengine {
 namespace build {
@@ -13,6 +14,11 @@ namespace build {
 	REDSTRAIN_BUILD_API bool requiresPositionIndependentCode(Architecture architecture) {
 		switch(architecture) {
 			case ARCH_I686:
+			// *sigh* GCC really doesn't know what it wants...
+			// It used to complain about -fPIC when building on AMD64,
+			// since "all code is position independent", but now it
+			// insists that we use it.
+			case ARCH_X86_64:
 				return true;
 			default:
 				return false;

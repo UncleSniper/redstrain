@@ -20,12 +20,14 @@ namespace redmond {
 
 	enum REDSTRAIN_REDMOND_API Architecture {
 		ARCH_I686,
-		ARCH_X86_64
+		ARCH_X86_64,
+		ARCH_UNKNOWN
 	};
 
 	REDSTRAIN_REDMOND_API extern const OperatingSystem buildHostOS;
 	REDSTRAIN_REDMOND_API extern const CompilerFlavor buildCompiler;
 	REDSTRAIN_REDMOND_API extern const OperatingSystem buildTargetOS;
+	REDSTRAIN_REDMOND_API extern const Architecture buildArchitecture;
 
 }}
 

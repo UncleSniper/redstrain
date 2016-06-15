@@ -27,4 +27,14 @@ namespace redmond {
 	//TODO: support cross-compilation
 	extern const OperatingSystem buildTargetOS = buildHostOS;
 
+	extern const Architecture buildArchitecture =
+#if defined(REDSTRAIN_ENV_ARCH_I686)
+		ARCH_I686
+#elif defined(REDSTRAIN_ENV_ARCH_AMD64)
+		ARCH_X86_64
+#else /* unknown architecture */
+		ARCH_UNKNOWN
+#endif /* architecture switch */
+	;
+
 }}
