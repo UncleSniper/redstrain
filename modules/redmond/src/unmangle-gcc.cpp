@@ -1,4 +1,5 @@
 #include <vector>
+#include <stdint.h>
 
 #include "unmangle-utils.hpp"
 #include "unmangle/EnumType.hpp"
@@ -27,8 +28,12 @@
 #include "unmangle/PointerToMemberType.hpp"
 #include "unmangle/TypeTemplateArgument.hpp"
 #include "unmangle/SizeOfTypeExpression.hpp"
+#include "unmangle/FloatLiteralExpression.hpp"
+#include "unmangle/ExternalNameExpression.hpp"
+#include "unmangle/DependentNameExpression.hpp"
 #include "unmangle/TemplateParamExpression.hpp"
 #include "unmangle/UnaryOperationExpression.hpp"
+#include "unmangle/IntegerLiteralExpression.hpp"
 #include "unmangle/BinaryOperationExpression.hpp"
 #include "unmangle/TemplateTemplateParamType.hpp"
 #include "unmangle/TernaryOperationExpression.hpp"
@@ -64,13 +69,18 @@ using redengine::redmond::unmangle::TemplateArgument;
 using redengine::redmond::unmangle::VariableArrayType;
 using redengine::redmond::unmangle::TemplateParamType;
 using redengine::redmond::unmangle::TemplateParamName;
+using redengine::redmond::unmangle::LiteralExpression;
 using redengine::redmond::unmangle::VendorExtendedType;
 using redengine::redmond::unmangle::GuardVariableSymbol;
 using redengine::redmond::unmangle::OverrideThunkSymbol;
 using redengine::redmond::unmangle::PointerToMemberType;
 using redengine::redmond::unmangle::TypeTemplateArgument;
 using redengine::redmond::unmangle::SizeOfTypeExpression;
+using redengine::redmond::unmangle::FloatLiteralExpression;
+using redengine::redmond::unmangle::ExternalNameExpression;
+using redengine::redmond::unmangle::DependentNameExpression;
 using redengine::redmond::unmangle::TemplateParamExpression;
+using redengine::redmond::unmangle::IntegerLiteralExpression;
 using redengine::redmond::unmangle::UnaryOperationExpression;
 using redengine::redmond::unmangle::BinaryOperationExpression;
 using redengine::redmond::unmangle::TemplateTemplateParamType;
@@ -302,6 +312,7 @@ namespace redmond {
 	BareFunctionType* _unmangleGCC3_bareFunctionType(const char*&, const char*, SBox&);
 	bool _unmangleGCC3_startsType(char);
 	Type* _unmangleGCC3_type(const char*&, const char*, SBox&);
+	UnqualifiedName* _unmangleGCC3_unqualifiedName(const char*&, const char*, SBox&);
 
 	template<typename IntegerT>
 	bool _unmangleGCC3_number(const char*& begin, const char* end, IntegerT& result) {
@@ -403,6 +414,76 @@ namespace redmond {
 				id = id * 36u + static_cast<unsigned>(*begin - '0') + 10u;
 			else
 				return false;
+		}
+	}
+
+	template<typename IntegerT>
+	IntegerLiteralExpression<IntegerT>* _unmangleGCC3_intLiteral(BuiltinType::Primitive type,
+			const char*& begin, const char* end) {
+		IntegerT value;
+		if(!_unmangleGCC3_number<IntegerT>(begin, end, value))
+			return NULL;
+		if(begin == end || *begin != 'E')
+			return NULL;
+		++begin;
+		return new IntegerLiteralExpression<IntegerT>(type, value);
+	}
+
+	LiteralExpression* _unmangleGCC3_literal(const Type& type, const char*& begin, const char* end, SBox& sbox) {
+		switch(type.getTypeType()) {
+			case Type::TT_BUILTIN:
+				{
+					const BuiltinType& bt = static_cast<const BuiltinType&>(type);
+					BuiltinType::Primitive pt = bt.getPrimitive();
+					switch(pt) {
+						case P_WCHAR_T:
+							return _unmangleGCC3_intLiteral<wchar_t>(pt, begin, end);
+						case P_BOOL:
+							return _unmangleGCC3_intLiteral<bool>(pt, begin, end);
+						case P_CHAR:
+							return _unmangleGCC3_intLiteral<char>(pt, begin, end);
+						case P_SIGNED_CHAR:
+							return _unmangleGCC3_intLiteral<signed char>(pt, begin, end);
+						case P_UNSIGNED_CHAR:
+							return _unmangleGCC3_intLiteral<unsigned char>(pt, begin, end);
+						case P_SHORT:
+							return _unmangleGCC3_intLiteral<short>(pt, begin, end);
+						case P_UNSIGNED_SHORT:
+							return _unmangleGCC3_intLiteral<unsigned short>(pt, begin, end);
+						case P_INT:
+							return _unmangleGCC3_intLiteral<int>(pt, begin, end);
+						case P_UNSIGNED_INT:
+							return _unmangleGCC3_intLiteral<unsigned>(pt, begin, end);
+						case P_LONG:
+							return _unmangleGCC3_intLiteral<long>(pt, begin, end);
+						case P_UNSIGNED_LONG:
+							return _unmangleGCC3_intLiteral<unsigned long>(pt, begin, end);
+						case P_LONG_LONG:
+							return _unmangleGCC3_intLiteral<long long>(pt, begin, end);
+						case P_UNSIGNED_LONG_LONG:
+							return _unmangleGCC3_intLiteral<unsigned long long>(pt, begin, end);
+						// Documentations differ in how floating-point literals work and
+						// I frankly don't see how they could even turn up in the mangling,
+						// so I can't try it out. So yeah, floats are not supported...
+						default:
+							return NULL;
+					}
+				}
+			case Type::TT_ENUM:
+				{
+					int value;
+					if(!_unmangleGCC3_number<int>(begin, end, value))
+						return NULL;
+					if(begin == end || *begin != 'E')
+						return NULL;
+					++begin;
+					UnmanglePtr<Type> newType(type.cloneType());
+					EnumLiteralExpression ele = new EnumLiteralExpression(newType.ptr, value);
+					newType.ptr = NULL;
+					return ele;
+				}
+			default:
+				return NULL;
 		}
 	}
 
@@ -551,6 +632,36 @@ namespace redmond {
 							type.ptr = NULL;
 							return sot;
 						}
+					case 'r':
+						{
+							++begin;
+							UnmanglePtr<Type> type(_unmangleGCC3_type(begin, end, sbox));
+							if(!type.ptr)
+								return NULL;
+							UnmanglePtr<UnqualifiedName> name(_unmangleGCC3_unqualifiedName(begin, end, sbox));
+							if(!name.ptr)
+								return NULL;
+							UnmanglePtr<DependentNameExpression> dname(new DependentNameExpression(type.ptr,
+									name.ptr));
+							type.ptr = NULL;
+							name.ptr = NULL;
+							if(begin != end && *begin == 'I') {
+								if(++begin == end)
+									return NULL;
+								UnmanglePtr<TemplateArgument> arg(NULL);
+								do {
+									arg.ptr = _unmangleGCC3_templateArg(begin, end, sbox);
+									if(!arg.ptr || begin == end)
+										return NULL;
+									dname.ptr->addArgument(*arg.ptr);
+									arg.ptr = NULL;
+								} while(*begin != 'E');
+								++begin;
+							}
+							DependentNameExpression* dn = dname.ptr;
+							dname.ptr = NULL;
+							return dn;
+						}
 					default:
 						return NULL;
 				}
@@ -697,7 +808,26 @@ namespace redmond {
 					++begin;
 					return new TemplateParamExpression(pindex);
 				}
-			//TODO: dependent names and primaries
+			case 'L':
+				{
+					if(++begin == end)
+						return NULL;
+					if(*begin == '_') {
+						if(++begin == end || *begin != 'Z' || ++begin == end)
+							return NULL;
+						UnmanglePtr<CPPSymbol> symbol(_unmangleGCC3_encoding(begin, end, sbox));
+						if(begin == end || *begin != 'E')
+							return NULL;
+						++begin;
+						ExternalNameExpression ene = new ExternalNameExpression(symbol.ptr);
+						symbol.ptr = NULL;
+						return ene;
+					}
+					UnmanglePtr<Type> type(_unmangleGCC3_type(begin, end, sbox));
+					if(!type.ptr)
+						return NULL;
+					return _unmangleGCC3_literal(*type.ptr, begin, end, sbox);
+				}
 			default:
 				return NULL;
 		}

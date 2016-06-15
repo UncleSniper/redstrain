@@ -19,6 +19,10 @@ namespace unmangle {
 		EnumType(const EnumType&);
 		virtual ~EnumType();
 
+		inline Name& getName() const {
+			return *name;
+		}
+
 		virtual TypeType getTypeType() const;
 		virtual void print(std::ostream&, bool&) const;
 		virtual Type* cloneType() const;
