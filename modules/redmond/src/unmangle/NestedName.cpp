@@ -98,16 +98,21 @@ namespace unmangle {
 		const string* lastClassName = NULL;
 		SegmentIterator sbegin(segments.begin()), send(segments.end());
 		Segment::ArgumentIterator abegin, aend;
+		bool firstSeg = true;
 		for(; sbegin != send; ++sbegin) {
+			if(firstSeg)
+				firstSeg = false;
+			else
+				out << "::";
 			const Segment& seg = **sbegin;
 			seg.getPrefix().print(out, lastWasGreater, lastClassName);
 			if(seg.hasArguments()) {
 				seg.getArguments(abegin, aend);
 				out << '<';
-				bool first = true;
+				bool firstArg = true;
 				for(; abegin != aend; ++abegin) {
-					if(first)
-						first = false;
+					if(firstArg)
+						firstArg = false;
 					else
 						out << ", ";
 					lastWasGreater = false;

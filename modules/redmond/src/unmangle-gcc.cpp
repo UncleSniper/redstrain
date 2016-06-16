@@ -339,9 +339,9 @@ namespace redmond {
 		do {
 			IntegerT digit = static_cast<IntegerT>(*begin - '0');
 			if(negative)
-				result = result * static_cast<IntegerT>(10) + digit;
-			else
 				result = result * static_cast<IntegerT>(10) - digit;
+			else
+				result = result * static_cast<IntegerT>(10) + digit;
 		} while(++begin != end && *begin >= '0' && *begin <= '9');
 		return true;
 	}
@@ -1152,7 +1152,7 @@ namespace redmond {
 					if(!_unmangleGCC3_number<unsigned>(begin, end, length))
 						return NULL;
 					const char* newBegin = begin + length;
-					if(!length || newBegin >= end)
+					if(!length || newBegin > end)
 						return NULL;
 					string segment(begin, static_cast<string::size_type>(length));
 					begin = newBegin;

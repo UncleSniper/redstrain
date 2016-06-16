@@ -39,7 +39,11 @@ else
 	export LD_LIBRARY_PATH="\$libdirs:\$LD_LIBRARY_PATH"
 fi
 export REDSTRAIN_PRINT_STACK_TRACES=1
-$d/$txname "\$@"
+if [ -n "\$RSDEBUG" ]; then
+	gdb $d/$txname
+else
+	$d/$txname "\$@"
+fi
 EOF
 	chmod 755 "$scrname"
 	fi
