@@ -2241,6 +2241,8 @@ namespace redmond {
 			return data;
 		}
 		UnmanglePtr<BareFunctionType> type(_unmangleGCC3_bareFunctionType(begin, end, sbox));
+		if(!type.ptr)
+			return NULL;
 		FunctionSymbol* function = new FunctionSymbol(name.ptr, type.ptr);
 		name.ptr = NULL;
 		type.ptr = NULL;

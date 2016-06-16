@@ -71,6 +71,7 @@ int run(const string& progname, const Options& options) {
 			pos = fstart + flen;
 		}
 		fout.println(line.substr(pos));
+		line.clear();
 	}
 	return 0;
 }
