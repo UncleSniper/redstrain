@@ -1,6 +1,8 @@
 #ifndef REDSTRAIN_MOD_REDMOND_UNMANGLE_UTILS_HPP
 #define REDSTRAIN_MOD_REDMOND_UNMANGLE_UTILS_HPP
 
+#include "api.hpp"
+
 namespace redengine {
 namespace redmond {
 
@@ -34,6 +36,8 @@ namespace redmond {
 		}
 
 	};
+
+	REDSTRAIN_REDMOND_API bool shouldDebugUnmanglers();
 
 }}
 

@@ -1,4 +1,6 @@
 #include <vector>
+#include <sstream>
+#include <iostream>
 #include <stdint.h>
 
 #include "unmangle-utils.hpp"
@@ -43,8 +45,11 @@
 #include "unmangle/VendorExtendedQualifiedType.hpp"
 #include "unmangle/CovariantOverrideThunkSymbol.hpp"
 
+using std::cerr;
+using std::endl;
 using std::string;
 using std::vector;
+using std::stringstream;
 using redengine::redmond::unmangle::Name;
 using redengine::redmond::unmangle::Type;
 using redengine::redmond::unmangle::EnumType;
@@ -313,6 +318,12 @@ namespace redmond {
 
 	typedef vector<GCC3UnmangleSubstitution> SBox;
 
+	void _unmangleGCC3_fail(const char* function, const string& message, const char* begin, const char* end) {
+		if(shouldDebugUnmanglers())
+			cerr << "***DEBUG: Unmangling failed in " << function << "(): " << message << "; remaining input: "
+					<< string(begin, static_cast<string::size_type>(end - begin)) << endl;
+	}
+
 	CPPSymbol* _unmangleGCC3_encoding(const char*&, const char*, SBox&);
 	Name* _unmangleGCC3_name(const char*&, const char*, SBox&);
 	BareFunctionType* _unmangleGCC3_bareFunctionType(const char*&, const char*, SBox&);
@@ -323,18 +334,24 @@ namespace redmond {
 
 	template<typename IntegerT>
 	bool _unmangleGCC3_number(const char*& begin, const char* end, IntegerT& result) {
-		if(begin == end)
+		if(begin == end) {
+			_unmangleGCC3_fail("_unmangleGCC3_number", "Expected number", begin, end);
 			return false;
+		}
 		bool negative;
 		if(*begin == 'n') {
 			negative = true;
-			if(++begin == end)
+			if(++begin == end) {
+				_unmangleGCC3_fail("_unmangleGCC3_number", "Expected digits after sign", begin, end);
 				return false;
+			}
 		}
 		else
 			negative = false;
-		if(*begin < '0' || *begin > '9')
+		if(*begin < '0' || *begin > '9') {
+			_unmangleGCC3_fail("_unmangleGCC3_number", "Expected digits", begin, end);
 			return false;
+		}
 		result = static_cast<IntegerT>(0);
 		do {
 			IntegerT digit = static_cast<IntegerT>(*begin - '0');
@@ -347,22 +364,28 @@ namespace redmond {
 	}
 
 	bool _unmangleGCC3_sourceName(const char*& begin, const char* end, string& result) {
-		if(begin == end || *begin < '0' || *begin > '9')
+		if(begin == end || *begin < '0' || *begin > '9') {
+			_unmangleGCC3_fail("_unmangleGCC3_sourceName", "Expected length", begin, end);
 			return false;
+		}
 		unsigned length;
 		if(!_unmangleGCC3_number<unsigned>(begin, end, length))
 			return false;
 		const char* newBegin = begin + length;
-		if(newBegin >= end)
+		if(newBegin > end) {
+			_unmangleGCC3_fail("_unmangleGCC3_sourceName", "Length exceeds name", begin, end);
 			return false;
+		}
 		result.assign(begin, static_cast<string::size_type>(length));
 		begin = newBegin;
 		return true;
 	}
 
 	bool _unmangleGCC3_substitution(const char*& begin, const char* end, GCC3UnmangleSubstRef& ref, unsigned& id) {
-		if(begin == end)
+		if(begin == end) {
+			_unmangleGCC3_fail("_unmangleGCC3_substitution", "Expected specifier after 'S'", begin, end);
 			return false;
+		}
 		switch(*begin) {
 			case '_':
 				++begin;
@@ -404,12 +427,16 @@ namespace redmond {
 			id = static_cast<unsigned>(*begin - '0');
 		else if(*begin >= 'A' && *begin <= 'Z')
 			id = static_cast<unsigned>(*begin - '0') + 10u;
-		else
+		else {
+			_unmangleGCC3_fail("_unmangleGCC3_substitution", "Expected valid specifier after 'S'", begin, end);
 			return false;
+		}
 		ref = GCC3UMSR_ID;
 		for(;;) {
-			if(++begin == end)
+			if(++begin == end) {
+				_unmangleGCC3_fail("_unmangleGCC3_substitution", "Missing '_' terminator", begin, end);
 				return false;
+			}
 			if(*begin == '_') {
 				++begin;
 				++id;
@@ -418,9 +445,11 @@ namespace redmond {
 			if(*begin >= '0' && *begin <= '9')
 				id = id * 36u + static_cast<unsigned>(*begin - '0');
 			else if(*begin >= 'A' && *begin <= 'Z')
-				id = id * 36u + static_cast<unsigned>(*begin - '0') + 10u;
-			else
+				id = id * 36u + static_cast<unsigned>(*begin - 'A') + 10u;
+			else {
+				_unmangleGCC3_fail("_unmangleGCC3_substitution", "Invalid base36 digit", begin, end);
 				return false;
+			}
 		}
 	}
 
@@ -430,8 +459,10 @@ namespace redmond {
 		IntegerT value;
 		if(!_unmangleGCC3_number<IntegerT>(begin, end, value))
 			return NULL;
-		if(begin == end || *begin != 'E')
+		if(begin == end || *begin != 'E') {
+			_unmangleGCC3_fail("_unmangleGCC3_intLiteral", "Missing 'E' terminator", begin, end);
 			return NULL;
+		}
 		++begin;
 		return new IntegerLiteralExpression<IntegerT>(type, value);
 	}
@@ -473,6 +504,7 @@ namespace redmond {
 						// I frankly don't see how they could even turn up in the mangling,
 						// so I can't try it out. So yeah, floats are not supported...
 						default:
+							_unmangleGCC3_fail("_unmangleGCC3_literal", "Unsupported builtin type", begin, end);
 							return NULL;
 					}
 				}
@@ -482,8 +514,10 @@ namespace redmond {
 					int value;
 					if(!_unmangleGCC3_number<int>(begin, end, value))
 						return NULL;
-					if(begin == end || *begin != 'E')
+					if(begin == end || *begin != 'E') {
+						_unmangleGCC3_fail("_unmangleGCC3_literal", "Missing 'E' terminator", begin, end);
 						return NULL;
+					}
 					++begin;
 					UnmanglePtr<Name> typeName(et.getName().cloneName());
 					EnumLiteralExpression* ele = new EnumLiteralExpression(typeName.ptr, value);
@@ -491,6 +525,7 @@ namespace redmond {
 					return ele;
 				}
 			default:
+				_unmangleGCC3_fail("_unmangleGCC3_literal", "Unsupported type", begin, end);
 				return NULL;
 		}
 	}
@@ -502,8 +537,11 @@ namespace redmond {
 		BinaryOperationExpression::Operator op2;
 		switch(*begin) {
 			case 'p':
-				if(++begin == end)
+				if(++begin == end) {
+					_unmangleGCC3_fail("_unmangleGCC3_expression",
+							"Missing second letter after operator name initiator 'p'", begin, end);
 					return NULL;
+				}
 				switch(*begin) {
 					case 's':
 						op1 = UnaryOperationExpression::OP_POSITIVE;
@@ -540,11 +578,16 @@ namespace redmond {
 						op2 = BinaryOperationExpression::OP_PLUS;
 						goto makeBinary;
 					default:
+						_unmangleGCC3_fail("_unmangleGCC3_expression",
+								"Unrecognized second letter after operator name initiator 'p'", begin, end);
 						return NULL;
 				}
 			case 'n':
-				if(++begin == end)
+				if(++begin == end) {
+					_unmangleGCC3_fail("_unmangleGCC3_expression",
+							"Missing second letter after operator name initiator 'n'", begin, end);
 					return NULL;
+				}
 				switch(*begin) {
 					case 'g':
 						op1 = UnaryOperationExpression::OP_NEGATIVE;
@@ -556,11 +599,16 @@ namespace redmond {
 						op2 = BinaryOperationExpression::OP_UNEQUAL;
 						goto makeBinary;
 					default:
+						_unmangleGCC3_fail("_unmangleGCC3_expression",
+								"Unrecognized second letter after operator name initiator 'n'", begin, end);
 						return NULL;
 				}
 			case 'a':
-				if(++begin == end)
+				if(++begin == end) {
+					_unmangleGCC3_fail("_unmangleGCC3_expression",
+							"Missing second letter after operator name initiator 'a'", begin, end);
 					return NULL;
+				}
 				switch(*begin) {
 					case 'd':
 						op1 = UnaryOperationExpression::OP_ADDRESS_OF;
@@ -578,11 +626,16 @@ namespace redmond {
 						op2 = BinaryOperationExpression::OP_LOGICAL_AND;
 						goto makeBinary;
 					default:
+						_unmangleGCC3_fail("_unmangleGCC3_expression",
+								"Unrecognized second letter after operator name initiator 'a'", begin, end);
 						return NULL;
 				}
 			case 'd':
-				if(++begin == end)
+				if(++begin == end) {
+					_unmangleGCC3_fail("_unmangleGCC3_expression",
+							"Missing second letter after operator name initiator 'd'", begin, end);
 					return NULL;
+				}
 				switch(*begin) {
 					case 'e':
 						op1 = UnaryOperationExpression::OP_DEREFERENCE;
@@ -594,11 +647,16 @@ namespace redmond {
 						op2 = BinaryOperationExpression::OP_DIVIDE_ASSIGN;
 						goto makeBinary;
 					default:
+						_unmangleGCC3_fail("_unmangleGCC3_expression",
+								"Unrecognized second letter after operator name initiator 'd'", begin, end);
 						return NULL;
 				}
 			case 'c':
-				if(++begin == end)
+				if(++begin == end) {
+					_unmangleGCC3_fail("_unmangleGCC3_expression",
+							"Missing second letter after operator name initiator 'c'", begin, end);
 					return NULL;
+				}
 				switch(*begin) {
 					case 'o':
 						op1 = UnaryOperationExpression::OP_COMPLEMENT;
@@ -621,11 +679,16 @@ namespace redmond {
 							return cast;
 						}
 					default:
+						_unmangleGCC3_fail("_unmangleGCC3_expression",
+								"Unrecognized second letter after operator name initiator 'c'", begin, end);
 						return NULL;
 				}
 			case 's':
-				if(++begin == end)
+				if(++begin == end) {
+					_unmangleGCC3_fail("_unmangleGCC3_expression",
+							"Missing second letter after operator name initiator 's'", begin, end);
 					return NULL;
+				}
 				switch(*begin) {
 					case 'z':
 						op1 = UnaryOperationExpression::OP_SIZEOF_EXPRESSION;
@@ -654,13 +717,21 @@ namespace redmond {
 							type.ptr = NULL;
 							name.ptr = NULL;
 							if(begin != end && *begin == 'I') {
-								if(++begin == end)
+								if(++begin == end) {
+									_unmangleGCC3_fail("_unmangleGCC3_expression",
+											"Missing actual arguments after 'sr...I'", begin, end);
 									return NULL;
+								}
 								UnmanglePtr<TemplateArgument> arg(NULL);
 								do {
 									arg.ptr = _unmangleGCC3_templateArg(begin, end, sbox);
-									if(!arg.ptr || begin == end)
+									if(!arg.ptr)
 										return NULL;
+									if(begin == end) {
+										_unmangleGCC3_fail("_unmangleGCC3_expression",
+												"Missing 'E' terminator after 'sr...I...'", begin, end);
+										return NULL;
+									}
 									dname.ptr->addArgument(*arg.ptr);
 									arg.ptr = NULL;
 								} while(*begin != 'E');
@@ -671,11 +742,16 @@ namespace redmond {
 							return dn;
 						}
 					default:
+						_unmangleGCC3_fail("_unmangleGCC3_expression",
+								"Unrecognized second letter after operator name initiator 's'", begin, end);
 						return NULL;
 				}
 			case 'm':
-				if(++begin == end)
+				if(++begin == end) {
+					_unmangleGCC3_fail("_unmangleGCC3_expression",
+							"Missing second letter after operator name initiator 'm'", begin, end);
 					return NULL;
+				}
 				switch(*begin) {
 					case 'm':
 						op1 = UnaryOperationExpression::OP_DECREMENT;
@@ -693,11 +769,16 @@ namespace redmond {
 						op2 = BinaryOperationExpression::OP_MULTIPLY_ASSIGN;
 						goto makeBinary;
 					default:
+						_unmangleGCC3_fail("_unmangleGCC3_expression",
+								"Unrecognized second letter after operator name initiator 'm'", begin, end);
 						return NULL;
 				}
 			case 'r':
-				if(++begin == end)
+				if(++begin == end) {
+					_unmangleGCC3_fail("_unmangleGCC3_expression",
+							"Missing second letter after operator name initiator 'r'", begin, end);
 					return NULL;
+				}
 				switch(*begin) {
 					case 'm':
 						op2 = BinaryOperationExpression::OP_REMAINDER;
@@ -712,11 +793,16 @@ namespace redmond {
 						op2 = BinaryOperationExpression::OP_RIGHT_SHIFT_ASSIGN;
 						goto makeBinary;
 					default:
+						_unmangleGCC3_fail("_unmangleGCC3_expression",
+								"Unrecognized second letter after operator name initiator 'r'", begin, end);
 						return NULL;
 				}
 			case 'o':
-				if(++begin == end)
+				if(++begin == end) {
+					_unmangleGCC3_fail("_unmangleGCC3_expression",
+							"Missing second letter after operator name initiator 'o'", begin, end);
 					return NULL;
+				}
 				switch(*begin) {
 					case 'r':
 						op2 = BinaryOperationExpression::OP_OR;
@@ -728,11 +814,16 @@ namespace redmond {
 						op2 = BinaryOperationExpression::OP_LOGICAL_OR;
 						goto makeBinary;
 					default:
+						_unmangleGCC3_fail("_unmangleGCC3_expression",
+								"Unrecognized second letter after operator name initiator 'o'", begin, end);
 						return NULL;
 				}
 			case 'e':
-				if(++begin == end)
+				if(++begin == end) {
+					_unmangleGCC3_fail("_unmangleGCC3_expression",
+							"Missing second letter after operator name initiator 'e'", begin, end);
 					return NULL;
+				}
 				switch(*begin) {
 					case 'o':
 						op2 = BinaryOperationExpression::OP_XOR;
@@ -744,11 +835,16 @@ namespace redmond {
 						op2 = BinaryOperationExpression::OP_EQUAL;
 						goto makeBinary;
 					default:
+						_unmangleGCC3_fail("_unmangleGCC3_expression",
+								"Unrecognized second letter after operator name initiator 'e'", begin, end);
 						return NULL;
 				}
 			case 'l':
-				if(++begin == end)
+				if(++begin == end) {
+					_unmangleGCC3_fail("_unmangleGCC3_expression",
+							"Missing second letter after operator name initiator 'l'", begin, end);
 					return NULL;
+				}
 				switch(*begin) {
 					case 's':
 						op2 = BinaryOperationExpression::OP_LEFT_SHIFT;
@@ -763,11 +859,16 @@ namespace redmond {
 						op2 = BinaryOperationExpression::OP_LESS_EQUAL;
 						goto makeBinary;
 					default:
+						_unmangleGCC3_fail("_unmangleGCC3_expression",
+								"Unrecognized second letter after operator name initiator 'l'", begin, end);
 						return NULL;
 				}
 			case 'g':
-				if(++begin == end)
+				if(++begin == end) {
+					_unmangleGCC3_fail("_unmangleGCC3_expression",
+							"Missing second letter after operator name initiator 'g'", begin, end);
 					return NULL;
+				}
 				switch(*begin) {
 					case 't':
 						op2 = BinaryOperationExpression::OP_GREATER;
@@ -776,11 +877,21 @@ namespace redmond {
 						op2 = BinaryOperationExpression::OP_GREATER_EQUAL;
 						goto makeBinary;
 					default:
+						_unmangleGCC3_fail("_unmangleGCC3_expression",
+								"Unrecognized second letter after operator name initiator 'g'", begin, end);
 						return NULL;
 				}
 			case 'q':
-				if(++begin == end || *begin != 'u')
+				if(++begin == end) {
+					_unmangleGCC3_fail("_unmangleGCC3_expression",
+							"Missing second letter after operator name initiator 'q'", begin, end);
 					return NULL;
+				}
+				if(*begin != 'u') {
+					_unmangleGCC3_fail("_unmangleGCC3_expression",
+							"Unrecognized second letter after operator name initiator 'q'", begin, end);
+					return NULL;
+				}
 				{
 					++begin;
 					UnmanglePtr<Expression> condition(_unmangleGCC3_expression(begin, end, sbox));
@@ -799,8 +910,11 @@ namespace redmond {
 				}
 			case 'T':
 				{
-					if(++begin == end)
+					if(++begin == end) {
+						_unmangleGCC3_fail("_unmangleGCC3_expression",
+								"Missing '_' terminator after 'T'", begin, end);
 						return NULL;
+					}
 					unsigned pindex;
 					if(*begin == '_')
 						pindex = 0u;
@@ -808,24 +922,37 @@ namespace redmond {
 						if(!_unmangleGCC3_number<unsigned>(begin, end, pindex))
 							return NULL;
 						++pindex;
-						if(begin == end || *begin != '_')
+						if(begin == end || *begin != '_') {
+							_unmangleGCC3_fail("_unmangleGCC3_expression",
+									"Missing '_' terminator after 'T...'", begin, end);
 							return NULL;
+						}
 					}
-					else
+					else {
+						_unmangleGCC3_fail("_unmangleGCC3_expression", "Invalid input after 'T'", begin, end);
 						return NULL;
+					}
 					++begin;
 					return new TemplateParamExpression(pindex);
 				}
 			case 'L':
 				{
-					if(++begin == end)
+					if(++begin == end) {
+						_unmangleGCC3_fail("_unmangleGCC3_expression", "Missing primary after 'L'", begin, end);
 						return NULL;
+					}
 					if(*begin == '_') {
-						if(++begin == end || *begin != 'Z' || ++begin == end)
+						if(++begin == end || *begin != 'Z' || ++begin == end) {
+							_unmangleGCC3_fail("_unmangleGCC3_expression",
+									"Invalid start of mangled name after 'L'", begin, end);
 							return NULL;
+						}
 						UnmanglePtr<CPPSymbol> symbol(_unmangleGCC3_encoding(begin, end, sbox));
-						if(begin == end || *begin != 'E')
+						if(begin == end || *begin != 'E') {
+							_unmangleGCC3_fail("_unmangleGCC3_expression",
+									"Missing 'E' terminator after 'L_Z...'", begin, end);
 							return NULL;
+						}
 						++begin;
 						ExternalNameExpression* ene = new ExternalNameExpression(symbol.ptr);
 						symbol.ptr = NULL;
@@ -837,6 +964,7 @@ namespace redmond {
 					return _unmangleGCC3_literal(*type.ptr, begin, end);
 				}
 			default:
+				_unmangleGCC3_fail("_unmangleGCC3_expression", "Unrecognized start of expression", begin, end);
 				return NULL;
 		}
 	}
@@ -849,8 +977,11 @@ namespace redmond {
 					UnmanglePtr<Expression> expr(_unmangleGCC3_expression(begin, end, sbox));
 					if(!expr.ptr)
 						return NULL;
-					if(begin == end || *begin != 'E')
+					if(begin == end || *begin != 'E') {
+						_unmangleGCC3_fail("_unmangleGCC3_templateArg",
+								"Missing 'E' terminator after 'X...'", begin, end);
 						return NULL;
+					}
 					++begin;
 					ExpressionTemplateArgument* arg = new ExpressionTemplateArgument(expr.ptr);
 					expr.ptr = NULL;
@@ -866,8 +997,10 @@ namespace redmond {
 					return arg;
 				}
 			default:
-				if(!_unmangleGCC3_startsType(*begin))
+				if(!_unmangleGCC3_startsType(*begin)) {
+					_unmangleGCC3_fail("_unmangleGCC3_templateArg", "Unrecognized start of argument", begin, end);
 					return NULL;
+				}
 				{
 					UnmanglePtr<Type> type(_unmangleGCC3_type(begin, end, sbox));
 					if(!type.ptr)
@@ -884,8 +1017,11 @@ namespace redmond {
 			return NULL;
 		switch(*begin) {
 			case 'n':   // operator-name
-				if(++begin == end)
+				if(++begin == end) {
+					_unmangleGCC3_fail("_unmangleGCC3_unqualifiedName",
+							"Missing second letter after operator name initiator 'n'", begin, end);
 					return NULL;
+				}
 				switch(*begin) {
 					case 'w':
 						++begin;
@@ -903,11 +1039,16 @@ namespace redmond {
 						++begin;
 						return new OperatorName(OperatorName::OP_NOT);
 					default:
+						_unmangleGCC3_fail("_unmangleGCC3_unqualifiedName",
+								"Unrecognized second letter after operator name initiator 'n'", begin, end);
 						return NULL;
 				}
 			case 'd':   // operator-name
-				if(++begin == end)
+				if(++begin == end) {
+					_unmangleGCC3_fail("_unmangleGCC3_unqualifiedName",
+							"Missing second letter after operator name initiator 'd'", begin, end);
 					return NULL;
+				}
 				switch(*begin) {
 					case 'l':
 						++begin;
@@ -925,11 +1066,16 @@ namespace redmond {
 						++begin;
 						return new OperatorName(OperatorName::OP_DIVIDE_ASSIGN);
 					default:
+						_unmangleGCC3_fail("_unmangleGCC3_unqualifiedName",
+								"Unrecognized second letter after operator name initiator 'd'", begin, end);
 						return NULL;
 				}
 			case 'p':   // operator-name
-				if(++begin == end)
+				if(++begin == end) {
+					_unmangleGCC3_fail("_unmangleGCC3_unqualifiedName",
+							"Missing second letter after operator name initiator 'p'", begin, end);
 					return NULL;
+				}
 				switch(*begin) {
 					case 's':
 						++begin;
@@ -950,11 +1096,16 @@ namespace redmond {
 						++begin;
 						return new OperatorName(OperatorName::OP_POINTER);
 					default:
+						_unmangleGCC3_fail("_unmangleGCC3_unqualifiedName",
+								"Unrecognized second letter after operator name initiator 'p'", begin, end);
 						return NULL;
 				}
 			case 'a':   // operator-name
-				if(++begin == end)
+				if(++begin == end) {
+					_unmangleGCC3_fail("_unmangleGCC3_unqualifiedName",
+							"Missing second letter after operator name initiator 'a'", begin, end);
 					return NULL;
+				}
 				switch(*begin) {
 					case 'd':
 						++begin;
@@ -972,11 +1123,16 @@ namespace redmond {
 						++begin;
 						return new OperatorName(OperatorName::OP_LOGICAL_AND);
 					default:
+						_unmangleGCC3_fail("_unmangleGCC3_unqualifiedName",
+								"Unrecognized second letter after operator name initiator 'a'", begin, end);
 						return NULL;
 				}
 			case 'c':   // operator-name
-				if(++begin == end)
+				if(++begin == end) {
+					_unmangleGCC3_fail("_unmangleGCC3_unqualifiedName",
+							"Missing second letter after operator name initiator 'c'", begin, end);
 					return NULL;
+				}
 				switch(*begin) {
 					case 'o':
 						++begin;
@@ -998,11 +1154,16 @@ namespace redmond {
 							return con;
 						}
 					default:
+						_unmangleGCC3_fail("_unmangleGCC3_unqualifiedName",
+								"Unrecognized second letter after operator name initiator 'c'", begin, end);
 						return NULL;
 				}
 			case 'm':   // operator-name
-				if(++begin == end)
+				if(++begin == end) {
+					_unmangleGCC3_fail("_unmangleGCC3_unqualifiedName",
+							"Missing second letter after operator name initiator 'm'", begin, end);
 					return NULL;
+				}
 				switch(*begin) {
 					case 'i':
 						++begin;
@@ -1020,11 +1181,16 @@ namespace redmond {
 						++begin;
 						return new OperatorName(OperatorName::OP_DECREMENT);
 					default:
+						_unmangleGCC3_fail("_unmangleGCC3_unqualifiedName",
+								"Unrecognized second letter after operator name initiator 'm'", begin, end);
 						return NULL;
 				}
 			case 'r':   // operator-name
-				if(++begin == end)
+				if(++begin == end) {
+					_unmangleGCC3_fail("_unmangleGCC3_unqualifiedName",
+							"Missing second letter after operator name initiator 'r'", begin, end);
 					return NULL;
+				}
 				switch(*begin) {
 					case 'm':
 						++begin;
@@ -1039,11 +1205,16 @@ namespace redmond {
 						++begin;
 						return new OperatorName(OperatorName::OP_RIGHT_SHIFT_ASSIGN);
 					default:
+						_unmangleGCC3_fail("_unmangleGCC3_unqualifiedName",
+								"Unrecognized second letter after operator name initiator 'r'", begin, end);
 						return NULL;
 				}
 			case 'o':   // operator-name
-				if(++begin == end)
+				if(++begin == end) {
+					_unmangleGCC3_fail("_unmangleGCC3_unqualifiedName",
+							"Missing second letter after operator name initiator 'o'", begin, end);
 					return NULL;
+				}
 				switch(*begin) {
 					case 'r':
 						++begin;
@@ -1055,11 +1226,16 @@ namespace redmond {
 						++begin;
 						return new OperatorName(OperatorName::OP_LOGICAL_OR);
 					default:
+						_unmangleGCC3_fail("_unmangleGCC3_unqualifiedName",
+								"Unrecognized second letter after operator name initiator 'o'", begin, end);
 						return NULL;
 				}
 			case 'e':   // operator-name
-				if(++begin == end)
+				if(++begin == end) {
+					_unmangleGCC3_fail("_unmangleGCC3_unqualifiedName",
+							"Missing second letter after operator name initiator 'e'", begin, end);
 					return NULL;
+				}
 				switch(*begin) {
 					case 'o':
 						++begin;
@@ -1071,11 +1247,16 @@ namespace redmond {
 						++begin;
 						return new OperatorName(OperatorName::OP_EQUAL);
 					default:
+						_unmangleGCC3_fail("_unmangleGCC3_unqualifiedName",
+								"Unrecognized second letter after operator name initiator 'e'", begin, end);
 						return NULL;
 				}
 			case 'l':   // operator-name
-				if(++begin == end)
+				if(++begin == end) {
+					_unmangleGCC3_fail("_unmangleGCC3_unqualifiedName",
+							"Missing second letter after operator name initiator 'l'", begin, end);
 					return NULL;
+				}
 				switch(*begin) {
 					case 's':
 						++begin;
@@ -1090,11 +1271,16 @@ namespace redmond {
 						++begin;
 						return new OperatorName(OperatorName::OP_LESS_EQUAL);
 					default:
+						_unmangleGCC3_fail("_unmangleGCC3_unqualifiedName",
+								"Unrecognized second letter after operator name initiator 'l'", begin, end);
 						return NULL;
 				}
 			case 'g':   // operator-name
-				if(++begin == end)
+				if(++begin == end) {
+					_unmangleGCC3_fail("_unmangleGCC3_unqualifiedName",
+							"Missing second letter after operator name initiator 'g'", begin, end);
 					return NULL;
+				}
 				switch(*begin) {
 					case 't':
 						++begin;
@@ -1103,18 +1289,29 @@ namespace redmond {
 						++begin;
 						return new OperatorName(OperatorName::OP_GREATER_EQUAL);
 					default:
+						_unmangleGCC3_fail("_unmangleGCC3_unqualifiedName",
+								"Unrecognized second letter after operator name initiator 'g'", begin, end);
 						return NULL;
 				}
 			case 'i':   // operator-name
-				if(++begin == end)
+				if(++begin == end) {
+					_unmangleGCC3_fail("_unmangleGCC3_unqualifiedName",
+							"Missing second letter after operator name initiator 'i'", begin, end);
 					return NULL;
-				if(*begin != 'x')
+				}
+				if(*begin != 'x') {
+					_unmangleGCC3_fail("_unmangleGCC3_unqualifiedName",
+							"Unrecognized second letter after operator name initiator 'i'", begin, end);
 					return NULL;
+				}
 				++begin;
 				return new OperatorName(OperatorName::OP_INDEX);
 			case 'C':   // ctor-dtor-name
-				if(++begin == end)
+				if(++begin == end) {
+					_unmangleGCC3_fail("_unmangleGCC3_unqualifiedName",
+							"Missing second character after ctor/dtor name initiator 'C'", begin, end);
 					return NULL;
+				}
 				switch(*begin) {
 					case '1':
 						++begin;
@@ -1126,11 +1323,16 @@ namespace redmond {
 						++begin;
 						return new CtorDtorName(CtorDtorName::FN_ALLOCATING_CTOR);
 					default:
+						_unmangleGCC3_fail("_unmangleGCC3_unqualifiedName",
+								"Unrecognized second character after ctor/dtor name initiator 'C'", begin, end);
 						return NULL;
 				}
 			case 'D':   // ctor-dtor-name
-				if(++begin == end)
+				if(++begin == end) {
+					_unmangleGCC3_fail("_unmangleGCC3_unqualifiedName",
+							"Missing second character after ctor/dtor name initiator 'D'", begin, end);
 					return NULL;
+				}
 				switch(*begin) {
 					case '0':
 						++begin;
@@ -1142,18 +1344,26 @@ namespace redmond {
 						++begin;
 						return new CtorDtorName(CtorDtorName::FN_BASE_DTOR);
 					default:
+						_unmangleGCC3_fail("_unmangleGCC3_unqualifiedName",
+								"Unrecognized second character after ctor/dtor name initiator 'D'", begin, end);
 						return NULL;
 				}
 			default:
 				{
-					if(*begin < '0' || *begin > '9')
+					if(*begin < '0' || *begin > '9') {
+						_unmangleGCC3_fail("_unmangleGCC3_unqualifiedName",
+								"Unrecognized start of unqualified name", begin, end);
 						return NULL;
+					}
 					unsigned length;
 					if(!_unmangleGCC3_number<unsigned>(begin, end, length))
 						return NULL;
 					const char* newBegin = begin + length;
-					if(!length || newBegin > end)
+					if(!length || newBegin > end) {
+						_unmangleGCC3_fail("_unmangleGCC3_unqualifiedName",
+								"Invalid length of source name", begin, end);
 						return NULL;
+					}
 					string segment(begin, static_cast<string::size_type>(length));
 					begin = newBegin;
 					return new SourceName(segment);
@@ -1194,8 +1404,11 @@ namespace redmond {
 					// unqualified-name
 					goto unqualName;
 				default:
-					if(*begin < '0' || *begin > '9')
+					if(*begin < '0' || *begin > '9') {
+						_unmangleGCC3_fail("_unmangleGCC3_nestedNameImpl",
+								"Invalid start of nested name segment", begin, end);
 						return NULL;
+					}
 				  unqualName:
 					{
 						if(writeSBox && !frontIsSubstitution && nested.ptr->hasSegments()) {
@@ -1223,11 +1436,17 @@ namespace redmond {
 					break;
 				case 'T':
 					// template-param
-					if(nested.ptr->hasSegments())
+					if(nested.ptr->hasSegments()) {
+						_unmangleGCC3_fail("_unmangleGCC3_nestedNameImpl",
+								"A 'T' segment can only occur at the start of a nested name", begin, end);
 						return NULL;
+					}
 					{
-						if(++begin == end)
+						if(++begin == end) {
+							_unmangleGCC3_fail("_unmangleGCC3_nestedNameImpl",
+									"Missing '_' terminator after 'T'", begin, end);
 							return NULL;
+						}
 						unsigned pindex;
 						if(*begin == '_')
 							pindex = 0u;
@@ -1235,11 +1454,16 @@ namespace redmond {
 							if(!_unmangleGCC3_number<unsigned>(begin, end, pindex))
 								return NULL;
 							++pindex;
-							if(begin == end || *begin != '_')
+							if(begin == end || *begin != '_') {
+								_unmangleGCC3_fail("_unmangleGCC3_nestedNameImpl",
+										"Missing '_' terminator after 'T...'", begin, end);
 								return NULL;
+							}
 						}
-						else
+						else {
+							_unmangleGCC3_fail("_unmangleGCC3_nestedNameImpl", "Invalid input after 'T'", begin, end);
 							return NULL;
+						}
 						++begin;
 						UnmanglePtr<TemplateParamName> tpname(new TemplateParamName(pindex));
 						UnmanglePtr<NestedName::Segment> segment(new NestedName::Segment(tpname.ptr));
@@ -1252,18 +1476,29 @@ namespace redmond {
 					break;
 				case 'I':
 					// template-args
-					if(!argumentSink)
+					if(!argumentSink) {
+						_unmangleGCC3_fail("_unmangleGCC3_nestedNameImpl",
+								"An 'I' segment can only occur after a proper name", begin, end);
 						return NULL;
+					}
 					{
 						if(writeSBox && !frontIsSubstitution)
 							sbox.push_back(GCC3UnmangleSubstitution(GCC3UMST_NESTED_TEMPLATE_PREFIX, begin, end));
-						if(++begin == end)
+						if(++begin == end) {
+							_unmangleGCC3_fail("_unmangleGCC3_nestedNameImpl",
+									"Missing actual arguments after 'I'", begin, end);
 							return NULL;
+						}
 						UnmanglePtr<TemplateArgument> arg(NULL);
 						do {
 							arg.ptr = _unmangleGCC3_templateArg(begin, end, sbox);
-							if(!arg.ptr || begin == end)
+							if(!arg.ptr)
 								return NULL;
+							if(begin == end) {
+								_unmangleGCC3_fail("_unmangleGCC3_nestedNameImpl",
+										"Missing 'E' terminator after 'I...'", begin, end);
+								return NULL;
+							}
 							argumentSink->addArgument(*arg.ptr);
 							arg.ptr = NULL;
 						} while(*begin != 'E');
@@ -1272,8 +1507,11 @@ namespace redmond {
 					}
 					break;
 				case 'S':
-					if(nested.ptr->hasSegments())
+					if(nested.ptr->hasSegments()) {
+						_unmangleGCC3_fail("_unmangleGCC3_nestedNameImpl",
+								"A 'S' segment can only occur at the start of a nested name", begin, end);
 						return NULL;
+					}
 					{
 						GCC3UnmangleSubstRef ref;
 						unsigned sid;
@@ -1282,8 +1520,13 @@ namespace redmond {
 						switch(ref) {
 							case GCC3UMSR_ID:
 								{
-									if(sid >= static_cast<unsigned>(sbox.size()))
+									if(sid >= static_cast<unsigned>(sbox.size())) {
+										stringstream ss;
+										ss << sid;
+										_unmangleGCC3_fail("_unmangleGCC3_nestedNameImpl",
+												"Substitution index out of bounds: " + ss.str(), begin, end);
 										return NULL;
+									}
 									const GCC3UnmangleSubstitution& substitution = sbox[sid];
 									switch(substitution.type) {
 										case GCC3UMST_UNSCOPED_TEMPLATE_NAME:
@@ -1291,6 +1534,12 @@ namespace redmond {
 										case GCC3UMST_NESTED_TEMPLATE_PREFIX:
 											break;
 										default:
+											{
+												stringstream ss;
+												ss << static_cast<int>(substitution.type);
+												_unmangleGCC3_fail("_unmangleGCC3_nestedNameImpl",
+														"Rejected substitution type " + ss.str(), begin, end);
+											}
 											return NULL;
 									}
 									delete nested.ptr;
@@ -1298,8 +1547,14 @@ namespace redmond {
 									const char* sbegin = substitution.begin;
 									nested.ptr = _unmangleGCC3_nestedNameImpl(sbegin, substitution.end, sbox,
 											false, qualifiers, argumentSink);
-									if(!nested.ptr || sbegin != substitution.end)
+									if(!nested.ptr)
 										return NULL;
+									if(sbegin != substitution.end) {
+										_unmangleGCC3_fail("_unmangleGCC3_nestedNameImpl",
+												"Recursion did not consume the entire expansion of the substitution",
+												sbegin, substitution.end);
+										return NULL;
+									}
 								}
 								break;
 							case GCC3UMSR_STD:
@@ -1348,6 +1603,8 @@ namespace redmond {
 								}
 								break;
 							default:
+								_unmangleGCC3_fail("_unmangleGCC3_nestedNameImpl",
+										"Unrecognized GCC3UnmangleSubstRef", begin, end);
 								return NULL;
 						}
 					}
@@ -1358,8 +1615,10 @@ namespace redmond {
 			}
 		}
 	  done:
-		if(!nested.ptr->hasSegments())
+		if(!nested.ptr->hasSegments()) {
+			_unmangleGCC3_fail("_unmangleGCC3_nestedNameImpl", "Nested name cannot be empty", begin, end);
 			return NULL;
+		}
 		NestedName* nn = nested.ptr;
 		nested.ptr = NULL;
 		return nn;
@@ -1383,8 +1642,12 @@ namespace redmond {
 		NestedName::Segment* argumentSink = NULL;
 		UnmanglePtr<NestedName> nested(_unmangleGCC3_nestedNameImpl(begin, end, sbox,
 				true, qualifiers, argumentSink));
-		if(!nested.ptr || begin == end || *begin != 'E')
+		if(!nested.ptr)
 			return NULL;
+		if(begin == end || *begin != 'E') {
+			_unmangleGCC3_fail("_unmangleGCC3_nestedName", "Missing 'E' terminator after nested name", begin, end);
+			return NULL;
+		}
 		++begin;
 		NestedName* nn = nested.ptr;
 		nested.ptr = NULL;
@@ -1392,15 +1655,23 @@ namespace redmond {
 	}
 
 	LocalName* _unmangleGCC3_localName(const char*& begin, const char* end, SBox& sbox) {
-		if(++begin == end)
+		if(++begin == end) {
+			_unmangleGCC3_fail("_unmangleGCC3_localName", "Expected local name", begin, end);
 			return NULL;
+		}
 		UnmanglePtr<CPPSymbol> function(_unmangleGCC3_encoding(begin, end, sbox));
 		if(!function.ptr)
 			return NULL;
-		if(begin == end || *begin != 'E')
+		if(begin == end || *begin != 'E') {
+			_unmangleGCC3_fail("_unmangleGCC3_localName",
+					"Missing 'E' terminator after function symbol", begin, end);
 			return NULL;
-		if(++begin == end)
+		}
+		if(++begin == end) {
+			_unmangleGCC3_fail("_unmangleGCC3_localName",
+					"Missing actual local name after function symbol", begin, end);
 			return NULL;
+		}
 		UnmanglePtr<Name> name(NULL);
 		if(*begin == 's')
 			++begin;
@@ -1413,8 +1684,10 @@ namespace redmond {
 		if(begin == end || *begin != '_')
 			discriminator = 0u;
 		else {
-			if(++begin == end || *begin < '0' || *begin > '9')
+			if(++begin == end || *begin < '0' || *begin > '9') {
+				_unmangleGCC3_fail("_unmangleGCC3_localName", "Missing discriminator after '_'", begin, end);
 				return NULL;
+			}
 			if(!_unmangleGCC3_number<unsigned>(begin, end, discriminator))
 				return NULL;
 			++discriminator;
@@ -1435,12 +1708,14 @@ namespace redmond {
 				{
 					const char* atS = begin;
 					++begin;
-					if(begin == end)
+					if(begin == end) {
+						_unmangleGCC3_fail("_unmangleGCC3_name", "Missing substitution after 'S'", begin, end);
 						return NULL;
+					}
 					if(*begin == 't') {
 						++begin;
 						UnmanglePtr<UnqualifiedName> uqname(_unmangleGCC3_unqualifiedName(begin, end, sbox));
-						if(!uqname.ptr || begin == end)
+						if(!uqname.ptr)
 							return NULL;
 						UnmanglePtr<SourceName> sname(new SourceName("std"));
 						UnmanglePtr<NestedName> nname(new NestedName(0));
@@ -1454,20 +1729,28 @@ namespace redmond {
 						nname.ptr->addSegment(*tailSegment);
 						segment.ptr = NULL;
 						NestedName* nn = nname.ptr;
-						if(*begin != 'I') {
+						if(begin == end || *begin != 'I') {
 							// it's "just" an <unscoped-name>
 							nname.ptr = NULL;
 							return nn;
 						}
 						// it's an <unscoped-template-name>, followed by <template-args>
 						sbox.push_back(GCC3UnmangleSubstitution(GCC3UMST_UNSCOPED_TEMPLATE_NAME, atS, begin));
-						if(++begin == end)
+						if(++begin == end) {
+							_unmangleGCC3_fail("_unmangleGCC3_name",
+									"Missing actual template arguments after 'St...I'", begin, end);
 							return NULL;
+						}
 						UnmanglePtr<TemplateArgument> arg(NULL);
 						do {
 							arg.ptr = _unmangleGCC3_templateArg(begin, end, sbox);
-							if(!arg.ptr || begin == end)
+							if(!arg.ptr)
 								return NULL;
+							if(begin == end) {
+								_unmangleGCC3_fail("_unmangleGCC3_name",
+										"Missing 'E' teminator after 'St...I...'", begin, end);
+								return NULL;
+							}
 							tailSegment->addArgument(*arg.ptr);
 							arg.ptr = NULL;
 						} while(*begin != 'E');
@@ -1489,20 +1772,38 @@ namespace redmond {
 						switch(ref) {
 							case GCC3UMSR_ID:
 								{
-									if(sid >= static_cast<unsigned>(sbox.size()))
+									if(sid >= static_cast<unsigned>(sbox.size())) {
+										stringstream ss;
+										ss << sid;
+										_unmangleGCC3_fail("_unmangleGCC3_name",
+												"Substitution index out of bounds: " + ss.str(), begin, end);
 										return NULL;
+									}
 									const GCC3UnmangleSubstitution& substitution = sbox[sid];
-									if(substitution.type != GCC3UMST_UNSCOPED_TEMPLATE_NAME)
+									if(substitution.type != GCC3UMST_UNSCOPED_TEMPLATE_NAME) {
+										stringstream ss;
+										ss << static_cast<int>(substitution.type);
+										_unmangleGCC3_fail("_unmangleGCC3_name",
+												"Rejected substitution type " + ss.str(), begin, end);
 										return NULL;
+									}
 									const char* sbegin = substitution.begin;
 									// As per what is being substituted,
 									// the expansion must be an <unscoped-name>.
 									UnmanglePtr<NestedName::Segment> segment(NULL);
 									if(*sbegin == 'S') {
-										if(++sbegin == substitution.end)
+										if(++sbegin == substitution.end) {
+											_unmangleGCC3_fail("_unmangleGCC3_name",
+													"Missing substitution after 'S' in expansion of substitution",
+													sbegin, substitution.end);
 											return NULL;
-										if(*sbegin != 't')
+										}
+										if(*sbegin != 't') {
+											_unmangleGCC3_fail("_unmangleGCC3_name",
+													"An 'S' in the expansion of a substitution must be followed "
+													"by 't'", sbegin, substitution.end);
 											return NULL;
+										}
 										++sbegin;
 										UnmanglePtr<SourceName> sname(new SourceName("std"));
 										segment.ptr = new NestedName::Segment(sname.ptr);
@@ -1513,8 +1814,14 @@ namespace redmond {
 									SBox tmpSBox(sbox);
 									UnmanglePtr<UnqualifiedName> uqname(_unmangleGCC3_unqualifiedName(sbegin,
 											substitution.end, tmpSBox));
-									if(!uqname.ptr || sbegin != substitution.end)
+									if(!uqname.ptr)
 										return NULL;
+									if(sbegin != substitution.end) {
+										_unmangleGCC3_fail("_unmangleGCC3_name",
+												"Calling _unmangleGCC3_unqualifiedName() did not consume the "
+												"entire expansion of the substitution", sbegin, substitution.end);
+										return NULL;
+									}
 									tailSegment = new NestedName::Segment(uqname.ptr);
 									segment.ptr = tailSegment;
 									nname.ptr->addSegment(*tailSegment);
@@ -1547,15 +1854,34 @@ namespace redmond {
 							case GCC3UMSR_OSTREAM:
 							case GCC3UMSR_IOSTREAM:
 							default:
+								{
+									stringstream ss;
+									ss << static_cast<int>(ref);
+									_unmangleGCC3_fail("_unmangleGCC3_name",
+											"Rejected GCC3UnmangleSubstRef: " + ss.str(), begin, end);
+								}
 								return NULL;
 						}
-						if(begin == end || *begin != 'I')
+						if(begin == end || *begin != 'I') {
+							_unmangleGCC3_fail("_unmangleGCC3_name",
+									"Missing 'I' after substitution of unscoped template name", begin, end);
 							return NULL;
+						}
+						if(++begin == end) {
+							_unmangleGCC3_fail("_unmangleGCC3_name",
+									"Missing actual arguments after 'S...I'", begin, end);
+							return NULL;
+						}
 						UnmanglePtr<TemplateArgument> arg(NULL);
 						do {
 							arg.ptr = _unmangleGCC3_templateArg(begin, end, sbox);
-							if(!arg.ptr || begin == end)
+							if(!arg.ptr)
 								return NULL;
+							if(begin == end) {
+								_unmangleGCC3_fail("_unmangleGCC3_name",
+										"Missing 'E' terminator after 'S...I...'", begin, end);
+								return NULL;
+							}
 							tailSegment->addArgument(*arg.ptr);
 							arg.ptr = NULL;
 						} while(*begin != 'E');
@@ -1586,8 +1912,10 @@ namespace redmond {
 			case 'Z':   // local-name
 				return _unmangleGCC3_localName(begin, end, sbox);
 			default:
-				if(*begin < '0' || *begin > '9')
+				if(*begin < '0' || *begin > '9') {
+					_unmangleGCC3_fail("_unmangleGCC3_name", "Unrecognized start of name", begin, end);
 					return NULL;
+				}
 			  plainUnqual:
 				{
 					UnmanglePtr<UnqualifiedName> uqname(_unmangleGCC3_unqualifiedName(begin, end, sbox));
@@ -1598,8 +1926,11 @@ namespace redmond {
 						uqname.ptr = NULL;
 						return uq;
 					}
-					if(++begin == end)
+					if(++begin == end) {
+						_unmangleGCC3_fail("_unmangleGCC3_name",
+								"Missing actual template arguments after 'I'", begin, end);
 						return NULL;
+					}
 					UnmanglePtr<NestedName> nname(new NestedName(0));
 					NestedName::Segment* tailSegment = new NestedName::Segment(uqname.ptr);
 					UnmanglePtr<NestedName::Segment> segment(tailSegment);
@@ -1609,8 +1940,13 @@ namespace redmond {
 					UnmanglePtr<TemplateArgument> arg(NULL);
 					do {
 						arg.ptr = _unmangleGCC3_templateArg(begin, end, sbox);
-						if(!arg.ptr || begin == end)
+						if(!arg.ptr)
 							return NULL;
+						if(begin == end) {
+							_unmangleGCC3_fail("_unmangleGCC3_name",
+									"Missing 'E' terminator after 'I...'", begin, end);
+							return NULL;
+						}
 						tailSegment->addArgument(*arg.ptr);
 						arg.ptr = NULL;
 					} while(*begin != 'E');
@@ -1625,8 +1961,10 @@ namespace redmond {
 	Type* _unmangleGCC3_type(const char*& begin, const char* end, SBox& sbox) {
 		// See _unmangleGCC3_startsType() for details of
 		// semantically invalid cases.
-		if(begin == end)
+		if(begin == end) {
+			_unmangleGCC3_fail("_unmangleGCC3_type", "Expected type", begin, end);
 			return NULL;
+		}
 		const char* beforeThisType = begin;
 		UnmanglePtr<Type> type(NULL);
 		int qualifiers = 0;
@@ -1706,8 +2044,11 @@ namespace redmond {
 				break;
 			case 'F':   // function-type
 				{
-					if(++begin == end)
+					if(++begin == end) {
+						_unmangleGCC3_fail("_unmangleGCC3_type",
+								"Missing actual function type after 'F'", begin, end);
 						return NULL;
+					}
 					bool externC;
 					if(*begin == 'Y') {
 						externC = true;
@@ -1718,8 +2059,10 @@ namespace redmond {
 					UnmanglePtr<BareFunctionType> bare(_unmangleGCC3_bareFunctionType(begin, end, sbox));
 					if(!bare.ptr)
 						return NULL;
-					if(begin == end || *begin != 'E')
+					if(begin == end || *begin != 'E') {
+						_unmangleGCC3_fail("_unmangleGCC3_type", "Missing 'E' terminator after 'F...'", begin, end);
 						return NULL;
+					}
 					++begin;
 					type.ptr = new FunctionType(externC, bare.ptr);
 					bare.ptr = NULL;
@@ -1728,8 +2071,10 @@ namespace redmond {
 			case 'A':   // array-type
 				{
 					UnmanglePtr<Type> elementType(NULL);
-					if(++begin == end)
+					if(++begin == end) {
+						_unmangleGCC3_fail("_unmangleGCC3_type", "Missing actual array type after 'A'", begin, end);
 						return NULL;
+					}
 					if(*begin == '_') {
 						++begin;
 						elementType.ptr = _unmangleGCC3_type(begin, end, sbox);
@@ -1742,8 +2087,11 @@ namespace redmond {
 						unsigned dimension;
 						if(!_unmangleGCC3_number(begin, end, dimension))
 							return NULL;
-						if(begin == end || *begin != '_')
+						if(begin == end || *begin != '_') {
+							_unmangleGCC3_fail("_unmangleGCC3_type",
+									"Missing '_' terminator after static array type dimension", begin, end);
 							return NULL;
+						}
 						++begin;
 						elementType.ptr = _unmangleGCC3_type(begin, end, sbox);
 						if(!elementType.ptr)
@@ -1755,8 +2103,11 @@ namespace redmond {
 						UnmanglePtr<Expression> dimension(_unmangleGCC3_expression(begin, end, sbox));
 						if(!dimension.ptr)
 							return NULL;
-						if(begin == end || *begin != '_')
+						if(begin == end || *begin != '_') {
+							_unmangleGCC3_fail("_unmangleGCC3_type",
+									"Missing '_' terminator after dynamic array type dimension", begin, end);
 							return NULL;
+						}
 						++begin;
 						elementType.ptr = _unmangleGCC3_type(begin, end, sbox);
 						if(!elementType.ptr)
@@ -1782,16 +2133,22 @@ namespace redmond {
 				break;
 			case 'r':   // [operator-name], CV-qualifiers
 				qualifiers = CVQualifiedType::CVQ_RESTRICT;
-				if(++begin == end)
+				if(++begin == end) {
+					_unmangleGCC3_fail("_unmangleGCC3_type",
+							"Missing subject type after 'r' qualifier", begin, end);
 					return NULL;
+				}
 				if(*begin == 'K')
 					goto atConstQual;
 				if(*begin != 'V')
 					goto flushCVQual;
 			case 'V':   // CV-qualifiers
 				qualifiers |= CVQualifiedType::CVQ_VOLATILE;
-				if(++begin == end)
+				if(++begin == end) {
+					_unmangleGCC3_fail("_unmangleGCC3_type",
+							"Missing subject type after 'V' qualifier", begin, end);
 					return NULL;
+				}
 				if(*begin != 'K')
 					goto flushCVQual;
 			case 'K':   // CV-qualifiers
@@ -1839,8 +2196,13 @@ namespace redmond {
 					switch(ref) {
 						case GCC3UMSR_ID:
 							{
-								if(id >= static_cast<unsigned>(sbox.size()))
+								if(id >= static_cast<unsigned>(sbox.size())) {
+									stringstream ss;
+									ss << id;
+									_unmangleGCC3_fail("_unmangleGCC3_type",
+											"Substitution index out of bounds: " + ss.str(), begin, end);
 									return NULL;
+								}
 								const GCC3UnmangleSubstitution& substitution = sbox[id];
 								const char* sbegin = substitution.begin;
 								SBox tmpSBox(sbox);
@@ -1851,6 +2213,9 @@ namespace redmond {
 											if(!stype)
 												return NULL;
 											if(sbegin != substitution.end) {
+												_unmangleGCC3_fail("_unmangleGCC3_type",
+														"Calling _unmangleGCC3_type() did not consume the entire "
+														"expansion of the substitution", sbegin, substitution.end);
 												delete stype;
 												return NULL;
 											}
@@ -1869,10 +2234,19 @@ namespace redmond {
 										break;
 									case GCC3UMST_TEMPLATE_TEMPLATE_PARAM:
 										{
-											if(*sbegin != 'T')
+											if(*sbegin != 'T') {
+												_unmangleGCC3_fail("_unmangleGCC3_type",
+														"Expansion of substitution does not start with 'T', "
+														"despite having type GCC3UMST_TEMPLATE_TEMPLATE_PARAM",
+														sbegin, substitution.end);
 												return NULL;
-											if(++sbegin == substitution.end)
+											}
+											if(++sbegin == substitution.end) {
+												_unmangleGCC3_fail("_unmangleGCC3_type",
+														"Expansion of substitution ends after initial 'T'",
+														sbegin, substitution.end);
 												return NULL;
+											}
 											unsigned pindex;
 											if(*sbegin == '_')
 												pindex = 0u;
@@ -1880,24 +2254,48 @@ namespace redmond {
 												if(!_unmangleGCC3_number<unsigned>(sbegin, substitution.end, pindex))
 													return NULL;
 												++pindex;
-												if(sbegin == substitution.end || *sbegin != '_')
+												if(sbegin == substitution.end || *sbegin != '_') {
+													_unmangleGCC3_fail("_unmangleGCC3_type",
+															"Missing '_' terminator after 'T...' in expansion "
+															"of substitution", sbegin, substitution.end);
 													return NULL;
+												}
 											}
-											else
+											else {
+												_unmangleGCC3_fail("_unmangleGCC3_type",
+														"Invalid input after 'T' in expansion of substitution",
+														sbegin, substitution.end);
 												return NULL;
-											if(++sbegin != substitution.end)
+											}
+											if(++sbegin != substitution.end) {
+												_unmangleGCC3_fail("_unmangleGCC3_type",
+														"Reading template argument did not consume the entire "
+														"expansion of the substitution", sbegin, substitution.end);
 												return NULL;
-											if(begin == end || *begin != 'I')
+											}
+											if(begin == end || *begin != 'I') {
+												_unmangleGCC3_fail("_unmangleGCC3_type",
+														"Missing 'I' after expansion of a "
+														"GCC3UMST_TEMPLATE_TEMPLATE_PARAM", begin, end);
 												return NULL;
-											if(++begin == end)
+											}
+											if(++begin == end) {
+												_unmangleGCC3_fail("_unmangleGCC3_type",
+														"Missing actual arguments after 'S...I'", begin, end);
 												return NULL;
+											}
 											TemplateTemplateParamType* ttpt = new TemplateTemplateParamType(pindex);
 											type.ptr = ttpt;
 											UnmanglePtr<TemplateArgument> arg(NULL);
 											do {
 												arg.ptr = _unmangleGCC3_templateArg(begin, end, sbox);
-												if(!arg.ptr || begin == end)
+												if(!arg.ptr)
 													return NULL;
+												if(begin == end) {
+													_unmangleGCC3_fail("_unmangleGCC3_type",
+															"Missing 'E' terminator after 'S...I'", begin, end);
+													return NULL;
+												}
 												ttpt->addArgument(*arg.ptr);
 												arg.ptr = NULL;
 											} while(*begin != 'E');
@@ -1905,6 +2303,12 @@ namespace redmond {
 										}
 										break;
 									default:
+										{
+											stringstream ss;
+											ss << static_cast<int>(substitution.type);
+											_unmangleGCC3_fail("_unmangleGCC3_type",
+													"Rejected substitution type " + ss.str(), begin, end);
+										}
 										return NULL;
 								}
 							}
@@ -1934,6 +2338,7 @@ namespace redmond {
 							}
 							break;
 						default:
+							_unmangleGCC3_fail("_unmangleGCC3_type", "Unrecognized GCC3UnmangleSubstRef", begin, end);
 							return NULL;
 					}
 				}
@@ -1945,8 +2350,10 @@ namespace redmond {
 				goto useEnumName;
 			case 'T':   // template-param, template-template-param
 				{
-					if(++begin == end)
+					if(++begin == end) {
+						_unmangleGCC3_fail("_unmangleGCC3_type", "Missing '_' terminator after 'T'", begin, end);
 						return NULL;
+					}
 					const char* oldBegin = begin;
 					unsigned pindex;
 					if(*begin == '_')
@@ -1955,24 +2362,37 @@ namespace redmond {
 						if(!_unmangleGCC3_number<unsigned>(begin, end, pindex))
 							return NULL;
 						++pindex;
-						if(begin == end || *begin != '_')
+						if(begin == end || *begin != '_') {
+							_unmangleGCC3_fail("_unmangleGCC3_type",
+									"Missing '_' terminator after 'T...'", begin, end);
 							return NULL;
+						}
 					}
-					else
+					else {
+						_unmangleGCC3_fail("_unmangleGCC3_type", "Invalid input after 'T'", begin, end);
 						return NULL;
+					}
 					++begin;
 					if(begin != end && *begin == 'I') {
 						// <type> ::= <template-template-param> <template-args>
 						sbox.push_back(GCC3UnmangleSubstitution(GCC3UMST_TEMPLATE_TEMPLATE_PARAM, oldBegin, begin));
-						if(++begin == end)
+						if(++begin == end) {
+							_unmangleGCC3_fail("_unmangleGCC3_type",
+									"Missing actual arguments after 'T...I'", begin, end);
 							return NULL;
+						}
 						TemplateTemplateParamType* ttpt = new TemplateTemplateParamType(pindex);
 						type.ptr = ttpt;
 						UnmanglePtr<TemplateArgument> arg(NULL);
 						do {
 							arg.ptr = _unmangleGCC3_templateArg(begin, end, sbox);
-							if(!arg.ptr || begin == end)
+							if(!arg.ptr)
 								return NULL;
+							if(begin == end) {
+								_unmangleGCC3_fail("_unmangleGCC3_type",
+										"Missing 'E' terminator after 'T...I...'", begin, end);
+								return NULL;
+							}
 							ttpt->addArgument(*arg.ptr);
 							arg.ptr = NULL;
 						} while(*begin != 'E');
@@ -1997,8 +2417,10 @@ namespace redmond {
 				}
 				break;
 			default:
-				if(*begin < '0' || *begin > '9')   // !source-name
+				if(*begin < '0' || *begin > '9') {   // !source-name
+					_unmangleGCC3_fail("_unmangleGCC3_type", "Unrecognized start of type", begin, end);
 					return NULL;
+				}
 			  useEnumName:
 				{
 					UnmanglePtr<Name> etname(_unmangleGCC3_name(begin, end, sbox));
@@ -2089,8 +2511,10 @@ namespace redmond {
 	}
 
 	CallOffset* _unmangleGCC3_callOffset(const char*& begin, const char* end) {
-		if(begin == end)
+		if(begin == end) {
+			_unmangleGCC3_fail("_unmangleGCC3_callOffset", "Expected call offset", begin, end);
 			return NULL;
+		}
 		switch(*begin) {
 			case 'h':
 				{
@@ -2098,8 +2522,11 @@ namespace redmond {
 					++begin;
 					if(!_unmangleGCC3_number<int>(begin, end, offset))
 						return NULL;
-					if(begin == end || *begin != '_')
+					if(begin == end || *begin != '_') {
+						_unmangleGCC3_fail("_unmangleGCC3_callOffset",
+								"Missing '_' terminator after offset", begin, end);
 						return NULL;
+					}
 					++begin;
 					return new CallOffset(offset);
 				}
@@ -2109,25 +2536,34 @@ namespace redmond {
 					++begin;
 					if(!_unmangleGCC3_number<int>(begin, end, offset))
 						return NULL;
-					if(begin == end || *begin != '_')
+					if(begin == end || *begin != '_') {
+						_unmangleGCC3_fail("_unmangleGCC3_callOffset",
+								"Missing '_' separator after offset", begin, end);
 						return NULL;
+					}
 					++begin;
 					if(!_unmangleGCC3_number<int>(begin, end, virtualOffset))
 						return NULL;
-					if(begin == end || *begin != '_')
+					if(begin == end || *begin != '_') {
+						_unmangleGCC3_fail("_unmangleGCC3_callOffset",
+								"Missing '_' terminator after virtual offset", begin, end);
 						return NULL;
+					}
 					++begin;
 					return new CallOffset(offset, virtualOffset);
 				}
 			default:
+				_unmangleGCC3_fail("_unmangleGCC3_callOffset", "Unrecognized start of call offset", begin, end);
 				return NULL;
 		}
 	}
 
 	SpecialSymbol* _unmangleGCC3_specialName(const char*& begin, const char* end, SBox& sbox) {
 		if(*begin == 'G') {
-			if(++begin == end || *begin != 'V')
+			if(++begin == end || *begin != 'V') {
+				_unmangleGCC3_fail("_unmangleGCC3_specialName", "Missing 'V' after 'G'", begin, end);
 				return NULL;
+			}
 			++begin;
 			UnmanglePtr<Name> objectName(_unmangleGCC3_name(begin, end, sbox));
 			if(!objectName.ptr)
@@ -2136,8 +2572,10 @@ namespace redmond {
 			objectName.ptr = NULL;
 			return gv;
 		}
-		if(++begin == end)
+		if(++begin == end) {
+			_unmangleGCC3_fail("_unmangleGCC3_specialName", "Missing actual special name after 'T'", begin, end);
 			return NULL;
+		}
 		TableSymbol::TableSymbolType tstype;
 		switch(*begin) {
 			case 'V':
@@ -2156,8 +2594,13 @@ namespace redmond {
 			case 'v':
 				{
 					UnmanglePtr<CallOffset> callOffset(_unmangleGCC3_callOffset(begin, end));
-					if(!callOffset.ptr || begin == end)
+					if(!callOffset.ptr)
 						return NULL;
+					if(begin == end) {
+						_unmangleGCC3_fail("_unmangleGCC3_specialName",
+								"Missing target function after call offset", begin, end);
+						return NULL;
+					}
 					UnmanglePtr<CPPSymbol> targetFunction(_unmangleGCC3_encoding(begin, end, sbox));
 					OverrideThunkSymbol* thunk = new OverrideThunkSymbol(*callOffset.ptr, targetFunction.ptr);
 					targetFunction.ptr = NULL;
@@ -2170,8 +2613,13 @@ namespace redmond {
 					if(!thisAdjustment.ptr)
 						return NULL;
 					UnmanglePtr<CallOffset> resultAdjustment(_unmangleGCC3_callOffset(begin, end));
-					if(!resultAdjustment.ptr || begin == end)
+					if(!resultAdjustment.ptr)
 						return NULL;
+					if(begin == end) {
+						_unmangleGCC3_fail("_unmangleGCC3_specialName",
+								"Missing target function after adjustments", begin, end);
+						return NULL;
+					}
 					UnmanglePtr<CPPSymbol> targetFunction(_unmangleGCC3_encoding(begin, end, sbox));
 					CovariantOverrideThunkSymbol* thunk = new CovariantOverrideThunkSymbol(*thisAdjustment.ptr,
 							*resultAdjustment.ptr, targetFunction.ptr);
@@ -2179,10 +2627,13 @@ namespace redmond {
 					return thunk;
 				}
 			default:
+				_unmangleGCC3_fail("_unmangleGCC3_specialName", "Unrecognized start of special name", begin, end);
 				return NULL;
 		}
-		if(++begin == end)
+		if(++begin == end) {
+			_unmangleGCC3_fail("_unmangleGCC3_specialName", "Missing target type after 'T[VTIS]'", begin, end);
 			return NULL;
+		}
 		UnmanglePtr<Type> targetType(_unmangleGCC3_type(begin, end, sbox));
 		if(!targetType.ptr)
 			return NULL;
@@ -2228,8 +2679,10 @@ namespace redmond {
 			case 'G':   // special-name
 				return _unmangleGCC3_specialName(begin, end, sbox);
 			default:
-				if(*begin < '0' || *begin > '9')   // !source-name
+				if(*begin < '0' || *begin > '9') {   // !source-name
+					_unmangleGCC3_fail("_unmangleGCC3_encoding", "Unrecognized start of encoding", begin, end);
 					return NULL;
+				}
 				break;
 		}
 		UnmanglePtr<Name> name(_unmangleGCC3_name(begin, end, sbox));
@@ -2250,17 +2703,27 @@ namespace redmond {
 	}
 
 	REDSTRAIN_REDMOND_API CPPSymbol* unmangleCPPSymbol_GCC3(const string& symbol) {
+		if(shouldDebugUnmanglers())
+			cerr << "***DEBUG: Will now unmangle: " << symbol << endl;
 		const char* begin = symbol.data();
 		const char* end = begin + symbol.length();
-		if(begin == end || *begin != '_')
+		if(begin == end || *begin != '_') {
+			_unmangleGCC3_fail("unmangleCPPSymbol_GCC3", "Mangled name does not start with '_'", begin, end);
 			return NULL;
-		if(++begin == end || *begin != 'Z')
+		}
+		if(++begin == end || *begin != 'Z') {
+			_unmangleGCC3_fail("unmangleCPPSymbol_GCC3", "Mangled name does not start with '_Z'", begin, end);
 			return NULL;
-		if(++begin == end)
+		}
+		if(++begin == end) {
+			_unmangleGCC3_fail("unmangleCPPSymbol_GCC3", "Missing encoding after '_Z'", begin, end);
 			return NULL;
+		}
 		SBox sbox;
 		CPPSymbol* sym = _unmangleGCC3_encoding(begin, end, sbox);
 		if(begin != end) {
+			_unmangleGCC3_fail("unmangleCPPSymbol_GCC3",
+					"Calling _unmangleGCC3_encoding() did not consume the entire input", begin, end);
 			if(sym)
 				delete sym;
 			return NULL;
