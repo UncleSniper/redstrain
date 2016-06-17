@@ -1650,7 +1650,7 @@ namespace redmond {
 						return NULL;
 					}
 					{
-						if(writeSBox && !frontIsSubstitution)
+						if(writeSBox && (!frontIsSubstitution || substitutionExtended))
 							sbox.add(GCC3UnmangleSubstitution(GCC3UMST_NESTED_TEMPLATE_PREFIX,
 									oldBegin, begin), "_unmangleGCC3_nestedNameImpl", __FILE__, __LINE__);
 						if(++begin == end) {
