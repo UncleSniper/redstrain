@@ -12,8 +12,8 @@ namespace unmangle {
 
 	Expression::~Expression() {}
 
-	void Expression::print(ostream& out) const {
-		print(out, 0);
+	void Expression::print(ostream& out, const CurrentTemplateArguments& arguments) const {
+		print(out, 0, arguments);
 	}
 
 }}}

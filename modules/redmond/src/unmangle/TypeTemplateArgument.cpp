@@ -20,8 +20,9 @@ namespace unmangle {
 		return AT_TYPE;
 	}
 
-	void TypeTemplateArgument::print(ostream& out, bool& lastWasGreater) const {
-		type->print(out, lastWasGreater);
+	void TypeTemplateArgument::print(ostream& out, bool& lastWasGreater,
+			const CurrentTemplateArguments& arguments) const {
+		type->print(out, lastWasGreater, arguments);
 	}
 
 	TemplateArgument* TypeTemplateArgument::cloneTemplateArgument() const {

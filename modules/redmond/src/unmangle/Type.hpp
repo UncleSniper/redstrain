@@ -3,6 +3,7 @@
 
 #include <iostream>
 
+#include "types.hpp"
 #include "../api.hpp"
 
 namespace redengine {
@@ -31,8 +32,11 @@ namespace unmangle {
 		Type(const Type&);
 		virtual ~Type();
 
+		void print(std::ostream&, bool&, const CurrentTemplateArguments&) const;
+
 		virtual TypeType getTypeType() const = 0;
-		virtual void print(std::ostream&, bool&) const = 0;
+		virtual bool inlinesEnclosingClassName() const;
+		virtual void print(std::ostream&, bool&, const CurrentTemplateArguments&, const Type*) const = 0;
 		virtual Type* cloneType() const = 0;
 
 	};

@@ -13,7 +13,7 @@ namespace unmangle {
 		unsigned dimension;
 
 	  protected:
-		virtual void printDimension(std::ostream&) const;
+		virtual void printDimension(std::ostream&, const CurrentTemplateArguments&) const;
 
 	  public:
 		StaticArrayType(Type*, unsigned);

@@ -21,10 +21,11 @@ namespace unmangle {
 		return NT_CONVERSION_OPERATOR;
 	}
 
-	void ConversionOperatorName::print(ostream& out, bool& lastWasGreater, const string*) const {
+	void ConversionOperatorName::print(ostream& out, bool& lastWasGreater,
+			const CurrentTemplateArguments& arguments, const string*) const {
 		out << "operator ";
 		lastWasGreater = false;
-		targetType->print(out, lastWasGreater);
+		targetType->print(out, lastWasGreater, arguments);
 	}
 
 	Name* ConversionOperatorName::cloneName() const {

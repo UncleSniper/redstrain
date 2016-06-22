@@ -17,7 +17,7 @@ namespace unmangle {
 		TemplateParamType(const TemplateParamType&);
 
 		virtual TypeType getTypeType() const;
-		virtual void print(std::ostream&, bool&) const;
+		virtual void print(std::ostream&, bool&, const CurrentTemplateArguments&, const Type*) const;
 		virtual Type* cloneType() const;
 
 	};

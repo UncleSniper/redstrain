@@ -23,13 +23,14 @@ namespace unmangle {
 		return LT_ENUM;
 	}
 
-	void EnumLiteralExpression::print(ostream& out, int minPrecedence) const {
+	void EnumLiteralExpression::print(ostream& out, int minPrecedence,
+			const CurrentTemplateArguments& arguments) const {
 		int myPrecedence = static_cast<int>(PREC_PREFIX);
 		if(myPrecedence < minPrecedence)
 			out << '(';
 		out << '(';
 		bool lastWasGreater = false;
-		typeName->print(out, lastWasGreater, NULL);
+		typeName->print(out, lastWasGreater, arguments, NULL);
 		out << ')' << value;
 		if(myPrecedence < minPrecedence)
 			out << ')';

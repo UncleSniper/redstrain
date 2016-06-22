@@ -20,10 +20,10 @@ namespace unmangle {
 		return ET_SIZEOF_TYPE;
 	}
 
-	void SizeOfTypeExpression::print(ostream& out, int) const {
+	void SizeOfTypeExpression::print(ostream& out, int, const CurrentTemplateArguments& arguments) const {
 		out << "sizeof(";
 		bool lastWasGreater = false;
-		type->print(out, lastWasGreater);
+		type->print(out, lastWasGreater, arguments);
 		out << ')';
 	}
 

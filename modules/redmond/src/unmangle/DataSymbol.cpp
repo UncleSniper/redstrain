@@ -24,7 +24,8 @@ namespace unmangle {
 	}
 
 	void DataSymbol::print(ostream& out, bool& lastWasGreater) const {
-		name->print(out, lastWasGreater, NULL);
+		CurrentTemplateArguments empty;
+		name->print(out, lastWasGreater, empty, NULL);
 	}
 
 }}}

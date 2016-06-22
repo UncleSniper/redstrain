@@ -4,6 +4,7 @@
 #include <string>
 #include <iostream>
 
+#include "types.hpp"
 #include "../api.hpp"
 
 namespace redengine {
@@ -29,7 +30,9 @@ namespace unmangle {
 		virtual ~Name();
 
 		virtual NameType getNameType() const = 0;
-		virtual void print(std::ostream&, bool&, const std::string*) const = 0;
+		virtual int getNameCVQualifiers() const;
+		virtual void getCurrentTemplateArguments(CurrentTemplateArguments&) const;
+		virtual void print(std::ostream&, bool&, const CurrentTemplateArguments&, const std::string*) const = 0;
 		virtual Name* cloneName() const = 0;
 		virtual bool namesTemplate() const = 0;
 		virtual bool namesReturnless() const = 0;

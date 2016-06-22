@@ -28,7 +28,8 @@ namespace unmangle {
 		return ET_BINARY;
 	}
 
-	void BinaryOperationExpression::print(ostream& out, int minPrecedence) const {
+	void BinaryOperationExpression::print(ostream& out, int minPrecedence,
+			const CurrentTemplateArguments& arguments) const {
 		int myPrecedence = static_cast<int>(BinaryOperationExpression::getPrecedenceOf(oper));
 		bool ra = BinaryOperationExpression::isRightAssociative(oper);
 		if(myPrecedence < minPrecedence)
@@ -73,9 +74,9 @@ namespace unmangle {
 				symbol = "<unknown binary operator>";
 				break;
 		}
-		leftOperand->print(out, ra ? myPrecedence + 1 : myPrecedence);
+		leftOperand->print(out, ra ? myPrecedence + 1 : myPrecedence, arguments);
 		out << ' ' << symbol << ' ';
-		rightOperand->print(out, ra ? myPrecedence : myPrecedence + 1);
+		rightOperand->print(out, ra ? myPrecedence : myPrecedence + 1, arguments);
 		if(myPrecedence < minPrecedence)
 			out << ')';
 	}

@@ -1,4 +1,4 @@
-#include "TemplateArgument.hpp"
+#include "TypeTemplateArgument.hpp"
 #include "TemplateTemplateParamType.hpp"
 #include "../unmangle-utils.hpp"
 
@@ -46,8 +46,20 @@ namespace unmangle {
 		return TT_TEMPLATE_TEMPLATE_PARAM;
 	}
 
-	void TemplateTemplateParamType::print(ostream& out, bool& lastWasGreater) const {
-		out << '$' << parameter << '<';
+	void TemplateTemplateParamType::print(ostream& out, bool& lastWasGreater,
+			const CurrentTemplateArguments& targuments, const Type*) const {
+		if(parameter >= static_cast<unsigned>(targuments.size()))
+			out << '$' << parameter;
+		else {
+			const TemplateArgument& a = *targuments[parameter];
+			if(a.getArgumentType() == TemplateArgument::AT_TYPE) {
+				CurrentTemplateArguments empty;
+				static_cast<const TypeTemplateArgument&>(a).getType().print(out, lastWasGreater, empty);
+			}
+			else
+				out << '$' << parameter;
+		}
+		out << '<';
 		lastWasGreater = false;
 		ArgumentIterator abegin(arguments.begin()), aend(arguments.end());
 		bool first = true;
@@ -57,7 +69,7 @@ namespace unmangle {
 			else
 				out << ", ";
 			lastWasGreater = false;
-			(*abegin)->print(out, lastWasGreater);
+			(*abegin)->print(out, lastWasGreater, targuments);
 		}
 		if(lastWasGreater)
 			out << ' ';

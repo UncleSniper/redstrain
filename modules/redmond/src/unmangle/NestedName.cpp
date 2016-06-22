@@ -98,7 +98,26 @@ namespace unmangle {
 		return NT_NESTED;
 	}
 
-	void NestedName::print(ostream& out, bool& lastWasGreater, const string*) const {
+	int NestedName::getNameCVQualifiers() const {
+		return qualifiers;
+	}
+
+	void NestedName::getCurrentTemplateArguments(CurrentTemplateArguments& arguments) const {
+		arguments.clear();
+		if(segments.empty())
+			return;
+		const Segment& ls = *segments.back();
+		if(!ls.hasArguments())
+			return;
+		arguments.reserve(static_cast<CurrentTemplateArguments::size_type>(ls.getArgumentCount()));
+		Segment::ArgumentIterator abegin, aend;
+		ls.getArguments(abegin, aend);
+		for(; abegin != aend; ++abegin)
+			arguments.push_back(*abegin);
+	}
+
+	void NestedName::print(ostream& out, bool& lastWasGreater, const CurrentTemplateArguments& arguments,
+			const string*) const {
 		const string* lastClassName = NULL;
 		SegmentIterator sbegin(segments.begin()), send(segments.end());
 		Segment::ArgumentIterator abegin, aend;
@@ -109,7 +128,7 @@ namespace unmangle {
 			else
 				out << "::";
 			const Segment& seg = **sbegin;
-			seg.getPrefix().print(out, lastWasGreater, lastClassName);
+			seg.getPrefix().print(out, lastWasGreater, arguments, lastClassName);
 			if(seg.hasArguments()) {
 				seg.getArguments(abegin, aend);
 				out << '<';
@@ -120,7 +139,7 @@ namespace unmangle {
 					else
 						out << ", ";
 					lastWasGreater = false;
-					(*abegin)->print(out, lastWasGreater);
+					(*abegin)->print(out, lastWasGreater, arguments);
 				}
 				if(lastWasGreater)
 					out << ' ';

@@ -27,7 +27,8 @@ namespace unmangle {
 	void GuardVariableSymbol::print(ostream& out, bool& lastWasGreater) const {
 		out << "<guard variable for ";
 		lastWasGreater = false;
-		objectName->print(out, lastWasGreater, NULL);
+		CurrentTemplateArguments targuments;
+		objectName->print(out, lastWasGreater, targuments, NULL);
 		if(lastWasGreater)
 			out << ' ';
 		out << '>';

@@ -26,13 +26,18 @@ namespace unmangle {
 		return TT_POINTER_TO_MEMBER;
 	}
 
-	void PointerToMemberType::print(ostream& out, bool& lastWasGreater) const {
-		memberType->print(out, lastWasGreater);
-		out << ' ';
-		lastWasGreater = false;
-		classType->print(out, lastWasGreater);
-		out << "::*";
-		lastWasGreater = false;
+	void PointerToMemberType::print(ostream& out, bool& lastWasGreater, const CurrentTemplateArguments& arguments,
+			const Type*) const {
+		if(memberType->inlinesEnclosingClassName())
+			memberType->print(out, lastWasGreater, arguments, classType);
+		else {
+			memberType->print(out, lastWasGreater, arguments, NULL);
+			out << ' ';
+			lastWasGreater = false;
+			classType->print(out, lastWasGreater, arguments, NULL);
+			out << "::*";
+			lastWasGreater = false;
+		}
 	}
 
 	Type* PointerToMemberType::cloneType() const {

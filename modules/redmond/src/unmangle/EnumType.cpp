@@ -19,8 +19,9 @@ namespace unmangle {
 		return TT_ENUM;
 	}
 
-	void EnumType::print(ostream& out, bool& lastWasGreater) const {
-		name->print(out, lastWasGreater, NULL);
+	void EnumType::print(ostream& out, bool& lastWasGreater, const CurrentTemplateArguments& arguments,
+			const Type*) const {
+		name->print(out, lastWasGreater, arguments, NULL);
 	}
 
 	Type* EnumType::cloneType() const {

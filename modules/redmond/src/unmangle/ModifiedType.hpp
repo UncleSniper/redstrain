@@ -27,7 +27,8 @@ namespace unmangle {
 		virtual ~ModifiedType();
 
 		virtual TypeType getTypeType() const;
-		virtual void print(std::ostream&, bool&) const;
+		virtual bool inlinesEnclosingClassName() const;
+		virtual void print(std::ostream&, bool&, const CurrentTemplateArguments&, const Type*) const;
 		virtual Type* cloneType() const;
 
 	};

@@ -15,7 +15,8 @@ namespace unmangle {
 		return NT_CTOR_DTOR;
 	}
 
-	void CtorDtorName::print(ostream& out, bool& lastWasGreater, const string* className) const {
+	void CtorDtorName::print(ostream& out, bool& lastWasGreater, const CurrentTemplateArguments&,
+			const string* className) const {
 		switch(function) {
 			case FN_COMPLETE_CTOR:
 			case FN_BASE_CTOR:

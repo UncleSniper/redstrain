@@ -38,7 +38,7 @@ namespace unmangle {
 			return type;
 		}
 
-		virtual void print(std::ostream& out, int) const {
+		virtual void print(std::ostream& out, int, const CurrentTemplateArguments&) const {
 			typedef typename StreamType<0, SIGNED>::Printable Printable;
 			switch(type) {
 				case BuiltinType::P_CHAR:

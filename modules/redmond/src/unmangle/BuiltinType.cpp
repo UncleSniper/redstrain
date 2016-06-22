@@ -14,7 +14,7 @@ namespace unmangle {
 		return TT_BUILTIN;
 	}
 
-	void BuiltinType::print(ostream& out, bool& lastWasGreater) const {
+	void BuiltinType::print(ostream& out, bool& lastWasGreater, const CurrentTemplateArguments&, const Type*) const {
 		out << BuiltinType::getPrimitiveName(primitive);
 		lastWasGreater = false;
 	}

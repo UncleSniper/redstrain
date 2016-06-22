@@ -18,11 +18,16 @@ namespace unmangle {
 		return TT_ARRAY;
 	}
 
-	void ArrayType::print(ostream& out, bool& lastWasGreater) const {
-		elementType->print(out, lastWasGreater);
+	bool ArrayType::inlinesEnclosingClassName() const {
+		return elementType->inlinesEnclosingClassName();
+	}
+
+	void ArrayType::print(ostream& out, bool& lastWasGreater, const CurrentTemplateArguments& arguments,
+			const Type* enclosingClass) const {
+		elementType->print(out, lastWasGreater, arguments, enclosingClass);
 		out << '[';
 		lastWasGreater = false;
-		printDimension(out);
+		printDimension(out, arguments);
 		out << ']';
 		lastWasGreater = false;
 	}

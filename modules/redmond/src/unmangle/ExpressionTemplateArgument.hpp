@@ -24,7 +24,7 @@ namespace unmangle {
 		}
 
 		virtual ArgumentType getArgumentType() const;
-		virtual void print(std::ostream&, bool&) const;
+		virtual void print(std::ostream&, bool&, const CurrentTemplateArguments&) const;
 		virtual TemplateArgument* cloneTemplateArgument() const;
 
 	};

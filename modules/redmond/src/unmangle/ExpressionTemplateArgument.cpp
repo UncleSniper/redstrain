@@ -20,8 +20,9 @@ namespace unmangle {
 		return AT_EXPRESSION;
 	}
 
-	void ExpressionTemplateArgument::print(ostream& out, bool& lastWasGreater) const {
-		expression->print(out);
+	void ExpressionTemplateArgument::print(ostream& out, bool& lastWasGreater,
+			const CurrentTemplateArguments& arguments) const {
+		expression->print(out, arguments);
 		lastWasGreater = false;
 	}
 

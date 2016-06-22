@@ -19,7 +19,7 @@ namespace unmangle {
 		return new StaticArrayType(*this);
 	}
 
-	void StaticArrayType::printDimension(ostream& out) const {
+	void StaticArrayType::printDimension(ostream& out, const CurrentTemplateArguments&) const {
 		out << dimension;
 	}
 

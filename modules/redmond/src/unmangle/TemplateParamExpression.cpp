@@ -1,3 +1,4 @@
+#include "TemplateArgument.hpp"
 #include "TemplateParamExpression.hpp"
 
 using std::ostream;
@@ -15,8 +16,13 @@ namespace unmangle {
 		return ET_TEMPLATE_PARAM;
 	}
 
-	void TemplateParamExpression::print(ostream& out, int) const {
-		out << '$' << parameter;
+	void TemplateParamExpression::print(ostream& out, int, const CurrentTemplateArguments& arguments) const {
+		if(parameter >= static_cast<unsigned>(arguments.size()))
+			out << '$' << parameter;
+		else {
+			bool lastWasGreater = false;
+			arguments[parameter]->print(out, lastWasGreater, arguments);
+		}
 	}
 
 	Expression* TemplateParamExpression::cloneExpression() const {

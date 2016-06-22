@@ -3,6 +3,7 @@
 
 #include <iostream>
 
+#include "types.hpp"
 #include "../api.hpp"
 
 namespace redengine {
@@ -23,7 +24,7 @@ namespace unmangle {
 		virtual ~TemplateArgument();
 
 		virtual ArgumentType getArgumentType() const = 0;
-		virtual void print(std::ostream&, bool&) const = 0;
+		virtual void print(std::ostream&, bool&, const CurrentTemplateArguments&) const = 0;
 		virtual TemplateArgument* cloneTemplateArgument() const = 0;
 
 	};

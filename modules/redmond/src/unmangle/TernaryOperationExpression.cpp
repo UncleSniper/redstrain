@@ -31,15 +31,16 @@ namespace unmangle {
 		return ET_TERNARY;
 	}
 
-	void TernaryOperationExpression::print(ostream& out, int minPrecedence) const {
+	void TernaryOperationExpression::print(ostream& out, int minPrecedence,
+			const CurrentTemplateArguments& arguments) const {
 		int myPrecedence = static_cast<int>(PREC_TERNARY);
 		if(myPrecedence < minPrecedence)
 			out << '(';
-		condition->print(out, myPrecedence + 1);
+		condition->print(out, myPrecedence + 1, arguments);
 		out << " ? ";
-		thenBranch->print(out, myPrecedence);
+		thenBranch->print(out, myPrecedence, arguments);
 		out << " : ";
-		elseBranch->print(out, myPrecedence);
+		elseBranch->print(out, myPrecedence, arguments);
 		if(myPrecedence < minPrecedence)
 			out << ')';
 	}

@@ -19,7 +19,12 @@ namespace unmangle {
 		return TT_CV_QUALIFIED;
 	}
 
-	void CVQualifiedType::print(ostream& out, bool& lastWasGreater) const {
+	bool CVQualifiedType::inlinesEnclosingClassName() const {
+		return type->inlinesEnclosingClassName();
+	}
+
+	void CVQualifiedType::print(ostream& out, bool& lastWasGreater, const CurrentTemplateArguments& arguments,
+			const Type* enclosingClass) const {
 		bool needsBlank;
 		if(qualifiers & CVQualifiedType::CVQ_RESTRICT) {
 			lastWasGreater = false;
@@ -37,7 +42,7 @@ namespace unmangle {
 		}
 		if(needsBlank)
 			out << ' ';
-		type->print(out, lastWasGreater);
+		type->print(out, lastWasGreater, arguments, enclosingClass);
 		if(qualifiers & CVQualifiedType::CVQ_CONST) {
 			out << " const";
 			lastWasGreater = false;

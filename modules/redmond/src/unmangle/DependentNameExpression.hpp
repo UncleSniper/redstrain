@@ -45,7 +45,7 @@ namespace unmangle {
 		void addArgument(TemplateArgument&);
 
 		virtual ExpressionType getExpressionType() const;
-		virtual void print(std::ostream&, int) const;
+		virtual void print(std::ostream&, int, const CurrentTemplateArguments&) const;
 		virtual Expression* cloneExpression() const;
 
 	};

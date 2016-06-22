@@ -24,7 +24,7 @@ namespace unmangle {
 			return type;
 		}
 
-		virtual void print(std::ostream& out, int) const {
+		virtual void print(std::ostream& out, int, const CurrentTemplateArguments&) const {
 			out << value;
 		}
 

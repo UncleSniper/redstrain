@@ -20,51 +20,52 @@ namespace unmangle {
 		return ET_UNARY;
 	}
 
-	void UnaryOperationExpression::print(ostream& out, int minPrecedence) const {
+	void UnaryOperationExpression::print(ostream& out, int minPrecedence,
+			const CurrentTemplateArguments& arguments) const {
 		int myPrecedence = static_cast<int>(UnaryOperationExpression::getPrecedenceOf(oper));
 		if(myPrecedence < minPrecedence)
 			out << '(';
 		switch(oper) {
 			case OP_POSITIVE:
 				out << '+';
-				operand->print(out, myPrecedence);
+				operand->print(out, myPrecedence, arguments);
 				break;
 			case OP_NEGATIVE:
 				out << '-';
-				operand->print(out, myPrecedence);
+				operand->print(out, myPrecedence, arguments);
 				break;
 			case OP_ADDRESS_OF:
 				out << '&';
-				operand->print(out, myPrecedence);
+				operand->print(out, myPrecedence, arguments);
 				break;
 			case OP_DEREFERENCE:
 				out << '*';
-				operand->print(out, myPrecedence);
+				operand->print(out, myPrecedence, arguments);
 				break;
 			case OP_COMPLEMENT:
 				out << '~';
-				operand->print(out, myPrecedence);
+				operand->print(out, myPrecedence, arguments);
 				break;
 			case OP_NOT:
 				out << '!';
-				operand->print(out, myPrecedence);
+				operand->print(out, myPrecedence, arguments);
 				break;
 			case OP_INCREMENT:
 				out << "++";
-				operand->print(out, myPrecedence);
+				operand->print(out, myPrecedence, arguments);
 				break;
 			case OP_DECREMENT:
 				out << "--";
-				operand->print(out, myPrecedence);
+				operand->print(out, myPrecedence, arguments);
 				break;
 			case OP_SIZEOF_EXPRESSION:
 				out << "sizeof(";
-				operand->print(out, 0);
+				operand->print(out, 0, arguments);
 				out << ')';
 				break;
 			default:
 				out << "<unknown unary operator> ";
-				operand->print(out, PREC_PRIMARY);
+				operand->print(out, PREC_PRIMARY, arguments);
 				break;
 		}
 		if(myPrecedence < minPrecedence)

@@ -15,7 +15,7 @@ namespace unmangle {
 		Expression* dimension;
 
 	  protected:
-		virtual void printDimension(std::ostream&) const;
+		virtual void printDimension(std::ostream&, const CurrentTemplateArguments&) const;
 
 	  public:
 		ComplexArrayType(Type*, Expression*);

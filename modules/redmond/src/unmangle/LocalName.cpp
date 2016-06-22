@@ -34,12 +34,13 @@ namespace unmangle {
 		return NT_LOCAL;
 	}
 
-	void LocalName::print(ostream& out, bool& lastWasGreater, const string*) const {
+	void LocalName::print(ostream& out, bool& lastWasGreater, const CurrentTemplateArguments& arguments,
+			const string*) const {
 		function->print(out);
 		out << "::";
 		if(name) {
 			lastWasGreater = false;
-			name->print(out, lastWasGreater, NULL);
+			name->print(out, lastWasGreater, arguments, NULL);
 		}
 		else {
 			out << "<anonymous>";

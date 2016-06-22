@@ -19,8 +19,13 @@ namespace unmangle {
 		return TT_MODIFIED;
 	}
 
-	void ModifiedType::print(ostream& out, bool& lastWasGreater) const {
-		type->print(out, lastWasGreater);
+	bool ModifiedType::inlinesEnclosingClassName() const {
+		return type->inlinesEnclosingClassName();
+	}
+
+	void ModifiedType::print(ostream& out, bool& lastWasGreater, const CurrentTemplateArguments& arguments,
+			const Type* enclosingClass) const {
+		type->print(out, lastWasGreater, arguments, enclosingClass);
 		lastWasGreater = false;
 		switch(modifier) {
 			case MOD_POINTER:

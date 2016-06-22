@@ -1,4 +1,5 @@
 #include "TemplateParamType.hpp"
+#include "TypeTemplateArgument.hpp"
 
 using std::ostream;
 
@@ -14,9 +15,23 @@ namespace unmangle {
 		return TT_TEMPLATE_PARAM;
 	}
 
-	void TemplateParamType::print(ostream& out, bool& lastWasGreater) const {
-		out << '$' << parameter;
-		lastWasGreater = false;
+	void TemplateParamType::print(ostream& out, bool& lastWasGreater, const CurrentTemplateArguments& arguments,
+			const Type*) const {
+		if(parameter >= static_cast<unsigned>(arguments.size())) {
+			out << '$' << parameter;
+			lastWasGreater = false;
+		}
+		else {
+			const TemplateArgument& a = *arguments[parameter];
+			if(a.getArgumentType() == TemplateArgument::AT_TYPE) {
+				CurrentTemplateArguments empty;
+				static_cast<const TypeTemplateArgument&>(a).getType().print(out, lastWasGreater, empty);
+			}
+			else {
+				out << '$' << parameter;
+				lastWasGreater = false;
+			}
+		}
 	}
 
 	Type* TemplateParamType::cloneType() const {

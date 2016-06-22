@@ -46,7 +46,7 @@ namespace unmangle {
 		}
 
 		virtual TypeType getTypeType() const;
-		virtual void print(std::ostream&, bool&) const;
+		virtual void print(std::ostream&, bool&, const CurrentTemplateArguments&, const Type*) const;
 		virtual Type* cloneType() const;
 
 		static const char* getPrimitiveName(Primitive);

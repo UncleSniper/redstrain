@@ -18,6 +18,6 @@ namespace unmangle {
 		return new VariableArrayType(*this);
 	}
 
-	void VariableArrayType::printDimension(ostream&) const {}
+	void VariableArrayType::printDimension(ostream&, const CurrentTemplateArguments&) const {}
 
 }}}

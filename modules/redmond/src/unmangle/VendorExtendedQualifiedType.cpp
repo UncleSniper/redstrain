@@ -21,10 +21,15 @@ namespace unmangle {
 		return TT_VENDOR_EXTENDED_QUALIFIED;
 	}
 
-	void VendorExtendedQualifiedType::print(ostream& out, bool& lastWasGreater) const {
+	bool VendorExtendedQualifiedType::inlinesEnclosingClassName() const {
+		return type->inlinesEnclosingClassName();
+	}
+
+	void VendorExtendedQualifiedType::print(ostream& out, bool& lastWasGreater,
+			const CurrentTemplateArguments& arguments,  const Type* enclosingClass) const {
 		out << name << ' ';
 		lastWasGreater = false;
-		type->print(out, lastWasGreater);
+		type->print(out, lastWasGreater, arguments, enclosingClass);
 	}
 
 	Type* VendorExtendedQualifiedType::cloneType() const {

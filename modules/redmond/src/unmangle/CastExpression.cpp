@@ -28,15 +28,15 @@ namespace unmangle {
 		return ET_CAST;
 	}
 
-	void CastExpression::print(ostream& out, int minPrecedence) const {
+	void CastExpression::print(ostream& out, int minPrecedence, const CurrentTemplateArguments& arguments) const {
 		int myPrecedence = static_cast<int>(PREC_PREFIX);
 		if(myPrecedence < minPrecedence)
 			out << '(';
 		out << '(';
 		bool lastWasGreater = false;
-		type->print(out, lastWasGreater);
+		type->print(out, lastWasGreater, arguments);
 		out << ')';
-		operand->print(out, myPrecedence);
+		operand->print(out, myPrecedence, arguments);
 		if(myPrecedence < minPrecedence)
 			out << ')';
 	}

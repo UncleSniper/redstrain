@@ -15,7 +15,8 @@ namespace unmangle {
 		return NT_OPERATOR;
 	}
 
-	void OperatorName::print(ostream& out, bool& lastWasGreater, const string*) const {
+	void OperatorName::print(ostream& out, bool& lastWasGreater, const CurrentTemplateArguments&,
+			const string*) const {
 		out << "operator";
 		lastWasGreater = false;
 		switch(oper) {

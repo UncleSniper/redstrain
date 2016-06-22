@@ -3,6 +3,7 @@
 
 #include <iostream>
 
+#include "types.hpp"
 #include "../api.hpp"
 
 namespace redengine {
@@ -50,10 +51,10 @@ namespace unmangle {
 		Expression(const Expression&);
 		virtual ~Expression();
 
-		void print(std::ostream&) const;
+		void print(std::ostream&, const CurrentTemplateArguments&) const;
 
 		virtual ExpressionType getExpressionType() const = 0;
-		virtual void print(std::ostream&, int) const = 0;
+		virtual void print(std::ostream&, int, const CurrentTemplateArguments&) const = 0;
 		virtual Expression* cloneExpression() const = 0;
 
 	};

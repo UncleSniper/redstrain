@@ -54,12 +54,12 @@ namespace unmangle {
 		return ET_DEPENDENT_NAME;
 	}
 
-	void DependentNameExpression::print(ostream& out, int) const {
+	void DependentNameExpression::print(ostream& out, int, const CurrentTemplateArguments& targuments) const {
 		bool lastWasGreater = false;
-		type->print(out, lastWasGreater);
+		type->print(out, lastWasGreater, targuments);
 		out << "::";
 		lastWasGreater = false;
-		name->print(out, lastWasGreater, NULL);
+		name->print(out, lastWasGreater, targuments, NULL);
 		if(!arguments.empty()) {
 			ArgumentIterator abegin(arguments.begin()), aend(arguments.end());
 			out << '<';
@@ -70,7 +70,7 @@ namespace unmangle {
 				else
 					out << ", ";
 				lastWasGreater = false;
-				(*abegin)->print(out, lastWasGreater);
+				(*abegin)->print(out, lastWasGreater, targuments);
 			}
 			if(lastWasGreater)
 				out << ' ';

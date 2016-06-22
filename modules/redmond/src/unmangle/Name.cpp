@@ -10,4 +10,12 @@ namespace unmangle {
 
 	Name::~Name() {}
 
+	int Name::getNameCVQualifiers() const {
+		return 0;
+	}
+
+	void Name::getCurrentTemplateArguments(CurrentTemplateArguments& arguments) const {
+		arguments.clear();
+	}
+
 }}}

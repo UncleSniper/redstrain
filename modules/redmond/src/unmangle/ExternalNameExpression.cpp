@@ -20,7 +20,7 @@ namespace unmangle {
 		return ET_EXTERNAL_NAME;
 	}
 
-	void ExternalNameExpression::print(ostream& out, int) const {
+	void ExternalNameExpression::print(ostream& out, int, const CurrentTemplateArguments&) const {
 		bool lastWasGreater = false;
 		symbol->print(out, lastWasGreater);
 	}

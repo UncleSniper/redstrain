@@ -69,7 +69,9 @@ namespace unmangle {
 		void addSegment(Segment&);
 
 		virtual NameType getNameType() const;
-		virtual void print(std::ostream&, bool&, const std::string*) const;
+		virtual int getNameCVQualifiers() const;
+		virtual void getCurrentTemplateArguments(CurrentTemplateArguments&) const;
+		virtual void print(std::ostream&, bool&, const CurrentTemplateArguments&, const std::string*) const;
 		virtual Name* cloneName() const;
 		virtual bool namesTemplate() const;
 		virtual bool namesReturnless() const;

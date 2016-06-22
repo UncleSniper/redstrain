@@ -1,6 +1,7 @@
 #include "Name.hpp"
-#include "Type.hpp"
+#include "BuiltinType.hpp"
 #include "FunctionSymbol.hpp"
+#include "CVQualifiedType.hpp"
 #include "BareFunctionType.hpp"
 #include "../unmangle-utils.hpp"
 
@@ -34,24 +35,43 @@ namespace unmangle {
 
 	void FunctionSymbol::print(ostream& out, bool& lastWasGreater) const {
 		bool hasReturn = name->namesTemplate() && !name->namesReturnless();
-		name->print(out, lastWasGreater, NULL);
+		CurrentTemplateArguments targuments;
+		name->print(out, lastWasGreater, targuments, NULL);
+		name->getCurrentTemplateArguments(targuments);
 		out << '(';
 		BareFunctionType::TypeIterator ptbegin, ptend;
-		if(hasReturn)
+		unsigned ptcount = type->getTypeCount();
+		if(hasReturn) {
 			type->getRestTypes(ptbegin, ptend);
+			--ptcount;
+		}
 		else
 			type->getTypes(ptbegin, ptend);
 		bool first = true;
 		for(; ptbegin != ptend; ++ptbegin) {
-			if(first)
+			if(first) {
+				if(ptcount == 1u) {
+					Type* pt = *ptbegin;
+					if(pt->getTypeType() == Type::TT_BUILTIN
+							&& static_cast<BuiltinType*>(pt)->getPrimitive() == BuiltinType::P_VOID)
+						break;
+				}
 				first = false;
+			}
 			else
 				out << ", ";
 			lastWasGreater = false;
-			(*ptbegin)->print(out, lastWasGreater);
+			(*ptbegin)->print(out, lastWasGreater, targuments);
 		}
 		out << ')';
 		lastWasGreater = false;
+		int qualifiers = name->getNameCVQualifiers();
+		if(qualifiers & CVQualifiedType::CVQ_RESTRICT)
+			out << " restrict";
+		if(qualifiers & CVQualifiedType::CVQ_VOLATILE)
+			out << " volatile";
+		if(qualifiers & CVQualifiedType::CVQ_CONST)
+			out << " const";
 	}
 
 }}}

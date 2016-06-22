@@ -17,7 +17,8 @@ namespace unmangle {
 		return NT_SOURCE;
 	}
 
-	void SourceName::print(ostream& out, bool& lastWasGreater, const string*) const {
+	void SourceName::print(ostream& out, bool& lastWasGreater, const CurrentTemplateArguments&,
+			const string*) const {
 		out << segment;
 		lastWasGreater = false;
 	}

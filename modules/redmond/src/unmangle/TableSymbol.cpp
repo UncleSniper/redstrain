@@ -44,7 +44,8 @@ namespace unmangle {
 				break;
 		}
 		lastWasGreater = false;
-		targetType->print(out, lastWasGreater);
+		CurrentTemplateArguments targuments;
+		targetType->print(out, lastWasGreater, targuments);
 		if(lastWasGreater)
 			out << ' ';
 		out << '>';

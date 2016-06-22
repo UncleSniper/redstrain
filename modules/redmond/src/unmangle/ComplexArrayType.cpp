@@ -25,8 +25,8 @@ namespace unmangle {
 		return new ComplexArrayType(*this);
 	}
 
-	void ComplexArrayType::printDimension(ostream& out) const {
-		dimension->print(out);
+	void ComplexArrayType::printDimension(ostream& out, const CurrentTemplateArguments& arguments) const {
+		dimension->print(out, arguments);
 	}
 
 }}}
