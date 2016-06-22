@@ -290,7 +290,8 @@ namespace redmond {
 		GCC3UMST_UNSCOPED_TEMPLATE_NAME,
 		GCC3UMST_TEMPLATE_TEMPLATE_PARAM,
 		GCC3UMST_NESTED_PREFIX,
-		GCC3UMST_NESTED_TEMPLATE_PREFIX
+		GCC3UMST_NESTED_TEMPLATE_PREFIX,
+		GCC3UMST_NAME
 	};
 
 	struct GCC3UnmangleSubstitution {
@@ -368,7 +369,7 @@ namespace redmond {
 	}
 
 	CPPSymbol* _unmangleGCC3_encoding(const char*&, const char*, SBox&);
-	Name* _unmangleGCC3_name(const char*&, const char*, SBox&);
+	Name* _unmangleGCC3_name(const char*&, const char*, SBox&, bool);
 	BareFunctionType* _unmangleGCC3_bareFunctionType(const char*&, const char*, SBox&);
 	bool _unmangleGCC3_startsType(char);
 	Type* _unmangleGCC3_type(const char*&, const char*, SBox&);
@@ -1705,10 +1706,12 @@ namespace redmond {
 										return NULL;
 									}
 									const GCC3UnmangleSubstitution& substitution = sbox[sid];
+									SBox tmpSBox(sbox);
 									switch(substitution.type) {
 										case GCC3UMST_UNSCOPED_TEMPLATE_NAME:
 										case GCC3UMST_NESTED_PREFIX:
 										case GCC3UMST_NESTED_TEMPLATE_PREFIX:
+										case GCC3UMST_NAME:
 											break;
 										default:
 											{
@@ -1720,10 +1723,54 @@ namespace redmond {
 											}
 											return NULL;
 									}
+									const char* sbegin = substitution.begin;
+									if(substitution.type == GCC3UMST_NAME) {
+										UnmanglePtr<Name> name(_unmangleGCC3_name(sbegin, substitution.end,
+												tmpSBox, false));
+										if(!name.ptr) {
+											_unmangleGCC3_abandon("_unmangleGCC3_nestedNameImpl", __FILE__, __LINE__);
+											return NULL;
+										}
+										if(sbegin != substitution.end) {
+											_unmangleGCC3_fail("_unmangleGCC3_nestedNameImpl",
+													"Call to _unmangleGCC3_name() did not consume the entire "
+													"expansion of the substitution ('" + string(substitution.begin,
+													static_cast<string::size_type>(substitution.end
+													- substitution.begin)) + "')",
+													sbegin, substitution.end, __FILE__, __LINE__);
+											return NULL;
+										}
+										switch(name.ptr->getNameType()) {
+											case Name::NT_NESTED:
+												delete nested.ptr;
+												nested.ptr = static_cast<NestedName*>(name.ptr);
+												name.ptr = NULL;
+												break;
+											case Name::NT_CONVERSION_OPERATOR:
+											case Name::NT_CTOR_DTOR:
+											case Name::NT_SOURCE:
+											case Name::NT_TEMPLATE_PARAM:
+												{
+													UnmanglePtr<NestedName::Segment> segment(
+															new NestedName::Segment(
+															static_cast<UnqualifiedName*>(name.ptr)));
+													name.ptr = NULL;
+													nested.ptr->addSegment(*segment.ptr);
+													segment.ptr = NULL;
+												}
+												break;
+											default:
+												_unmangleGCC3_fail("_unmangleGCC3_nestedNameImpl",
+														"Substitution of name did not yield a nested name nor "
+														"an unqualified name", substitution.begin, substitution.end,
+														__FILE__, __LINE__);
+												return NULL;
+										}
+										break;
+									}
 									delete nested.ptr;
 									nested.ptr = NULL;
-									const char* sbegin = substitution.begin;
-									nested.ptr = _unmangleGCC3_nestedNameImpl(sbegin, substitution.end, sbox,
+									nested.ptr = _unmangleGCC3_nestedNameImpl(sbegin, substitution.end, tmpSBox,
 											false, qualifiers, argumentSink);
 									if(!nested.ptr) {
 										_unmangleGCC3_abandon("_unmangleGCC3_nestedNameImpl", __FILE__, __LINE__);
@@ -1865,7 +1912,7 @@ namespace redmond {
 		if(*begin == 's')
 			++begin;
 		else {
-			name.ptr = _unmangleGCC3_name(begin, end, sbox);
+			name.ptr = _unmangleGCC3_name(begin, end, sbox, false);
 			if(!name.ptr) {
 				_unmangleGCC3_abandon("_unmangleGCC3_localName", __FILE__, __LINE__);
 				return NULL;
@@ -1892,15 +1939,17 @@ namespace redmond {
 		return ln;
 	}
 
-	Name* _unmangleGCC3_name(const char*& begin, const char* end, SBox& sbox) {
+	Name* _unmangleGCC3_name(const char*& begin, const char* end, SBox& sbox, bool isEligibleForSubstitution) {
 		if(begin == end)
 			return NULL;
+		UnmanglePtr<Name> result(NULL);
+		const char* atStartOfName = begin;
 		switch(*begin) {
 			case 'N':   // nested-name
-				return _unmangleGCC3_nestedName(begin, end, sbox);
+				result.ptr = _unmangleGCC3_nestedName(begin, end, sbox);
+				break;
 			case 'S':   // unscoped-name/unscoped-template-name, substitution
 				{
-					const char* atS = begin;
 					++begin;
 					if(begin == end) {
 						_unmangleGCC3_fail("_unmangleGCC3_name", "Missing substitution after 'S'",
@@ -1929,10 +1978,11 @@ namespace redmond {
 						if(begin == end || *begin != 'I') {
 							// it's "just" an <unscoped-name>
 							nname.ptr = NULL;
-							return nn;
+							result.ptr = nn;
+							break;
 						}
 						// it's an <unscoped-template-name>, followed by <template-args>
-						sbox.add(GCC3UnmangleSubstitution(GCC3UMST_UNSCOPED_TEMPLATE_NAME, atS, begin),
+						sbox.add(GCC3UnmangleSubstitution(GCC3UMST_UNSCOPED_TEMPLATE_NAME, atStartOfName, begin),
 								"_unmangleGCC3_name", __FILE__, __LINE__);
 						if(++begin == end) {
 							_unmangleGCC3_fail("_unmangleGCC3_name",
@@ -1957,7 +2007,8 @@ namespace redmond {
 						} while(*begin != 'E');
 						++begin;
 						nname.ptr = NULL;
-						return nn;
+						result.ptr = nn;
+						break;
 					}
 					else {
 						// This must be an <unscoped-template-name>, since it is being substituted.
@@ -1988,6 +2039,61 @@ namespace redmond {
 										return NULL;
 									}
 									const GCC3UnmangleSubstitution& substitution = sbox[sid];
+									UnmanglePtr<NestedName::Segment> segment(NULL);
+									const char* sbegin = substitution.begin;
+									SBox tmpSBox(sbox);
+									if(substitution.type == GCC3UMST_NAME) {
+										// Hmmm, the name from the expansion might be the whole
+										// name or just the start of it, if <template-args> follow...
+										UnmanglePtr<Name> name(_unmangleGCC3_name(sbegin, substitution.end,
+												tmpSBox, false));
+										if(!name.ptr) {
+											_unmangleGCC3_abandon("_unmangleGCC3_name", __FILE__, __LINE__);
+											return NULL;
+										}
+										if(sbegin != substitution.end) {
+											_unmangleGCC3_fail("_unmangleGCC3_name",
+													"Recursion did not consume the entire expansion of "
+													"the substitution ('" + string(substitution.begin,
+													static_cast<string::size_type>(substitution.end
+													- substitution.begin)) + "')",
+													sbegin, substitution.end, __FILE__, __LINE__);
+											return NULL;
+										}
+										switch(name.ptr->getNameType()) {
+											case Name::NT_NESTED:
+												delete nname.ptr;
+												nname.ptr = static_cast<NestedName*>(name.ptr);
+												name.ptr = NULL;
+												break;
+											case Name::NT_CONVERSION_OPERATOR:
+											case Name::NT_CTOR_DTOR:
+											case Name::NT_SOURCE:
+											case Name::NT_TEMPLATE_PARAM:
+												{
+													segment.ptr = new NestedName::Segment(
+															static_cast<UnqualifiedName*>(name.ptr));
+													name.ptr = NULL;
+													nname.ptr->addSegment(*segment.ptr);
+													segment.ptr = NULL;
+												}
+												break;
+											default:
+												_unmangleGCC3_fail("_unmangleGCC3_name",
+														"Substitution of name did not yield a nested name nor "
+														"an unqualified name", substitution.begin, substitution.end,
+														__FILE__, __LINE__);
+												return NULL;
+										}
+										if(nname.ptr->hasSegments()) {
+											tailSegment = nname.ptr->getLastSegment();
+											if(tailSegment->hasArguments())
+												tailSegment = NULL;
+										}
+										else
+											tailSegment = NULL;
+										break;
+									}
 									// Despite the expansion not necessarily being an
 									// <unscoped-template-name>, the only type that makes
 									// sense here is still GCC3UMST_UNSCOPED_TEMPLATE_NAME.
@@ -2000,10 +2106,8 @@ namespace redmond {
 												begin, end, __FILE__, __LINE__);
 										return NULL;
 									}
-									const char* sbegin = substitution.begin;
 									// As per what is being substituted,
 									// the expansion must be an <unscoped-name>.
-									UnmanglePtr<NestedName::Segment> segment(NULL);
 									if(*sbegin == 'S') {
 										if(++sbegin == substitution.end) {
 											_unmangleGCC3_fail("_unmangleGCC3_name",
@@ -2024,7 +2128,6 @@ namespace redmond {
 										nname.ptr->addSegment(*segment.ptr);
 										segment.ptr = NULL;
 									}
-									SBox tmpSBox(sbox);
 									UnmanglePtr<UnqualifiedName> uqname(_unmangleGCC3_unqualifiedName(sbegin,
 											substitution.end, tmpSBox));
 									if(!uqname.ptr) {
@@ -2147,7 +2250,8 @@ namespace redmond {
 						++begin;
 						nn = nname.ptr;
 						nname.ptr = NULL;
-						return nn;
+						result.ptr = nn;
+						break;
 					}
 				}
 			case 'n':   // operator-name
@@ -2184,9 +2288,9 @@ namespace redmond {
 						return NULL;
 					}
 					if(begin == end || *begin != 'I') {
-						UnqualifiedName* uq = uqname.ptr;
+						result.ptr = uqname.ptr;
 						uqname.ptr = NULL;
-						return uq;
+						break;
 					}
 					if(++begin == end) {
 						_unmangleGCC3_fail("_unmangleGCC3_name",
@@ -2215,11 +2319,19 @@ namespace redmond {
 						arg.ptr = NULL;
 					} while(*begin != 'E');
 					++begin;
-					NestedName* nn = nname.ptr;
+					result.ptr = nname.ptr;
 					nname.ptr = NULL;
-					return nn;
+					break;
 				}
 		}
+		if(!result.ptr)
+			return NULL;
+		if(isEligibleForSubstitution)
+			sbox.add(GCC3UnmangleSubstitution(GCC3UMST_NAME, atStartOfName, begin),
+					"_unmangleGCC3_name", __FILE__, __LINE__);
+		Name* name = result.ptr;
+		result.ptr = NULL;
+		return name;
 	}
 
 	Type* _unmangleGCC3_type(const char*& begin, const char* end, SBox& sbox) {
@@ -2502,6 +2614,7 @@ namespace redmond {
 								SBox tmpSBox(sbox);
 								switch(substitution.type) {
 									case GCC3UMST_TYPE:
+									case GCC3UMST_NAME:  // as per <class-enum-type> ::= <name>
 										{
 											Type* stype = _unmangleGCC3_type(sbegin, substitution.end, tmpSBox);
 											if(!stype) {
@@ -2525,7 +2638,7 @@ namespace redmond {
 										// see other cases of the enclosing switch
 										{
 											begin = beforeSubst;
-											UnmanglePtr<Name> etname(_unmangleGCC3_name(begin, end, sbox));
+											UnmanglePtr<Name> etname(_unmangleGCC3_name(begin, end, sbox, true));
 											if(!etname.ptr) {
 												_unmangleGCC3_abandon("_unmangleGCC3_type", __FILE__, __LINE__);
 												return NULL;
@@ -2672,7 +2785,7 @@ namespace redmond {
 							// cannot derive <substitution> by itsself.
 							{
 								begin = beforeSubst;
-								UnmanglePtr<Name> etname(_unmangleGCC3_name(begin, end, sbox));
+								UnmanglePtr<Name> etname(_unmangleGCC3_name(begin, end, sbox, true));
 								if(!etname.ptr) {
 									_unmangleGCC3_abandon("_unmangleGCC3_type", __FILE__, __LINE__);
 									return NULL;
@@ -2781,7 +2894,7 @@ namespace redmond {
 				}
 			  useEnumName:
 				{
-					UnmanglePtr<Name> etname(_unmangleGCC3_name(begin, end, sbox));
+					UnmanglePtr<Name> etname(_unmangleGCC3_name(begin, end, sbox, false));
 					if(!etname.ptr) {
 						_unmangleGCC3_abandon("_unmangleGCC3_type", __FILE__, __LINE__);
 						return NULL;
@@ -2939,7 +3052,7 @@ namespace redmond {
 				return NULL;
 			}
 			++begin;
-			UnmanglePtr<Name> objectName(_unmangleGCC3_name(begin, end, sbox));
+			UnmanglePtr<Name> objectName(_unmangleGCC3_name(begin, end, sbox, false));
 			if(!objectName.ptr) {
 				_unmangleGCC3_abandon("_unmangleGCC3_specialName", __FILE__, __LINE__);
 				return NULL;
@@ -3077,7 +3190,7 @@ namespace redmond {
 				}
 				break;
 		}
-		UnmanglePtr<Name> name(_unmangleGCC3_name(begin, end, sbox));
+		UnmanglePtr<Name> name(_unmangleGCC3_name(begin, end, sbox, false));
 		if(!name.ptr) {
 			_unmangleGCC3_abandon("_unmangleGCC3_encoding", __FILE__, __LINE__);
 			return NULL;

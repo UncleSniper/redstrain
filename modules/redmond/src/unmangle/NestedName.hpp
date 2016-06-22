@@ -65,6 +65,7 @@ namespace unmangle {
 		bool hasSegments() const;
 		unsigned getSegmentCount() const;
 		void getSegments(SegmentIterator&, SegmentIterator&) const;
+		Segment* getLastSegment() const;
 		void addSegment(Segment&);
 
 		virtual NameType getNameType() const;

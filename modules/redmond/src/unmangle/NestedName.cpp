@@ -86,6 +86,10 @@ namespace unmangle {
 		end = segments.end();
 	}
 
+	NestedName::Segment* NestedName::getLastSegment() const {
+		return segments.empty() ? NULL : segments.back();
+	}
+
 	void NestedName::addSegment(Segment& segment) {
 		segments.push_back(&segment);
 	}
