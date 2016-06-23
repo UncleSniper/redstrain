@@ -1,7 +1,5 @@
 #include "VariableArrayType.hpp"
 
-using std::ostream;
-
 namespace redengine {
 namespace redmond {
 namespace unmangle {
@@ -18,6 +16,6 @@ namespace unmangle {
 		return new VariableArrayType(*this);
 	}
 
-	void VariableArrayType::printDimension(ostream&, const CurrentTemplateArguments&) const {}
+	void VariableArrayType::printDimension(SymbolSink&, const CurrentTemplateArguments&) const {}
 
 }}}

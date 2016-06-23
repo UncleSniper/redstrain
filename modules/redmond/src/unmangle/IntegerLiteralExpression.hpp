@@ -1,6 +1,7 @@
 #ifndef REDSTRAIN_MOD_REDMOND_UNMANGLE_INTEGERLITERALEXPRESSION_HPP
 #define REDSTRAIN_MOD_REDMOND_UNMANGLE_INTEGERLITERALEXPRESSION_HPP
 
+#include "SymbolSink.hpp"
 #include "IntegerLiteralBase.hpp"
 
 namespace redengine {
@@ -16,12 +17,12 @@ namespace unmangle {
 	  private:
 		template<int, bool>
 		struct StreamType {
-			typedef int Printable;
+			typedef int64_t Printable;
 		};
 
 		template<int Dummy>
 		struct StreamType<Dummy, false> {
-			typedef unsigned Printable;
+			typedef uint64_t Printable;
 		};
 
 	  private:
@@ -38,22 +39,12 @@ namespace unmangle {
 			return type;
 		}
 
-		virtual void print(std::ostream& out, int, const CurrentTemplateArguments&) const {
+		virtual void print(SymbolSink& sink, int, const CurrentTemplateArguments&) const {
 			typedef typename StreamType<0, SIGNED>::Printable Printable;
-			switch(type) {
-				case BuiltinType::P_CHAR:
-				case BuiltinType::P_SIGNED_CHAR:
-				case BuiltinType::P_UNSIGNED_CHAR:
-				case BuiltinType::P_WCHAR_T:
-					out << static_cast<Printable>(value);
-					break;
-				case BuiltinType::P_BOOL:
-					out << (value ? "true" : "false");
-					break;
-				default:
-					out << value;
-					break;
-			}
+			if(type == BuiltinType::P_BOOL)
+				sink.putReserved(value ? SymbolSink::RSV_TRUE : SymbolSink::RSV_FALSE);
+			else
+				sink.putIntLiteral(static_cast<Printable>(value));
 		}
 
 		virtual Expression* cloneExpression() const {

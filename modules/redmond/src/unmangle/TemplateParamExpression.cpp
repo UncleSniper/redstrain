@@ -1,7 +1,6 @@
+#include "SymbolSink.hpp"
 #include "TemplateArgument.hpp"
 #include "TemplateParamExpression.hpp"
-
-using std::ostream;
 
 namespace redengine {
 namespace redmond {
@@ -16,13 +15,11 @@ namespace unmangle {
 		return ET_TEMPLATE_PARAM;
 	}
 
-	void TemplateParamExpression::print(ostream& out, int, const CurrentTemplateArguments& arguments) const {
+	void TemplateParamExpression::print(SymbolSink& sink, int, const CurrentTemplateArguments& arguments) const {
 		if(parameter >= static_cast<unsigned>(arguments.size()))
-			out << '$' << parameter;
-		else {
-			bool lastWasGreater = false;
-			arguments[parameter]->print(out, lastWasGreater, arguments);
-		}
+			sink.putUndefinedTemplateParameter(parameter);
+		else
+			arguments[parameter]->print(sink, arguments);
 	}
 
 	Expression* TemplateParamExpression::cloneExpression() const {

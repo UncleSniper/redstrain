@@ -1,8 +1,7 @@
 #include "Type.hpp"
+#include "SymbolSink.hpp"
 #include "CastExpression.hpp"
 #include "../unmangle-utils.hpp"
-
-using std::ostream;
 
 namespace redengine {
 namespace redmond {
@@ -28,17 +27,17 @@ namespace unmangle {
 		return ET_CAST;
 	}
 
-	void CastExpression::print(ostream& out, int minPrecedence, const CurrentTemplateArguments& arguments) const {
+	void CastExpression::print(SymbolSink& sink, int minPrecedence,
+			const CurrentTemplateArguments& arguments) const {
 		int myPrecedence = static_cast<int>(PREC_PREFIX);
 		if(myPrecedence < minPrecedence)
-			out << '(';
-		out << '(';
-		bool lastWasGreater = false;
-		type->print(out, lastWasGreater, arguments);
-		out << ')';
-		operand->print(out, myPrecedence, arguments);
+			sink.putSeparator(SymbolSink::SEP_LEFT_ROUND);
+		sink.putSeparator(SymbolSink::SEP_LEFT_ROUND);
+		type->print(sink, arguments);
+		sink.putSeparator(SymbolSink::SEP_RIGHT_ROUND);
+		operand->print(sink, myPrecedence, arguments);
 		if(myPrecedence < minPrecedence)
-			out << ')';
+			sink.putSeparator(SymbolSink::SEP_RIGHT_ROUND);
 	}
 
 	Expression* CastExpression::cloneExpression() const {

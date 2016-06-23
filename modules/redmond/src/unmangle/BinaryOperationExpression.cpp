@@ -1,7 +1,6 @@
+#include "SymbolSink.hpp"
 #include "BinaryOperationExpression.hpp"
 #include "../unmangle-utils.hpp"
-
-using std::ostream;
 
 namespace redengine {
 namespace redmond {
@@ -28,57 +27,17 @@ namespace unmangle {
 		return ET_BINARY;
 	}
 
-	void BinaryOperationExpression::print(ostream& out, int minPrecedence,
+	void BinaryOperationExpression::print(SymbolSink& sink, int minPrecedence,
 			const CurrentTemplateArguments& arguments) const {
 		int myPrecedence = static_cast<int>(BinaryOperationExpression::getPrecedenceOf(oper));
 		bool ra = BinaryOperationExpression::isRightAssociative(oper);
 		if(myPrecedence < minPrecedence)
-			out << '(';
-		const char* symbol;
-		#define clamp(constant, sym) \
-			case constant: \
-				symbol = sym; \
-				break;
-		switch(oper) {
-			clamp(OP_PLUS, "+")
-			clamp(OP_MINUS, "-")
-			clamp(OP_MULTIPLY, "*")
-			clamp(OP_DIVIDE, "/")
-			clamp(OP_REMAINDER, "%")
-			clamp(OP_AND, "&")
-			clamp(OP_OR, "|")
-			clamp(OP_XOR, "^")
-			clamp(OP_ASSIGN, "=")
-			clamp(OP_PLUS_ASSIGN, "+=")
-			clamp(OP_MINUS_ASSIGN, "-=")
-			clamp(OP_MULTIPLY_ASSIGN, "*=")
-			clamp(OP_DIVIDE_ASSIGN, "/=")
-			clamp(OP_REMAINDER_ASSIGN, "%=")
-			clamp(OP_AND_ASSIGN, "&=")
-			clamp(OP_OR_ASSIGN, "|=")
-			clamp(OP_XOR_ASSIGN, "^=")
-			clamp(OP_LEFT_SHIFT_ASSIGN, "<<=")
-			clamp(OP_RIGHT_SHIFT_ASSIGN, ">>=")
-			clamp(OP_LEFT_SHIFT, "<<")
-			clamp(OP_RIGHT_SHIFT, ">>")
-			clamp(OP_EQUAL, "==")
-			clamp(OP_UNEQUAL, "!=")
-			clamp(OP_LESS, "<")
-			clamp(OP_GREATER, ">")
-			clamp(OP_LESS_EQUAL, "<=")
-			clamp(OP_GREATER_EQUAL, ">=")
-			clamp(OP_LOGICAL_AND, "&&")
-			clamp(OP_LOGICAL_OR, "||")
-			clamp(OP_COMMA, ",")
-			default:
-				symbol = "<unknown binary operator>";
-				break;
-		}
-		leftOperand->print(out, ra ? myPrecedence + 1 : myPrecedence, arguments);
-		out << ' ' << symbol << ' ';
-		rightOperand->print(out, ra ? myPrecedence : myPrecedence + 1, arguments);
+			sink.putSeparator(SymbolSink::SEP_LEFT_ROUND);
+		leftOperand->print(sink, ra ? myPrecedence + 1 : myPrecedence, arguments);
+		sink.putOperatorSymbol(*this);
+		rightOperand->print(sink, ra ? myPrecedence : myPrecedence + 1, arguments);
 		if(myPrecedence < minPrecedence)
-			out << ')';
+			sink.putSeparator(SymbolSink::SEP_RIGHT_ROUND);
 	}
 
 	Expression* BinaryOperationExpression::cloneExpression() const {

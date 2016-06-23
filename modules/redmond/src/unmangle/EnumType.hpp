@@ -24,7 +24,7 @@ namespace unmangle {
 		}
 
 		virtual TypeType getTypeType() const;
-		virtual void print(std::ostream&, bool&, const CurrentTemplateArguments&, const Type*) const;
+		virtual void print(SymbolSink&, const CurrentTemplateArguments&, const Type*) const;
 		virtual Type* cloneType() const;
 
 	};

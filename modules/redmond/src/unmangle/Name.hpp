@@ -2,7 +2,6 @@
 #define REDSTRAIN_MOD_REDMOND_UNMANGLE_NAME_HPP
 
 #include <string>
-#include <iostream>
 
 #include "types.hpp"
 #include "../api.hpp"
@@ -10,6 +9,8 @@
 namespace redengine {
 namespace redmond {
 namespace unmangle {
+
+	class SymbolSink;
 
 	class REDSTRAIN_REDMOND_API Name {
 
@@ -32,7 +33,7 @@ namespace unmangle {
 		virtual NameType getNameType() const = 0;
 		virtual int getNameCVQualifiers() const;
 		virtual void getCurrentTemplateArguments(CurrentTemplateArguments&) const;
-		virtual void print(std::ostream&, bool&, const CurrentTemplateArguments&, const std::string*) const = 0;
+		virtual void print(SymbolSink&, const CurrentTemplateArguments&, const std::string*) const = 0;
 		virtual Name* cloneName() const = 0;
 		virtual bool namesTemplate() const = 0;
 		virtual bool namesReturnless() const = 0;

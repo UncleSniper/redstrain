@@ -1,6 +1,5 @@
+#include "SymbolSink.hpp"
 #include "StaticArrayType.hpp"
-
-using std::ostream;
 
 namespace redengine {
 namespace redmond {
@@ -19,8 +18,8 @@ namespace unmangle {
 		return new StaticArrayType(*this);
 	}
 
-	void StaticArrayType::printDimension(ostream& out, const CurrentTemplateArguments&) const {
-		out << dimension;
+	void StaticArrayType::printDimension(SymbolSink& sink, const CurrentTemplateArguments&) const {
+		sink.putIntLiteral(static_cast<uint64_t>(dimension));
 	}
 
 }}}

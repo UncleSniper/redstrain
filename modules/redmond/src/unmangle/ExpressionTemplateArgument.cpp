@@ -1,8 +1,6 @@
 #include "Expression.hpp"
 #include "ExpressionTemplateArgument.hpp"
 
-using std::ostream;
-
 namespace redengine {
 namespace redmond {
 namespace unmangle {
@@ -20,10 +18,8 @@ namespace unmangle {
 		return AT_EXPRESSION;
 	}
 
-	void ExpressionTemplateArgument::print(ostream& out, bool& lastWasGreater,
-			const CurrentTemplateArguments& arguments) const {
-		expression->print(out, arguments);
-		lastWasGreater = false;
+	void ExpressionTemplateArgument::print(SymbolSink& sink, const CurrentTemplateArguments& arguments) const {
+		expression->print(sink, arguments);
 	}
 
 	TemplateArgument* ExpressionTemplateArgument::cloneTemplateArgument() const {

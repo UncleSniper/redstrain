@@ -1,6 +1,5 @@
 #include "ArrayType.hpp"
-
-using std::ostream;
+#include "SymbolSink.hpp"
 
 namespace redengine {
 namespace redmond {
@@ -22,14 +21,12 @@ namespace unmangle {
 		return elementType->inlinesEnclosingClassName();
 	}
 
-	void ArrayType::print(ostream& out, bool& lastWasGreater, const CurrentTemplateArguments& arguments,
+	void ArrayType::print(SymbolSink& sink, const CurrentTemplateArguments& arguments,
 			const Type* enclosingClass) const {
-		elementType->print(out, lastWasGreater, arguments, enclosingClass);
-		out << '[';
-		lastWasGreater = false;
-		printDimension(out, arguments);
-		out << ']';
-		lastWasGreater = false;
+		elementType->print(sink, arguments, enclosingClass);
+		sink.putSeparator(SymbolSink::SEP_LEFT_SQUARE);
+		printDimension(sink, arguments);
+		sink.putSeparator(SymbolSink::SEP_RIGHT_SQUARE);
 	}
 
 }}}

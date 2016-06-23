@@ -1,8 +1,6 @@
 #include "Name.hpp"
 #include "DataSymbol.hpp"
 
-using std::ostream;
-
 namespace redengine {
 namespace redmond {
 namespace unmangle {
@@ -23,9 +21,9 @@ namespace unmangle {
 		return new DataSymbol(*this);
 	}
 
-	void DataSymbol::print(ostream& out, bool& lastWasGreater) const {
+	void DataSymbol::print(SymbolSink& sink) const {
 		CurrentTemplateArguments empty;
-		name->print(out, lastWasGreater, empty, NULL);
+		name->print(sink, empty, NULL);
 	}
 
 }}}

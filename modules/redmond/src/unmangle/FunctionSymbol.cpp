@@ -1,11 +1,10 @@
 #include "Name.hpp"
+#include "SymbolSink.hpp"
 #include "BuiltinType.hpp"
 #include "FunctionSymbol.hpp"
 #include "CVQualifiedType.hpp"
 #include "BareFunctionType.hpp"
 #include "../unmangle-utils.hpp"
-
-using std::ostream;
 
 namespace redengine {
 namespace redmond {
@@ -33,12 +32,12 @@ namespace unmangle {
 		return new FunctionSymbol(*this);
 	}
 
-	void FunctionSymbol::print(ostream& out, bool& lastWasGreater) const {
+	void FunctionSymbol::print(SymbolSink& sink) const {
 		bool hasReturn = name->namesTemplate() && !name->namesReturnless();
 		CurrentTemplateArguments targuments;
-		name->print(out, lastWasGreater, targuments, NULL);
+		name->print(sink, targuments, NULL);
 		name->getCurrentTemplateArguments(targuments);
-		out << '(';
+		sink.putSeparator(SymbolSink::SEP_LEFT_ROUND);
 		BareFunctionType::TypeIterator ptbegin, ptend;
 		unsigned ptcount = type->getTypeCount();
 		if(hasReturn) {
@@ -47,7 +46,29 @@ namespace unmangle {
 		}
 		else
 			type->getTypes(ptbegin, ptend);
-		bool first = true;
+		unsigned space = sink.getRemainingColumnCount();
+		bool breakParams = false, first = true;
+		if(space) {
+			unsigned iwidth = 0u;
+			BareFunctionType::TypeIterator sptbegin(ptbegin), sptend(ptend);
+			for(; sptbegin != sptend; ++sptbegin) {
+				if(first) {
+					if(ptcount == 1u) {
+						Type* pt = *sptbegin;
+						if(pt->getTypeType() == Type::TT_BUILTIN
+								&& static_cast<BuiltinType*>(pt)->getPrimitive() == BuiltinType::P_VOID)
+							break;
+					}
+					first = false;
+				}
+				else
+					iwidth += sink.getInlineWidthOf(SymbolSink::SEP_COMMA)
+							+ sink.getInlineWidthOf(SymbolSink::SEP_AFTER_COMMA);
+				iwidth += sink.getInlineWidthOf(**ptbegin, targuments, NULL);
+			}
+			first = true;
+			breakParams = iwidth > space;
+		}
 		for(; ptbegin != ptend; ++ptbegin) {
 			if(first) {
 				if(ptcount == 1u) {
@@ -57,21 +78,34 @@ namespace unmangle {
 						break;
 				}
 				first = false;
+				if(breakParams)
+					sink.startNewLine(1);
 			}
-			else
-				out << ", ";
-			lastWasGreater = false;
-			(*ptbegin)->print(out, lastWasGreater, targuments);
+			else {
+				sink.putSeparator(SymbolSink::SEP_COMMA);
+				if(breakParams)
+					sink.startNewLine(0);
+				else
+					sink.putSeparator(SymbolSink::SEP_AFTER_COMMA);
+			}
+			(*ptbegin)->print(sink, targuments);
 		}
-		out << ')';
-		lastWasGreater = false;
+		if(breakParams && !first)
+			sink.startNewLine(-1);
+		sink.putSeparator(SymbolSink::SEP_RIGHT_ROUND);
 		int qualifiers = name->getNameCVQualifiers();
-		if(qualifiers & CVQualifiedType::CVQ_RESTRICT)
-			out << " restrict";
-		if(qualifiers & CVQualifiedType::CVQ_VOLATILE)
-			out << " volatile";
-		if(qualifiers & CVQualifiedType::CVQ_CONST)
-			out << " const";
+		if(qualifiers & CVQualifiedType::CVQ_RESTRICT) {
+			sink.putSeparator(SymbolSink::SEP_BEFORE_CV);
+			sink.putReserved(SymbolSink::RSV_RESTRICT);
+		}
+		if(qualifiers & CVQualifiedType::CVQ_VOLATILE) {
+			sink.putSeparator(SymbolSink::SEP_BEFORE_CV);
+			sink.putReserved(SymbolSink::RSV_VOLATILE);
+		}
+		if(qualifiers & CVQualifiedType::CVQ_CONST) {
+			sink.putSeparator(SymbolSink::SEP_BEFORE_CV);
+			sink.putReserved(SymbolSink::RSV_CONST);
+		}
 	}
 
 }}}

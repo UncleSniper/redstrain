@@ -1,10 +1,10 @@
 #include "NestedName.hpp"
+#include "SymbolSink.hpp"
 #include "UnqualifiedName.hpp"
 #include "TemplateArgument.hpp"
 #include "../unmangle-utils.hpp"
 
 using std::string;
-using std::ostream;
 
 namespace redengine {
 namespace redmond {
@@ -116,8 +116,7 @@ namespace unmangle {
 			arguments.push_back(*abegin);
 	}
 
-	void NestedName::print(ostream& out, bool& lastWasGreater, const CurrentTemplateArguments& arguments,
-			const string*) const {
+	void NestedName::print(SymbolSink& sink, const CurrentTemplateArguments& arguments, const string*) const {
 		const string* lastClassName = NULL;
 		SegmentIterator sbegin(segments.begin()), send(segments.end());
 		Segment::ArgumentIterator abegin, aend;
@@ -126,26 +125,46 @@ namespace unmangle {
 			if(firstSeg)
 				firstSeg = false;
 			else
-				out << "::";
+				sink.putSeparator(SymbolSink::SEP_PAAMAYIM_NEKUDOTAYIM);
 			const Segment& seg = **sbegin;
-			seg.getPrefix().print(out, lastWasGreater, arguments, lastClassName);
+			seg.getPrefix().print(sink, arguments, lastClassName);
 			if(seg.hasArguments()) {
+				sink.putSeparator(SymbolSink::SEP_LEFT_ANGLE);
 				seg.getArguments(abegin, aend);
-				out << '<';
-				bool firstArg = true;
-				for(; abegin != aend; ++abegin) {
-					if(firstArg)
-						firstArg = false;
-					else
-						out << ", ";
-					lastWasGreater = false;
-					(*abegin)->print(out, lastWasGreater, arguments);
+				unsigned space = sink.getRemainingColumnCount();
+				bool breakArgs = false, firstArg = true;
+				if(space) {
+					unsigned iwidth = 0u;
+					Segment::ArgumentIterator sabegin(abegin), saend(aend);
+					for(; sabegin != saend; ++sabegin) {
+						if(firstArg)
+							firstArg = false;
+						else
+							iwidth += sink.getInlineWidthOf(SymbolSink::SEP_COMMA)
+									+ sink.getInlineWidthOf(SymbolSink::SEP_AFTER_COMMA);
+						iwidth += sink.getInlineWidthOf(**sabegin, arguments);
+					}
+					firstArg = false;
+					breakArgs = iwidth > space;
 				}
-				if(lastWasGreater)
-					out << ' ';
-				else
-					lastWasGreater = true;
-				out << '>';
+				for(; abegin != aend; ++abegin) {
+					if(firstArg) {
+						firstArg = false;
+						if(breakArgs)
+							sink.startNewLine(1);
+					}
+					else {
+						sink.putSeparator(SymbolSink::SEP_COMMA);
+						if(breakArgs)
+							sink.startNewLine(0);
+						else
+							sink.putSeparator(SymbolSink::SEP_AFTER_COMMA);
+					}
+					(*abegin)->print(sink, arguments);
+				}
+				if(breakArgs && !firstArg)
+					sink.startNewLine(-1);
+				sink.putSeparator(SymbolSink::SEP_RIGHT_ANGLE);
 			}
 			lastClassName = seg.getPrefix().getUnqualifiedClassNameData();
 		}

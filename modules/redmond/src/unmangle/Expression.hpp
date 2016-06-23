@@ -10,6 +10,8 @@ namespace redengine {
 namespace redmond {
 namespace unmangle {
 
+	class SymbolSink;
+
 	class REDSTRAIN_REDMOND_API Expression {
 
 	  public:
@@ -51,10 +53,10 @@ namespace unmangle {
 		Expression(const Expression&);
 		virtual ~Expression();
 
-		void print(std::ostream&, const CurrentTemplateArguments&) const;
+		void print(SymbolSink&, const CurrentTemplateArguments&) const;
 
 		virtual ExpressionType getExpressionType() const = 0;
-		virtual void print(std::ostream&, int, const CurrentTemplateArguments&) const = 0;
+		virtual void print(SymbolSink&, int, const CurrentTemplateArguments&) const = 0;
 		virtual Expression* cloneExpression() const = 0;
 
 	};

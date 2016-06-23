@@ -1,8 +1,8 @@
 #include "Type.hpp"
+#include "SymbolSink.hpp"
 #include "ConversionOperatorName.hpp"
 
 using std::string;
-using std::ostream;
 
 namespace redengine {
 namespace redmond {
@@ -21,11 +21,10 @@ namespace unmangle {
 		return NT_CONVERSION_OPERATOR;
 	}
 
-	void ConversionOperatorName::print(ostream& out, bool& lastWasGreater,
-			const CurrentTemplateArguments& arguments, const string*) const {
-		out << "operator ";
-		lastWasGreater = false;
-		targetType->print(out, lastWasGreater, arguments);
+	void ConversionOperatorName::print(SymbolSink& sink, const CurrentTemplateArguments& arguments,
+			const string*) const {
+		sink.putReserved(SymbolSink::RSV_CONVERSION_OPERATOR);
+		targetType->print(sink, arguments);
 	}
 
 	Name* ConversionOperatorName::cloneName() const {

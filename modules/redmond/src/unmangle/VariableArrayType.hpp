@@ -10,7 +10,7 @@ namespace unmangle {
 	class REDSTRAIN_REDMOND_API VariableArrayType : public ArrayType {
 
 	  protected:
-		virtual void printDimension(std::ostream&, const CurrentTemplateArguments&) const;
+		virtual void printDimension(SymbolSink&, const CurrentTemplateArguments&) const;
 
 	  public:
 		VariableArrayType(Type*);

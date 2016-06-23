@@ -1,6 +1,5 @@
+#include "SymbolSink.hpp"
 #include "ModifiedType.hpp"
-
-using std::ostream;
 
 namespace redengine {
 namespace redmond {
@@ -23,26 +22,26 @@ namespace unmangle {
 		return type->inlinesEnclosingClassName();
 	}
 
-	void ModifiedType::print(ostream& out, bool& lastWasGreater, const CurrentTemplateArguments& arguments,
+	void ModifiedType::print(SymbolSink& sink, const CurrentTemplateArguments& arguments,
 			const Type* enclosingClass) const {
-		type->print(out, lastWasGreater, arguments, enclosingClass);
-		lastWasGreater = false;
+		type->print(sink, arguments, enclosingClass);
 		switch(modifier) {
 			case MOD_POINTER:
-				out << '*';
+				sink.putSeparator(SymbolSink::SEP_POINTER);
 				break;
 			case MOD_REFERENCE:
-				out << '&';
+				sink.putSeparator(SymbolSink::SEP_REFERENCE);
 				break;
 			case MOD_COMPLEX:
-				out << " _Complex";
+				sink.putSeparator(SymbolSink::SEP_BEFORE_COMPLEX);
+				sink.putReserved(SymbolSink::RSV_COMPLEX);
 				break;
 			case MOD_IMAGINARY:
-				out << " _Imaginary";
+				sink.putSeparator(SymbolSink::SEP_BEFORE_COMPLEX);
+				sink.putReserved(SymbolSink::RSV_IMAGINARY);
 				break;
 			default:
-				out << " <unknown type modifier>";
-				lastWasGreater = true;
+				sink.putReplacementString(SymbolSink::RS_UNKNOWN_TYPE_MODIFIER);
 				break;
 		}
 	}

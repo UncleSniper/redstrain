@@ -20,7 +20,7 @@ namespace unmangle {
 		Type* elementType;
 
 	  protected:
-		virtual void printDimension(std::ostream&, const CurrentTemplateArguments&) const = 0;
+		virtual void printDimension(SymbolSink&, const CurrentTemplateArguments&) const = 0;
 
 	  public:
 		ArrayType(Type*);
@@ -29,7 +29,7 @@ namespace unmangle {
 
 		virtual TypeType getTypeType() const;
 		virtual bool inlinesEnclosingClassName() const;
-		virtual void print(std::ostream&, bool&, const CurrentTemplateArguments&, const Type*) const;
+		virtual void print(SymbolSink&, const CurrentTemplateArguments&, const Type*) const;
 		virtual DimensionType getDimensionType() const = 0;
 
 	};

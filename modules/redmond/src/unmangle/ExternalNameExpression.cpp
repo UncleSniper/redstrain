@@ -1,8 +1,6 @@
 #include "CPPSymbol.hpp"
 #include "ExternalNameExpression.hpp"
 
-using std::ostream;
-
 namespace redengine {
 namespace redmond {
 namespace unmangle {
@@ -20,9 +18,8 @@ namespace unmangle {
 		return ET_EXTERNAL_NAME;
 	}
 
-	void ExternalNameExpression::print(ostream& out, int, const CurrentTemplateArguments&) const {
-		bool lastWasGreater = false;
-		symbol->print(out, lastWasGreater);
+	void ExternalNameExpression::print(SymbolSink& sink, int, const CurrentTemplateArguments&) const {
+		symbol->print(sink);
 	}
 
 	Expression* ExternalNameExpression::cloneExpression() const {

@@ -20,7 +20,7 @@ namespace unmangle {
 		virtual ~OverrideThunkSymbol();
 
 		virtual SpecialSymbolType getSpecialSymbolType() const;
-		virtual void print(std::ostream&, bool&) const;
+		virtual void print(SymbolSink&) const;
 		virtual CPPSymbol* cloneSymbol() const;
 
 	};

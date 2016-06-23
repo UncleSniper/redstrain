@@ -1,6 +1,5 @@
+#include "SymbolSink.hpp"
 #include "CVQualifiedType.hpp"
-
-using std::ostream;
 
 namespace redengine {
 namespace redmond {
@@ -23,29 +22,27 @@ namespace unmangle {
 		return type->inlinesEnclosingClassName();
 	}
 
-	void CVQualifiedType::print(ostream& out, bool& lastWasGreater, const CurrentTemplateArguments& arguments,
+	void CVQualifiedType::print(SymbolSink& sink, const CurrentTemplateArguments& arguments,
 			const Type* enclosingClass) const {
 		bool needsBlank;
 		if(qualifiers & CVQualifiedType::CVQ_RESTRICT) {
-			lastWasGreater = false;
-			out << "restrict";
+			sink.putReserved(SymbolSink::RSV_RESTRICT);
 			needsBlank = true;
 		}
 		else
 			needsBlank = false;
 		if(qualifiers & CVQualifiedType::CVQ_VOLATILE) {
-			lastWasGreater = false;
 			if(needsBlank)
-				out << ' ';
-			out << "volatile";
+				sink.putSeparator(SymbolSink::SEP_BEFORE_CV);
+			sink.putReserved(SymbolSink::RSV_VOLATILE);
 			needsBlank = true;
 		}
 		if(needsBlank)
-			out << ' ';
-		type->print(out, lastWasGreater, arguments, enclosingClass);
+			sink.putSeparator(SymbolSink::SEP_AFTER_CV);
+		type->print(sink, arguments, enclosingClass);
 		if(qualifiers & CVQualifiedType::CVQ_CONST) {
-			out << " const";
-			lastWasGreater = false;
+			sink.putSeparator(SymbolSink::SEP_BEFORE_CV);
+			sink.putReserved(SymbolSink::RSV_CONST);
 		}
 	}
 

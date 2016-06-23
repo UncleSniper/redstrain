@@ -1,7 +1,5 @@
 #include "Expression.hpp"
 
-using std::ostream;
-
 namespace redengine {
 namespace redmond {
 namespace unmangle {
@@ -12,8 +10,8 @@ namespace unmangle {
 
 	Expression::~Expression() {}
 
-	void Expression::print(ostream& out, const CurrentTemplateArguments& arguments) const {
-		print(out, 0, arguments);
+	void Expression::print(SymbolSink& sink, const CurrentTemplateArguments& arguments) const {
+		print(sink, 0, arguments);
 	}
 
 }}}

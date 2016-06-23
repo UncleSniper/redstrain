@@ -1,7 +1,7 @@
+#include "SymbolSink.hpp"
 #include "VendorExtendedQualifiedType.hpp"
 
 using std::string;
-using std::ostream;
 
 namespace redengine {
 namespace redmond {
@@ -25,11 +25,10 @@ namespace unmangle {
 		return type->inlinesEnclosingClassName();
 	}
 
-	void VendorExtendedQualifiedType::print(ostream& out, bool& lastWasGreater,
-			const CurrentTemplateArguments& arguments,  const Type* enclosingClass) const {
-		out << name << ' ';
-		lastWasGreater = false;
-		type->print(out, lastWasGreater, arguments, enclosingClass);
+	void VendorExtendedQualifiedType::print(SymbolSink& sink, const CurrentTemplateArguments& arguments,
+			const Type* enclosingClass) const {
+		sink.putVendorExtendedTypeQualifier(name);
+		type->print(sink, arguments, enclosingClass);
 	}
 
 	Type* VendorExtendedQualifiedType::cloneType() const {

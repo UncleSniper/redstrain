@@ -1,6 +1,5 @@
+#include "SymbolSink.hpp"
 #include "UnaryOperationExpression.hpp"
-
-using std::ostream;
 
 namespace redengine {
 namespace redmond {
@@ -20,56 +19,23 @@ namespace unmangle {
 		return ET_UNARY;
 	}
 
-	void UnaryOperationExpression::print(ostream& out, int minPrecedence,
+	void UnaryOperationExpression::print(SymbolSink& sink, int minPrecedence,
 			const CurrentTemplateArguments& arguments) const {
 		int myPrecedence = static_cast<int>(UnaryOperationExpression::getPrecedenceOf(oper));
 		if(myPrecedence < minPrecedence)
-			out << '(';
-		switch(oper) {
-			case OP_POSITIVE:
-				out << '+';
-				operand->print(out, myPrecedence, arguments);
-				break;
-			case OP_NEGATIVE:
-				out << '-';
-				operand->print(out, myPrecedence, arguments);
-				break;
-			case OP_ADDRESS_OF:
-				out << '&';
-				operand->print(out, myPrecedence, arguments);
-				break;
-			case OP_DEREFERENCE:
-				out << '*';
-				operand->print(out, myPrecedence, arguments);
-				break;
-			case OP_COMPLEMENT:
-				out << '~';
-				operand->print(out, myPrecedence, arguments);
-				break;
-			case OP_NOT:
-				out << '!';
-				operand->print(out, myPrecedence, arguments);
-				break;
-			case OP_INCREMENT:
-				out << "++";
-				operand->print(out, myPrecedence, arguments);
-				break;
-			case OP_DECREMENT:
-				out << "--";
-				operand->print(out, myPrecedence, arguments);
-				break;
-			case OP_SIZEOF_EXPRESSION:
-				out << "sizeof(";
-				operand->print(out, 0, arguments);
-				out << ')';
-				break;
-			default:
-				out << "<unknown unary operator> ";
-				operand->print(out, PREC_PRIMARY, arguments);
-				break;
+			sink.putSeparator(SymbolSink::SEP_LEFT_ROUND);
+		if(oper == OP_SIZEOF_EXPRESSION) {
+			sink.putReserved(SymbolSink::RSV_SIZEOF);
+			sink.putSeparator(SymbolSink::SEP_LEFT_ROUND);
+			operand->print(sink, 0, arguments);
+			sink.putSeparator(SymbolSink::SEP_RIGHT_ROUND);
+		}
+		else {
+			sink.putOperatorSymbol(*this);
+			operand->print(sink, myPrecedence, arguments);
 		}
 		if(myPrecedence < minPrecedence)
-			out << ')';
+			sink.putSeparator(SymbolSink::SEP_RIGHT_ROUND);
 	}
 
 	Expression* UnaryOperationExpression::cloneExpression() const {

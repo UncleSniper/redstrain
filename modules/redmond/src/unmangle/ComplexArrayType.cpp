@@ -1,8 +1,6 @@
 #include "Expression.hpp"
 #include "ComplexArrayType.hpp"
 
-using std::ostream;
-
 namespace redengine {
 namespace redmond {
 namespace unmangle {
@@ -25,8 +23,8 @@ namespace unmangle {
 		return new ComplexArrayType(*this);
 	}
 
-	void ComplexArrayType::printDimension(ostream& out, const CurrentTemplateArguments& arguments) const {
-		dimension->print(out, arguments);
+	void ComplexArrayType::printDimension(SymbolSink& sink, const CurrentTemplateArguments& arguments) const {
+		dimension->print(sink, arguments);
 	}
 
 }}}

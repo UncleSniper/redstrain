@@ -1,8 +1,6 @@
 #include "Name.hpp"
 #include "EnumType.hpp"
 
-using std::ostream;
-
 namespace redengine {
 namespace redmond {
 namespace unmangle {
@@ -19,9 +17,8 @@ namespace unmangle {
 		return TT_ENUM;
 	}
 
-	void EnumType::print(ostream& out, bool& lastWasGreater, const CurrentTemplateArguments& arguments,
-			const Type*) const {
-		name->print(out, lastWasGreater, arguments, NULL);
+	void EnumType::print(SymbolSink& sink, const CurrentTemplateArguments& arguments, const Type*) const {
+		name->print(sink, arguments, NULL);
 	}
 
 	Type* EnumType::cloneType() const {

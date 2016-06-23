@@ -1,6 +1,5 @@
+#include "SymbolSink.hpp"
 #include "BuiltinType.hpp"
-
-using std::ostream;
 
 namespace redengine {
 namespace redmond {
@@ -14,9 +13,8 @@ namespace unmangle {
 		return TT_BUILTIN;
 	}
 
-	void BuiltinType::print(ostream& out, bool& lastWasGreater, const CurrentTemplateArguments&, const Type*) const {
-		out << BuiltinType::getPrimitiveName(primitive);
-		lastWasGreater = false;
+	void BuiltinType::print(SymbolSink& sink, const CurrentTemplateArguments&, const Type*) const {
+		sink.putBuiltinType(*this);
 	}
 
 	Type* BuiltinType::cloneType() const {

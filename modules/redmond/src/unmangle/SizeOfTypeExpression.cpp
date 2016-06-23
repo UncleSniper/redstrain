@@ -1,7 +1,6 @@
 #include "Type.hpp"
+#include "SymbolSink.hpp"
 #include "SizeOfTypeExpression.hpp"
-
-using std::ostream;
 
 namespace redengine {
 namespace redmond {
@@ -20,11 +19,11 @@ namespace unmangle {
 		return ET_SIZEOF_TYPE;
 	}
 
-	void SizeOfTypeExpression::print(ostream& out, int, const CurrentTemplateArguments& arguments) const {
-		out << "sizeof(";
-		bool lastWasGreater = false;
-		type->print(out, lastWasGreater, arguments);
-		out << ')';
+	void SizeOfTypeExpression::print(SymbolSink& sink, int, const CurrentTemplateArguments& arguments) const {
+		sink.putReserved(SymbolSink::RSV_SIZEOF);
+		sink.putSeparator(SymbolSink::SEP_LEFT_ROUND);
+		type->print(sink, arguments);
+		sink.putSeparator(SymbolSink::SEP_RIGHT_ROUND);
 	}
 
 	Expression* SizeOfTypeExpression::cloneExpression() const {

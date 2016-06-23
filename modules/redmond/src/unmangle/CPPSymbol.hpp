@@ -10,6 +10,8 @@ namespace redengine {
 namespace redmond {
 namespace unmangle {
 
+	class SymbolSink;
+
 	class REDSTRAIN_REDMOND_API CPPSymbol {
 
 	  public:
@@ -28,7 +30,7 @@ namespace unmangle {
 		std::string toString() const;
 
 		virtual SymbolType getSymbolType() const = 0;
-		virtual void print(std::ostream&, bool&) const = 0;
+		virtual void print(SymbolSink&) const = 0;
 		virtual CPPSymbol* cloneSymbol() const = 0;
 
 	};

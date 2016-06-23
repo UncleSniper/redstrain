@@ -1,7 +1,7 @@
+#include "SymbolSink.hpp"
 #include "VendorExtendedType.hpp"
 
 using std::string;
-using std::ostream;
 
 namespace redengine {
 namespace redmond {
@@ -17,10 +17,8 @@ namespace unmangle {
 		return TT_VENDOR_EXTENDED;
 	}
 
-	void VendorExtendedType::print(ostream& out, bool& lastWasGreater, const CurrentTemplateArguments&,
-			const Type*) const {
-		out << name;
-		lastWasGreater = !name.empty() && name[name.length() - static_cast<string::size_type>(1u)] == '>';
+	void VendorExtendedType::print(SymbolSink& sink, const CurrentTemplateArguments&, const Type*) const {
+		sink.putVendorExtendedType(name);
 	}
 
 	Type* VendorExtendedType::cloneType() const {

@@ -18,7 +18,7 @@ namespace unmangle {
 		virtual ~SourceName();
 
 		virtual NameType getNameType() const;
-		virtual void print(std::ostream&, bool&, const CurrentTemplateArguments&, const std::string*) const;
+		virtual void print(SymbolSink&, const CurrentTemplateArguments&, const std::string*) const;
 		virtual Name* cloneName() const;
 		virtual const std::string* getUnqualifiedClassNameData() const;
 		virtual bool namesTemplate() const;

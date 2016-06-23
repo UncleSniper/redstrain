@@ -3,10 +3,10 @@
 
 #include "LocalName.hpp"
 #include "CPPSymbol.hpp"
+#include "SymbolSink.hpp"
 #include "../unmangle-utils.hpp"
 
 using std::string;
-using std::ostream;
 
 namespace redengine {
 namespace redmond {
@@ -34,22 +34,15 @@ namespace unmangle {
 		return NT_LOCAL;
 	}
 
-	void LocalName::print(ostream& out, bool& lastWasGreater, const CurrentTemplateArguments& arguments,
-			const string*) const {
-		function->print(out);
-		out << "::";
-		if(name) {
-			lastWasGreater = false;
-			name->print(out, lastWasGreater, arguments, NULL);
-		}
-		else {
-			out << "<anonymous>";
-			lastWasGreater = true;
-		}
-		if(discriminator) {
-			out << '@' << discriminator;
-			lastWasGreater = false;
-		}
+	void LocalName::print(SymbolSink& sink, const CurrentTemplateArguments& arguments, const string*) const {
+		function->print(sink);
+		sink.putSeparator(SymbolSink::SEP_PAAMAYIM_NEKUDOTAYIM);
+		if(name)
+			name->print(sink, arguments, NULL);
+		else
+			sink.putReplacementString(SymbolSink::RS_ANONYMOUS_LOCAL_NAME);
+		if(discriminator)
+			sink.putLocalNameDiscriminator(discriminator);
 	}
 
 	Name* LocalName::cloneName() const {

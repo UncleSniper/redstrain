@@ -1,7 +1,6 @@
+#include "SymbolSink.hpp"
 #include "PointerToMemberType.hpp"
 #include "../unmangle-utils.hpp"
-
-using std::ostream;
 
 namespace redengine {
 namespace redmond {
@@ -26,17 +25,15 @@ namespace unmangle {
 		return TT_POINTER_TO_MEMBER;
 	}
 
-	void PointerToMemberType::print(ostream& out, bool& lastWasGreater, const CurrentTemplateArguments& arguments,
-			const Type*) const {
+	void PointerToMemberType::print(SymbolSink& sink, const CurrentTemplateArguments& arguments, const Type*) const {
 		if(memberType->inlinesEnclosingClassName())
-			memberType->print(out, lastWasGreater, arguments, classType);
+			memberType->print(sink, arguments, classType);
 		else {
-			memberType->print(out, lastWasGreater, arguments, NULL);
-			out << ' ';
-			lastWasGreater = false;
-			classType->print(out, lastWasGreater, arguments, NULL);
-			out << "::*";
-			lastWasGreater = false;
+			memberType->print(sink, arguments, NULL);
+			sink.putSeparator(SymbolSink::SEP_TYPE_VARIABLE);
+			classType->print(sink, arguments, NULL);
+			sink.putSeparator(SymbolSink::SEP_PAAMAYIM_NEKUDOTAYIM);
+			sink.putSeparator(SymbolSink::SEP_POINTER);
 		}
 	}
 

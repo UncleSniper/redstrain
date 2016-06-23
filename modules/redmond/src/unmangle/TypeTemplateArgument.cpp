@@ -1,8 +1,6 @@
 #include "Type.hpp"
 #include "TypeTemplateArgument.hpp"
 
-using std::ostream;
-
 namespace redengine {
 namespace redmond {
 namespace unmangle {
@@ -20,9 +18,8 @@ namespace unmangle {
 		return AT_TYPE;
 	}
 
-	void TypeTemplateArgument::print(ostream& out, bool& lastWasGreater,
-			const CurrentTemplateArguments& arguments) const {
-		type->print(out, lastWasGreater, arguments);
+	void TypeTemplateArgument::print(SymbolSink& sink, const CurrentTemplateArguments& arguments) const {
+		type->print(sink, arguments);
 	}
 
 	TemplateArgument* TypeTemplateArgument::cloneTemplateArgument() const {

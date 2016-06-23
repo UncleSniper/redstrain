@@ -1,6 +1,7 @@
 #ifndef REDSTRAIN_MOD_REDMOND_UNMANGLE_FLOATLITERALEXPRESSION_HPP
 #define REDSTRAIN_MOD_REDMOND_UNMANGLE_FLOATLITERALEXPRESSION_HPP
 
+#include "SymbolSink.hpp"
 #include "FloatLiteralBase.hpp"
 
 namespace redengine {
@@ -24,8 +25,8 @@ namespace unmangle {
 			return type;
 		}
 
-		virtual void print(std::ostream& out, int, const CurrentTemplateArguments&) const {
-			out << value;
+		virtual void print(SymbolSink& sink, int, const CurrentTemplateArguments&) const {
+			sink.putFloatLiteral(value);
 		}
 
 		virtual Expression* cloneExpression() const {

@@ -10,6 +10,8 @@ namespace redengine {
 namespace redmond {
 namespace unmangle {
 
+	class SymbolSink;
+
 	class REDSTRAIN_REDMOND_API Type {
 
 	  public:
@@ -32,11 +34,11 @@ namespace unmangle {
 		Type(const Type&);
 		virtual ~Type();
 
-		void print(std::ostream&, bool&, const CurrentTemplateArguments&) const;
+		void print(SymbolSink&, const CurrentTemplateArguments&) const;
 
 		virtual TypeType getTypeType() const = 0;
 		virtual bool inlinesEnclosingClassName() const;
-		virtual void print(std::ostream&, bool&, const CurrentTemplateArguments&, const Type*) const = 0;
+		virtual void print(SymbolSink&, const CurrentTemplateArguments&, const Type*) const = 0;
 		virtual Type* cloneType() const = 0;
 
 	};

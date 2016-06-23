@@ -1,10 +1,9 @@
 #include "Type.hpp"
+#include "SymbolSink.hpp"
 #include "UnqualifiedName.hpp"
 #include "TemplateArgument.hpp"
 #include "DependentNameExpression.hpp"
 #include "../unmangle-utils.hpp"
-
-using std::ostream;
 
 namespace redengine {
 namespace redmond {
@@ -54,27 +53,47 @@ namespace unmangle {
 		return ET_DEPENDENT_NAME;
 	}
 
-	void DependentNameExpression::print(ostream& out, int, const CurrentTemplateArguments& targuments) const {
-		bool lastWasGreater = false;
-		type->print(out, lastWasGreater, targuments);
-		out << "::";
-		lastWasGreater = false;
-		name->print(out, lastWasGreater, targuments, NULL);
+	void DependentNameExpression::print(SymbolSink& sink, int, const CurrentTemplateArguments& targuments) const {
+		type->print(sink, targuments);
+		sink.putSeparator(SymbolSink::SEP_PAAMAYIM_NEKUDOTAYIM);
+		name->print(sink, targuments, NULL);
 		if(!arguments.empty()) {
 			ArgumentIterator abegin(arguments.begin()), aend(arguments.end());
-			out << '<';
-			bool first = true;
-			for(; abegin != aend; ++abegin) {
-				if(first)
-					first = false;
-				else
-					out << ", ";
-				lastWasGreater = false;
-				(*abegin)->print(out, lastWasGreater, targuments);
+			sink.putSeparator(SymbolSink::SEP_LEFT_ANGLE);
+			unsigned space = sink.getRemainingColumnCount();
+			bool breakArgs = false, first = true;
+			if(space) {
+				unsigned iwidth = 0u;
+				ArgumentIterator sabegin(abegin), saend(aend);
+				for(; sabegin != saend; ++sabegin) {
+					if(first)
+						first = false;
+					else
+						iwidth += sink.getInlineWidthOf(SymbolSink::SEP_COMMA)
+								+ sink.getInlineWidthOf(SymbolSink::SEP_AFTER_COMMA);
+					iwidth += sink.getInlineWidthOf(**sabegin, targuments);
+				}
+				first = false;
+				breakArgs = iwidth > space;
 			}
-			if(lastWasGreater)
-				out << ' ';
-			out << '>';
+			for(; abegin != aend; ++abegin) {
+				if(first) {
+					first = false;
+					if(breakArgs)
+						sink.startNewLine(1);
+				}
+				else {
+					sink.putSeparator(SymbolSink::SEP_COMMA);
+					if(breakArgs)
+						sink.startNewLine(0);
+					else
+						sink.putSeparator(SymbolSink::SEP_AFTER_COMMA);
+				}
+				(*abegin)->print(sink, targuments);
+			}
+			if(breakArgs && !first)
+				sink.startNewLine(-1);
+			sink.putSeparator(SymbolSink::SEP_RIGHT_ANGLE);
 		}
 	}
 

@@ -1,7 +1,7 @@
 #include "SourceName.hpp"
+#include "SymbolSink.hpp"
 
 using std::string;
-using std::ostream;
 
 namespace redengine {
 namespace redmond {
@@ -17,10 +17,8 @@ namespace unmangle {
 		return NT_SOURCE;
 	}
 
-	void SourceName::print(ostream& out, bool& lastWasGreater, const CurrentTemplateArguments&,
-			const string*) const {
-		out << segment;
-		lastWasGreater = false;
+	void SourceName::print(SymbolSink& sink, const CurrentTemplateArguments&, const string*) const {
+		sink.putSourceName(segment);
 	}
 
 	Name* SourceName::cloneName() const {

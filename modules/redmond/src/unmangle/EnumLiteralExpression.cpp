@@ -2,9 +2,8 @@
 #define REDSTRAIN_MOD_REDMOND_UNMANGLE_ENUMLITERALEXPRESSION_CPP
 
 #include "Name.hpp"
+#include "SymbolSink.hpp"
 #include "EnumLiteralExpression.hpp"
-
-using std::ostream;
 
 namespace redengine {
 namespace redmond {
@@ -23,17 +22,17 @@ namespace unmangle {
 		return LT_ENUM;
 	}
 
-	void EnumLiteralExpression::print(ostream& out, int minPrecedence,
+	void EnumLiteralExpression::print(SymbolSink& sink, int minPrecedence,
 			const CurrentTemplateArguments& arguments) const {
 		int myPrecedence = static_cast<int>(PREC_PREFIX);
 		if(myPrecedence < minPrecedence)
-			out << '(';
-		out << '(';
-		bool lastWasGreater = false;
-		typeName->print(out, lastWasGreater, arguments, NULL);
-		out << ')' << value;
+			sink.putSeparator(SymbolSink::SEP_LEFT_ROUND);
+		sink.putSeparator(SymbolSink::SEP_LEFT_ROUND);
+		typeName->print(sink, arguments, NULL);
+		sink.putSeparator(SymbolSink::SEP_RIGHT_ROUND);
+		sink.putIntLiteral(static_cast<int64_t>(value));
 		if(myPrecedence < minPrecedence)
-			out << ')';
+			sink.putSeparator(SymbolSink::SEP_RIGHT_ROUND);
 	}
 
 	Expression* EnumLiteralExpression::cloneExpression() const {

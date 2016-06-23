@@ -1,7 +1,6 @@
 #include "Name.hpp"
+#include "SymbolSink.hpp"
 #include "GuardVariableSymbol.hpp"
-
-using std::ostream;
 
 namespace redengine {
 namespace redmond {
@@ -24,15 +23,8 @@ namespace unmangle {
 		return new GuardVariableSymbol(*this);
 	}
 
-	void GuardVariableSymbol::print(ostream& out, bool& lastWasGreater) const {
-		out << "<guard variable for ";
-		lastWasGreater = false;
-		CurrentTemplateArguments targuments;
-		objectName->print(out, lastWasGreater, targuments, NULL);
-		if(lastWasGreater)
-			out << ' ';
-		out << '>';
-		lastWasGreater = true;
+	void GuardVariableSymbol::print(SymbolSink& sink) const {
+		sink.putGuardVariable(*this);
 	}
 
 }}}

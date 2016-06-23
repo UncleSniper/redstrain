@@ -1,7 +1,6 @@
+#include "SymbolSink.hpp"
 #include "TernaryOperationExpression.hpp"
 #include "../unmangle-utils.hpp"
-
-using std::ostream;
 
 namespace redengine {
 namespace redmond {
@@ -31,18 +30,18 @@ namespace unmangle {
 		return ET_TERNARY;
 	}
 
-	void TernaryOperationExpression::print(ostream& out, int minPrecedence,
+	void TernaryOperationExpression::print(SymbolSink& sink, int minPrecedence,
 			const CurrentTemplateArguments& arguments) const {
 		int myPrecedence = static_cast<int>(PREC_TERNARY);
 		if(myPrecedence < minPrecedence)
-			out << '(';
-		condition->print(out, myPrecedence + 1, arguments);
-		out << " ? ";
-		thenBranch->print(out, myPrecedence, arguments);
-		out << " : ";
-		elseBranch->print(out, myPrecedence, arguments);
+			sink.putSeparator(SymbolSink::SEP_LEFT_ROUND);
+		condition->print(sink, myPrecedence + 1, arguments);
+		sink.putSeparator(SymbolSink::SEP_TERNARY_THEN);
+		thenBranch->print(sink, myPrecedence, arguments);
+		sink.putSeparator(SymbolSink::SEP_TERNARY_ELSE);
+		elseBranch->print(sink, myPrecedence, arguments);
 		if(myPrecedence < minPrecedence)
-			out << ')';
+			sink.putSeparator(SymbolSink::SEP_RIGHT_ROUND);
 	}
 
 	Expression* TernaryOperationExpression::cloneExpression() const {

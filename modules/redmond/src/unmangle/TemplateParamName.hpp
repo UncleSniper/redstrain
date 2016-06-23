@@ -17,7 +17,7 @@ namespace unmangle {
 		TemplateParamName(const TemplateParamName&);
 
 		virtual NameType getNameType() const;
-		virtual void print(std::ostream&, bool&, const CurrentTemplateArguments&, const std::string*) const;
+		virtual void print(SymbolSink&, const CurrentTemplateArguments&, const std::string*) const;
 		virtual Name* cloneName() const;
 		virtual bool namesTemplate() const;
 		virtual bool namesReturnless() const;
