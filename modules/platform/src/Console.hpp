@@ -57,6 +57,7 @@ namespace platform {
 
 		static File::Handle getStandardHandle(StandardHandle);
 		static bool isConsole(File::Handle);
+		static void getConsoleDimensions(unsigned&, unsigned&);
 
 	};
 

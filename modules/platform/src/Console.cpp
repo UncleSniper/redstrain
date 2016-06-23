@@ -5,6 +5,7 @@
 #if REDSTRAIN_PLATFORM_OS == REDSTRAIN_PLATFORM_OS_UNIX
 #include <cstdio>
 #include <cstring>
+#include <sys/ioctl.h>
 using redengine::util::MemorySize;
 #elif REDSTRAIN_PLATFORM_OS == REDSTRAIN_PLATFORM_OS_WINDOWS
 #include <redstrain/util/IntegerBounds.hpp>
@@ -93,6 +94,27 @@ namespace platform {
 			file.write(seq, strlen(seq));
 		}
 		wrapWriteError(SET_CURSOR_POSITION)
+	}
+
+	void Console::getConsoleDimensions(unsigned& width, unsigned& height) {
+		int fd;
+		if(isatty(0))
+			fd = 0;
+		else if(isatty(1))
+			fd = 1;
+		else if(isatty(2))
+			fd = 2;
+		else {
+			width = height = 0u;
+			return;
+		}
+		struct winsize wsz;
+		if(ioctl(fd, TIOCGWINSZ, &wsz))
+			width = height = 0u;
+		else {
+			width = static_cast<unsigned>(wsz.ws_col);
+			height = static_cast<unsigned>(wsz.ws_row);
+		}
 	}
 
 	File::Handle Console::getStandardHandle(StandardHandle handle) {
@@ -219,6 +241,27 @@ namespace platform {
 		coords.Y = static_cast<SHORT>(row - 1u);
 		if(!SetConsoleCursorPosition(file.getHandle(), coords))
 			throw ConsoleError(GetLastError(), ConsoleError::SET_CURSOR_POSITION);
+	}
+
+	void Console::getConsoleDimensions(unsigned& width, unsigned& height) {
+		HANDLE fd;
+		if(Console::isConsole((fd = GetStdHandle(STD_INPUT_HANDLE))))
+			{}
+		else if(Console::isConsole((fd = GetStdHandle(STD_OUTPUT_HANDLE))))
+			{}
+		else if(Console::isConsole((fd = GetStdHandle(STD_ERROR_HANDLE))))
+			{}
+		else {
+			width = height = 0u;
+			return;
+		}
+		CONSOLE_SCREEN_BUFFER_INFO csbi;
+		if(GetConsoleScreenBufferInfo(fd, &csbi)) {
+			width = static_cast<unsigned>(csbi.srWindow.Right - csbi.srWindow.Left + static_cast<SHORT>(1));
+			height = static_cast<unsigned>(csbi.srWindow.Bottom - csbi.srWindow.Top + static_cast<SHORT>(1));
+		}
+		else
+			width = height = 0u;
 	}
 
 	File::Handle Console::getStandardHandle(StandardHandle handle) {
