@@ -19,6 +19,18 @@ namespace unmangle {
 		CovariantOverrideThunkSymbol(const CovariantOverrideThunkSymbol&);
 		virtual ~CovariantOverrideThunkSymbol();
 
+		inline const CallOffset& getThisAdjustment() const {
+			return thisAdjustment;
+		}
+
+		inline const CallOffset& getResultAdjustment() const {
+			return resultAdjustment;
+		}
+
+		inline CPPSymbol& getTargetFunction() const {
+			return *targetFunction;
+		}
+
 		virtual SpecialSymbolType getSpecialSymbolType() const;
 		virtual void print(SymbolSink&) const;
 		virtual CPPSymbol* cloneSymbol() const;

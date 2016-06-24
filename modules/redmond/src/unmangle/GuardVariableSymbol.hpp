@@ -19,6 +19,10 @@ namespace unmangle {
 		GuardVariableSymbol(const GuardVariableSymbol&);
 		virtual ~GuardVariableSymbol();
 
+		inline Name& getObjectName() const {
+			return *objectName;
+		}
+
 		virtual SpecialSymbolType getSpecialSymbolType() const;
 		virtual void print(SymbolSink&) const;
 		virtual CPPSymbol* cloneSymbol() const;

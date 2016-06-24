@@ -25,6 +25,14 @@ namespace unmangle {
 		TableSymbol(const TableSymbol&);
 		virtual ~TableSymbol();
 
+		inline TableSymbolType getTableType() const {
+			return tableType;
+		}
+
+		inline Type& getTargetType() const {
+			return *targetType;
+		}
+
 		virtual SpecialSymbolType getSpecialSymbolType() const;
 		virtual void print(SymbolSink&) const;
 		virtual CPPSymbol* cloneSymbol() const;

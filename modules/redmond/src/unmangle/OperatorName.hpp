@@ -66,6 +66,10 @@ namespace unmangle {
 		OperatorName(Operator);
 		OperatorName(const OperatorName&);
 
+		inline Operator getOperator() const {
+			return oper;
+		}
+
 		virtual NameType getNameType() const;
 		virtual void print(SymbolSink&, const CurrentTemplateArguments&, const std::string*) const;
 		virtual Name* cloneName() const;

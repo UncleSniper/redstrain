@@ -19,6 +19,14 @@ namespace unmangle {
 		OverrideThunkSymbol(const OverrideThunkSymbol&);
 		virtual ~OverrideThunkSymbol();
 
+		inline const CallOffset& getCallOffset() const {
+			return callOffset;
+		}
+
+		inline CPPSymbol& getTargetFunction() const {
+			return *targetFunction;
+		}
+
 		virtual SpecialSymbolType getSpecialSymbolType() const;
 		virtual void print(SymbolSink&) const;
 		virtual CPPSymbol* cloneSymbol() const;
