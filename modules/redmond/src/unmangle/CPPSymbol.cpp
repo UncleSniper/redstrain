@@ -1,6 +1,8 @@
 #include <sstream>
 
 #include "CPPSymbol.hpp"
+#include "StdOStreamSymbolSink.hpp"
+#include "StdOStreamSymbolIndenter.hpp"
 
 using std::string;
 using std::ostream;
@@ -16,15 +18,13 @@ namespace unmangle {
 
 	CPPSymbol::~CPPSymbol() {}
 
-	void CPPSymbol::print(ostream&) const {
-		/*TODO
-		bool lastWasGreater = false;
-		print(out, lastWasGreater);
-		*/
+	void CPPSymbol::print(ostream& stream) const {
+		StdOStreamSymbolIndenter indenter(stream);
+		StdOStreamSymbolSink sink(stream, indenter);
+		print(sink);
 	}
 
 	string CPPSymbol::toString() const {
-		//TODO: short circuit this
 		stringstream ss;
 		print(ss);
 		return ss.str();

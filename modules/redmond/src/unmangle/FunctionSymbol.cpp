@@ -34,9 +34,13 @@ namespace unmangle {
 
 	void FunctionSymbol::print(SymbolSink& sink) const {
 		bool hasReturn = name->namesTemplate() && !name->namesReturnless();
-		CurrentTemplateArguments targuments;
+		CurrentTemplateArguments targuments, realArguments;
+		name->getCurrentTemplateArguments(realArguments);
+		if(hasReturn && type->hasTypes()) {
+			type->getFirstType()->print(sink, realArguments);
+			sink.putSeparator(SymbolSink::SEP_RETURN_TYPE_FUNCTION);
+		}
 		name->print(sink, targuments, NULL);
-		name->getCurrentTemplateArguments(targuments);
 		sink.putSeparator(SymbolSink::SEP_LEFT_ROUND);
 		BareFunctionType::TypeIterator ptbegin, ptend;
 		unsigned ptcount = type->getTypeCount();
@@ -64,7 +68,7 @@ namespace unmangle {
 				else
 					iwidth += sink.getInlineWidthOf(SymbolSink::SEP_COMMA)
 							+ sink.getInlineWidthOf(SymbolSink::SEP_AFTER_COMMA);
-				iwidth += sink.getInlineWidthOf(**ptbegin, targuments, NULL);
+				iwidth += sink.getInlineWidthOf(**ptbegin, realArguments, NULL);
 			}
 			first = true;
 			breakParams = iwidth > space;
@@ -88,7 +92,7 @@ namespace unmangle {
 				else
 					sink.putSeparator(SymbolSink::SEP_AFTER_COMMA);
 			}
-			(*ptbegin)->print(sink, targuments);
+			(*ptbegin)->print(sink, realArguments);
 		}
 		if(breakParams && !first)
 			sink.startNewLine(-1);

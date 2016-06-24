@@ -103,36 +103,6 @@ namespace unmangle {
 		virtual void putVendorExtendedTypeQualifier(const std::string&) = 0;
 		virtual void putVendorExtendedType(const std::string&) = 0;
 		virtual void putOperatorSymbol(const BinaryOperationExpression&) = 0;
-		// switch(oper) {
-		// 	case OP_POSITIVE:
-		// 		out << '+';
-		// 		break;
-		// 	case OP_NEGATIVE:
-		// 		out << '-';
-		// 		break;
-		// 	case OP_ADDRESS_OF:
-		// 		out << '&';
-		// 		break;
-		// 	case OP_DEREFERENCE:
-		// 		out << '*';
-		// 		break;
-		// 	case OP_COMPLEMENT:
-		// 		out << '~';
-		// 		break;
-		// 	case OP_NOT:
-		// 		out << '!';
-		// 		break;
-		// 	case OP_INCREMENT:
-		// 		out << "++";
-		// 		break;
-		// 	case OP_DECREMENT:
-		// 		out << "--";
-		// 		break;
-		// 	case OP_SIZEOF_EXPRESSION:
-		// 	default:
-		// 		out << "<unknown unary operator> ";
-		// 		break;
-		// }
 		virtual void putOperatorSymbol(const UnaryOperationExpression&) = 0;
 
 	};

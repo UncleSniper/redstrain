@@ -28,6 +28,7 @@ namespace unmangle {
 		~BareFunctionType();
 
 		unsigned getTypeCount() const;
+		bool hasTypes() const;
 		void getTypes(TypeIterator&, TypeIterator&) const;
 		Type* getFirstType() const;
 		void getRestTypes(TypeIterator&, TypeIterator&) const;

@@ -30,6 +30,10 @@ namespace unmangle {
 		return static_cast<unsigned>(types.size());
 	}
 
+	bool BareFunctionType::hasTypes() const {
+		return !types.empty();
+	}
+
 	void BareFunctionType::getTypes(TypeIterator& begin, TypeIterator& end) const {
 		begin = types.begin();
 		end = types.end();

@@ -49,6 +49,9 @@ namespace unmangle {
 		};
 
 	  protected:
+		unsigned getInlineWidthOf(const CPPSymbol&);
+		unsigned getInlineWidthOf(const Name&, const CurrentTemplateArguments&, const std::string*);
+
 		virtual unsigned getSeparatorWidth(Separator) = 0;
 		virtual unsigned getReservedWidth(Reserved) = 0;
 		virtual unsigned getReplacementStringWidth(ReplacementString) = 0;

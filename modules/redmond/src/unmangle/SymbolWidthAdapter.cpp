@@ -1,6 +1,8 @@
 #include <sstream>
 
 #include "Type.hpp"
+#include "Name.hpp"
+#include "CPPSymbol.hpp"
 #include "TemplateArgument.hpp"
 #include "SymbolWidthAdapter.hpp"
 
@@ -105,6 +107,19 @@ namespace unmangle {
 	SymbolWidthAdapter::SymbolWidthAdapter() {}
 
 	SymbolWidthAdapter::SymbolWidthAdapter(const SymbolWidthAdapter& sink) : SymbolSink(sink) {}
+
+	unsigned SymbolWidthAdapter::getInlineWidthOf(const CPPSymbol& symbol) {
+		CountingSymbolSink sink(*this);
+		symbol.print(sink);
+		return sink.getColumnCount();
+	}
+
+	unsigned SymbolWidthAdapter::getInlineWidthOf(const Name& name, const CurrentTemplateArguments& arguments,
+			const string* className) {
+		CountingSymbolSink sink(*this);
+		name.print(sink, arguments, className);
+		return sink.getColumnCount();
+	}
 
 	unsigned SymbolWidthAdapter::getSourceNameWidth(const string& segment) {
 		return static_cast<unsigned>(segment.length());

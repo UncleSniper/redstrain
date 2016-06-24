@@ -27,7 +27,8 @@ namespace unmangle {
 		type->print(sink, arguments, enclosingClass);
 		switch(modifier) {
 			case MOD_POINTER:
-				sink.putSeparator(SymbolSink::SEP_POINTER);
+				if(type->getTypeType() != Type::TT_FUNCTION)
+					sink.putSeparator(SymbolSink::SEP_POINTER);
 				break;
 			case MOD_REFERENCE:
 				sink.putSeparator(SymbolSink::SEP_REFERENCE);
