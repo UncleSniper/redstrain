@@ -1,8 +1,10 @@
 #include <sstream>
+#include <cstdlib>
 #include <redstrain/util/Delete.hpp>
 
 #include "Error.hpp"
 #include "StackTrace.hpp"
+#include "tweaks.hpp"
 
 using std::endl;
 using std::string;
@@ -94,6 +96,18 @@ namespace error {
 
 	const char* Error::getTypename() {
 		return "Error";
+	}
+
+	bool Error::shouldPrintStackTraces() {
+		enum Result {
+			YES,
+			NO,
+			UNKNOWN
+		};
+		static Result result = UNKNOWN;
+		if(result == UNKNOWN)
+			result = getenv(REDSTRAIN_ERROR_PRINT_STACK_TRACES_ENVVAR) ? YES : NO;
+		return result != NO;
 	}
 
 }}

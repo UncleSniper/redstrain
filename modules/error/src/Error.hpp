@@ -53,6 +53,8 @@ namespace error {
 
 		static const char* getTypename();
 
+		static bool shouldPrintStackTraces();
+
 	};
 
 }}
