@@ -15,26 +15,26 @@ namespace platform {
 		class REDSTRAIN_PLATFORM_API HighlightingConfiguration {
 
 		  public:
-			static const int FL_SET_CV_QUALIFIER_FOREGROUND                = 0000001;
-			static const int FL_SET_CV_QUALIFIER_BACKGROUND                = 0000002;
-			static const int FL_SET_KEYWORD_FOREGROUND                     = 0000004;
-			static const int FL_SET_KEYWORD_BACKGROUND                     = 0000010;
-			static const int FL_SET_TYPE_MODIFIER_FOREGROUND               = 0000020;
-			static const int FL_SET_TYPE_MODIFIER_BACKGROUND               = 0000040;
-			static const int FL_SET_SYMBOLIC_CONSTANT_FOREGROUND           = 0000100;
-			static const int FL_SET_SYMBOLIC_CONSTANT_BACKGROUND           = 0000200;
-			static const int FL_SET_NUMERIC_LITERAL_FOREGROUND             = 0000400;
-			static const int FL_SET_NUMERIC_LITERAL_BACKGROUND             = 0001000;
-			static const int FL_SET_DISCRIMINATOR_FOREGROUND               = 0002000;
-			static const int FL_SET_DISCRIMINATOR_BACKGROUND               = 0004000;
-			static const int FL_SET_UNDEFINED_TEMPLATE_PARAMTER_FOREGROUND = 0010000;
-			static const int FL_SET_UNDEFINED_TEMPLATE_PARAMTER_BACKGROUND = 0020000;
-			static const int FL_SET_BUILTIN_TYPE_FOREGROUND                = 0040000;
-			static const int FL_SET_BUILTIN_TYPE_BACKGROUND                = 0100000;
-			static const int FL_MASK                                       = 0177777;
-			static const int FL_SET_ALL_FOREGROUNDS                        = 0052525;
-			static const int FL_SET_ALL_BACKGROUNDS                        = 0125252;
-			static const int FL_DEFAULT                                    = 0052525;
+			static const int FL_SET_CV_QUALIFIER_FOREGROUND                 = 0000001;
+			static const int FL_SET_CV_QUALIFIER_BACKGROUND                 = 0000002;
+			static const int FL_SET_KEYWORD_FOREGROUND                      = 0000004;
+			static const int FL_SET_KEYWORD_BACKGROUND                      = 0000010;
+			static const int FL_SET_TYPE_MODIFIER_FOREGROUND                = 0000020;
+			static const int FL_SET_TYPE_MODIFIER_BACKGROUND                = 0000040;
+			static const int FL_SET_SYMBOLIC_CONSTANT_FOREGROUND            = 0000100;
+			static const int FL_SET_SYMBOLIC_CONSTANT_BACKGROUND            = 0000200;
+			static const int FL_SET_NUMERIC_LITERAL_FOREGROUND              = 0000400;
+			static const int FL_SET_NUMERIC_LITERAL_BACKGROUND              = 0001000;
+			static const int FL_SET_DISCRIMINATOR_FOREGROUND                = 0002000;
+			static const int FL_SET_DISCRIMINATOR_BACKGROUND                = 0004000;
+			static const int FL_SET_UNDEFINED_TEMPLATE_PARAMETER_FOREGROUND = 0010000;
+			static const int FL_SET_UNDEFINED_TEMPLATE_PARAMETER_BACKGROUND = 0020000;
+			static const int FL_SET_BUILTIN_TYPE_FOREGROUND                 = 0040000;
+			static const int FL_SET_BUILTIN_TYPE_BACKGROUND                 = 0100000;
+			static const int FL_MASK                                        = 0177777;
+			static const int FL_SET_ALL_FOREGROUNDS                         = 0052525;
+			static const int FL_SET_ALL_BACKGROUNDS                         = 0125252;
+			static const int FL_DEFAULT                                     = 0052525;
 
 		  private:
 			int flags;
@@ -61,6 +61,10 @@ namespace platform {
 
 			inline int getFlags() const {
 				return flags;
+			}
+
+			inline bool hasFlags(int mask) const {
+				return (flags & mask) == mask;
 			}
 
 			inline void setFlags(int flags) {
@@ -277,6 +281,7 @@ namespace platform {
 		virtual void highlightUndefinedTemplateParameter();
 		virtual void highlightBuiltinType();
 		virtual void endHighlighting();
+		virtual void notifyConsoleChanged();
 
 	  public:
 		ConsoleHighlightingSymbolSink(Console*);
@@ -287,9 +292,7 @@ namespace platform {
 			return console;
 		}
 
-		inline void setConsole(Console* console) {
-			this->console = console;
-		}
+		void setConsole(Console*);
 
 		inline HighlightingConfiguration& getHighlightingConfiguration() {
 			return configuration;

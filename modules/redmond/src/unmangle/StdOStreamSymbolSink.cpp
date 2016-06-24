@@ -29,7 +29,7 @@ namespace unmangle {
 		stream << data;
 		lastWasGreater = lc == '>';
 		lastWasLess = lc == '<';
-		advanceCurrentColumn(static_cast<unsigned>(data.length()));
+		advanceCurrentColumn(length);
 	}
 
 	void StdOStreamSymbolSink::notifyIndented(unsigned columns) {

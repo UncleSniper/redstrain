@@ -49,22 +49,114 @@ namespace platform {
 	ConsoleHighlightingSymbolSink::ConsoleHighlightingSymbolSink(Console* console) : console(console) {}
 
 	ConsoleHighlightingSymbolSink::ConsoleHighlightingSymbolSink(Console* console,
-			const HighlightingConfiguration& configuration) : console(console), configuration(configuration) {}
+			const HighlightingConfiguration& configuration) : console(console), configuration(configuration) {
+		notifyConsoleChanged();
+	}
 
 	ConsoleHighlightingSymbolSink::ConsoleHighlightingSymbolSink(const ConsoleHighlightingSymbolSink& sink)
 			: SymbolSink(sink), HighlightingSymbolSink(sink), console(sink.console),
-			configuration(sink.configuration) {}
+			configuration(sink.configuration) {
+		notifyConsoleChanged();
+	}
 
-	/*TODO
-	void ConsoleHighlightingSymbolSink::highlightCVQualifier();
-	void ConsoleHighlightingSymbolSink::highlightKeyword();
-	void ConsoleHighlightingSymbolSink::highlightTypeModifier();
-	void ConsoleHighlightingSymbolSink::highlightSymbolicConstant();
-	void ConsoleHighlightingSymbolSink::highlightNumericLiteral();
-	void ConsoleHighlightingSymbolSink::highlightDiscriminator();
-	void ConsoleHighlightingSymbolSink::highlightUndefinedTemplateParameter();
-	void ConsoleHighlightingSymbolSink::highlightBuiltinType();
-	void ConsoleHighlightingSymbolSink::endHighlighting();
-	*/
+	void ConsoleHighlightingSymbolSink::setConsole(Console* console) {
+		this->console = console;
+		notifyConsoleChanged();
+	}
+
+	void ConsoleHighlightingSymbolSink::highlightCVQualifier() {
+		if(!console)
+			return;
+		if(configuration.hasFlags(HighlightingConfiguration::FL_SET_CV_QUALIFIER_FOREGROUND)) {
+			console->setForeground(configuration.getCVQualifierForeground());
+			console->setIntensity(configuration.getCVQualifierIntensity());
+		}
+		if(configuration.hasFlags(HighlightingConfiguration::FL_SET_CV_QUALIFIER_BACKGROUND))
+			console->setBackground(configuration.getCVQualifierBackground());
+	}
+
+	void ConsoleHighlightingSymbolSink::highlightKeyword() {
+		if(!console)
+			return;
+		if(configuration.hasFlags(HighlightingConfiguration::FL_SET_KEYWORD_FOREGROUND)) {
+			console->setForeground(configuration.getKeywordForeground());
+			console->setIntensity(configuration.getKeywordIntensity());
+		}
+		if(configuration.hasFlags(HighlightingConfiguration::FL_SET_KEYWORD_BACKGROUND))
+			console->setBackground(configuration.getKeywordBackground());
+	}
+
+	void ConsoleHighlightingSymbolSink::highlightTypeModifier() {
+		if(!console)
+			return;
+		if(configuration.hasFlags(HighlightingConfiguration::FL_SET_TYPE_MODIFIER_FOREGROUND)) {
+			console->setForeground(configuration.getTypeModifierForeground());
+			console->setIntensity(configuration.getTypeModifierIntensity());
+		}
+		if(configuration.hasFlags(HighlightingConfiguration::FL_SET_TYPE_MODIFIER_BACKGROUND))
+			console->setBackground(configuration.getTypeModifierBackground());
+	}
+
+	void ConsoleHighlightingSymbolSink::highlightSymbolicConstant() {
+		if(!console)
+			return;
+		if(configuration.hasFlags(HighlightingConfiguration::FL_SET_SYMBOLIC_CONSTANT_FOREGROUND)) {
+			console->setForeground(configuration.getSymbolicConstantForeground());
+			console->setIntensity(configuration.getSymbolicConstantIntensity());
+		}
+		if(configuration.hasFlags(HighlightingConfiguration::FL_SET_SYMBOLIC_CONSTANT_BACKGROUND))
+			console->setBackground(configuration.getSymbolicConstantBackground());
+	}
+
+	void ConsoleHighlightingSymbolSink::highlightNumericLiteral() {
+		if(!console)
+			return;
+		if(configuration.hasFlags(HighlightingConfiguration::FL_SET_NUMERIC_LITERAL_FOREGROUND)) {
+			console->setForeground(configuration.getNumericLiteralForeground());
+			console->setIntensity(configuration.getNumericLiteralIntensity());
+		}
+		if(configuration.hasFlags(HighlightingConfiguration::FL_SET_NUMERIC_LITERAL_BACKGROUND))
+			console->setBackground(configuration.getNumericLiteralBackground());
+	}
+
+	void ConsoleHighlightingSymbolSink::highlightDiscriminator() {
+		if(!console)
+			return;
+		if(configuration.hasFlags(HighlightingConfiguration::FL_SET_DISCRIMINATOR_FOREGROUND)) {
+			console->setForeground(configuration.getDiscriminatorBackground());
+			console->setIntensity(configuration.getDiscriminatorIntensity());
+		}
+		if(configuration.hasFlags(HighlightingConfiguration::FL_SET_DISCRIMINATOR_BACKGROUND))
+			console->setBackground(configuration.getDiscriminatorBackground());
+	}
+
+	void ConsoleHighlightingSymbolSink::highlightUndefinedTemplateParameter() {
+		if(!console)
+			return;
+		if(configuration.hasFlags(HighlightingConfiguration::FL_SET_UNDEFINED_TEMPLATE_PARAMETER_FOREGROUND)) {
+			console->setForeground(configuration.getUndefinedTemplateParameterForeground());
+			console->setIntensity(configuration.getUndefinedTemplateParameterIntensity());
+		}
+		if(configuration.hasFlags(HighlightingConfiguration::FL_SET_UNDEFINED_TEMPLATE_PARAMETER_BACKGROUND))
+			console->setBackground(configuration.getUndefinedTemplateParameterBackground());
+	}
+
+	void ConsoleHighlightingSymbolSink::highlightBuiltinType() {
+		if(!console)
+			return;
+		if(configuration.hasFlags(HighlightingConfiguration::FL_SET_BUILTIN_TYPE_FOREGROUND)) {
+			console->setForeground(configuration.getBuiltinTypeForeground());
+			console->setIntensity(configuration.getBuiltinTypeIntensity());
+		}
+		if(configuration.hasFlags(HighlightingConfiguration::FL_SET_BUILTIN_TYPE_BACKGROUND))
+			console->setBackground(configuration.getBuiltinTypeBackground());
+	}
+
+	void ConsoleHighlightingSymbolSink::endHighlighting() {
+		if(console)
+			console->resetAttributes();
+	}
+
+	void ConsoleHighlightingSymbolSink::notifyConsoleChanged() {}
 
 }}
