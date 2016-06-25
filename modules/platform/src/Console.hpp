@@ -37,6 +37,7 @@ namespace platform {
 	  public:
 		Console(const File&);
 		Console(StandardHandle);
+		Console(File::Handle);
 		Console(const Console&);
 
 		inline File& getFile() {

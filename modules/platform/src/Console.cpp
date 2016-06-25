@@ -17,7 +17,9 @@ namespace platform {
 
 	Console::Console(const File& file) : file(file) {}
 
-	Console::Console(StandardHandle handle) : file(getStandardHandle(handle), File::OUTPUT) {}
+	Console::Console(StandardHandle handle) : file(Console::getStandardHandle(handle), File::OUTPUT) {}
+
+	Console::Console(File::Handle handle) : file(handle, File::OUTPUT) {}
 
 	Console::Console(const Console& console) : file(console.file) {}
 
@@ -118,7 +120,8 @@ namespace platform {
 	}
 
 	File::Handle Console::getStandardHandle(StandardHandle handle) {
-		return static_cast<int>(handle);
+		int fd = static_cast<int>(handle);
+		return fd >= 0 && fd <= 2 ? fd : -1;
 	}
 
 	bool Console::isConsole(File::Handle handle) {
