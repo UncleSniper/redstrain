@@ -50,7 +50,6 @@ namespace unmangle {
 
 	  protected:
 		unsigned getInlineWidthOf(const CPPSymbol&);
-		unsigned getInlineWidthOf(const Name&, const CurrentTemplateArguments&, const std::string*);
 
 		virtual unsigned getSeparatorWidth(Separator) = 0;
 		virtual unsigned getReservedWidth(Reserved) = 0;
@@ -78,6 +77,7 @@ namespace unmangle {
 		SymbolWidthAdapter(const SymbolWidthAdapter&);
 
 		virtual unsigned getInlineWidthOf(const Type&, const CurrentTemplateArguments&, const Type*);
+		virtual unsigned getInlineWidthOf(const Name&, const CurrentTemplateArguments&, const std::string*);
 		virtual unsigned getInlineWidthOf(const TemplateArgument&, const CurrentTemplateArguments&);
 		virtual unsigned getInlineWidthOf(Separator);
 

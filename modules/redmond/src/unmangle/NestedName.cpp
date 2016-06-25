@@ -144,8 +144,20 @@ namespace unmangle {
 									+ sink.getInlineWidthOf(SymbolSink::SEP_AFTER_COMMA);
 						iwidth += sink.getInlineWidthOf(**sabegin, arguments);
 					}
-					firstArg = false;
-					breakArgs = iwidth > space;
+					iwidth += sink.getInlineWidthOf(SymbolSink::SEP_RIGHT_ANGLE);
+					SegmentIterator ssbegin(sbegin);
+					const string* slcn = seg.getPrefix().getUnqualifiedClassNameData();
+					for(++ssbegin; ssbegin != send; ++ssbegin) {
+						iwidth += sink.getInlineWidthOf(SymbolSink::SEP_PAAMAYIM_NEKUDOTAYIM)
+								+ sink.getInlineWidthOf((*ssbegin)->getPrefix(), arguments, slcn);
+						if((*ssbegin)->hasArguments()) {
+							iwidth += sink.getInlineWidthOf(SymbolSink::SEP_LEFT_ANGLE);
+							break;
+						}
+						slcn = (*ssbegin)->getPrefix().getUnqualifiedClassNameData();
+					}
+					firstArg = true;
+					breakArgs = iwidth >= space;
 				}
 				for(; abegin != aend; ++abegin) {
 					if(firstArg) {

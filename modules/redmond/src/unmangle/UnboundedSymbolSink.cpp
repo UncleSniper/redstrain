@@ -1,5 +1,7 @@
 #include "UnboundedSymbolSink.hpp"
 
+using std::string;
+
 namespace redengine {
 namespace redmond {
 namespace unmangle {
@@ -13,6 +15,10 @@ namespace unmangle {
 	}
 
 	unsigned UnboundedSymbolSink::getInlineWidthOf(const Type&, const CurrentTemplateArguments&, const Type*) {
+		return 0u;
+	}
+
+	unsigned UnboundedSymbolSink::getInlineWidthOf(const Name&, const CurrentTemplateArguments&, const string*) {
 		return 0u;
 	}
 

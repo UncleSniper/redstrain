@@ -73,8 +73,9 @@ namespace unmangle {
 							+ sink.getInlineWidthOf(SymbolSink::SEP_AFTER_COMMA);
 				iwidth += sink.getInlineWidthOf(**sabegin, targuments);
 			}
+			iwidth += sink.getInlineWidthOf(SymbolSink::SEP_RIGHT_ANGLE);
 			first = false;
-			breakArgs = iwidth > space;
+			breakArgs = iwidth >= space;
 		}
 		for(; abegin != aend; ++abegin) {
 			if(first) {

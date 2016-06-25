@@ -79,6 +79,7 @@ namespace unmangle {
 
 		virtual unsigned getRemainingColumnCount() = 0;
 		virtual unsigned getInlineWidthOf(const Type&, const CurrentTemplateArguments&, const Type*) = 0;
+		virtual unsigned getInlineWidthOf(const Name&, const CurrentTemplateArguments&, const std::string*) = 0;
 		virtual unsigned getInlineWidthOf(const TemplateArgument&, const CurrentTemplateArguments&) = 0;
 		virtual unsigned getInlineWidthOf(Separator) = 0;
 
