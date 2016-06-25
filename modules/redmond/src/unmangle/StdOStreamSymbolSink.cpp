@@ -37,4 +37,9 @@ namespace unmangle {
 		advanceCurrentColumn(columns);
 	}
 
+	void StdOStreamSymbolSink::startNewLine(int levelDelta) {
+		IndentingSymbolSink::startNewLine(levelDelta);
+		lastWasGreater = lastWasLess = false;
+	}
+
 }}}

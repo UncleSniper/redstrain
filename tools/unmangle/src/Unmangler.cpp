@@ -1,9 +1,6 @@
-#include <redstrain/util/Delete.hpp>
-
 #include "Unmangler.hpp"
 
 using std::string;
-using redengine::util::Delete;
 using redengine::redmond::unmangle::CPPSymbol;
 
 Unmangler::Unmangler() : unmangleCB(NULL), symCharP(NULL) {}
@@ -21,30 +18,23 @@ Unmangler& Unmangler::operator=(const Unmangler& other) {
 	return *this;
 }
 
-string Unmangler::unmanglePlainSymbol(const string& mangled) const {
+CPPSymbol* Unmangler::unmanglePlainSymbol(const string& mangled) const {
 	if(!unmangleCB)
-		return mangled;
-	Delete<CPPSymbol> tree(unmangleCB(mangled));
-	if(!*tree)
-		return mangled;
-	return tree->toString();
+		return NULL;
+	return unmangleCB(mangled);
 }
 
-bool Unmangler::filterUnmangling(const string& line, string::size_type searchStart,
-		string::size_type& foundStart, string::size_type& foundLength, string& unmangled) const {
+CPPSymbol* Unmangler::filterUnmangling(const string& line, string::size_type searchStart,
+		string::size_type& foundStart, string::size_type& foundLength) const {
 	if(symInitiator.empty() || !unmangleCB || !symCharP)
-		return false;
+		return NULL;
 	foundStart = line.find(symInitiator, searchStart);
 	if(foundStart == string::npos)
-		return false;
+		return NULL;
 	string::size_type rbound = foundStart + symInitiator.length();
 	string::size_type llen = line.length();
 	while(rbound < llen && symCharP(line[rbound]))
 		++rbound;
 	foundLength = rbound - foundStart;
-	Delete<CPPSymbol> tree(unmangleCB(line.substr(foundStart, foundLength)));
-	if(!*tree)
-		return false;
-	unmangled = tree->toString();
-	return true;
+	return unmangleCB(line.substr(foundStart, foundLength));
 }

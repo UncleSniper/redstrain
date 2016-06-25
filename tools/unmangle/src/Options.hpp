@@ -9,6 +9,7 @@ class Options {
 	const std::string progname;
 	unsigned barewordCount;
 	std::string scheme, symbol;
+	bool nowrap;
 
   private:
 	Options(const Options&);
@@ -28,8 +29,13 @@ class Options {
 		return symbol;
 	}
 
+	inline bool shouldAvoidWrapping() const {
+		return nowrap;
+	}
+
 	void usage();
 	void addBareword(const std::string&);
+	void setAvoidWrapping(bool);
 	void checkBarewords();
 
 };

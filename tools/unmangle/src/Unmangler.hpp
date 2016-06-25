@@ -21,9 +21,9 @@ class Unmangler {
 
 	Unmangler& operator=(const Unmangler&);
 
-	std::string unmanglePlainSymbol(const std::string&) const;
-	bool filterUnmangling(const std::string&, std::string::size_type,
-			std::string::size_type&, std::string::size_type&, std::string&) const;
+	redengine::redmond::unmangle::CPPSymbol* unmanglePlainSymbol(const std::string&) const;
+	redengine::redmond::unmangle::CPPSymbol* filterUnmangling(const std::string&, std::string::size_type,
+			std::string::size_type&, std::string::size_type&) const;
 
 };
 

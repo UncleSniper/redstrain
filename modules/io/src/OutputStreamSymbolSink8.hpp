@@ -47,6 +47,8 @@ namespace io {
 			return formatted;
 		}
 
+		virtual void startNewLine(int);
+
 	};
 
 }}

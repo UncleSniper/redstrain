@@ -14,13 +14,19 @@ using redengine::cmdline::UnexpectedBarewordError;
 
 Options::Options(const Options& options)
 		: progname(options.progname), barewordCount(options.barewordCount), scheme(options.scheme),
-		symbol(options.symbol) {}
+		symbol(options.symbol), nowrap(options.nowrap) {}
 
-Options::Options(const char* progname) : progname(progname), barewordCount(0u) {}
+Options::Options(const char* progname) : progname(progname), barewordCount(0u), nowrap(false) {}
 
 void Options::usage() {
 	cout
-		<< "Usage: " << progname << " <scheme> [symbol]" << endl;
+		<< "Usage: " << progname << " [options] <scheme> [symbol]" << endl
+		<< "Options:" << endl
+		<< "    --nowrap    don't split symbols into multiple lines, even when printing to" << endl
+		<< "                a terminal" << endl
+		<< "    -w          same as --nowrap" << endl
+		<< "    --help      print this helpful message and quit" << endl;
+	throw StopExecution(0);
 }
 
 void Options::addBareword(const string& word) {
@@ -35,6 +41,10 @@ void Options::addBareword(const string& word) {
 			throw UnexpectedBarewordError(word);
 	}
 	++barewordCount;
+}
+
+void Options::setAvoidWrapping(bool nowrap) {
+	this->nowrap = nowrap;
 }
 
 void Options::checkBarewords() {

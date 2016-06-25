@@ -47,4 +47,9 @@ namespace io {
 			setColumnCount(0u);
 	}
 
+	void OutputStreamSymbolSink8::startNewLine(int levelDelta) {
+		IndentingSymbolSink::startNewLine(levelDelta);
+		lastWasGreater = lastWasLess = false;
+	}
+
 }}

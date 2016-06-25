@@ -35,6 +35,8 @@ namespace unmangle {
 			return stream;
 		}
 
+		virtual void startNewLine(int);
+
 	};
 
 }}}
