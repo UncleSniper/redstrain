@@ -10,7 +10,7 @@ namespace redengine {
 namespace error {
 
 	class REDSTRAIN_ERROR_API StackTraceSinkBase8
-			: public virtual StackTraceSinkBase, public HighlightingStackTraceSink {
+			: public virtual StackTraceSinkBase, public virtual HighlightingStackTraceSink {
 
 	  protected:
 		virtual void writeHeader(const std::string&) = 0;

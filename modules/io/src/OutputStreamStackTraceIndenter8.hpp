@@ -1,7 +1,7 @@
-#ifndef REDSTRAIN_MOD_IO_OUTPUTSTREAMSYMBOLINDENTER8_HPP
-#define REDSTRAIN_MOD_IO_OUTPUTSTREAMSYMBOLINDENTER8_HPP
+#ifndef REDSTRAIN_MOD_IO_OUTPUTSTREAMSTACKTRACEINDENTER8_HPP
+#define REDSTRAIN_MOD_IO_OUTPUTSTREAMSTACKTRACEINDENTER8_HPP
 
-#include <redstrain/redmond/unmangle/SymbolSinkIndenterBase8.hpp>
+#include <redstrain/error/StackTraceIndenterBase8.hpp>
 
 #include "FormattedOutputStream.hpp"
 #include "api.hpp"
@@ -9,7 +9,7 @@
 namespace redengine {
 namespace io {
 
-	class REDSTRAIN_IO_API OutputStreamSymbolIndenter8 : public redmond::unmangle::SymbolSinkIndenterBase8 {
+	class REDSTRAIN_IO_API OutputStreamStackTraceIndenter8 : public error::StackTraceIndenterBase8 {
 
 	  private:
 		OutputStream<char>& stream;
@@ -19,9 +19,8 @@ namespace io {
 		virtual void writeString(const std::string&);
 
 	  public:
-		OutputStreamSymbolIndenter8(OutputStream<char>&);
-		OutputStreamSymbolIndenter8(const OutputStreamSymbolIndenter8&);
-		virtual ~OutputStreamSymbolIndenter8();
+		OutputStreamStackTraceIndenter8(OutputStream<char>&);
+		OutputStreamStackTraceIndenter8(const OutputStreamStackTraceIndenter8&);
 
 		inline OutputStream<char>& getStream() {
 			return stream;
@@ -39,10 +38,10 @@ namespace io {
 			return formatted;
 		}
 
-		virtual void startNewLine();
+		virtual void endLine();
 
 	};
 
 }}
 
-#endif /* REDSTRAIN_MOD_IO_OUTPUTSTREAMSYMBOLINDENTER8_HPP */
+#endif /* REDSTRAIN_MOD_IO_OUTPUTSTREAMSTACKTRACEINDENTER8_HPP */

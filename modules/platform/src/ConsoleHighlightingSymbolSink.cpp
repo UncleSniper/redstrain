@@ -6,7 +6,7 @@ namespace platform {
 	// ======== HighlightingConfiguration ========
 
 	const ConsoleHighlightingSymbolSink::HighlightingConfiguration
-			ConsoleHighlightingSymbolSink::HighlightingConfiguration::HighlightingConfiguration::defaultInstance;
+			ConsoleHighlightingSymbolSink::HighlightingConfiguration::defaultInstance;
 
 	ConsoleHighlightingSymbolSink::HighlightingConfiguration::HighlightingConfiguration()
 			: flags(HighlightingConfiguration::FL_DEFAULT),
@@ -47,7 +47,9 @@ namespace platform {
 
 	// ======== ConsoleHighlightingSymbolSink ========
 
-	ConsoleHighlightingSymbolSink::ConsoleHighlightingSymbolSink(Console* console) : console(console) {}
+	ConsoleHighlightingSymbolSink::ConsoleHighlightingSymbolSink(Console* console) : console(console) {
+		notifyConsoleChanged();
+	}
 
 	ConsoleHighlightingSymbolSink::ConsoleHighlightingSymbolSink(Console* console,
 			const HighlightingConfiguration& configuration) : console(console), configuration(configuration) {
@@ -55,8 +57,8 @@ namespace platform {
 	}
 
 	ConsoleHighlightingSymbolSink::ConsoleHighlightingSymbolSink(const ConsoleHighlightingSymbolSink& sink)
-			: SymbolSink(sink), HighlightingSymbolSink(sink), console(sink.console),
-			configuration(sink.configuration) {
+			: SymbolSink(sink), HighlightingSymbolSink(sink),
+			console(sink.console), configuration(sink.configuration) {
 		notifyConsoleChanged();
 	}
 

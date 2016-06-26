@@ -16,6 +16,8 @@ namespace io {
 			IndentingSymbolSink(sink), ConsoleHighlightingSymbolSink(sink), stream(sink.stream), formatted(stream),
 			lastWasGreater(sink.lastWasGreater), lastWasLess(sink.lastWasLess) {}
 
+	OutputStreamSymbolSink8::~OutputStreamSymbolSink8() {}
+
 	void OutputStreamSymbolSink8::writeString(const string& data) {
 		if(data.empty())
 			return;

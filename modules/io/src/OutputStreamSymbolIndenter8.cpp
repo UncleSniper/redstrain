@@ -11,6 +11,8 @@ namespace io {
 	OutputStreamSymbolIndenter8::OutputStreamSymbolIndenter8(const OutputStreamSymbolIndenter8& indenter)
 			: SymbolSinkIndenterBase8(indenter), stream(indenter.stream), formatted(stream) {}
 
+	OutputStreamSymbolIndenter8::~OutputStreamSymbolIndenter8() {}
+
 	void OutputStreamSymbolIndenter8::writeString(const string& data) {
 		formatted.print(data);
 	}

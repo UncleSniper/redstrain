@@ -34,7 +34,7 @@ namespace platform {
 			static const int FL_MASK                                        = 0177777;
 			static const int FL_SET_ALL_FOREGROUNDS                         = 0052525;
 			static const int FL_SET_ALL_BACKGROUNDS                         = 0125252;
-			static const int FL_DEFAULT                                     = 0052525;
+			static const int FL_DEFAULT                                     = 0177777;
 
 		  private:
 			int flags;

@@ -30,6 +30,7 @@ namespace io {
 	  public:
 		OutputStreamSymbolSink8(OutputStream<char>&, Indenter&, platform::Console* = NULL, int = 0);
 		OutputStreamSymbolSink8(const OutputStreamSymbolSink8&);
+		virtual ~OutputStreamSymbolSink8();
 
 		inline OutputStream<char>& getStream() {
 			return stream;

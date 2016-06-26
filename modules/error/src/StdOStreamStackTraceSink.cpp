@@ -16,8 +16,8 @@ namespace error {
 			: IndentingStackTraceSink(indenter), stream(stream) {}
 
 	StdOStreamStackTraceSink::StdOStreamStackTraceSink(const StdOStreamStackTraceSink& sink)
-			: StackTraceSink(sink), StackTraceSinkBase(sink), StackTraceSinkBase8(sink),
-			IndentingStackTraceSink(sink), stream(sink.stream) {}
+			: StackTraceSink(sink), StackTraceSinkBase(sink), HighlightingStackTraceSink(sink),
+			StackTraceSinkBase8(sink), IndentingStackTraceSink(sink), stream(sink.stream) {}
 
 	void StdOStreamStackTraceSink::writeHeader(const string& data) {
 		stream << data;
