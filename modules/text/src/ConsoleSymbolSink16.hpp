@@ -1,13 +1,13 @@
 #ifndef REDSTRAIN_MOD_TEXT_CONSOLESYMBOLSINK16_HPP
 #define REDSTRAIN_MOD_TEXT_CONSOLESYMBOLSINK16_HPP
 
-#include "OutputStreamSymbolSink16.hpp"
 #include "OutputStreamSymbolIndenter16.hpp"
+#include "ConsoleOutputStreamSymbolSink16.hpp"
 
 namespace redengine {
 namespace text {
 
-	class REDSTRAIN_TEXT_API ConsoleSymbolSink16 : public OutputStreamSymbolSink16 {
+	class REDSTRAIN_TEXT_API ConsoleSymbolSink16 : public ConsoleOutputStreamSymbolSink16 {
 
 	  private:
 		OutputStreamSymbolIndenter16 indenter;

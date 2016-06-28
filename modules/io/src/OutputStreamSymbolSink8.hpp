@@ -5,7 +5,6 @@
 #include <redstrain/redmond/unmangle/BoundedSymbolSink.hpp>
 #include <redstrain/redmond/unmangle/SymbolWidthAdapter.hpp>
 #include <redstrain/redmond/unmangle/IndentingSymbolSink.hpp>
-#include <redstrain/platform/ConsoleHighlightingSymbolSink.hpp>
 
 #include "FormattedOutputStream.hpp"
 #include "api.hpp"
@@ -14,8 +13,7 @@ namespace redengine {
 namespace io {
 
 	class REDSTRAIN_IO_API OutputStreamSymbolSink8 : public redmond::unmangle::SymbolSinkBase8,
-			public redmond::unmangle::BoundedSymbolSink, public redmond::unmangle::IndentingSymbolSink,
-			public platform::ConsoleHighlightingSymbolSink {
+			public redmond::unmangle::BoundedSymbolSink, public redmond::unmangle::IndentingSymbolSink {
 
 	  private:
 		OutputStream<char>& stream;
@@ -25,10 +23,9 @@ namespace io {
 	  protected:
 		virtual void writeString(const std::string&);
 		virtual void notifyIndented(unsigned);
-		virtual void notifyConsoleChanged();
 
 	  public:
-		OutputStreamSymbolSink8(OutputStream<char>&, Indenter&, platform::Console* = NULL, int = 0);
+		OutputStreamSymbolSink8(OutputStream<char>&, Indenter&, int = 0);
 		OutputStreamSymbolSink8(const OutputStreamSymbolSink8&);
 		virtual ~OutputStreamSymbolSink8();
 

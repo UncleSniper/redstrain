@@ -9,7 +9,7 @@ namespace redengine {
 namespace text {
 
 	ConsoleSymbolSink16::ConsoleSymbolSink16(Console::StandardHandle handle)
-			: OutputStreamSymbolSink16(handle == Console::STANDARD_ERROR
+			: ConsoleOutputStreamSymbolSink16(handle == Console::STANDARD_ERROR
 					? getStandardErrorStream16() : getStandardOutputStream16(), indenter, NULL),
 			indenter(getStream()), console(handle) {
 		if(console.getFile().getHandle() != File::INVALID_HANDLE)
@@ -18,7 +18,7 @@ namespace text {
 
 	ConsoleSymbolSink16::ConsoleSymbolSink16(const ConsoleSymbolSink16& sink)
 			: SymbolSink(sink), HighlightingSymbolSink(sink),
-			OutputStreamSymbolSink16(const_cast<OutputStream<Char16>&>(sink.getStream()), indenter, NULL),
+			ConsoleOutputStreamSymbolSink16(const_cast<OutputStream<Char16>&>(sink.getStream()), indenter, NULL),
 			indenter(sink.indenter), console(sink.console) {
 		if(console.getFile().getHandle() != File::INVALID_HANDLE)
 			setConsole(&console);

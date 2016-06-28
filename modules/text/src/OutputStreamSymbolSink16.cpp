@@ -1,19 +1,17 @@
 #include "OutputStreamSymbolSink16.hpp"
 
 using redengine::io::OutputStream;
-using redengine::platform::Console;
 
 namespace redengine {
 namespace text {
 
-	OutputStreamSymbolSink16::OutputStreamSymbolSink16(OutputStream<Char16>& stream, Indenter& indenter,
-			Console* console, int flags) : SymbolSinkBase16(flags), BoundedSymbolSink(0u),
-			IndentingSymbolSink(indenter), ConsoleHighlightingSymbolSink(console),
+	OutputStreamSymbolSink16::OutputStreamSymbolSink16(OutputStream<Char16>& stream, Indenter& indenter, int flags)
+			: SymbolSinkBase16(flags), BoundedSymbolSink(0u), IndentingSymbolSink(indenter),
 			stream(stream), formatted(stream), lastWasGreater(false), lastWasLess(false) {}
 
 	OutputStreamSymbolSink16::OutputStreamSymbolSink16(const OutputStreamSymbolSink16& sink)
 			: SymbolSink(sink), HighlightingSymbolSink(sink), SymbolSinkBase16(sink), BoundedSymbolSink(sink),
-			IndentingSymbolSink(sink), ConsoleHighlightingSymbolSink(sink), stream(sink.stream), formatted(stream),
+			IndentingSymbolSink(sink), stream(sink.stream), formatted(stream),
 			lastWasGreater(sink.lastWasGreater), lastWasLess(sink.lastWasLess) {}
 
 	void OutputStreamSymbolSink16::writeString(const String16& data) {
@@ -35,16 +33,6 @@ namespace text {
 	void OutputStreamSymbolSink16::notifyIndented(unsigned columns) {
 		resetCurrentColumn();
 		advanceCurrentColumn(columns);
-	}
-
-	void OutputStreamSymbolSink16::notifyConsoleChanged() {
-		if(getConsole()) {
-			unsigned width, height;
-			Console::getConsoleDimensions(width, height);
-			setColumnCount(width);
-		}
-		else
-			setColumnCount(0u);
 	}
 
 	void OutputStreamSymbolSink16::startNewLine(int levelDelta) {

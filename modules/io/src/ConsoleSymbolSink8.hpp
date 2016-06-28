@@ -2,13 +2,13 @@
 #define REDSTRAIN_MOD_IO_CONSOLESYMBOLSINK8_HPP
 
 #include "FileOutputStream.hpp"
-#include "OutputStreamSymbolSink8.hpp"
 #include "OutputStreamSymbolIndenter8.hpp"
+#include "ConsoleOutputStreamSymbolSink8.hpp"
 
 namespace redengine {
 namespace io {
 
-	class REDSTRAIN_IO_API ConsoleSymbolSink8 : public OutputStreamSymbolSink8 {
+	class REDSTRAIN_IO_API ConsoleSymbolSink8 : public ConsoleOutputStreamSymbolSink8 {
 
 	  private:
 		FileOutputStream stream;
