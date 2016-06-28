@@ -11,6 +11,8 @@
 namespace redengine {
 namespace error {
 
+	class StackTraceSink;
+
 	class REDSTRAIN_ERROR_API StackTrace : public util::ReferenceCounted {
 
 	  private:
@@ -27,6 +29,8 @@ namespace error {
 		}
 
 		void* getReturnAddressOfFrame(util::MemorySize) const;
+
+		void printTo(StackTraceSink&) const;
 
 		static bool getSymbolInfoForReturnAddress(void*, std::string&, void*&, std::string&, void*&);
 		static std::string formatMemoryAddress(void*);

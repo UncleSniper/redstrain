@@ -4,6 +4,8 @@
 
 #include "Error.hpp"
 #include "StackTrace.hpp"
+#include "StdOStreamStackTraceSink.hpp"
+#include "StdOStreamStackTraceIndenter.hpp"
 #include "tweaks.hpp"
 
 using std::endl;
@@ -50,42 +52,17 @@ namespace error {
 	static const unsigned ADDRESS_WIDTH = static_cast<unsigned>(sizeof(void*)) * 2u + 2u;
 	static const char *const ADDRESS_INDENT = "                                  ";
 
+	void Error::printStackTrace(StackTraceSink& sink) const {
+		if(stackTrace)
+			stackTrace->printTo(sink);
+		else
+			sink.noStackTraceAvailable();
+	}
+
 	void Error::printStackTrace(ostream& out) const {
-		if(!stackTrace) {
-			out << "No stack trace available." << endl;
-			return;
-		}
-		out << "Stack trace (innermost call first):" << endl;
-		MemorySize frameCount = stackTrace->getFrameCount();
-		if(!frameCount) {
-			out << "    (no frames on stack)" << endl;
-			return;
-		}
-		MemorySize u;
-		void *moduleBase, *symbolAddress;
-		string moduleName, symbolName;
-		for(u = static_cast<MemorySize>(0u); u < frameCount; ++u) {
-			void* returnAddress = stackTrace->getReturnAddressOfFrame(u);
-			if(!returnAddress) {
-				out << "    <frame not reconstructible>" << endl;
-				continue;
-			}
-			out << "    " << StackTrace::formatMemoryAddress(returnAddress) << ' ';
-			if(StackTrace::getSymbolInfoForReturnAddress(returnAddress,
-					moduleName, moduleBase, symbolName, symbolAddress)) {
-				out << symbolName << " [" << StackTrace::formatMemoryAddress(symbolAddress)
-						<< " + " << StackTrace::formatMemoryAddress(addrDiff(returnAddress, symbolAddress))
-						<< ']' << endl;
-				if(!moduleName.empty())
-					out << "    " << (ADDRESS_INDENT + (34u - ADDRESS_WIDTH)) << " within " << moduleName
-							<< " [" << StackTrace::formatMemoryAddress(moduleBase)
-							<< " + " << StackTrace::formatMemoryAddress(addrDiff(returnAddress, moduleBase))
-							<< ']' << endl;
-			}
-			else
-				out << "<unresolved symbol>" << endl;
-		}
-		out << "    (Bottom of unwinding reached after " << frameCount << " frames.)" << endl;
+		StdOStreamStackTraceIndenter indenter(out);
+		StdOStreamStackTraceSink sink(out, indenter);
+		printStackTrace(sink);
 	}
 
 	string Error::getMessage() const {

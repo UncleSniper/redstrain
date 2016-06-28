@@ -12,6 +12,7 @@ namespace redengine {
 namespace error {
 
 	class StackTrace;
+	class StackTraceSink;
 
 	class REDSTRAIN_ERROR_API Error {
 
@@ -31,6 +32,7 @@ namespace error {
 			return stackTrace;
 		}
 
+		void printStackTrace(StackTraceSink&) const;
 		void printStackTrace(std::ostream&) const;
 
 		virtual std::string getMessage() const;

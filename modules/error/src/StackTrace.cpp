@@ -5,6 +5,7 @@
 #include <cstring>
 
 #include "StackTrace.hpp"
+#include "StackTraceSink.hpp"
 #include "FrameIndexOutOfBoundsError.hpp"
 
 #ifdef REDSTRAIN_ENV_OS_LINUX
@@ -42,6 +43,14 @@ namespace error {
 		if(frame >= frameCount)
 			throw FrameIndexOutOfBoundsError(frame);
 		return returnAddresses[frame];
+	}
+
+	void StackTrace::printTo(StackTraceSink& sink) const {
+		sink.beginStackTrace(frameCount);
+		MemorySize u;
+		for(u = static_cast<MemorySize>(0u); u < frameCount; ++u)
+			sink.putStackFrame(returnAddresses[u], u, frameCount);
+		sink.endStackTrace(frameCount);
 	}
 
 #ifdef REDSTRAIN_ENV_OS_LINUX
