@@ -2,8 +2,8 @@
 #include <redstrain/util/Delete.hpp>
 #include <redstrain/platform/SynchronizedSingleton.hpp>
 
-#include "l10n.hpp"
 #include "FormatMessageCatalog.hpp"
+#include "l10n.hpp"
 
 using redengine::util::Unref;
 using redengine::util::Delete;

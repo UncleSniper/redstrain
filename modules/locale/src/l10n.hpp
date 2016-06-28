@@ -9,6 +9,7 @@ namespace redengine {
 namespace locale {
 
 	MessageLoader<text::Char16>* newCoreBlobMessageLoader16();
+	MessageLoader<text::Char16>* newStackTraceBlobMessageLoader16();
 
 }}
 

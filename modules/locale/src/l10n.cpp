@@ -14,4 +14,12 @@ namespace locale {
 		return new BlobMessageLoader<Char16>(*coreMessage16BlobMapping);
 	}
 
+	BlobMessageMapping* stackTraceMessage16BlobMapping = NULL;
+
+	MessageLoader<Char16>* newStackTraceBlobMessageLoader16() {
+		if(!stackTraceMessage16BlobMapping)
+			return NULL;
+		return new BlobMessageLoader<Char16>(*stackTraceMessage16BlobMapping);
+	}
+
 }}

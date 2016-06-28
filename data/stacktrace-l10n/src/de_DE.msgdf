@@ -1,0 +1,18 @@
+# Message when no stack trace is available.
+ST_NO_TRACE_AVAILABLE=Keine Ablaufrückverfolgung verfügbar.
+# Header line before stack trace.
+ST_STACK_TRACE_HEADER=Ablaufrückverfolgung (innerster Aufruf zuerst):
+# Stack trace replacement when trace is empty.
+ST_NO_FRAMES_ON_STACK=(keine Aufrufe offen)
+# Stack frame replacement when frame not reconstructible.
+ST_FRAME_NOT_RECONSTRUCTIBLE=<Aufruf nich rekonstruierbar>
+# Fragment to print before module name in a stack frame.
+ST_FRAME_BEFORE_MODULE_NAME=in Modul 
+# Fragment to print after module name in a stack frame.
+ST_FRAME_AFTER_MODULE_NAME=
+# Symbol replacement in stack frame when symbol cannot be resolved.
+ST_UNRESOLVED_SYMBOL=<nicht auflösbarer Name>
+# Fragment to print at bottom of unwinding, before the frame count.
+ST_START_BOTTOM_OF_UNWINDING=(Ende der Aufrufskette erreicht nach 
+# Fragment to print at bottom of unwinding, after the frame count.
+ST_END_BOTTOM_OF_UNWINDING= Aufrufen.)

@@ -3,9 +3,18 @@
 MKGRISU=tools/mkgrisu/redmkgrisu-static
 GRISUTABLES=modules/text/src/GrisuTables.cpp
 
+if [ ! -x "$MKGRISU" -a -x run-mkgrisu ]; then
+	MKGRISU=./run-mkgrisu
+fi
+
 MSGSHDR=tools/msgshdr/redmsgshdr-static
 COREMSGKEY=modules/locale/src/CoreMessageKey.hpp
 CALFMTMSGKEY=modules/calendar/src/FormatMessageKey.hpp
+TRACEMSGKEY=modules/locale/src/StackTraceMessageKey.hpp
+
+if [ ! -x "$MSGSHDR" -a -x run-msgshdr ]; then
+	MSGSHDR=./run-msgshdr
+fi
 
 if [ -x "$MKGRISU" ]; then
 	echo "Generating '$GRISUTABLES'..."
@@ -28,6 +37,7 @@ function genModMsgsHdr {
 if [ -x "$MSGSHDR" ]; then
 	genMsgsHdr locale::CoreMessageKey CMK MOD_LOCALE_COREMESSAGEKEY data/locale-core "$COREMSGKEY"
 	genMsgsHdr calendar::FormatMessageKey FMK MOD_CALENDAR_FORMATMESSAGEKEY data/calendar-formats "$CALFMTMSGKEY"
+	genMsgsHdr locale::StackTraceMessageKey STMK MOD_LOCALE_STACKTRACEMESSAGEKEY data/stacktrace-l10n "$TRACEMSGKEY"
 	genModMsgsHdr error Error ERROR
 	genModMsgsHdr platform Platform PLATFORM
 	genModMsgsHdr io IO IO

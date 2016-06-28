@@ -1,0 +1,9 @@
+ST_NO_TRACE_AVAILABLE=Message when no stack trace is available.
+ST_STACK_TRACE_HEADER=Header line before stack trace.
+ST_NO_FRAMES_ON_STACK=Stack trace replacement when trace is empty.
+ST_FRAME_NOT_RECONSTRUCTIBLE=Stack frame replacement when frame not reconstructible.
+ST_FRAME_BEFORE_MODULE_NAME=Fragment to print before module name in a stack frame.
+ST_FRAME_AFTER_MODULE_NAME=Fragment to print after module name in a stack frame.
+ST_UNRESOLVED_SYMBOL=Symbol replacement in stack frame when symbol cannot be resolved.
+ST_START_BOTTOM_OF_UNWINDING=Fragment to print at bottom of unwinding, before the frame count.
+ST_END_BOTTOM_OF_UNWINDING=Fragment to print at bottom of unwinding, after the frame count.
