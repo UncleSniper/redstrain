@@ -35,7 +35,7 @@ namespace error {
 		endHeader();
 		if(!frameCount) {
 			beginFrame();
-			highlightNoFrameOnStack();
+			highlightNoFramesOnStack();
 			writeFrame("(no frames on stack)");
 			endHighlighting();
 			endFrame();

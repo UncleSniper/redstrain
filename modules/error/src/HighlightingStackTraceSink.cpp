@@ -10,7 +10,7 @@ namespace error {
 
 	void HighlightingStackTraceSink::highlightNoTraceAvailable() {}
 
-	void HighlightingStackTraceSink::highlightNoFrameOnStack() {}
+	void HighlightingStackTraceSink::highlightNoFramesOnStack() {}
 
 	void HighlightingStackTraceSink::highlightBottomOfUnwinding() {}
 

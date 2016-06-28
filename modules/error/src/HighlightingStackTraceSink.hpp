@@ -10,7 +10,7 @@ namespace error {
 
 	  protected:
 		virtual void highlightNoTraceAvailable();
-		virtual void highlightNoFrameOnStack();
+		virtual void highlightNoFramesOnStack();
 		virtual void highlightBottomOfUnwinding();
 		virtual void highlightFrameNotReconstructible();
 		virtual void highlightMemoryAddress();

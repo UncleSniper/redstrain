@@ -76,7 +76,7 @@ namespace platform {
 			console->setBackground(configuration.getNoTraceAvailableBackground());
 	}
 
-	void ConsoleHighlightingStackTraceSink::highlightNoFrameOnStack() {
+	void ConsoleHighlightingStackTraceSink::highlightNoFramesOnStack() {
 		if(!console)
 			return;
 		if(configuration.hasFlags(HighlightingConfiguration::FL_SET_NO_FRAMES_ON_STACK_FOREGROUND)) {
