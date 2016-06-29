@@ -13,9 +13,8 @@ namespace unmangle {
 
 	IndentingSymbolSink::Indenter::~Indenter() {}
 
-	void IndentingSymbolSink::Indenter::indentOwnInherited() const {
-		if(chain)
-			chain->indentInherited();
+	unsigned IndentingSymbolSink::Indenter::indentOwnInherited() const {
+		return chain ? chain->indentInherited() : 0u;
 	}
 
 	// ======== IndentingSymbolSink ========

@@ -31,12 +31,12 @@ namespace unmangle {
 	}
 
 	unsigned SymbolSinkIndenterBase8::indent(unsigned levels) {
-		indentOwnInherited();
+		unsigned inherited = indentOwnInherited();
 		writeString(marginString);
 		unsigned u;
 		for(u = 0u; u < levels; ++u)
 			writeString(indentString);
-		return getEffectiveMarginWidth() + levels * getEffectiveIndentWidth();
+		return inherited + getEffectiveMarginWidth() + levels * getEffectiveIndentWidth();
 	}
 
 }}}

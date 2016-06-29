@@ -13,7 +13,7 @@ namespace redmond {
 		IndentationChain(const IndentationChain&);
 		virtual ~IndentationChain();
 
-		virtual void indentInherited() = 0;
+		virtual unsigned indentInherited() = 0;
 
 	};
 

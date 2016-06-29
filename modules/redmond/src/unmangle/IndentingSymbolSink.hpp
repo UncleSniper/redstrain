@@ -21,7 +21,7 @@ namespace unmangle {
 			IndentationChain* chain;
 
 		  protected:
-			void indentOwnInherited() const;
+			unsigned indentOwnInherited() const;
 
 		  public:
 			Indenter();
