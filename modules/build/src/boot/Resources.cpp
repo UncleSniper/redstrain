@@ -93,6 +93,7 @@ namespace boot {
 		"blob.alias.path.prefix",
 		"blob.alias.file.suffix",
 		"blobful.depend.modules",
+		"blobful.depend.macro",
 		"message.blob.mapping",
 		"linux.external.libraries",
 		"windows.external.libraries"
@@ -186,6 +187,7 @@ namespace boot {
 		"guard.macro=%project%_%module%_%file%",
 		"blob.alias.path.prefix=/%module%/",
 		"include.debug.symbols=false",
+		"blobful.depend.macro=HAVE_%project%_%module%_DEPENDENCY",
 		NULL
 	};
 

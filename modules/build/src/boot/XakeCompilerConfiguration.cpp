@@ -55,6 +55,24 @@ namespace boot {
 			(*cdbegin)->getHeaderExposeDirectories(cpp, edbegin, edend);
 			for(; edbegin != edend; ++edbegin)
 				compilation.addIncludeDirectory(*edbegin);
+			switch((*cdbegin)->getType()) {
+				case Component::LIBRARY:
+				case Component::EXECUTABLE:
+					break;
+				case Component::DATA:
+				case Component::BLOB:
+					{
+						const XakeComponent* xcd = dynamic_cast<const XakeComponent*>(*cdbegin);
+						if(!xcd)
+							break;
+						string presence(xcd->getPresenceMacro());
+						if(!presence.empty())
+							compilation.defineMacro(presence);
+					}
+					break;
+				default:
+					break;
+			}
 		}
 	}
 

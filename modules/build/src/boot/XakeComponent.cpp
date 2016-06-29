@@ -99,4 +99,14 @@ namespace boot {
 		return XakeUtils::subst(tpl, variables);
 	}
 
+	string XakeComponent::getPresenceMacro() const {
+		string tpl(configuration.getProperty(Resources::RES_RSB_BLOBFUL_DEPEND_MACRO));
+		if(tpl.empty())
+			tpl = project.getProjectConfiguration().getProperty(Resources::RES_RSB_BLOBFUL_DEPEND_MACRO);
+		map<string, string> variables;
+		variables["project"] = project.getProjectGuard();
+		variables["module"] = getComponentGuard();
+		return XakeUtils::subst(tpl, variables);
+	}
+
 }}}

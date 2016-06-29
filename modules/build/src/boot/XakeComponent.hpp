@@ -65,6 +65,7 @@ namespace boot {
 
 		std::string getComponentGuard() const;
 		std::string getAPIBuildMacro() const;
+		std::string getPresenceMacro() const;
 
 	};
 

@@ -25,6 +25,7 @@ namespace boot {
 
 	Compilation* XakeGCC::newCompilation(const string& source, Compilation::CompileMode mode) {
 		Delete<Compilation> compilation(GCC::newCompilation(source, mode));
+		compilation->defineMacro("REDSTRAIN_BLOBFUL_BUILD");
 		compilation->setDebug(XakeUtils::parseBoolean(project.getProjectConfiguration()
 				.getProperty(Resources::RES_INCLUDE_DEBUG_SYMBOLS)));
 		return compilation.set();
