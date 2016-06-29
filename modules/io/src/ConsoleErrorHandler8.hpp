@@ -44,6 +44,8 @@ namespace io {
 			return console;
 		}
 
+		static ConsoleErrorHandler8& getDefaultErrorHandler();
+
 	};
 
 }}

@@ -1,7 +1,10 @@
+#include <redstrain/platform/SynchronizedSingleton.hpp>
+
 #include "ConsoleErrorHandler8.hpp"
 
 using redengine::platform::File;
 using redengine::platform::Console;
+using redengine::platform::SynchronizedSingleton;
 
 namespace redengine {
 namespace io {
@@ -23,5 +26,32 @@ namespace io {
 	}
 
 	ConsoleErrorHandler8::~ConsoleErrorHandler8() {}
+
+	class DefaultConsoleErrorHandler8Singleton : public SynchronizedSingleton<ConsoleErrorHandler8> {
+
+	  protected:
+		virtual ConsoleErrorHandler8* newInstance();
+
+	  public:
+		DefaultConsoleErrorHandler8Singleton();
+		DefaultConsoleErrorHandler8Singleton(const DefaultConsoleErrorHandler8Singleton&);
+
+	};
+
+	DefaultConsoleErrorHandler8Singleton::DefaultConsoleErrorHandler8Singleton() {}
+
+	DefaultConsoleErrorHandler8Singleton::DefaultConsoleErrorHandler8Singleton(const
+			DefaultConsoleErrorHandler8Singleton& singleton)
+			: SynchronizedSingleton<ConsoleErrorHandler8>(singleton) {}
+
+	ConsoleErrorHandler8* DefaultConsoleErrorHandler8Singleton::newInstance() {
+		return new ConsoleErrorHandler8(Console::STANDARD_ERROR);
+	}
+
+	static DefaultConsoleErrorHandler8Singleton defaultConsoleErrorHandler8Singleton;
+
+	ConsoleErrorHandler8& ConsoleErrorHandler8::getDefaultErrorHandler() {
+		return defaultConsoleErrorHandler8Singleton.get();
+	}
 
 }}
