@@ -20,28 +20,38 @@ namespace error {
 	// ======== IndentingStackTraceSink ========
 
 	IndentingStackTraceSink::IndentingStackTraceSink(Indenter& indenter, unsigned indentLevel)
-			: indenter(indenter), indentLevel(indentLevel), withinFrame(false) {}
+			: indenter(indenter), indentLevel(indentLevel), withinFrame(false), currentColumn(0u) {}
 
 	IndentingStackTraceSink::IndentingStackTraceSink(const IndentingStackTraceSink& sink)
 			: StackTraceSink(sink), StackTraceSinkBase(sink), IndentationChain(sink),
-			indenter(sink.indenter), indentLevel(sink.indentLevel), withinFrame(sink.withinFrame) {}
+			indenter(sink.indenter), indentLevel(sink.indentLevel), withinFrame(sink.withinFrame),
+			currentColumn(sink.currentColumn) {}
+
+	void IndentingStackTraceSink::advanceCurrentColumn(unsigned columnDelta) {
+		currentColumn += columnDelta;
+	}
+
+	void IndentingStackTraceSink::resetCurrentColumn() {
+		currentColumn = 0u;
+	}
 
 	void IndentingStackTraceSink::beginHeader() {
-		indenter.indent(indentLevel);
+		currentColumn += indenter.indent(indentLevel);
 	}
 
 	void IndentingStackTraceSink::endHeader() {
 		indenter.endLine();
+		currentColumn = 0u;
 	}
 
 	void IndentingStackTraceSink::beginFrame() {
 		withinFrame = true;
-		indenter.indent(indentLevel + 1u);
+		currentColumn += indenter.indent(indentLevel + 1u);
 	}
 
 	void IndentingStackTraceSink::beginFrameModule(MemorySize) {
 		indenter.endLine();
-		indenter.indent(indentLevel + 1u);
+		currentColumn = indenter.indent(indentLevel + 1u);
 	}
 
 	void IndentingStackTraceSink::endFrameModule() {}
@@ -49,10 +59,13 @@ namespace error {
 	void IndentingStackTraceSink::endFrame() {
 		indenter.endLine();
 		withinFrame = false;
+		currentColumn = 0u;
 	}
 
 	unsigned IndentingStackTraceSink::indentInherited() {
-		return indenter.indent(indentLevel + static_cast<unsigned>(withinFrame));
+		unsigned columns = indenter.indent(indentLevel + static_cast<unsigned>(withinFrame));
+		currentColumn += columns;
+		return columns;
 	}
 
 }}

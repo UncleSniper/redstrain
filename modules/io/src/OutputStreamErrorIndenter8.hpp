@@ -1,7 +1,7 @@
-#ifndef REDSTRAIN_MOD_IO_OUTPUTSTREAMSTACKTRACEINDENTER8_HPP
-#define REDSTRAIN_MOD_IO_OUTPUTSTREAMSTACKTRACEINDENTER8_HPP
+#ifndef REDSTRAIN_MOD_IO_OUTPUTSTREAMERRORINDENTER8_HPP
+#define REDSTRAIN_MOD_IO_OUTPUTSTREAMERRORINDENTER8_HPP
 
-#include <redstrain/error/StackTraceIndenterBase8.hpp>
+#include <redstrain/error/ErrorIndenterBase8.hpp>
 
 #include "FormattedOutputStream.hpp"
 #include "api.hpp"
@@ -9,7 +9,7 @@
 namespace redengine {
 namespace io {
 
-	class REDSTRAIN_IO_API OutputStreamStackTraceIndenter8 : public error::StackTraceIndenterBase8 {
+	class REDSTRAIN_IO_API OutputStreamErrorIndenter8 : public error::ErrorIndenterBase8 {
 
 	  private:
 		OutputStream<char>& stream;
@@ -19,9 +19,9 @@ namespace io {
 		virtual void writeString(const std::string&);
 
 	  public:
-		OutputStreamStackTraceIndenter8(OutputStream<char>&);
-		OutputStreamStackTraceIndenter8(const OutputStreamStackTraceIndenter8&);
-		virtual ~OutputStreamStackTraceIndenter8();
+		OutputStreamErrorIndenter8(OutputStream<char>&);
+		OutputStreamErrorIndenter8(const OutputStreamErrorIndenter8&);
+		virtual ~OutputStreamErrorIndenter8();
 
 		inline OutputStream<char>& getStream() {
 			return stream;
@@ -45,4 +45,4 @@ namespace io {
 
 }}
 
-#endif /* REDSTRAIN_MOD_IO_OUTPUTSTREAMSTACKTRACEINDENTER8_HPP */
+#endif /* REDSTRAIN_MOD_IO_OUTPUTSTREAMERRORINDENTER8_HPP */

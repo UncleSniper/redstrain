@@ -24,11 +24,13 @@ namespace error {
 
 	void StdOStreamErrorHandler::writeString(const string& data) {
 		stream << data;
+		advanceCurrentColumn(static_cast<unsigned>(data.length()));
 	}
 
 	void StdOStreamErrorHandler::writeStackTrace(const StackTrace* trace) {
 		StdOStreamStackTraceIndenter indenter(stream);
 		StdOStreamStackTraceSink sink(stream, indenter);
+		sink.advanceCurrentColumn(getCurrentColumn());
 		configureStackTraceSink(sink, indenter);
 		if(trace)
 			trace->printTo(sink);

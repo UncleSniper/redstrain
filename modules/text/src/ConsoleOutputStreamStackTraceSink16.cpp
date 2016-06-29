@@ -21,6 +21,7 @@ namespace text {
 	void ConsoleOutputStreamStackTraceSink16::writeSymbol(const CPPSymbol& symbol) {
 		OutputStreamSymbolIndenter16 indenter(getStream());
 		ConsoleOutputStreamSymbolSink16 sink(getStream(), indenter, getConsole());
+		sink.advanceCurrentColumn(getCurrentColumn());
 		configureSymbolSink(sink, indenter);
 		configureConsoleSymbolSink(sink, indenter);
 		symbol.print(sink);

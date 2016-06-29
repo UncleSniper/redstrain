@@ -11,6 +11,8 @@ namespace io {
 	OutputStreamStackTraceIndenter8::OutputStreamStackTraceIndenter8(const OutputStreamStackTraceIndenter8& indenter)
 			: StackTraceIndenterBase8(indenter), stream(indenter.stream), formatted(stream) {}
 
+	OutputStreamStackTraceIndenter8::~OutputStreamStackTraceIndenter8() {}
+
 	void OutputStreamStackTraceIndenter8::writeString(const string& data) {
 		formatted.print(data);
 	}

@@ -23,6 +23,7 @@ namespace io {
 		OutputStreamStackTraceIndenter8 indenter(getStream());
 		indenter.setIndentationChain(this);
 		ConsoleOutputStreamStackTraceSink8 sink(getStream(), indenter, getConsole());
+		sink.advanceCurrentColumn(getCurrentColumn());
 		configureStackTraceSink(sink, indenter);
 		configureConsoleStackTraceSink(sink, indenter);
 		if(trace)

@@ -13,22 +13,33 @@ namespace error {
 
 	// ======== IndentingErrorHandler ========
 
-	IndentingErrorHandler::IndentingErrorHandler(Indenter& indenter) : indenter(indenter) {}
+	IndentingErrorHandler::IndentingErrorHandler(Indenter& indenter) : indenter(indenter), currentColumn(0u) {}
 
 	IndentingErrorHandler::IndentingErrorHandler(const IndentingErrorHandler& handler)
 			: ErrorHandler(handler), ErrorHandlerTextBase(handler), IndentationChain(handler),
-			indenter(handler.indenter) {}
+			indenter(handler.indenter), currentColumn(handler.currentColumn) {}
+
+	void IndentingErrorHandler::advanceCurrentColumn(unsigned columnDelta) {
+		currentColumn += columnDelta;
+	}
+
+	void IndentingErrorHandler::resetCurrentColumn() {
+		currentColumn = 0u;
+	}
 
 	void IndentingErrorHandler::prepareLine() {
-		indenter.indent();
+		currentColumn += indenter.indent();
 	}
 
 	void IndentingErrorHandler::endLine() {
 		indenter.endLine();
+		currentColumn = 0u;
 	}
 
 	unsigned IndentingErrorHandler::indentInherited() {
-		return indenter.indent();
+		unsigned columns = indenter.indent();
+		currentColumn += columns;
+		return columns;
 	}
 
 }}

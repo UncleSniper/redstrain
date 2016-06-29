@@ -20,15 +20,18 @@ namespace text {
 
 	void OutputStreamStackTraceSink16::writeHeader(const String16& data) {
 		formatted.print(data);
+		advanceCurrentColumn(static_cast<unsigned>(data.length()));
 	}
 
 	void OutputStreamStackTraceSink16::writeFrame(const String16& data) {
 		formatted.print(data);
+		advanceCurrentColumn(static_cast<unsigned>(data.length()));
 	}
 
 	void OutputStreamStackTraceSink16::writeSymbol(const CPPSymbol& symbol) {
 		OutputStreamSymbolIndenter16 indenter(stream);
 		OutputStreamSymbolSink16 sink(stream, indenter);
+		sink.advanceCurrentColumn(getCurrentColumn());
 		configureSymbolSink(sink, indenter);
 		symbol.print(sink);
 	}
@@ -36,12 +39,15 @@ namespace text {
 	void OutputStreamStackTraceSink16::beginFrameModule(MemorySize addressLength) {
 		Indenter& indenter = getIndenter();
 		indenter.endLine();
-		indenter.indent(getIndentLevel() + 1u);
+		resetCurrentColumn();
+		advanceCurrentColumn(indenter.indent(getIndentLevel() + 1u));
 		indenter.skip(static_cast<unsigned>(addressLength));
+		advanceCurrentColumn(static_cast<unsigned>(addressLength));
 	}
 
 	void OutputStreamStackTraceSink16::writeFrameModule(const String16& data) {
 		formatted.print(data);
+		advanceCurrentColumn(static_cast<unsigned>(data.length()));
 	}
 
 	void OutputStreamStackTraceSink16::configureSymbolSink(OutputStreamSymbolSink16&,

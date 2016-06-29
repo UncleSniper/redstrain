@@ -20,16 +20,19 @@ namespace io {
 
 	void OutputStreamStackTraceSink8::writeHeader(const string& data) {
 		formatted.print(data);
+		advanceCurrentColumn(static_cast<unsigned>(data.length()));
 	}
 
 	void OutputStreamStackTraceSink8::writeFrame(const string& data) {
 		formatted.print(data);
+		advanceCurrentColumn(static_cast<unsigned>(data.length()));
 	}
 
 	void OutputStreamStackTraceSink8::writeSymbol(const CPPSymbol& symbol) {
 		OutputStreamSymbolIndenter8 indenter(stream);
 		indenter.setIndentationChain(this);
 		OutputStreamSymbolSink8 sink(stream, indenter);
+		sink.advanceCurrentColumn(getCurrentColumn());
 		configureSymbolSink(sink, indenter);
 		symbol.print(sink);
 	}
@@ -37,12 +40,15 @@ namespace io {
 	void OutputStreamStackTraceSink8::beginFrameModule(MemorySize addressLength) {
 		Indenter& indenter = getIndenter();
 		indenter.endLine();
-		indenter.indent(getIndentLevel() + 1u);
+		resetCurrentColumn();
+		advanceCurrentColumn(indenter.indent(getIndentLevel() + 1u));
 		indenter.skip(static_cast<unsigned>(addressLength));
+		advanceCurrentColumn(static_cast<unsigned>(addressLength));
 	}
 
 	void OutputStreamStackTraceSink8::writeFrameModule(const string& data) {
 		formatted.print(data);
+		advanceCurrentColumn(static_cast<unsigned>(data.length()));
 	}
 
 	void OutputStreamStackTraceSink8::configureSymbolSink(OutputStreamSymbolSink8&, OutputStreamSymbolIndenter8&) {}

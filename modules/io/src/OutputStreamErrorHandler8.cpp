@@ -21,11 +21,13 @@ namespace io {
 
 	void OutputStreamErrorHandler8::writeString(const string& data) {
 		formatted.print(data);
+		advanceCurrentColumn(static_cast<unsigned>(data.length()));
 	}
 
 	void OutputStreamErrorHandler8::writeStackTrace(const StackTrace* trace) {
 		OutputStreamStackTraceIndenter8 indenter(stream);
 		OutputStreamStackTraceSink8 sink(stream, indenter);
+		sink.advanceCurrentColumn(getCurrentColumn());
 		configureStackTraceSink(sink, indenter);
 		if(trace)
 			trace->printTo(sink);

@@ -12,9 +12,6 @@ namespace unmangle {
 	  private:
 		unsigned columnCount, currentColumn;
 
-	  protected:
-		void advanceCurrentColumn(unsigned);
-
 	  public:
 		BoundedSymbolSink(unsigned);
 		BoundedSymbolSink(const BoundedSymbolSink&);
@@ -31,6 +28,7 @@ namespace unmangle {
 			return currentColumn;
 		}
 
+		void advanceCurrentColumn(unsigned);
 		void resetCurrentColumn();
 
 		virtual unsigned getRemainingColumnCount();

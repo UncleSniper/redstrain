@@ -21,16 +21,19 @@ namespace error {
 
 	void StdOStreamStackTraceSink::writeHeader(const string& data) {
 		stream << data;
+		advanceCurrentColumn(static_cast<unsigned>(data.length()));
 	}
 
 	void StdOStreamStackTraceSink::writeFrame(const string& data) {
 		stream << data;
+		advanceCurrentColumn(static_cast<unsigned>(data.length()));
 	}
 
 	void StdOStreamStackTraceSink::writeSymbol(const CPPSymbol& symbol) {
 		StdOStreamSymbolIndenter indenter(stream);
 		indenter.setIndentationChain(this);
 		StdOStreamSymbolSink sink(stream, indenter);
+		sink.advanceCurrentColumn(getCurrentColumn());
 		configureSymbolSink(sink, indenter);
 		symbol.print(sink);
 	}
@@ -38,12 +41,15 @@ namespace error {
 	void StdOStreamStackTraceSink::beginFrameModule(MemorySize addressLength) {
 		Indenter& indenter = getIndenter();
 		indenter.endLine();
-		indenter.indent(getIndentLevel() + 1u);
+		resetCurrentColumn();
+		advanceCurrentColumn(indenter.indent(getIndentLevel() + 1u));
 		indenter.skip(static_cast<unsigned>(addressLength));
+		advanceCurrentColumn(static_cast<unsigned>(addressLength));
 	}
 
 	void StdOStreamStackTraceSink::writeFrameModule(const string& data) {
 		stream << data;
+		advanceCurrentColumn(static_cast<unsigned>(data.length()));
 	}
 
 	void StdOStreamStackTraceSink::configureSymbolSink(StdOStreamSymbolSink&, StdOStreamSymbolIndenter&) {}

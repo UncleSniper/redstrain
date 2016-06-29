@@ -43,6 +43,7 @@ namespace error {
 		Indenter& indenter;
 		unsigned indentLevel;
 		bool withinFrame;
+		unsigned currentColumn;
 
 	  protected:
 		virtual void beginHeader();
@@ -56,6 +57,9 @@ namespace error {
 	  public:
 		IndentingStackTraceSink(Indenter&, unsigned = 0u);
 		IndentingStackTraceSink(const IndentingStackTraceSink&);
+
+		void advanceCurrentColumn(unsigned);
+		void resetCurrentColumn();
 
 		inline Indenter& getIndenter() {
 			return indenter;
@@ -71,6 +75,14 @@ namespace error {
 
 		inline void setIndentLevel(unsigned indentLevel) {
 			this->indentLevel = indentLevel;
+		}
+
+		inline unsigned getCurrentColumn() const {
+			return currentColumn;
+		}
+
+		inline void setCurrentColumn(unsigned column) {
+			currentColumn = column;
 		}
 
 	};

@@ -26,8 +26,12 @@ namespace error {
 
 	  private:
 		Indenter& indenter;
+		unsigned currentColumn;
 
 	  protected:
+		void advanceCurrentColumn(unsigned);
+		void resetCurrentColumn();
+
 		virtual void prepareLine();
 		virtual void endLine();
 		virtual unsigned indentInherited();
@@ -42,6 +46,14 @@ namespace error {
 
 		inline const Indenter& getIndenter() const {
 			return indenter;
+		}
+
+		inline unsigned getCurrentColumn() const {
+			return currentColumn;
+		}
+
+		inline void setCurrentColumn(unsigned column) {
+			currentColumn = column;
 		}
 
 	};
