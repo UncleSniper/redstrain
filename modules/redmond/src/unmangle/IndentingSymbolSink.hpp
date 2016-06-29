@@ -5,6 +5,11 @@
 
 namespace redengine {
 namespace redmond {
+	class IndentationChain;
+}}
+
+namespace redengine {
+namespace redmond {
 namespace unmangle {
 
 	class REDSTRAIN_REDMOND_API IndentingSymbolSink : public virtual SymbolSink {
@@ -12,10 +17,24 @@ namespace unmangle {
 	  public:
 		class REDSTRAIN_REDMOND_API Indenter {
 
+		  private:
+			IndentationChain* chain;
+
+		  protected:
+			void indentOwnInherited() const;
+
 		  public:
 			Indenter();
 			Indenter(const Indenter&);
 			virtual ~Indenter();
+
+			inline IndentationChain* getIndentationChain() const {
+				return chain;
+			}
+
+			inline void setIndentationChain(IndentationChain* chain) {
+				this->chain = chain;
+			}
 
 			virtual void startNewLine() = 0;
 			virtual unsigned indent(unsigned) = 0;

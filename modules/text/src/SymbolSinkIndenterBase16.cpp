@@ -37,6 +37,7 @@ namespace text {
 	}
 
 	unsigned SymbolSinkIndenterBase16::indent(unsigned levels) {
+		indentOwnInherited();
 		writeString(marginString);
 		unsigned u;
 		for(u = 0u; u < levels; ++u)

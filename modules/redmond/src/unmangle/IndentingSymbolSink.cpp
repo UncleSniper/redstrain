@@ -1,4 +1,5 @@
 #include "IndentingSymbolSink.hpp"
+#include "../IndentationChain.hpp"
 
 namespace redengine {
 namespace redmond {
@@ -11,6 +12,11 @@ namespace unmangle {
 	IndentingSymbolSink::Indenter::Indenter(const Indenter&) {}
 
 	IndentingSymbolSink::Indenter::~Indenter() {}
+
+	void IndentingSymbolSink::Indenter::indentOwnInherited() const {
+		if(chain)
+			chain->indentInherited();
+	}
 
 	// ======== IndentingSymbolSink ========
 
