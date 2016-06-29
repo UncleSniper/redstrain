@@ -1,26 +1,48 @@
 #ifndef REDSTRAIN_MOD_ERROR_INDENTINGSTACKTRACESINK_HPP
 #define REDSTRAIN_MOD_ERROR_INDENTINGSTACKTRACESINK_HPP
 
+#include <redstrain/redmond/IndentationChain.hpp>
+
 #include "StackTraceSinkBase.hpp"
 
 namespace redengine {
 namespace error {
 
-	class REDSTRAIN_ERROR_API IndentingStackTraceSink : public virtual StackTraceSinkBase {
+	class REDSTRAIN_ERROR_API IndentingStackTraceSink
+			: public virtual StackTraceSinkBase, protected redmond::IndentationChain {
 
 	  public:
 		class REDSTRAIN_ERROR_API Indenter {
+
+		  private:
+			redmond::IndentationChain* chain;
+
+		  protected:
+			unsigned indentOwnInherited() const;
 
 		  public:
 			Indenter();
 			Indenter(const Indenter&);
 			virtual ~Indenter();
 
+			inline IndentationChain* getIndentationChain() const {
+				return chain;
+			}
+
+			inline void setIndentationChain(IndentationChain* chain) {
+				this->chain = chain;
+			}
+
 			virtual unsigned indent(unsigned) = 0;
 			virtual void skip(unsigned) = 0;
 			virtual void endLine() = 0;
 
 		};
+
+	  private:
+		Indenter& indenter;
+		unsigned indentLevel;
+		bool withinFrame;
 
 	  protected:
 		virtual void beginHeader();
@@ -29,10 +51,7 @@ namespace error {
 		virtual void beginFrameModule(util::MemorySize);
 		virtual void endFrameModule();
 		virtual void endFrame();
-
-	  private:
-		Indenter& indenter;
-		unsigned indentLevel;
+		virtual unsigned indentInherited();
 
 	  public:
 		IndentingStackTraceSink(Indenter&, unsigned = 0u);

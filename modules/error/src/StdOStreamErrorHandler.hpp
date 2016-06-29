@@ -26,6 +26,9 @@ namespace error {
 		StdOStreamErrorHandler(std::ostream&, Indenter&);
 		StdOStreamErrorHandler(const StdOStreamErrorHandler&);
 
+	  public:
+		static StdOStreamErrorHandler defaultStdErrorHandler;
+
 	};
 
 }}

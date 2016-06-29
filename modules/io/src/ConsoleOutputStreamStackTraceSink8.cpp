@@ -19,6 +19,7 @@ namespace io {
 
 	void ConsoleOutputStreamStackTraceSink8::writeSymbol(const CPPSymbol& symbol) {
 		OutputStreamSymbolIndenter8 indenter(getStream());
+		indenter.setIndentationChain(this);
 		ConsoleOutputStreamSymbolSink8 sink(getStream(), indenter, getConsole());
 		configureSymbolSink(sink, indenter);
 		configureConsoleSymbolSink(sink, indenter);

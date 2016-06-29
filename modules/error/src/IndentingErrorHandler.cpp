@@ -16,7 +16,8 @@ namespace error {
 	IndentingErrorHandler::IndentingErrorHandler(Indenter& indenter) : indenter(indenter) {}
 
 	IndentingErrorHandler::IndentingErrorHandler(const IndentingErrorHandler& handler)
-			: ErrorHandler(handler), ErrorHandlerTextBase(handler), indenter(handler.indenter) {}
+			: ErrorHandler(handler), ErrorHandlerTextBase(handler), IndentationChain(handler),
+			indenter(handler.indenter) {}
 
 	void IndentingErrorHandler::prepareLine() {
 		indenter.indent();
@@ -24,6 +25,10 @@ namespace error {
 
 	void IndentingErrorHandler::endLine() {
 		indenter.endLine();
+	}
+
+	unsigned IndentingErrorHandler::indentInherited() {
+		return indenter.indent();
 	}
 
 }}

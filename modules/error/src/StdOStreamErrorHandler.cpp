@@ -1,13 +1,19 @@
 #include "StackTrace.hpp"
 #include "StdOStreamErrorHandler.hpp"
+#include "StdOStreamErrorIndenter.hpp"
 #include "StdOStreamStackTraceSink.hpp"
 #include "StdOStreamStackTraceIndenter.hpp"
 
+using std::cerr;
 using std::string;
 using std::ostream;
 
 namespace redengine {
 namespace error {
+
+	static StdOStreamErrorIndenter defaultStdErrorIndenter(cerr);
+
+	StdOStreamErrorHandler StdOStreamErrorHandler::defaultStdErrorHandler(cerr, defaultStdErrorIndenter);
 
 	StdOStreamErrorHandler::StdOStreamErrorHandler(ostream& stream, Indenter& indenter)
 			: IndentingErrorHandler(indenter), stream(stream) {}

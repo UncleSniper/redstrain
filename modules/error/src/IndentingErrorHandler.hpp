@@ -1,12 +1,15 @@
 #ifndef REDSTRAIN_MOD_ERROR_INDENTINGERRORHANDLER_HPP
 #define REDSTRAIN_MOD_ERROR_INDENTINGERRORHANDLER_HPP
 
+#include <redstrain/redmond/IndentationChain.hpp>
+
 #include "ErrorHandlerTextBase.hpp"
 
 namespace redengine {
 namespace error {
 
-	class REDSTRAIN_ERROR_API IndentingErrorHandler : public virtual ErrorHandlerTextBase {
+	class REDSTRAIN_ERROR_API IndentingErrorHandler
+			: public virtual ErrorHandlerTextBase, protected redmond::IndentationChain {
 
 	  public:
 		class REDSTRAIN_ERROR_API Indenter {
@@ -16,7 +19,7 @@ namespace error {
 			Indenter(const Indenter&);
 			virtual ~Indenter();
 
-			virtual void indent() = 0;
+			virtual unsigned indent() = 0;
 			virtual void endLine() = 0;
 
 		};
@@ -27,6 +30,7 @@ namespace error {
 	  protected:
 		virtual void prepareLine();
 		virtual void endLine();
+		virtual unsigned indentInherited();
 
 	  public:
 		IndentingErrorHandler(Indenter&);

@@ -29,6 +29,7 @@ namespace error {
 
 	void StdOStreamStackTraceSink::writeSymbol(const CPPSymbol& symbol) {
 		StdOStreamSymbolIndenter indenter(stream);
+		indenter.setIndentationChain(this);
 		StdOStreamSymbolSink sink(stream, indenter);
 		configureSymbolSink(sink, indenter);
 		symbol.print(sink);
