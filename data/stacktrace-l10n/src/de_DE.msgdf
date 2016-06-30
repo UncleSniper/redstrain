@@ -16,3 +16,7 @@ ST_UNRESOLVED_SYMBOL=<nicht auflösbarer Name>
 ST_START_BOTTOM_OF_UNWINDING=(Ende der Aufrufskette erreicht nach 
 # Fragment to print at bottom of unwinding, after the frame count.
 ST_END_BOTTOM_OF_UNWINDING= Aufrufen.)
+# Fragment to print before exception type name.
+EH_BEFORE_TYPENAME=Fehler des Typs '
+# Fragment to print after exception type name.
+EH_AFTER_TYPENAME='

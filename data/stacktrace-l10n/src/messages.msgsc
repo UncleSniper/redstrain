@@ -7,3 +7,5 @@ ST_FRAME_AFTER_MODULE_NAME=Fragment to print after module name in a stack frame.
 ST_UNRESOLVED_SYMBOL=Symbol replacement in stack frame when symbol cannot be resolved.
 ST_START_BOTTOM_OF_UNWINDING=Fragment to print at bottom of unwinding, before the frame count.
 ST_END_BOTTOM_OF_UNWINDING=Fragment to print at bottom of unwinding, after the frame count.
+EH_BEFORE_TYPENAME=Fragment to print before exception type name.
+EH_AFTER_TYPENAME=Fragment to print after exception type name.

@@ -16,3 +16,7 @@ ST_UNRESOLVED_SYMBOL=<unresolved symbol>
 ST_START_BOTTOM_OF_UNWINDING=(Bottom of unwinding reached after 
 # Fragment to print at bottom of unwinding, after the frame count.
 ST_END_BOTTOM_OF_UNWINDING= frames.)
+# Fragment to print before exception type name.
+EH_BEFORE_TYPENAME=
+# Fragment to print after exception type name.
+EH_AFTER_TYPENAME=

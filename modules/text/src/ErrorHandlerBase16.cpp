@@ -1,5 +1,4 @@
 #include <redstrain/error/Error.hpp>
-#include <redstrain/redmond/l10nbind.hpp>
 
 #include "Transcode.hpp"
 #include "ErrorHandlerBase16.hpp"

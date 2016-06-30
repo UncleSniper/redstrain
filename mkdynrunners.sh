@@ -1,7 +1,9 @@
 #!/bin/bash
 
+basedir="$(readlink -f -- "$(dirname -- "$0")")"
+
 libdirs=''
-for d in modules/* data/*; do
+for d in "$basedir"/modules/* "$basedir"/data/*; do
 	if [ -d "$d" ]; then
 		if [ -z "$libdirs" ]; then
 			libdirs="$d"
@@ -12,14 +14,14 @@ for d in modules/* data/*; do
 done
 
 tooltpl=''
-if [ -f "project.properties" ]; then
-	tooltpl="$(grep -E '^tool\.basename=' "project.properties" | sed 's/^[^=]*=//')"
+if [ -f "$basedir/project.properties" ]; then
+	tooltpl="$(grep -E '^tool\.basename=' "$basedir/project.properties" | sed 's/^[^=]*=//')"
 fi
 if [ -z "$tooltpl" ]; then
 	tooltpl='%project%%tool%'
 fi
 
-for d in tools/*; do
+for d in "$basedir"/tools/*; do
 	if [ -d "$d" ]; then
 		if [ -f "$d/component.properties" ]; then
 			cname="$(grep -E '^component\.name=' "$d/component.properties" | sed 's/^[^=]*=//')"
@@ -28,7 +30,7 @@ for d in tools/*; do
 			cname="$(basename -- "$d")"
 		fi
 		txname="$(echo "x$tooltpl" | sed "s/^x//;s/%project%/redstrain/g;s#%tool%#$cname#g")"
-		scrname="run-$(basename "$d")"
+		scrname="$basedir/run-$(basename "$d")"
 	cat >"$scrname" <<EOF
 #!/bin/bash
 
