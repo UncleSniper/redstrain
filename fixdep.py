@@ -29,6 +29,8 @@ class Component(object):
 		self.transitiveBlobful = {}
 		self.depmacroName = None
 		self.depHumanName = None
+		self.versionMajor = 0
+		self.versionMinor = 1
 	def getComponentProperties(self):
 		return os.path.join(self.basedir, 'component.properties')
 	def getDependSource(self):
@@ -288,8 +290,8 @@ def genDependHeader(component):
 	else:
 		f.write('#include <redstrain/redmond/LibraryDependency.hpp>\n\n')
 		f.write('#include "api.hpp"\n\n')
-	f.write('#define ' + component.depmacroName + '_STATIC_VERSION_MAJOR 0u\n')
-	f.write('#define ' + component.depmacroName + '_STATIC_VERSION_MINOR 1u\n\n')
+	f.write('#define ' + component.depmacroName + '_STATIC_VERSION_MAJOR ' + str(component.versionMajor) + 'u\n')
+	f.write('#define ' + component.depmacroName + '_STATIC_VERSION_MINOR ' + str(component.versionMinor) + 'u\n\n')
 	f.write(begin)
 	f.write('\tREDSTRAIN_DECLARE_MODULE_VERSION(' + component.getAPIMacro() + ')\n')
 	f.write(end + '\n')
@@ -326,6 +328,10 @@ for c in components:
 			k, v = line.rstrip('\r\n').split('=', 1)
 			if k == 'human.readable.name':
 				c.depHumanName = v
+			elif k == 'version.major':
+				c.versionMajor = int(v)
+			elif k == 'version.minor':
+				c.versionMinor = int(v)
 		f.close()
 
 for c in components:
