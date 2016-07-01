@@ -111,11 +111,42 @@ class Component(object):
 		else:
 			return 'redengine::' + self.name
 	def canGenerateDependSource(self):
+		reasons = []
 		for cname in self.transitiveNormal:
 			depend = self.transitiveNormal[cname]
-			if depend.depmacroName is None or depend.depHumanName is None:
-				return False
-		return self.depHumanName is not None
+			if depend.depmacroName is None:
+				reasons.append("Depend macro name of '" + cname + "' is not known.")
+			if depend.depHumanName is None:
+				reasons.append("Human-readable name of '" + cname + "' is not known.")
+		if self.depHumanName is None:
+			reasons.append("Human-readable name of '" + self.name + "' is not known.")
+		return reasons
+
+class LengthKey(object):
+	def __init__(self, value):
+		self.value = value;
+	def __lt__(self, other):
+		return self.compare(self.value, other.value) < 0
+	def __gt__(self, other):
+		return self.compare(self.value, other.value) > 0
+	def __eq__(self, other):
+		return self.compare(self.value, other.value) == 0
+	def __le__(self, other):
+		return self.compare(self.value, other.value) <= 0
+	def __ge__(self, other):
+		return self.compare(self.value, other.value) >= 0
+	def __ne__(self, other):
+		return self.compare(self.value, other.value) != 0
+	def compare(self, a, b):
+		if len(a) < len(b):
+			return -1
+		if len(b) < len(a):
+			return 1
+		if a < b:
+			return -1
+		if b < a:
+			return 1
+		return 0
 
 def getAllComponents():
 	components = []
@@ -217,7 +248,11 @@ def makeNamespacePair(ns):
 def genDependSource(component):
 	dspath = component.getDependSource()
 	f = open(dspath, 'w')
+	headers = []
 	for cname in component.transitiveNormal:
+		headers.append(cname)
+	headers.sort(key = LengthKey)
+	for cname in headers:
 		f.write('#include <redstrain/' + cname + '/modinfo.hpp>\n')
 	f.write('\n')
 	if component.ctype == CT_LIBRARY:
@@ -234,7 +269,7 @@ def genDependSource(component):
 		shortdhn = depend.depHumanName
 		if '/' in shortdhn:
 			shortdhn = shortdhn[shortdhn.find('/') + 1:]
-		f.write(indent + 'REDSTRAIN_DEPEND_MODULE(' + shortdhn + '\n')
+		f.write(indent + 'REDSTRAIN_DEPEND_MODULE(' + shortdhn + ',\n')
 		f.write(indent + '\t\t' + component.depHumanName + ', ' + depend.depHumanName + ', '
 				+ depend.depmacroName + ', ::' + depend.getNamespace() + ')\n')
 	f.write(end)
@@ -271,11 +306,10 @@ for c in components:
 				c.depmacroName = m.group(1)
 				break
 		f.close()
-		if c.ctype != CT_TOOL and c.depmacroName is None:
+		if c.ctype == CT_LIBRARY and c.depmacroName is None:
 			printIssue("Component '" + c.basedir + "' fails to use REDSTRAIN_DEFINE_MODULE_VERSION in its '"
 					+ dspath + "'.", False)
-			if c.ctype == CT_LIBRARY:
-				c.depmacroName = 'REDSTRAIN_MOD_' + c.name.upper()
+			c.depmacroName = 'REDSTRAIN_MOD_' + c.name.upper()
 	dppath = c.getDependencyProperties()
 	if os.path.isfile(dppath):
 		f = open(dppath, 'r')
@@ -291,15 +325,18 @@ for c in components:
 	dspath = c.getDependSource()
 	if not os.path.isfile(dspath):
 		printIssue("Component '" + c.basedir + "' is missing a '" + dspath + "'.", False)
-		if c.canGenerateDependSource():
+		reasons = c.canGenerateDependSource()
+		if len(reasons):
+			printIssue('-> Cannot generate one, as not all necessary information is known:', True)
+			for r in reasons:
+				printIssue('       - ' + r, True)
+		else:
 			printIssue('-> I will generate one for you.', True)
 			genDependSource(c)
 			dhpath = c.getDependHeader()
 			if c.ctype == CT_LIBRARY and not os.path.isfile(dhpath):
 				printIssue("-> No '" + dhpath +  "' exists, either -- I well generate thatm too.", True)
 				genDependHeader(c)
-		else:
-			printIssue('-> Cannot generate one, as not all necessary information is known.', True)
 
 for c in components:
 	dspath = c.getDependSource()

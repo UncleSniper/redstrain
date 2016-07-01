@@ -8,18 +8,18 @@
 #include <redstrain/protostr/modinfo.hpp>
 
 REDSTRAIN_DEPEND_MODULE(Redmond,
-		redmkblob, RedStrain/Redmond, REDSTRAIN_MOD_REDMOND, ::redengine::redmond)
+		redmkcodetable, RedStrain/Redmond, REDSTRAIN_MOD_REDMOND, ::redengine::redmond)
 REDSTRAIN_DEPEND_MODULE(Error,
-		redmkblob, RedStrain/Error, REDSTRAIN_MOD_ERROR, ::redengine::error)
+		redmkcodetable, RedStrain/Error, REDSTRAIN_MOD_ERROR, ::redengine::error)
 REDSTRAIN_DEPEND_MODULE(Util,
-		redmkblob, RedStrain/Util, REDSTRAIN_MOD_UTIL, ::redengine::util)
+		redmkcodetable, RedStrain/Util, REDSTRAIN_MOD_UTIL, ::redengine::util)
 REDSTRAIN_DEPEND_MODULE(Platform,
-		redmkblob, RedStrain/Platform, REDSTRAIN_MOD_PLATFORM, ::redengine::platform)
+		redmkcodetable, RedStrain/Platform, REDSTRAIN_MOD_PLATFORM, ::redengine::platform)
 REDSTRAIN_DEPEND_MODULE(IO,
-		redmkblob, RedStrain/IO, REDSTRAIN_MOD_IO, ::redengine::io)
+		redmkcodetable, RedStrain/IO, REDSTRAIN_MOD_IO, ::redengine::io)
 REDSTRAIN_DEPEND_MODULE(ProtoStreams,
-		redmkblob, RedStrain/ProtoStreams, REDSTRAIN_MOD_PROTOSTR, ::redengine::protostr)
+		redmkcodetable, RedStrain/ProtoStreams, REDSTRAIN_MOD_PROTOSTR, ::redengine::protostr)
 REDSTRAIN_DEPEND_MODULE(Text,
-		redmkblob, RedStrain/Text, REDSTRAIN_MOD_TEXT, ::redengine::text)
+		redmkcodetable, RedStrain/Text, REDSTRAIN_MOD_TEXT, ::redengine::text)
 REDSTRAIN_DEPEND_MODULE(CommandLine,
-		redmkblob, RedStrain/CommandLine, REDSTRAIN_MOD_CMDLINE, ::redengine::cmdline)
+		redmkcodetable, RedStrain/CommandLine, REDSTRAIN_MOD_CMDLINE, ::redengine::cmdline)
