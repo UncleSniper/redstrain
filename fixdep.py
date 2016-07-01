@@ -376,3 +376,16 @@ for c in components:
 			if depend.depmacroName is not None and depend.depmacroName not in declaredDeps:
 				printIssue("Component '" + c.basedir + "' does not declare its dependency on '"
 						+ depend.basedir + "' in its '" + dspath + "'.", False)
+
+for c in components:
+	if c.ctype == CT_DATA and 'vfs' not in c.transitiveNormal:
+		printIssue("Component '" + c.basedir + "' should depend on 'vfs', but doesn't.", False)
+	if c.ctype == CT_TOOL:
+		if 'cmdline' not in c.transitiveNormal:
+			printIssue("Component '" + c.basedir + "' should depend on 'cmdline', but doesn't.", False)
+		if 'calendar' in c.transitiveNormal and 'locale' in c.transitiveNormal:
+			if 'calendar-formats' not in c.transitiveBlobful:
+				printIssue("Component '" + c.basedir + "' depends on 'calendar' and 'locale', "
+						+ "but not on 'calendar-formats'.", False)
+		if 'locale' in c.transitiveNormal and 'stacktrace-l10n' not in c.transitiveBlobful:
+			printIssue("Component '" + c.basedir + "' depends on 'locale', but not on 'stacktrace-l10n'.", False)
