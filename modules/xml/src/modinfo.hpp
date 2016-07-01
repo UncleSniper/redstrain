@@ -6,7 +6,7 @@
 #include "api.hpp"
 
 #define REDSTRAIN_MOD_XML_STATIC_VERSION_MAJOR 0u
-#define REDSTRAIN_MOD_XML_STATIC_VERSION_MINOR 0u
+#define REDSTRAIN_MOD_XML_STATIC_VERSION_MINOR 1u
 
 namespace redengine {
 namespace xml {

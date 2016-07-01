@@ -11,21 +11,21 @@
 
 REDSTRAIN_DEPEND_MODULE(IO,
 		RedStrain/Error/StackTrace-L10N, RedStrain/IO, REDSTRAIN_MOD_IO, ::redengine::io)
+REDSTRAIN_DEPEND_MODULE(VFS,
+		RedStrain/Error/StackTrace-L10N, RedStrain/VFS, REDSTRAIN_MOD_VFS, ::redengine::vfs)
 REDSTRAIN_DEPEND_MODULE(Text,
 		RedStrain/Error/StackTrace-L10N, RedStrain/Text, REDSTRAIN_MOD_TEXT, ::redengine::text)
 REDSTRAIN_DEPEND_MODULE(Util,
 		RedStrain/Error/StackTrace-L10N, RedStrain/Util, REDSTRAIN_MOD_UTIL, ::redengine::util)
+REDSTRAIN_DEPEND_MODULE(Error,
+		RedStrain/Error/StackTrace-L10N, RedStrain/Error, REDSTRAIN_MOD_ERROR, ::redengine::error)
 REDSTRAIN_DEPEND_MODULE(Locale,
 		RedStrain/Error/StackTrace-L10N, RedStrain/Locale, REDSTRAIN_MOD_LOCALE, ::redengine::locale)
-REDSTRAIN_DEPEND_MODULE(Algorithm,
-		RedStrain/Error/StackTrace-L10N, RedStrain/Algorithm, REDSTRAIN_MOD_ALGORITHM, ::redengine::algorithm)
-REDSTRAIN_DEPEND_MODULE(VFS,
-		RedStrain/Error/StackTrace-L10N, RedStrain/VFS, REDSTRAIN_MOD_VFS, ::redengine::vfs)
+REDSTRAIN_DEPEND_MODULE(Redmond,
+		RedStrain/Error/StackTrace-L10N, RedStrain/Redmond, REDSTRAIN_MOD_REDMOND, ::redengine::redmond)
 REDSTRAIN_DEPEND_MODULE(Platform,
 		RedStrain/Error/StackTrace-L10N, RedStrain/Platform, REDSTRAIN_MOD_PLATFORM, ::redengine::platform)
 REDSTRAIN_DEPEND_MODULE(ProtoStreams,
 		RedStrain/Error/StackTrace-L10N, RedStrain/ProtoStreams, REDSTRAIN_MOD_PROTOSTR, ::redengine::protostr)
-REDSTRAIN_DEPEND_MODULE(Redmond,
-		RedStrain/Error/StackTrace-L10N, RedStrain/Redmond, REDSTRAIN_MOD_REDMOND, ::redengine::redmond)
-REDSTRAIN_DEPEND_MODULE(Error,
-		RedStrain/Error/StackTrace-L10N, RedStrain/Error, REDSTRAIN_MOD_ERROR, ::redengine::error)
+REDSTRAIN_DEPEND_MODULE(Algorithm,
+		RedStrain/Error/StackTrace-L10N, RedStrain/Algorithm, REDSTRAIN_MOD_ALGORITHM, ::redengine::algorithm)

@@ -121,6 +121,8 @@ class Component(object):
 		if self.depHumanName is None:
 			reasons.append("Human-readable name of '" + self.name + "' is not known.")
 		return reasons
+	def getAPIMacro(self):
+		return 'REDSTRAIN_' + self.name.upper() + '_API'
 
 class LengthKey(object):
 	def __init__(self, value):
@@ -264,7 +266,7 @@ def genDependSource(component):
 	else:
 		end = ''
 		indent = ''
-	for cname in component.transitiveNormal:
+	for cname in headers:
 		depend = component.transitiveNormal[cname]
 		shortdhn = depend.depHumanName
 		if '/' in shortdhn:
@@ -281,12 +283,15 @@ def genDependHeader(component):
 	f = open(dhpath, 'w')
 	f.write('#ifndef ' + component.depmacroName + '_MODINFO_HPP\n')
 	f.write('#define ' + component.depmacroName + '_MODINFO_HPP\n\n')
-	f.write('#include <redstrain/redmond/LibraryDependency.hpp>\n\n')
-	f.write('#include "api.hpp"\n\n')
+	if component.ctype == CT_LIBRARY and component.name == 'redmond':
+		f.write('#include "LibraryDependency.hpp"\n\n')
+	else:
+		f.write('#include <redstrain/redmond/LibraryDependency.hpp>\n\n')
+		f.write('#include "api.hpp"\n\n')
 	f.write('#define ' + component.depmacroName + '_STATIC_VERSION_MAJOR 0u\n')
 	f.write('#define ' + component.depmacroName + '_STATIC_VERSION_MINOR 1u\n\n')
 	f.write(begin)
-	f.write('\tREDSTRAIN_DECLARE_MODULE_VERSION(' + component.depmacroName + ')\n')
+	f.write('\tREDSTRAIN_DECLARE_MODULE_VERSION(' + component.getAPIMacro() + ')\n')
 	f.write(end + '\n')
 	f.write('#endif /* ' + component.depmacroName + '_MODINFO_HPP */\n')
 	f.close()
@@ -310,6 +315,8 @@ for c in components:
 			printIssue("Component '" + c.basedir + "' fails to use REDSTRAIN_DEFINE_MODULE_VERSION in its '"
 					+ dspath + "'.", False)
 			c.depmacroName = 'REDSTRAIN_MOD_' + c.name.upper()
+	elif c.ctype == CT_LIBRARY:
+		c.depmacroName = 'REDSTRAIN_MOD_' + c.name.upper()
 	dppath = c.getDependencyProperties()
 	if os.path.isfile(dppath):
 		f = open(dppath, 'r')
@@ -335,7 +342,7 @@ for c in components:
 			genDependSource(c)
 			dhpath = c.getDependHeader()
 			if c.ctype == CT_LIBRARY and not os.path.isfile(dhpath):
-				printIssue("-> No '" + dhpath +  "' exists, either -- I well generate thatm too.", True)
+				printIssue("-> No '" + dhpath +  "' exists, either -- I will generate that, too.", True)
 				genDependHeader(c)
 
 for c in components:
