@@ -43,6 +43,10 @@ class Component(object):
 		return os.path.join(self.basedir, 'src', 'modinfo.hpp')
 	def getDependencyProperties(self):
 		return os.path.join(self.basedir, 'dependency.properties')
+	def getBlobDependHeader(self):
+		return os.path.join(self.basedir, 'src', 'blobdepend.hpp')
+	def getBlobDependSource(self):
+		return os.path.join(self.basedir, 'src', 'blobdepend.cpp')
 	def buildNormalClosure(self, dependables):
 		newExplicit = {}
 		for cname in self.explicitNormal:
@@ -125,6 +129,13 @@ class Component(object):
 		return reasons
 	def getAPIMacro(self):
 		return 'REDSTRAIN_' + self.name.upper() + '_API'
+	def getBlobDependencies(self):
+		result = {}
+		for cname in self.transitiveBlobful:
+			depend = self.transitiveBlobful[cname]
+			if depend.ctype == CT_DATA:
+				result[cname] = depend
+		return result
 
 class LengthKey(object):
 	def __init__(self, value):
@@ -258,6 +269,8 @@ def genDependSource(component):
 	headers.sort(key = LengthKey)
 	for cname in headers:
 		f.write('#include <redstrain/' + cname + '/modinfo.hpp>\n')
+	if component.ctype == CT_DATA:
+		f.write('#include <redstrain/redmond/blobs.hpp>\n')
 	f.write('\n')
 	if component.ctype == CT_LIBRARY:
 		f.write('#include "modinfo.hpp"\n\n')
@@ -268,6 +281,9 @@ def genDependSource(component):
 	else:
 		end = ''
 		indent = ''
+		if component.ctype == CT_DATA and component.depHumanName is not None:
+			f.write('using redengine::redmond::BlobModuleRegistrar;\n\n')
+			f.write('static BlobModuleRegistrar registerBlobModule("' + component.depHumanName + '");\n\n')
 	for cname in headers:
 		depend = component.transitiveNormal[cname]
 		shortdhn = depend.depHumanName
@@ -301,24 +317,39 @@ def genDependHeader(component):
 RE_DEPMACRO_NAME = re.compile('^[ \t]*REDSTRAIN_DEFINE_MODULE_VERSION\\(([A-Z0-9_]+)\\)$')
 RE_DEPDECL_UPPER = re.compile('^[ \t]*REDSTRAIN_DEPEND_MODULE\\([^,]+,$')
 RE_DEPDECL_LOWER = re.compile('^[ \t]*[^,]+, [^,]+, ([A-Z0-9_]+), ::[^,]+\\)$')
+RE_REGISTER_BLOB = re.compile('^[ \t]*(static[ \t]+)?(((::)?redengine::)?redmond::)?BlobModuleRegistrar'
+		+ '[ \t]+[a-zA-Z_][a-zA-Z0-9_]*\\("[^"]*"\\);[ \t]*$')
 
 for c in components:
 	dspath = c.getDependSource()
 	if os.path.isfile(dspath):
+		hasRegisterBlob = False
 		f = open(dspath, 'r')
 		for line in f:
 			line = line.rstrip('\r\n')
-			m = RE_DEPMACRO_NAME.search(line)
+			m = RE_DEPMACRO_NAME.match(line)
 			if m is not None:
 				c.depmacroName = m.group(1)
-				break
+			if RE_REGISTER_BLOB.match(line):
+				hasRegisterBlob = True
 		f.close()
 		if c.ctype == CT_LIBRARY and c.depmacroName is None:
 			printIssue("Component '" + c.basedir + "' fails to use REDSTRAIN_DEFINE_MODULE_VERSION in its '"
 					+ dspath + "'.", False)
 			c.depmacroName = 'REDSTRAIN_MOD_' + c.name.upper()
+		if c.ctype == CT_DATA and c.depmacroName is None:
+			c.depmacroName = 'REDSTRAIN_DATA_' + c.name.replace('-', '_').upper()
+		if c.ctype == CT_TOOL and c.depmacroName is None:
+			c.depmacroName = 'REDSTRAIN_TOOLS_' + c.name.upper()
+		if c.ctype == CT_DATA and not hasRegisterBlob:
+			printIssue("Component '" + c.basedir + "' fails to use BlobModuleRegistrar in its '"
+					+ dspath + "'.", False)
 	elif c.ctype == CT_LIBRARY:
 		c.depmacroName = 'REDSTRAIN_MOD_' + c.name.upper()
+	elif c.ctype == CT_DATA:
+		c.depmacroName = 'REDSTRAIN_DATA_' + c.name.replace('-', '_').upper()
+	elif c.ctype == CT_TOOL:
+		c.depmacroName = 'REDSTRAIN_TOOLS_' + c.name.upper()
 	dppath = c.getDependencyProperties()
 	if os.path.isfile(dppath):
 		f = open(dppath, 'r')
@@ -391,3 +422,59 @@ for c in components:
 						+ "but not on 'calendar-formats'.", False)
 		if 'locale' in c.transitiveNormal and 'stacktrace-l10n' not in c.transitiveBlobful:
 			printIssue("Component '" + c.basedir + "' depends on 'locale', but not on 'stacktrace-l10n'.", False)
+
+def genBlobDependHeader(component):
+	bdhpath = component.getBlobDependHeader()
+	blobs = component.getBlobDependencies()
+	f = open(bdhpath, 'w')
+	f.write('#ifndef ' + component.depmacroName + '_BLOBDEPEND_HPP\n')
+	f.write('#define ' + component.depmacroName + '_BLOBDEPEND_HPP\n\n')
+	f.write('#if defined(REDSTRAIN_BLOBFUL_BUILD)')
+	for cname in blobs:
+		depend = blobs[cname]
+		f.write(' && defined(HAVE_REDSTRAIN_' + depend.name.replace('-', '_').upper() + '_DEPENDENCY)')
+	f.write('\n#define HAVE_ALL_BLOB_DEPENDENCIES\n#endif\n\n')
+	f.write('bool areAllBlobDependenciesPresent();\n\n')
+	f.write('#endif /* ' + component.depmacroName + '_BLOBDEPEND_HPP */\n')
+	f.close()
+
+def genBlobDependSource(component):
+	bdspath = component.getBlobDependSource()
+	blobs = component.getBlobDependencies()
+	f = open(bdspath, 'w')
+	f.write('#include <redstrain/redmond/blobs.hpp>\n\n')
+	f.write('using redengine::redmond::hasBlobModule;\n\n')
+	f.write('bool areAllBlobDependenciesPresent() {\n')
+	for cname in blobs:
+		depend = blobs[cname]
+		if depend.depHumanName is not None:
+			f.write('\tif(!hasBlobModule("' + depend.depHumanName + '"))\n\t\treturn false;\n')
+	f.write('\treturn true;\n')
+	f.write('}\n')
+	f.close()
+
+for c in components:
+	if c.ctype != CT_TOOL:
+		continue
+	bdhpath = c.getBlobDependHeader()
+	if os.path.isfile(bdhpath):
+		f = open(bdhpath, 'r')
+		for line in f:
+			line = line.rstrip('\r\n')
+		#TODO
+		f.close()
+	else:
+		printIssue("Component '" + c.basedir + "' is missing a '" + bdhpath + "'.", False)
+		printIssue('-> I will generate one for you.', True)
+		genBlobDependHeader(c)
+	bdspath = c.getBlobDependSource()
+	if os.path.isfile(bdspath):
+		f = open(bdspath, 'r')
+		for line in f:
+			line = line.rstrip('\r\n')
+		#TODO
+		f.close()
+	else:
+		printIssue("Component '" + c.basedir + "' is missing a '" + bdspath + "'.", False)
+		printIssue('-> I will generate one for you.', True)
+		genBlobDependSource(c)

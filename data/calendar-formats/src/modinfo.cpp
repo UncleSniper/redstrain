@@ -9,6 +9,11 @@
 #include <redstrain/platform/modinfo.hpp>
 #include <redstrain/protostr/modinfo.hpp>
 #include <redstrain/algorithm/modinfo.hpp>
+#include <redstrain/redmond/blobs.hpp>
+
+using redengine::redmond::BlobModuleRegistrar;
+
+static BlobModuleRegistrar registerBlobModule("RedStrain/Calendar/Formats");
 
 REDSTRAIN_DEPEND_MODULE(IO,
 		RedStrain/Calendar/Formats, RedStrain/IO, REDSTRAIN_MOD_IO, ::redengine::io)

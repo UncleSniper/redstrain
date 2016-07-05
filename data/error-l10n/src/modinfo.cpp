@@ -8,6 +8,11 @@
 #include <redstrain/platform/modinfo.hpp>
 #include <redstrain/protostr/modinfo.hpp>
 #include <redstrain/algorithm/modinfo.hpp>
+#include <redstrain/redmond/blobs.hpp>
+
+using redengine::redmond::BlobModuleRegistrar;
+
+static BlobModuleRegistrar registerBlobModule("RedStrain/Error/L10N");
 
 REDSTRAIN_DEPEND_MODULE(IO,
 		RedStrain/Error/L10N, RedStrain/IO, REDSTRAIN_MOD_IO, ::redengine::io)
