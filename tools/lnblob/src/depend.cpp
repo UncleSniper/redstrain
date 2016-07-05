@@ -3,6 +3,7 @@
 #include <redstrain/text/modinfo.hpp>
 #include <redstrain/util/modinfo.hpp>
 #include <redstrain/error/modinfo.hpp>
+#include <redstrain/locale/modinfo.hpp>
 #include <redstrain/cmdline/modinfo.hpp>
 #include <redstrain/redmond/modinfo.hpp>
 #include <redstrain/platform/modinfo.hpp>
@@ -19,6 +20,8 @@ REDSTRAIN_DEPEND_MODULE(Util,
 		redlnblob, RedStrain/Util, REDSTRAIN_MOD_UTIL, ::redengine::util)
 REDSTRAIN_DEPEND_MODULE(Error,
 		redlnblob, RedStrain/Error, REDSTRAIN_MOD_ERROR, ::redengine::error)
+REDSTRAIN_DEPEND_MODULE(Locale,
+		redlnblob, RedStrain/Locale, REDSTRAIN_MOD_LOCALE, ::redengine::locale)
 REDSTRAIN_DEPEND_MODULE(CommandLine,
 		redlnblob, RedStrain/CommandLine, REDSTRAIN_MOD_CMDLINE, ::redengine::cmdline)
 REDSTRAIN_DEPEND_MODULE(Redmond,

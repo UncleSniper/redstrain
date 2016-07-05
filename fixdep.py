@@ -383,6 +383,8 @@ for c in components:
 	if c.ctype == CT_TOOL:
 		if 'cmdline' not in c.transitiveNormal:
 			printIssue("Component '" + c.basedir + "' should depend on 'cmdline', but doesn't.", False)
+		if 'locale' not in c.transitiveNormal:
+			printIssue("Component '" + c.basedir + "' should depend on 'locale', but doesn't.", False)
 		if 'calendar' in c.transitiveNormal and 'locale' in c.transitiveNormal:
 			if 'calendar-formats' not in c.transitiveBlobful:
 				printIssue("Component '" + c.basedir + "' depends on 'calendar' and 'locale', "
