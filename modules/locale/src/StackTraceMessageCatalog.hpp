@@ -59,6 +59,10 @@ namespace locale {
 			return this->formatMessage(locale, key);
 		}
 
+		virtual std::string getSubjectComponentName() const {
+			return "RedStrain/Error/StackTrace-L10N";
+		}
+
 	};
 
 	typedef StackTraceMessageCatalog<text::Char16, platform::PropertyMutexLockingPolicy> StackTraceMessageCatalog16;

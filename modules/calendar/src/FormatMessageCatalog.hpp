@@ -228,6 +228,10 @@ namespace calendar {
 			return formatter.formatTime(getTimeFormat(locale, format), point);
 		}
 
+		virtual std::string getSubjectComponentName() const {
+			return "RedStrain/Calendar/Formats";
+		}
+
 	};
 
 	typedef FormatMessageCatalog<text::Char16, platform::PropertyMutexLockingPolicy> FormatMessageCatalog16;

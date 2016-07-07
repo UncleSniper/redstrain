@@ -56,7 +56,7 @@ namespace locale {
 			if(cache)
 				lastLocale = &locale;
 			else
-				throw NoMessagesForRequestedLocaleError(locale);
+				throw NoMessagesForRequestedLocaleError(locale, getSubjectComponentName());
 			localeSwitched();
 		}
 
@@ -140,6 +140,10 @@ namespace locale {
 			CatalogLocker lock(this);
 			switchToLocale(locale);
 			lock.release();
+		}
+
+		virtual std::string getSubjectComponentName() const {
+			return std::string();
 		}
 
 	};

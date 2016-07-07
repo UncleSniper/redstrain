@@ -109,6 +109,7 @@ namespace locale {
 
 	  private:
 		CoreMessageCatalogFormattingOptionStringEmitter stringEmitter;
+		const std::string subjectComponentName;
 
 	  protected:
 		virtual void localeSwitched() {
@@ -128,23 +129,29 @@ namespace locale {
 		}
 
 	  public:
-		ComponentMessageCatalog(OptionMessageCatalog& optionCatalog)
+		ComponentMessageCatalog(OptionMessageCatalog& optionCatalog, const char* subjectComponentName)
 				: FormattedMessageCatalog<CharT, KeyT, LockingPolicyT, NumericRenditionT,
 						IntegerFormatterT, FloatFormatterT, FormatRenditionT>(stringEmitter),
-				stringEmitter(optionCatalog) {}
+				stringEmitter(optionCatalog),
+				subjectComponentName(subjectComponentName ? subjectComponentName : "") {}
 
 		ComponentMessageCatalog(OptionMessageCatalog& optionCatalog,
 				typename LockingPolicyT::LockingPolicyInitializer lockInitializer)
 				: FormattedMessageCatalog<CharT, KeyT, LockingPolicyT, NumericRenditionT,
 						IntegerFormatterT, FloatFormatterT, FormatRenditionT>(stringEmitter, lockInitializer),
-				stringEmitter(optionCatalog) {}
+				stringEmitter(optionCatalog),
+				subjectComponentName(subjectComponentName ? subjectComponentName : "") {}
 
 		ComponentMessageCatalog(const ComponentMessageCatalog& catalog)
 				: FormattedMessageCatalog<CharT, KeyT, LockingPolicyT, NumericRenditionT,
 						IntegerFormatterT, FloatFormatterT, FormatRenditionT>(catalog),
-				stringEmitter(catalog.stringEmitter) {}
+				stringEmitter(catalog.stringEmitter), subjectComponentName(catalog.subjectComponentName) {}
 
 		virtual ~ComponentMessageCatalog() {}
+
+		virtual std::string getSubjectComponentName() const {
+			return subjectComponentName;
+		}
 
 	};
 

@@ -8,7 +8,7 @@
 #include "BlobMessageLoader.hpp"
 
 #define REDSTRAIN_DEFINE_DEFAULT_MESSAGE_CATALOG16(M_CatalogT, M_SingletonT, \
-		m_messageLoaderConstructor, m_singletonObject, m_blobMappingObject, m_singletonFrontend) \
+		m_messageLoaderConstructor, m_singletonObject, m_blobMappingObject, m_singletonFrontend, m_humanName) \
 	class M_SingletonT : public ::redengine::platform::SynchronizedSingleton<M_CatalogT> { \
 	  protected: \
 		virtual M_CatalogT* newInstance(); \
@@ -20,7 +20,7 @@
 	M_SingletonT::M_SingletonT(const M_SingletonT& singleton) : SynchronizedSingleton<M_CatalogT>(singleton) {} \
 	M_CatalogT* M_SingletonT::newInstance() { \
 		::redengine::util::Delete<M_CatalogT> \
-				catalog(new M_CatalogT(::redengine::locale::getDefaultCoreMessageCatalog16())); \
+				catalog(new M_CatalogT(::redengine::locale::getDefaultCoreMessageCatalog16(), m_humanName)); \
 		::redengine::util::Unref< ::redengine::locale::MessageLoader< ::redengine::text::Char16> > \
 				loader(m_messageLoaderConstructor()); \
 		if(*loader) \
@@ -38,14 +38,15 @@
 		return new ::redengine::locale::BlobMessageLoader< ::redengine::text::Char16>(*m_blobMappingObject); \
 	}
 
-#define REDSTRAIN_DEFINE_DEFAULT_MODULE_MESSAGE_CATALOG16(m_moduleName) \
+#define REDSTRAIN_DEFINE_DEFAULT_MODULE_MESSAGE_CATALOG16(m_moduleName, m_humanName) \
 	REDSTRAIN_DEFINE_DEFAULT_MESSAGE_CATALOG16( \
 		m_moduleName ## ModuleMessageCatalog16, \
 		Default ## m_moduleName ## ModuleMessageCatalog16Singleton, \
 		new ## m_moduleName ## ModuleBlobMessageLoader16, \
 		default ## m_moduleName ## ModuleMessageCatalog16, \
 		messageBlobMapping, \
-		getDefault ## m_moduleName ## ModuleMessageCatalog16 \
+		getDefault ## m_moduleName ## ModuleMessageCatalog16, \
+		#m_humanName \
 	)
 
 #endif /* REDSTRAIN_MOD_LOCALE_COMPONENT_HPP */

@@ -68,6 +68,10 @@ namespace locale {
 			}
 		}
 
+		virtual std::string getSubjectComponentName() const {
+			return "RedStrain/Locale/Core";
+		}
+
 	};
 
 	typedef CoreMessageCatalog<text::Char16, platform::PropertyMutexLockingPolicy> CoreMessageCatalog16;

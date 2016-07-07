@@ -11,14 +11,19 @@ namespace locale {
 
 	  private:
 		const Locale locale;
+		const std::string componentName;
 
 	  public:
-		NoMessagesForRequestedLocaleError(const Locale&);
+		NoMessagesForRequestedLocaleError(const Locale&, const std::string&);
 		NoMessagesForRequestedLocaleError(const NoMessagesForRequestedLocaleError&);
 		virtual ~NoMessagesForRequestedLocaleError();
 
 		inline const Locale& getRequestedLocale() const {
 			return locale;
+		}
+
+		inline const std::string& getComponentName() const {
+			return componentName;
 		}
 
 		REDSTRAIN_DECLARE_ERROR(NoMessagesForRequestedLocaleError)
