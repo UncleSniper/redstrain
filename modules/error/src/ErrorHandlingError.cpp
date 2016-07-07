@@ -29,7 +29,7 @@ namespace error {
 	REDSTRAIN_DEFINE_ERROR(ErrorHandlingError) {
 		out << "Error while handling error";
 		if(subsequentError) {
-			out << " :";
+			out << ": ";
 			subsequentError->printMessage(out);
 		}
 	}

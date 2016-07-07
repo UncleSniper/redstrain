@@ -9,6 +9,7 @@
 #include <redstrain/cmdline/parseopt.hpp>
 
 #include "Options.hpp"
+#include "blobdepend.hpp"
 
 using std::string;
 using redengine::util::Delete;
@@ -33,7 +34,8 @@ int main(int argc, char** argv) {
 	logic.addLongOption("help", &Options::usage);
 	logic.addLongOption("namespace", &Options::setNamespace, OptionLogic::REQUIRED_ARGUMENT);
 	logic.addShortOption('n', &Options::setNamespace, OptionLogic::REQUIRED_ARGUMENT);
-	return runWithOptions(argv, argc, logic, &Options::addBareword, &Options::checkBarewords, run);
+	return runWithOptions(argv, argc, logic, &Options::addBareword, &Options::checkBarewords, run,
+			APPROPRIATE_CONSOLE_ERROR_HANDLER);
 }
 
 int run(const string&, const Options& options) {

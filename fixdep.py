@@ -432,9 +432,33 @@ def genBlobDependHeader(component):
 	f.write('#if defined(REDSTRAIN_BLOBFUL_BUILD)')
 	for cname in blobs:
 		depend = blobs[cname]
-		f.write(' && defined(HAVE_REDSTRAIN_' + depend.name.replace('-', '_').upper() + '_DEPENDENCY)')
+		f.write(' \\\n\t\t&& defined(HAVE_REDSTRAIN_' + depend.name.replace('-', '_').upper() + '_DEPENDENCY)')
 	f.write('\n#define HAVE_ALL_BLOB_DEPENDENCIES\n#endif\n\n')
-	f.write('bool areAllBlobDependenciesPresent();\n\n')
+	f.write('#include <redstrain/error/StdOStreamErrorHandler.hpp>\n\n')
+	if 'locale' in component.transitiveBlobful:
+		f.write('#ifdef REDSTRAIN_BLOBFUL_BUILD\n')
+		f.write('#include <redstrain/locale/LocalizingConsoleErrorHandler.hpp>\n')
+		f.write('#define APPROPRIATE_CONSOLE_ERROR_HANDLER (::areAllBlobDependenciesPresent() \\\n')
+		f.write('\t\t? static_cast< ::redengine::error::ErrorHandler&>( \\\n')
+		f.write('\t\t::redengine::locale::LocalizingConsoleErrorHandler::getDefaultStdErrorHandler()) \\\n')
+		f.write('\t\t: static_cast< ::redengine::error::ErrorHandler&>( \\\n')
+		f.write('\t\t::redengine::error::StdOStreamErrorHandler::defaultStdErrorHandler))\n')
+		f.write('#else\n')
+	elif 'text' in component.transitiveBlobful:
+		f.write('#ifdef REDSTRAIN_BLOBFUL_BUILD\n')
+		f.write('#include <redstrain/text/ConsoleErrorHandler16.hpp>\n')
+		f.write('#define APPROPRIATE_CONSOLE_ERROR_HANDLER (::areAllBlobDependenciesPresent() \\\n')
+		f.write('\t\t? static_cast< ::redengine::error::ErrorHandler&>( \\\n')
+		f.write('\t\t::redengine::text::ConsoleErrorHandler16::getDefaultStdErrorHandler()) \\\n')
+		f.write('\t\t: static_cast< ::redengine::error::ErrorHandler&>( \\\n')
+		f.write('\t\t::redengine::error::StdOStreamErrorHandler::defaultStdErrorHandler))\n')
+		f.write('#else\n')
+	f.write('#define APPROPRIATE_CONSOLE_ERROR_HANDLER \\\n')
+	f.write('\t\tstatic_cast< ::redengine::error::ErrorHandler&>( \\\n')
+	f.write('\t\t::redengine::error::StdOStreamErrorHandler::defaultStdErrorHandler)\n')
+	if 'text' in component.transitiveBlobful:
+		f.write('#endif\n')
+	f.write('\nbool areAllBlobDependenciesPresent();\n\n')
 	f.write('#endif /* ' + component.depmacroName + '_BLOBDEPEND_HPP */\n')
 	f.close()
 

@@ -1,4 +1,5 @@
 #include <redstrain/error/StackTrace.hpp>
+#include <redstrain/platform/SynchronizedSingleton.hpp>
 #include <redstrain/text/OutputStreamStackTraceIndenter16.hpp>
 
 #include "LocalizingConsoleErrorHandler.hpp"
@@ -7,6 +8,7 @@ using redengine::text::Char16;
 using redengine::io::OutputStream;
 using redengine::platform::Console;
 using redengine::error::StackTrace;
+using redengine::platform::SynchronizedSingleton;
 using redengine::text::OutputStreamStackTraceIndenter16;
 
 namespace redengine {
@@ -80,5 +82,30 @@ namespace locale {
 
 	void LocalizingConsoleErrorHandler::configureChainedLocalizingConsoleStackTraceSink(
 			ChainedLocalizingConsoleStackTraceSink&, OutputStreamStackTraceIndenter16&) {}
+
+	class DefaultLocalizingConsoleErrorHandlerSingleton
+			: public SynchronizedSingleton<LocalizingConsoleErrorHandler> {
+
+	  private:
+		const Console::StandardHandle handle;
+
+	  protected:
+		virtual LocalizingConsoleErrorHandler* newInstance() {
+			return new LocalizingConsoleErrorHandler(handle);
+		}
+
+	  public:
+		DefaultLocalizingConsoleErrorHandlerSingleton(Console::StandardHandle handle) : handle(handle) {}
+
+		DefaultLocalizingConsoleErrorHandlerSingleton(const DefaultLocalizingConsoleErrorHandlerSingleton& singleton)
+				: SynchronizedSingleton<LocalizingConsoleErrorHandler>(singleton), handle(singleton.handle) {}
+
+	};
+
+	static DefaultLocalizingConsoleErrorHandlerSingleton stdErrSingleton(Console::STANDARD_ERROR);
+
+	LocalizingConsoleErrorHandler& LocalizingConsoleErrorHandler::getDefaultStdErrorHandler() {
+		return stdErrSingleton.get();
+	}
 
 }}

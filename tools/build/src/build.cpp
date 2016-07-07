@@ -28,6 +28,7 @@
 #include <redstrain/io/streamoperators.hpp>
 
 #include "Options.hpp"
+#include "blobdepend.hpp"
 
 using std::list;
 using std::string;
@@ -79,7 +80,8 @@ int main(int argc, char** argv) {
 	logic.addLongOption("dump-context", &Options::setDumpContext);
 	logic.addLongOption("list-goals", &Options::setShowGoals);
 	logic.addShortOption('l', &Options::setShowGoals);
-	return runWithOptions(argv, argc, logic, &Options::addBareword, &Options::checkBarewords, run);
+	return runWithOptions(argv, argc, logic, &Options::addBareword, &Options::checkBarewords, run,
+			APPROPRIATE_CONSOLE_ERROR_HANDLER);
 }
 
 int run(const string& progname, const Options& options) {

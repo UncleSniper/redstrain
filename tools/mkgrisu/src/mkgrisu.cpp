@@ -6,6 +6,7 @@
 #include <redstrain/cmdline/parseopt.hpp>
 
 #include "Options.hpp"
+#include "blobdepend.hpp"
 
 using std::string;
 using redengine::text::Grisu;
@@ -32,7 +33,8 @@ int main(int argc, char** argv) {
 	logic.addShortOption('s', &Options::setSignificantsName, OptionLogic::REQUIRED_ARGUMENT);
 	logic.addLongOption("exponents", &Options::setExponentsName, OptionLogic::REQUIRED_ARGUMENT);
 	logic.addShortOption('e', &Options::setExponentsName, OptionLogic::REQUIRED_ARGUMENT);
-	return runWithOptions(argv, argc, logic, &Options::addBareword, &Options::checkBarewords, run);
+	return runWithOptions(argv, argc, logic, &Options::addBareword, &Options::checkBarewords, run,
+			APPROPRIATE_CONSOLE_ERROR_HANDLER);
 }
 
 int run(const string&, const Options& options) {

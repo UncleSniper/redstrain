@@ -1,9 +1,12 @@
+#include <redstrain/platform/SynchronizedSingleton.hpp>
+
 #include "ConsoleOutputStream.hpp"
 #include "ConsoleErrorHandler16.hpp"
 
 using redengine::platform::File;
 using redengine::io::OutputStream;
 using redengine::platform::Console;
+using redengine::platform::SynchronizedSingleton;
 
 namespace redengine {
 namespace text {
@@ -26,5 +29,29 @@ namespace text {
 	}
 
 	ConsoleErrorHandler16::~ConsoleErrorHandler16() {}
+
+	class DefaultConsoleErrorHandler16Singleton : public SynchronizedSingleton<ConsoleErrorHandler16> {
+
+	  private:
+		const Console::StandardHandle handle;
+
+	  protected:
+		virtual ConsoleErrorHandler16* newInstance() {
+			return new ConsoleErrorHandler16(handle);
+		}
+
+	  public:
+		DefaultConsoleErrorHandler16Singleton(Console::StandardHandle handle) : handle(handle) {}
+
+		DefaultConsoleErrorHandler16Singleton(const DefaultConsoleErrorHandler16Singleton& singleton)
+				: SynchronizedSingleton<ConsoleErrorHandler16>(singleton), handle(singleton.handle) {}
+
+	};
+
+	static DefaultConsoleErrorHandler16Singleton stdErrSingleton(Console::STANDARD_ERROR);
+
+	ConsoleErrorHandler16& ConsoleErrorHandler16::getDefaultStdErrorHandler() {
+		return stdErrSingleton.get();
+	}
 
 }}

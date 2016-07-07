@@ -34,6 +34,8 @@ namespace text {
 			return console;
 		}
 
+		static ConsoleErrorHandler16& getDefaultStdErrorHandler();
+
 	};
 
 }}

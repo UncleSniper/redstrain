@@ -13,6 +13,7 @@
 #include "Options.hpp"
 #include "Unmangler.hpp"
 #include "predicates.hpp"
+#include "blobdepend.hpp"
 
 using std::map;
 using std::cerr;
@@ -38,7 +39,8 @@ int main(int argc, char** argv) {
 	logic.addLongOption("help", &Options::usage);
 	logic.addLongOption("nowrap", &Options::setAvoidWrapping);
 	logic.addShortOption('w', &Options::setAvoidWrapping);
-	return runWithOptions(argv, argc, logic, &Options::addBareword, &Options::checkBarewords, run);
+	return runWithOptions(argv, argc, logic, &Options::addBareword, &Options::checkBarewords, run,
+			APPROPRIATE_CONSOLE_ERROR_HANDLER);
 }
 
 typedef map<string, Unmangler> Schemes;

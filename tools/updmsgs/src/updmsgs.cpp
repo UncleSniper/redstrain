@@ -13,6 +13,7 @@
 #include <redstrain/cmdline/parseopt.hpp>
 
 #include "Options.hpp"
+#include "blobdepend.hpp"
 
 using std::map;
 using std::set;
@@ -61,7 +62,8 @@ int main(int argc, char** argv) {
 	logic.addShortOption('r', &Options::setReferenceFileEncoding, OptionLogic::REQUIRED_ARGUMENT);
 	logic.addLongOption("verbose", &Options::setVerbose);
 	logic.addShortOption('v', &Options::setVerbose);
-	return runWithOptions(argv, argc, logic, &Options::addBareword, &Options::checkBarewords, run);
+	return runWithOptions(argv, argc, logic, &Options::addBareword, &Options::checkBarewords, run,
+			APPROPRIATE_CONSOLE_ERROR_HANDLER);
 }
 
 int run(const string&, const Options& options) {

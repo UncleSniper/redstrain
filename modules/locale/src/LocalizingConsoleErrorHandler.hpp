@@ -42,6 +42,8 @@ namespace locale {
 				StackTraceMessageSource<text::Char16>&, const Locale&);
 		LocalizingConsoleErrorHandler(const LocalizingConsoleErrorHandler&);
 
+		static LocalizingConsoleErrorHandler& getDefaultStdErrorHandler();
+
 	};
 
 }}

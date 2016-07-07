@@ -7,6 +7,7 @@
 #include <redstrain/error/Error.hpp>
 #include <redstrain/platform/Console.hpp>
 #include <redstrain/platform/Pathname.hpp>
+#include <redstrain/error/ErrorHandler.hpp>
 #include <redstrain/io/FileOutputStream.hpp>
 #include <redstrain/io/FormattedOutputStream.hpp>
 
@@ -35,7 +36,8 @@ namespace cmdline {
 	int runWithOptions(char** argv, int argc, const ConfigurationObjectOptionLogic<ConfigT>& logic,
 			BarewordReturnT (ConfigT::*barewordHandler)(const std::string&),
 			void (ConfigT::*optionsChecker)(),
-			int (*mainFunction)(const std::string&, const ConfigT&)) {
+			int (*mainFunction)(const std::string&, const ConfigT&),
+			error::ErrorHandler& errorHandler) {
 		util::Delete<WordAction> nonOptionAction(
 				new ArgumentMemberFunctionWordAction<ConfigT, BarewordReturnT>(logic.getBaseObjectHolder(),
 				barewordHandler));
@@ -43,30 +45,26 @@ namespace cmdline {
 			io::FileOutputStream stdErr(platform::Console::getStandardHandle(platform::Console::STANDARD_ERROR));
 			stdErr.setCloseOnDestroy(false);
 			io::FormattedOutputStream<char> conerr(stdErr);
-			DefaultOptionErrorHandler errorHandler(platform::Pathname::basename(*argv), conerr);
-			if(!parseOpts(argv, argc, logic, errorHandler, *nonOptionAction))
+			DefaultOptionErrorHandler optionErrorHandler(platform::Pathname::basename(*argv), conerr);
+			if(!parseOpts(argv, argc, logic, optionErrorHandler, *nonOptionAction))
 				return 1;
 			if(optionsChecker) {
 				try {
 					(logic.getBaseObject()->*optionsChecker)();
 				}
 				catch(const UnexpectedBarewordError& error) {
-					errorHandler.handleOptionError(error);
+					optionErrorHandler.handleOptionError(error);
 					return 1;
 				}
 				catch(const MissingBarewordError& error) {
-					errorHandler.handleOptionError(error);
+					optionErrorHandler.handleOptionError(error);
 					return 1;
 				}
 			}
-			return mainFunction(errorHandler.getProgramName(), *logic.getBaseObject());
+			return mainFunction(optionErrorHandler.getProgramName(), *logic.getBaseObject());
 		}
 		catch(const error::Error& error) {
-			std::cerr << platform::Pathname::basename(*argv) << ": " << error.getErrorType() << ": ";
-			error.printMessage(std::cerr);
-			std::cerr << std::endl;
-			if(getenv("REDSTRAIN_PRINT_STACK_TRACES"))
-				error.printStackTrace(std::cerr);
+			errorHandler.handleErrorCompletely(error);
 		}
 		catch(const StopExecution& stop) {
 			return stop.getStatus();

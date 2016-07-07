@@ -10,6 +10,7 @@
 #include <redstrain/cmdline/parseopt.hpp>
 
 #include "Options.hpp"
+#include "blobdepend.hpp"
 
 using std::string;
 using redengine::util::Delete;
@@ -44,7 +45,8 @@ int main(int argc, char** argv) {
 	logic.addShortOption('p', &Options::setConstantPrefix, OptionLogic::REQUIRED_ARGUMENT);
 	logic.addLongOption("guard-macro", &Options::setGuardMacro, OptionLogic::REQUIRED_ARGUMENT);
 	logic.addShortOption('g', &Options::setGuardMacro, OptionLogic::REQUIRED_ARGUMENT);
-	return runWithOptions(argv, argc, logic, &Options::addBareword, &Options::checkBarewords, run);
+	return runWithOptions(argv, argc, logic, &Options::addBareword, &Options::checkBarewords, run,
+			APPROPRIATE_CONSOLE_ERROR_HANDLER);
 }
 
 int run(const string&, const Options& options) {
