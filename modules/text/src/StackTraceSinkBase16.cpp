@@ -111,7 +111,7 @@ namespace text {
 			endHighlighting();
 			writeFrame(str_rightSquare);
 			if(!moduleName.empty()) {
-				beginFrameModule(static_cast<MemorySize>(rastr.length()));
+				beginFrameModule(static_cast<MemorySize>(rastr.length()) + static_cast<MemorySize>(1u));
 				writeBeforeModuleName();
 				highlightModuleName();
 				writeFrameModule(Transcode::utf8ToBMP(moduleName));

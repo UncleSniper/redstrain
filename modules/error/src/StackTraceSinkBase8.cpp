@@ -76,7 +76,7 @@ namespace error {
 			endHighlighting();
 			writeFrame("]");
 			if(!moduleName.empty()) {
-				beginFrameModule(static_cast<MemorySize>(rastr.length()));
+				beginFrameModule(static_cast<MemorySize>(rastr.length()) + static_cast<MemorySize>(1u));
 				writeFrameModule("within ");
 				highlightModuleName();
 				writeFrameModule(moduleName);
