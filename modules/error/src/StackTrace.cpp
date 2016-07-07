@@ -65,6 +65,9 @@ namespace error {
 		if(info.dli_fname) {
 			moduleName = info.dli_fname;
 			moduleBase = info.dli_fbase;
+			string::size_type pos = moduleName.rfind('/');
+			if(pos != string::npos)
+				moduleName = moduleName.substr(pos + static_cast<string::size_type>(1u));
 		}
 		else {
 			moduleName.clear();
