@@ -135,7 +135,7 @@ namespace locale {
 				stringEmitter(optionCatalog),
 				subjectComponentName(subjectComponentName ? subjectComponentName : "") {}
 
-		ComponentMessageCatalog(OptionMessageCatalog& optionCatalog,
+		ComponentMessageCatalog(OptionMessageCatalog& optionCatalog, const char* subjectComponentName,
 				typename LockingPolicyT::LockingPolicyInitializer lockInitializer)
 				: FormattedMessageCatalog<CharT, KeyT, LockingPolicyT, NumericRenditionT,
 						IntegerFormatterT, FloatFormatterT, FormatRenditionT>(stringEmitter, lockInitializer),
