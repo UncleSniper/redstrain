@@ -20,7 +20,9 @@ namespace text {
 
 	void ConsoleOutputStreamStackTraceSink16::writeSymbol(const CPPSymbol& symbol) {
 		OutputStreamSymbolIndenter16 indenter(getStream());
+		indenter.setIndentationChain(this);
 		ConsoleOutputStreamSymbolSink16 sink(getStream(), indenter, getConsole());
+		sink.setConsole(sink.getConsole());   // trigger notifyConsoleChanged() to update columnCount
 		sink.advanceCurrentColumn(getCurrentColumn());
 		configureSymbolSink(sink, indenter);
 		configureConsoleSymbolSink(sink, indenter);

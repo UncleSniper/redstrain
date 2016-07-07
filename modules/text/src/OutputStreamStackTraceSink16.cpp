@@ -30,6 +30,7 @@ namespace text {
 
 	void OutputStreamStackTraceSink16::writeSymbol(const CPPSymbol& symbol) {
 		OutputStreamSymbolIndenter16 indenter(stream);
+		indenter.setIndentationChain(this);
 		OutputStreamSymbolSink16 sink(stream, indenter);
 		sink.advanceCurrentColumn(getCurrentColumn());
 		configureSymbolSink(sink, indenter);

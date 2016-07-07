@@ -47,20 +47,14 @@ namespace platform {
 
 	// ======== ConsoleHighlightingSymbolSink ========
 
-	ConsoleHighlightingSymbolSink::ConsoleHighlightingSymbolSink(Console* console) : console(console) {
-		notifyConsoleChanged();
-	}
+	ConsoleHighlightingSymbolSink::ConsoleHighlightingSymbolSink(Console* console) : console(console) {}
 
 	ConsoleHighlightingSymbolSink::ConsoleHighlightingSymbolSink(Console* console,
-			const HighlightingConfiguration& configuration) : console(console), configuration(configuration) {
-		notifyConsoleChanged();
-	}
+			const HighlightingConfiguration& configuration) : console(console), configuration(configuration) {}
 
 	ConsoleHighlightingSymbolSink::ConsoleHighlightingSymbolSink(const ConsoleHighlightingSymbolSink& sink)
 			: SymbolSink(sink), HighlightingSymbolSink(sink),
-			console(sink.console), configuration(sink.configuration) {
-		notifyConsoleChanged();
-	}
+			console(sink.console), configuration(sink.configuration) {}
 
 	void ConsoleHighlightingSymbolSink::setConsole(Console* console) {
 		this->console = console;

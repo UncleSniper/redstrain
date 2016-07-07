@@ -21,6 +21,7 @@ namespace io {
 		OutputStreamSymbolIndenter8 indenter(getStream());
 		indenter.setIndentationChain(this);
 		ConsoleOutputStreamSymbolSink8 sink(getStream(), indenter, getConsole());
+		sink.setConsole(sink.getConsole());   // trigger notifyConsoleChanged() to update columnCount
 		sink.advanceCurrentColumn(getCurrentColumn());
 		configureSymbolSink(sink, indenter);
 		configureConsoleSymbolSink(sink, indenter);

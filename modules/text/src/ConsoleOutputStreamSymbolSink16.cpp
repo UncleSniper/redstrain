@@ -1,3 +1,5 @@
+#include <iostream>
+
 #include "ConsoleOutputStreamSymbolSink16.hpp"
 
 using redengine::io::OutputStream;

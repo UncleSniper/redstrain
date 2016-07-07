@@ -44,21 +44,15 @@ namespace platform {
 
 	// ======== ConsoleHighlightingStackTraceSink ========
 
-	ConsoleHighlightingStackTraceSink::ConsoleHighlightingStackTraceSink(Console* console) : console(console) {
-		notifyConsoleChanged();
-	}
+	ConsoleHighlightingStackTraceSink::ConsoleHighlightingStackTraceSink(Console* console) : console(console) {}
 
 	ConsoleHighlightingStackTraceSink::ConsoleHighlightingStackTraceSink(Console* console,
-			const HighlightingConfiguration& configuration) : console(console), configuration(configuration) {
-		notifyConsoleChanged();
-	}
+			const HighlightingConfiguration& configuration) : console(console), configuration(configuration) {}
 
 	ConsoleHighlightingStackTraceSink::ConsoleHighlightingStackTraceSink(const
 			ConsoleHighlightingStackTraceSink& sink)
 			: StackTraceSink(sink), HighlightingStackTraceSink(sink),
-			console(sink.console), configuration(sink.configuration) {
-		notifyConsoleChanged();
-	}
+			console(sink.console), configuration(sink.configuration) {}
 
 	void ConsoleHighlightingStackTraceSink::setConsole(Console* console) {
 		this->console = console;

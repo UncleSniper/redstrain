@@ -31,20 +31,14 @@ namespace platform {
 
 	// ======== ConsoleHighlightingErrorHandler ========
 
-	ConsoleHighlightingErrorHandler::ConsoleHighlightingErrorHandler(Console* console) : console(console) {
-		notifyConsoleChanged();
-	}
+	ConsoleHighlightingErrorHandler::ConsoleHighlightingErrorHandler(Console* console) : console(console) {}
 
 	ConsoleHighlightingErrorHandler::ConsoleHighlightingErrorHandler(Console* console,
-			const HighlightingConfiguration& configuration) : console(console), configuration(configuration) {
-		notifyConsoleChanged();
-	}
+			const HighlightingConfiguration& configuration) : console(console), configuration(configuration) {}
 
 	ConsoleHighlightingErrorHandler::ConsoleHighlightingErrorHandler(const ConsoleHighlightingErrorHandler& handler)
 			: ErrorHandler(handler), HighlightingErrorHandler(handler),
-			console(handler.console), configuration(handler.configuration) {
-		notifyConsoleChanged();
-	}
+			console(handler.console), configuration(handler.configuration) {}
 
 	void ConsoleHighlightingErrorHandler::setConsole(Console* console) {
 		this->console = console;

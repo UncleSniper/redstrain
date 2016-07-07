@@ -24,6 +24,7 @@ namespace text {
 	void ConsoleOutputStreamErrorHandler16::writeStackTrace(const StackTrace* trace) {
 		OutputStreamStackTraceIndenter16 indenter(getStream());
 		ConsoleOutputStreamStackTraceSink16 sink(getStream(), indenter, getConsole());
+		sink.setConsole(sink.getConsole());   // trigger notifyConsoleChanged() to update columnCount
 		sink.advanceCurrentColumn(getCurrentColumn());
 		configureStackTraceSink(sink, indenter);
 		configureConsoleStackTraceSink(sink, indenter);

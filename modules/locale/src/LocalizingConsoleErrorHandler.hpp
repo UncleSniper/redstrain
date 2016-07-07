@@ -11,7 +11,7 @@ namespace redengine {
 namespace locale {
 
 	class REDSTRAIN_LOCALE_API LocalizingConsoleErrorHandler
-			: text::ConsoleErrorHandler16, public LocalizingErrorHandler {
+			: public text::ConsoleErrorHandler16, public LocalizingErrorHandler {
 
 	  public:
 		class REDSTRAIN_LOCALE_API ChainedLocalizingConsoleStackTraceSink

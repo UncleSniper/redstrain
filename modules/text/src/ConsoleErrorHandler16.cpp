@@ -1,8 +1,10 @@
+#include <redstrain/util/Delete.hpp>
 #include <redstrain/platform/SynchronizedSingleton.hpp>
 
 #include "ConsoleOutputStream.hpp"
 #include "ConsoleErrorHandler16.hpp"
 
+using redengine::util::Delete;
 using redengine::platform::File;
 using redengine::io::OutputStream;
 using redengine::platform::Console;
@@ -37,7 +39,9 @@ namespace text {
 
 	  protected:
 		virtual ConsoleErrorHandler16* newInstance() {
-			return new ConsoleErrorHandler16(handle);
+			Delete<ConsoleErrorHandler16> handler(new ConsoleErrorHandler16(handle));
+			handler->setConsole(&handler->getConsole());   // trigger notifyConsoleChanged() to update columnCount
+			return handler.set();
 		}
 
 	  public:

@@ -1,9 +1,11 @@
+#include <redstrain/util/Delete.hpp>
 #include <redstrain/error/StackTrace.hpp>
 #include <redstrain/platform/SynchronizedSingleton.hpp>
 #include <redstrain/text/OutputStreamStackTraceIndenter16.hpp>
 
 #include "LocalizingConsoleErrorHandler.hpp"
 
+using redengine::util::Delete;
 using redengine::text::Char16;
 using redengine::io::OutputStream;
 using redengine::platform::Console;
@@ -91,7 +93,9 @@ namespace locale {
 
 	  protected:
 		virtual LocalizingConsoleErrorHandler* newInstance() {
-			return new LocalizingConsoleErrorHandler(handle);
+			Delete<LocalizingConsoleErrorHandler> handler(new LocalizingConsoleErrorHandler(handle));
+			handler->setConsole(&handler->getConsole());   // trigger notifyConsoleChanged() to update columnCount
+			return handler.set();
 		}
 
 	  public:

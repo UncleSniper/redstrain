@@ -1,7 +1,9 @@
+#include <redstrain/util/Delete.hpp>
 #include <redstrain/platform/SynchronizedSingleton.hpp>
 
 #include "ConsoleErrorHandler8.hpp"
 
+using redengine::util::Delete;
 using redengine::platform::File;
 using redengine::platform::Console;
 using redengine::platform::SynchronizedSingleton;
@@ -45,7 +47,9 @@ namespace io {
 			: SynchronizedSingleton<ConsoleErrorHandler8>(singleton) {}
 
 	ConsoleErrorHandler8* DefaultConsoleErrorHandler8Singleton::newInstance() {
-		return new ConsoleErrorHandler8(Console::STANDARD_ERROR);
+		Delete<ConsoleErrorHandler8> handler(new ConsoleErrorHandler8(Console::STANDARD_ERROR));
+		handler->setConsole(&handler->getConsole());   // trigger notifyConsoleChanged() to update columnCount
+		return handler.set();
 	}
 
 	static DefaultConsoleErrorHandler8Singleton defaultConsoleErrorHandler8Singleton;
