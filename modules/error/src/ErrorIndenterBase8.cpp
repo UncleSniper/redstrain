@@ -5,7 +5,9 @@ using std::string;
 namespace redengine {
 namespace error {
 
-	ErrorIndenterBase8::ErrorIndenterBase8() : indentString("    "), indentWidth(0u) {}
+	const string ErrorIndenterBase8::DEFAULT_INDENT_STRING("    ");
+
+	ErrorIndenterBase8::ErrorIndenterBase8() : indentWidth(0u) {}
 
 	ErrorIndenterBase8::ErrorIndenterBase8(const ErrorIndenterBase8& indenter)
 			: Indenter(indenter), indentString(indenter.indentString), indentWidth(indenter.indentWidth) {}

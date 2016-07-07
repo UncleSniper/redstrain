@@ -14,6 +14,9 @@ namespace error {
 		std::string indentString;
 		unsigned indentWidth;
 
+	  public:
+		static const std::string DEFAULT_INDENT_STRING;
+
 	  protected:
 		virtual void writeString(const std::string&) = 0;
 

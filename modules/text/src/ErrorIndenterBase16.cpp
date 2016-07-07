@@ -3,8 +3,10 @@
 namespace redengine {
 namespace text {
 
-	ErrorIndenterBase16::ErrorIndenterBase16()
-			: indentString(static_cast<String16::size_type>(4u), static_cast<Char16>(' ')), indentWidth(0u) {}
+	const String16 ErrorIndenterBase16::DEFAULT_INDENT_STRING(static_cast<String16::size_type>(4u),
+			static_cast<Char16>(' '));
+
+	ErrorIndenterBase16::ErrorIndenterBase16() : indentWidth(0u) {}
 
 	ErrorIndenterBase16::ErrorIndenterBase16(const ErrorIndenterBase16& indenter)
 			: Indenter(indenter), indentString(indenter.indentString), indentWidth(indenter.indentWidth) {}

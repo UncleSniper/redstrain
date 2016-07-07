@@ -15,6 +15,9 @@ namespace text {
 		String16 indentString;
 		unsigned indentWidth;
 
+	  public:
+		static const String16 DEFAULT_INDENT_STRING;
+
 	  protected:
 		virtual void writeString(const String16&) = 0;
 
