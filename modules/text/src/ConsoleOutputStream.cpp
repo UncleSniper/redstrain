@@ -49,7 +49,7 @@ namespace text {
 	}
 
 	static StandardOutputStream16Singleton standardOutputSteam16Singleton(false);
-	static StandardOutputStream16Singleton standardErrorSteam16Singleton(false);
+	static StandardOutputStream16Singleton standardErrorSteam16Singleton(true);
 
 	REDSTRAIN_TEXT_API ConsoleOutputStream<Char16>& getStandardOutputStream16() {
 		return standardOutputSteam16Singleton.get();
