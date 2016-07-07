@@ -1,10 +1,11 @@
 #ifndef REDSTRAIN_MOD_LOCALE_FORMATTEDMESSAGECATALOG_HPP
 #define REDSTRAIN_MOD_LOCALE_FORMATTEDMESSAGECATALOG_HPP
 
+#include <redstrain/util/Unref.hpp>
 #include <redstrain/text/Formatter.hpp>
-#include <redstrain/util/types.hpp>
 
 #include "MessageCatalog.hpp"
+#include "MessageFormattingError.hpp"
 
 namespace redengine {
 namespace locale {
@@ -60,22 +61,41 @@ namespace locale {
 			return formatter;
 		}
 
+#define REDSTRAIN_FORMATTED_MESSAGE_CATALOG_HANDLE_FORMATTING_ERROR \
+	catch(const text::FormattingError& formattingError) { \
+		util::Unref<text::FormattingError> fecopy(formattingError.cloneAs<text::FormattingError>()); \
+		throw MessageFormattingError(*fecopy, locale, \
+				static_cast<util::MemorySize>(key), this->getSubjectComponentName()); \
+	}
+
 		template<typename IteratorT>
 		String formatMessageIter(const Locale& locale, KeyT key, const IteratorT& beginItems,
 				util::MemorySize itemCount) {
-			return formatter.template formatIter<IteratorT>(this->getMessage(locale, key), beginItems, itemCount);
+			try {
+				return formatter.template formatIter<IteratorT>(this->getMessage(locale, key), beginItems, itemCount);
+			}
+			REDSTRAIN_FORMATTED_MESSAGE_CATALOG_HANDLE_FORMATTING_ERROR
 		}
 
 		String formatMessage(const Locale& locale, KeyT key, const std::list<const Item*>& items) {
-			return formatter.format(this->getMessage(locale, key), items);
+			try {
+				return formatter.format(this->getMessage(locale, key), items);
+			}
+			REDSTRAIN_FORMATTED_MESSAGE_CATALOG_HANDLE_FORMATTING_ERROR
 		}
 
 		String formatMessage(const Locale& locale, KeyT key, const std::vector<const Item*>& items) {
-			return formatter.format(this->getMessage(locale, key), items);
+			try {
+				return formatter.format(this->getMessage(locale, key), items);
+			}
+			REDSTRAIN_FORMATTED_MESSAGE_CATALOG_HANDLE_FORMATTING_ERROR
 		}
 
 		String formatMessage(const Locale& locale, KeyT key) {
-			return formatter.format(this->getMessage(locale, key));
+			try {
+				return formatter.format(this->getMessage(locale, key));
+			}
+			REDSTRAIN_FORMATTED_MESSAGE_CATALOG_HANDLE_FORMATTING_ERROR
 		}
 
 		String formatMessage(
@@ -83,10 +103,13 @@ namespace locale {
 			KeyT key,
 			const Item& item0
 		) {
-			return formatter.format(
-				this->getMessage(locale, key),
-				item0
-			);
+			try {
+				return formatter.format(
+					this->getMessage(locale, key),
+					item0
+				);
+			}
+			REDSTRAIN_FORMATTED_MESSAGE_CATALOG_HANDLE_FORMATTING_ERROR
 		}
 
 		String formatMessage(
@@ -95,11 +118,14 @@ namespace locale {
 			const Item& item0,
 			const Item& item1
 		) {
-			return formatter.format(
-				this->getMessage(locale, key),
-				item0,
-				item1
-			);
+			try {
+				return formatter.format(
+					this->getMessage(locale, key),
+					item0,
+					item1
+				);
+			}
+			REDSTRAIN_FORMATTED_MESSAGE_CATALOG_HANDLE_FORMATTING_ERROR
 		}
 
 		String formatMessage(
@@ -109,12 +135,15 @@ namespace locale {
 			const Item& item1,
 			const Item& item2
 		) {
-			return formatter.format(
-				this->getMessage(locale, key),
-				item0,
-				item1,
-				item2
-			);
+			try {
+				return formatter.format(
+					this->getMessage(locale, key),
+					item0,
+					item1,
+					item2
+				);
+			}
+			REDSTRAIN_FORMATTED_MESSAGE_CATALOG_HANDLE_FORMATTING_ERROR
 		}
 
 		String formatMessage(
@@ -125,13 +154,16 @@ namespace locale {
 			const Item& item2,
 			const Item& item3
 		) {
-			return formatter.format(
-				this->getMessage(locale, key),
-				item0,
-				item1,
-				item2,
-				item3
-			);
+			try {
+				return formatter.format(
+					this->getMessage(locale, key),
+					item0,
+					item1,
+					item2,
+					item3
+				);
+			}
+			REDSTRAIN_FORMATTED_MESSAGE_CATALOG_HANDLE_FORMATTING_ERROR
 		}
 
 		String formatMessage(
@@ -143,14 +175,17 @@ namespace locale {
 			const Item& item3,
 			const Item& item4
 		) {
-			return formatter.format(
-				this->getMessage(locale, key),
-				item0,
-				item1,
-				item2,
-				item3,
-				item4
-			);
+			try {
+				return formatter.format(
+					this->getMessage(locale, key),
+					item0,
+					item1,
+					item2,
+					item3,
+					item4
+				);
+			}
+			REDSTRAIN_FORMATTED_MESSAGE_CATALOG_HANDLE_FORMATTING_ERROR
 		}
 
 		String formatMessage(
@@ -163,15 +198,18 @@ namespace locale {
 			const Item& item4,
 			const Item& item5
 		) {
-			return formatter.format(
-				this->getMessage(locale, key),
-				item0,
-				item1,
-				item2,
-				item3,
-				item4,
-				item5
-			);
+			try {
+				return formatter.format(
+					this->getMessage(locale, key),
+					item0,
+					item1,
+					item2,
+					item3,
+					item4,
+					item5
+				);
+			}
+			REDSTRAIN_FORMATTED_MESSAGE_CATALOG_HANDLE_FORMATTING_ERROR
 		}
 
 		String formatMessage(
@@ -185,16 +223,19 @@ namespace locale {
 			const Item& item5,
 			const Item& item6
 		) {
-			return formatter.format(
-				this->getMessage(locale, key),
-				item0,
-				item1,
-				item2,
-				item3,
-				item4,
-				item5,
-				item6
-			);
+			try {
+				return formatter.format(
+					this->getMessage(locale, key),
+					item0,
+					item1,
+					item2,
+					item3,
+					item4,
+					item5,
+					item6
+				);
+			}
+			REDSTRAIN_FORMATTED_MESSAGE_CATALOG_HANDLE_FORMATTING_ERROR
 		}
 
 		String formatMessage(
@@ -209,17 +250,20 @@ namespace locale {
 			const Item& item6,
 			const Item& item7
 		) {
-			return formatter.format(
-				this->getMessage(locale, key),
-				item0,
-				item1,
-				item2,
-				item3,
-				item4,
-				item5,
-				item6,
-				item7
-			);
+			try {
+				return formatter.format(
+					this->getMessage(locale, key),
+					item0,
+					item1,
+					item2,
+					item3,
+					item4,
+					item5,
+					item6,
+					item7
+				);
+			}
+			REDSTRAIN_FORMATTED_MESSAGE_CATALOG_HANDLE_FORMATTING_ERROR
 		}
 
 	};
