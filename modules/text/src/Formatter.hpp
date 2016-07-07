@@ -653,7 +653,7 @@ namespace text {
 			++state.format;
 			bool condition = parseCondition<IteratorT>(state);
 			++state.fmtindex;
-			if(++state.format == state.endfmt)
+			if(state.format == state.endfmt)
 				throw UnexpectedEndOfFormatStringError(state.fmtindex);
 			if(*state.format != FormatRenditionT::BEGIN_SUBGROUP)
 				throw UnexpectedFormatStringCharacterError(
@@ -678,7 +678,7 @@ namespace text {
 				state.itemIndex = originalItemIndex;
 				condition = parseCondition<IteratorT>(state);
 				++state.fmtindex;
-				if(++state.format == state.endfmt)
+				if(state.format == state.endfmt)
 					throw UnexpectedEndOfFormatStringError(state.fmtindex);
 				if(*state.format != FormatRenditionT::BEGIN_SUBGROUP)
 					throw UnexpectedFormatStringCharacterError(
