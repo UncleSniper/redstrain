@@ -16,14 +16,23 @@ if [ ! -x "$MSGSHDR" -a -x run-msgshdr ]; then
 	MSGSHDR=./run-msgshdr
 fi
 
-if [ -x "$MKGRISU" ]; then
-	echo "Generating '$GRISUTABLES'..."
-	"$MKGRISU" -nredengine::text -cGrisu -sCACHED_SIGNIFICANTS -eCACHED_EXPONENTS "$GRISUTABLES"
-else
-	echo "Missing '$MKGRISU', skipping generation of '$GRISUTABLES'." >&2
+if [ ! -f "$GRISUTABLES" ]; then
+	if [ -x "$MKGRISU" ]; then
+		echo "Generating '$GRISUTABLES'..."
+		"$MKGRISU" -nredengine::text -cGrisu -sCACHED_SIGNIFICANTS -eCACHED_EXPONENTS "$GRISUTABLES"
+	else
+		echo "Missing '$MKGRISU', skipping generation of '$GRISUTABLES'." >&2
+	fi
 fi
 
 function genMsgsHdr {
+	if [ ! -f "$4"/src/messages.msgsc ]; then
+		return
+	elif [ -f "$5" ]; then
+		if [ "$(stat -c '%Y' "$4"/src/messages.msgsc)" -le "$(stat -c '%Y' "$5")" ]; then
+			return
+		fi
+	fi
 	echo "Generating '$5'..."
 	"$MSGSHDR" -t"redengine::$1" -p"$2_" -gREDSTRAIN_"$3"_HPP "$4"/src/messages.msgsc "$5"
 }
@@ -41,6 +50,7 @@ if [ -x "$MSGSHDR" ]; then
 	genModMsgsHdr error Error ERROR
 	genModMsgsHdr platform Platform PLATFORM
 	genModMsgsHdr io IO IO
+	genModMsgsHdr calendar Calendar CALENDAR
 else
 	echo "Missing '$MSGSHDR', skipping generation of '$COREMSGKEY' and others." >&2
 fi

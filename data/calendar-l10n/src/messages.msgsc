@@ -1,0 +1,1 @@
+UNEXPECTED_FORMAT_STRING_CHARACTER=Error message for UnexpectedFormatStringCharacterError instances. Arguments: uint32_t offset
