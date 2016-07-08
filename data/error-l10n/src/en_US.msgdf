@@ -14,3 +14,5 @@ UNSUPPORTED_OPERATION=Operation not supported: %s
 ILLEGAL_BYTE_ORDER=Not a valid ByteOrder: %i
 # Error message for FrameIndexOutOfBoundsError instances. Arguments: uint64_t index
 FRAME_INDEX_OUT_OF_BOUNDS=Stack frame index out of bounds: %L
+# Error message for ErrorHandlingError instances. Arguments: string subsequentErrorMessage
+ERROR_HANDLING_ERROR=Error while handling error%?ts{: %s}
