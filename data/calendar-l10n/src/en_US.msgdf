@@ -1,2 +1,36 @@
 # Error message for UnexpectedFormatStringCharacterError instances. Arguments: uint32_t offset
 UNEXPECTED_FORMAT_STRING_CHARACTER=Unexpected character in format string at offset %I, expected modifier or component
+# Error message for CalendarComponentOutOfBoundsError instances. Arguments: string component [arising from CALENDAR_COMPONENT_OUT_OF_BOUNDS_*], uint64_t value
+CALENDAR_COMPONENT_OUT_OF_BOUNDS=Calendar %s out of bounds: %L
+# Calendar component specifier for CalendarComponentOutOfBoundsError::COMP_YEAR
+CALENDAR_COMPONENT_OUT_OF_BOUNDS_YEAR=year
+# Calendar component specifier for CalendarComponentOutOfBoundsError::COMP_MONTH
+CALENDAR_COMPONENT_OUT_OF_BOUNDS_MONTH=month
+# Calendar component specifier for CalendarComponentOutOfBoundsError::COMP_DAY_IN_MONTH
+CALENDAR_COMPONENT_OUT_OF_BOUNDS_DAY_IN_MONTH=day [in month]
+# Calendar component specifier for CalendarComponentOutOfBoundsError::COMP_DAY_IN_YEAR
+CALENDAR_COMPONENT_OUT_OF_BOUNDS_DAY_IN_YEAR=day [in year]
+# Calendar component specifier for CalendarComponentOutOfBoundsError::COMP_DAY_IN_TIME
+CALENDAR_COMPONENT_OUT_OF_BOUNDS_DAY_IN_TIME=day [in time]
+# Calendar component specifier for CalendarComponentOutOfBoundsError::COMP_HOUR
+CALENDAR_COMPONENT_OUT_OF_BOUNDS_HOUR=hour
+# Calendar component specifier for CalendarComponentOutOfBoundsError::COMP_MINUTE_IN_HOUR
+CALENDAR_COMPONENT_OUT_OF_BOUNDS_MINUTE_IN_HOUR=minute [in hour]
+# Calendar component specifier for CalendarComponentOutOfBoundsError::COMP_SECOND_IN_MINUTE
+CALENDAR_COMPONENT_OUT_OF_BOUNDS_SECOND_IN_MINUTE=second [in minute]
+# Calendar component specifier for CalendarComponentOutOfBoundsError::COMP_MILLISECOND_IN_SECOND
+CALENDAR_COMPONENT_OUT_OF_BOUNDS_MILLISECOND_IN_SECOND=millisecond [in second]
+# Calendar component specifier for CalendarComponentOutOfBoundsError::COMP_MICROSECOND_IN_MILLISECOND
+CALENDAR_COMPONENT_OUT_OF_BOUNDS_MICROSECOND_IN_MILLISECOND=microsecond [in millisecond]
+# Calendar component specifier for CalendarComponentOutOfBoundsError::COMP_MINUTE_IN_DAY
+CALENDAR_COMPONENT_OUT_OF_BOUNDS_MINUTE_IN_DAY=minute [in day]
+# Calendar component specifier for CalendarComponentOutOfBoundsError::COMP_SECOND_IN_DAY
+CALENDAR_COMPONENT_OUT_OF_BOUNDS_SECOND_IN_DAY=second [in day]
+# Calendar component specifier for CalendarComponentOutOfBoundsError::COMP_MILLISECOND_IN_DAY
+CALENDAR_COMPONENT_OUT_OF_BOUNDS_MILLISECOND_IN_DAY=millisecond [in day]
+# Calendar component specifier for CalendarComponentOutOfBoundsError::COMP_MICROSECOND_IN_DAY
+CALENDAR_COMPONENT_OUT_OF_BOUNDS_MICROSECOND_IN_DAY=microsecond [in day]
+# Calendar component specifier for unrecognized CalendarComponentOutOfBoundsError::Component
+CALENDAR_COMPONENT_OUT_OF_BOUNDS_UNKNOWN_COMPONENT=component
+# Error message for UnexpectedEndOfFormatStringError instances. Arguments: uint64_t offset
+UNEXPECTED_END_OF_FORMAT_STRING=Unexpected end of format string at offset %L
