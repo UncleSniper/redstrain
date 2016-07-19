@@ -51,6 +51,7 @@ if [ -x "$MSGSHDR" ]; then
 	genModMsgsHdr platform Platform PLATFORM
 	genModMsgsHdr io IO IO
 	genModMsgsHdr calendar Calendar CALENDAR
+	genModMsgsHdr cmdline CommandLine CMDLINE
 else
 	echo "Missing '$MSGSHDR', skipping generation of '$COREMSGKEY' and others." >&2
 fi

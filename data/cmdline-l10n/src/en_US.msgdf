@@ -1,0 +1,14 @@
+# Error message for MissingOptionArgumentError instances. Arguments: string option
+MISSING_OPTION_ARGUMENT=Command line option is missing required argument: %s
+# Error message for MissingBarewordError instances. Arguments: string word
+MISSING_BAREWORD=Missing required non-option argument: %s
+# Error message for UnrecognizedOptionError instances. Arguments: string option
+UNRECOGNIZED_OPTION=Unrecognized command line option: %s
+# Error message for ConflictingOptionsError instances. Arguments: string nameA, string nameB
+CONFLICTING_OPTIONS=Options '%s' and '%s' cannot be used together
+# Error message for AmbiguousOptionError instances. Arguments: string shortOption, string longOption
+AMBIGUOUS_OPTION=Ambiguous command line option: Could be '%s' or '%s'
+# Error message for UnexpectedBarewordError instances. Arguments: string word
+UNEXPECTED_BAREWORD=Unexpected non-option argument: %s
+# Error message for ExcessOptionArgumentError instances. Arguments: string option
+EXCESS_OPTION_ARGUMENT=Command line option takes no argument: %s

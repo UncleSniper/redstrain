@@ -1,0 +1,7 @@
+MISSING_OPTION_ARGUMENT=Error message for MissingOptionArgumentError instances. Arguments: string option
+MISSING_BAREWORD=Error message for MissingBarewordError instances. Arguments: string word
+UNRECOGNIZED_OPTION=Error message for UnrecognizedOptionError instances. Arguments: string option
+CONFLICTING_OPTIONS=Error message for ConflictingOptionsError instances. Arguments: string nameA, string nameB
+AMBIGUOUS_OPTION=Error message for AmbiguousOptionError instances. Arguments: string shortOption, string longOption
+UNEXPECTED_BAREWORD=Error message for UnexpectedBarewordError instances. Arguments: string word
+EXCESS_OPTION_ARGUMENT=Error message for ExcessOptionArgumentError instances. Arguments: string option

@@ -10,7 +10,7 @@ namespace cmdline {
 			: CommandLineError(error), nameA(error.nameA), nameB(error.nameB) {}
 
 	REDSTRAIN_DEFINE_ERROR(ConflictingOptionsError) {
-		out << "Options " << nameA << " and " << nameB << " cannot be used together";
+		out << "Options '" << nameA << "' and '" << nameB << "' cannot be used together";
 	}
 
 }}

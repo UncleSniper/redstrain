@@ -9,8 +9,8 @@ namespace cmdline {
 	AmbiguousOptionError::AmbiguousOptionError(const AmbiguousOptionError& error) : OptionError(error) {}
 
 	REDSTRAIN_DEFINE_ERROR(AmbiguousOptionError) {
-		out << "Ambiguous command line option: Could be " << initiatorSymbol
-				<< name[0] << " or " << initiatorSymbol << initiatorSymbol << name;
+		out << "Ambiguous command line option: Could be '" << initiatorSymbol
+				<< name[0] << "' or '" << initiatorSymbol << initiatorSymbol << name << '\'';
 	}
 
 }}
