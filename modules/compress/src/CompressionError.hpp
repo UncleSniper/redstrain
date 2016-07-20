@@ -8,7 +8,7 @@
 namespace redengine {
 namespace compress {
 
-	class REDSTRAIN_COMPRESS_API CompressionError : public error::Error {
+	class REDSTRAIN_COMPRESS_API CompressionError : public virtual error::Error {
 
 	  public:
 		CompressionError();
