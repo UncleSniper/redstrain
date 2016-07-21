@@ -1,5 +1,7 @@
 #include "Compressor.hpp"
 
+using redengine::util::MemorySize;
+
 namespace redengine {
 namespace compress {
 
@@ -9,6 +11,8 @@ namespace compress {
 
 	Compressor::~Compressor() {}
 
-	void Compressor::endCompression() {}
+	MemorySize Compressor::endCompression(char*, MemorySize) {
+		return static_cast<MemorySize>(0u);
+	}
 
 }}

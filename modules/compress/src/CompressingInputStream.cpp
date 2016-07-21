@@ -28,6 +28,14 @@ namespace compress {
 		if(!outBufferSize)
 			return static_cast<MemorySize>(0u);
 		MemorySize outcount, consumed;
+		if(atEnd) {
+			try {
+				return compressor.endCompression(outBuffer, outBufferSize);
+			}
+			catch(const CompressionError& error) {
+				wrapError<CompressionError, CompressionIOError>(error);
+			}
+		}
 		do {
 			if(bufferOffset >= bufferFill) {
 				MemorySize count = input.read(buffer, static_cast<MemorySize>(REDSTRAIN_COMPRESS_STREAM_BUFFER_SIZE));
@@ -38,12 +46,12 @@ namespace compress {
 						if(outcount)
 							return outcount;
 						atEnd = true;
-						compressor.endCompression();
+						outcount = compressor.endCompression(outBuffer, outBufferSize);
 					}
 					catch(const CompressionError& error) {
 						wrapError<CompressionError, CompressionIOError>(error);
 					}
-					return static_cast<MemorySize>(0u);
+					return outcount;
 				}
 				bufferFill = count;
 				bufferOffset = static_cast<MemorySize>(0u);

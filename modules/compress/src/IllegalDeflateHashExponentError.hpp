@@ -17,6 +17,10 @@ namespace compress {
 		IllegalDeflateHashExponentError(util::MemorySize);
 		IllegalDeflateHashExponentError(const IllegalDeflateHashExponentError&);
 
+		inline util::MemorySize getExponent() const {
+			return exponent;
+		}
+
 		REDSTRAIN_DECLARE_ERROR(IllegalDeflateHashExponentError)
 
 	};

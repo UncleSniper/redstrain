@@ -46,7 +46,13 @@ namespace compress {
 					break;
 				output.write(targetBuffer, outcount);
 			}
-			compressor.endCompression();
+			for(;;) {
+				outcount = compressor.endCompression(targetBuffer,
+						static_cast<MemorySize>(REDSTRAIN_COMPRESS_STREAM_BUFFER_SIZE));
+				if(!outcount)
+					break;
+				output.write(targetBuffer, outcount);
+			}
 		}
 		catch(const CompressionError& error) {
 			wrapError<CompressionError, CompressionIOError>(error);

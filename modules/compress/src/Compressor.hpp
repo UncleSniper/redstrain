@@ -17,7 +17,7 @@ namespace compress {
 
 		virtual util::MemorySize compressBlock(const char*, util::MemorySize,
 				char*, util::MemorySize, util::MemorySize&) = 0;
-		virtual void endCompression();
+		virtual util::MemorySize endCompression(char*, util::MemorySize);
 
 	};
 

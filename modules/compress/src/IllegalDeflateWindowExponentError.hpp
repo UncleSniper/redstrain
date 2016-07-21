@@ -17,6 +17,10 @@ namespace compress {
 		IllegalDeflateWindowExponentError(util::MemorySize);
 		IllegalDeflateWindowExponentError(const IllegalDeflateWindowExponentError&);
 
+		inline util::MemorySize getExponent() const {
+			return exponent;
+		}
+
 		REDSTRAIN_DECLARE_ERROR(IllegalDeflateWindowExponentError)
 
 	};
