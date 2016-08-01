@@ -1,0 +1,201 @@
+page welcome "The RedEngine RedStrain C++ Framework" `
+
+	The first generation of the @i RedEngine framework, dubbed @i RedStrain
+	(where subsequent generations will substitute other colors), is a
+	collection of C++ libraries (and associated tools) intended to
+	provide implementations of commonly required pieces of software.
+	@p
+	For convenience, here is a list of the framework modules (see below)
+	currently documented and what they are good for:
+
+	@table 2 {
+		@cell{module} @cell{purpose}
+		@cell{@page mod_redmond RedStrain/Redmond} @cell{
+			Toolchain-specific definitions used by all modules.
+		}
+	}
+
+	@section{Organization into components}
+	The framework is divided into several @i components of the project.
+	Each component is contained within a seperate directory of the framework
+	source tree and its @i{internal name} equates the name of that directory.
+	Furthermore, each component has a @i{technical name} and a @i{human-readable
+	name} to it. Components come in three types:
+
+	@ul{
+		@li{
+			@i Modules are library components intended to expose functionality
+			to client code through a programmatic interface. Each module thus
+			yields a (static and/or dynamic) library file (although details are
+			platform- and toolchain-specific) and a set of header files, as is
+			customary for C++ libraries. The @i{technical name} of a module is
+			"mod_", followed by its @i{internal name} in verbatim. Its
+			@i{human-readable name} is "RedStrain/" followed by a module-specific
+			rendition of the @i{internal name} (usually with proper casing and
+			possibly with abbreviations expanded). Modules reside in the
+			@mon modules subdirectory of the framework source tree.
+		}
+		@li{
+			@i Blobs are library components intended to provide access to
+			supplementary data files (such as message catalogs for localization).
+			Each blob thus yields a library file (like a module). However, a
+			blob does not expose its header files to client code (see below for
+			a rationale). The @i{technical name} of a blob is "blob_", followed
+			by its @i{internal name} with dashes replaced by underscores. Its
+			@i{human-readable name} is that of the module meant to make use of
+			the data files provided, followed by "/" and a descriptor of what
+			type of files it provides (e.g. "L10N" for localization message
+			catalogs). Blobs reside in the @mon data subdirectory of the framework
+			source tree.
+		}
+		@li{
+			@i Tools are executable programs intended to expose the functionality
+			provided by modules in a non-programmatic manner. The target audience
+			varies: Some tools are meant only for developers, but others may
+			reasonably be used by end users. The @i{technical name} of a tool is
+			the name of the executable (without any platform- or toolchain-specific
+			decorations; this is usually (but not necessarily) its @i{internal name}
+			preceded by "red". Its @i{human-readable name} is the same as its
+			@i{technical name}. Tools reside in the @mon tools subdirectory of the
+			framework source tree.
+		}
+	}
+
+	The current component names are as follows:
+
+	@table 5 {
+		@cell{source directory} @cell{internal name} @cell{component type}
+				@cell{technical name} @cell{human-readable name}
+		@cell{@mon modules/redmond} @cell{@mon redmond} @cell{module}
+				@cell{@mon mod_redmond} @cell{RedStrain/Redmond}
+		@cell{@mon modules/util} @cell{@mon util} @cell{module}
+				@cell{@mon mod_util} @cell{RedStrain/Util}
+		@cell{@mon modules/error} @cell{@mon error} @cell{module}
+				@cell{@mon mod_error} @cell{RedStrain/Error}
+		@cell{@mon modules/algorithm} @cell{@mon algorithm} @cell{module}
+				@cell{@mon mod_algorithm} @cell{RedStrain/Algorithm}
+		@cell{@mon modules/platform} @cell{@mon platform} @cell{module}
+				@cell{@mon mod_platform} @cell{RedStrain/Platform}
+		@cell{@mon modules/io} @cell{@mon io} @cell{module}
+				@cell{@mon mod_io} @cell{RedStrain/IO}
+		@cell{@mon modules/protostr} @cell{@mon protostr} @cell{module}
+				@cell{@mon mod_protostr} @cell{RedStrain/ProtoStreams}
+		@cell{@mon modules/text} @cell{@mon text} @cell{module}
+				@cell{@mon mod_text} @cell{RedStrain/Text}
+		@cell{@mon modules/vfs} @cell{@mon vfs} @cell{module}
+				@cell{@mon mod_vfs} @cell{RedStrain/VFS}
+		@cell{@mon modules/locale} @cell{@mon locale} @cell{module}
+				@cell{@mon mod_locale} @cell{RedStrain/Locale}
+		@cell{@mon modules/math} @cell{@mon math} @cell{module}
+				@cell{@mon mod_math} @cell{RedStrain/Math}
+		@cell{@mon modules/cmdline} @cell{@mon cmdline} @cell{module}
+				@cell{@mon mod_cmdline} @cell{RedStrain/CommandLine}
+		@cell{@mon modules/calendar} @cell{@mon calendar} @cell{module}
+				@cell{@mon mod_calendar} @cell{RedStrain/Calendar}
+		@cell{@mon modules/compress} @cell{@mon compress} @cell{module}
+				@cell{@mon mod_compress} @cell{RedStrain/Compress}
+		@cell{@mon modules/crypto} @cell{@mon crypto} @cell{module}
+				@cell{@mon mod_crypto} @cell{RedStrain/Crypto}
+		@cell{@mon modules/log} @cell{@mon log} @cell{module}
+				@cell{@mon mod_log} @cell{RedStrain/Log}
+		@cell{@mon modules/ogdl} @cell{@mon ogdl} @cell{module}
+				@cell{@mon mod_ogdl} @cell{RedStrain/OGDL}
+		@cell{@mon modules/qu6ntum} @cell{@mon qu6ntum} @cell{module}
+				@cell{@mon mod_qu6ntum} @cell{RedStrain/Qu6ntum}
+		@cell{@mon modules/test} @cell{@mon test} @cell{module}
+				@cell{@mon mod_test} @cell{RedStrain/Test}
+		@cell{@mon modules/xml} @cell{@mon xml} @cell{module}
+				@cell{@mon mod_xml} @cell{RedStrain/XML}
+		@cell{@mon modules/zweigana} @cell{@mon zweigana} @cell{module}
+				@cell{@mon mod_zweigana} @cell{RedStrain/Zweigana}
+		@cell{@mon modules/build} @cell{@mon build} @cell{module}
+				@cell{@mon mod_build} @cell{RedStrain/Build}
+		@cell{@mon data/calendar-formats} @cell{@mon calendar-formats} @cell{blob}
+				@cell{@mon blob_calendar_formats} @cell{RedStrain/Calendar/Formats}
+		@cell{@mon data/calendar-l10n} @cell{@mon calendar-l10n} @cell{blob}
+				@cell{@mon blob_calendar_l10n} @cell{RedStrain/Calendar/L10N}
+		@cell{@mon data/charsets} @cell{@mon charsets} @cell{blob}
+				@cell{@mon blob_charsets} @cell{RedStrain/Text/Charsets}
+		@cell{@mon data/cmdline-l10n} @cell{@mon cmdline-l10n} @cell{blob}
+				@cell{@mon blob_cmdline_l10n} @cell{RedStrain/CommandLine/L10N}
+		@cell{@mon data/error-l10n} @cell{@mon error-l10n} @cell{blob}
+				@cell{@mon blob_error_l10n} @cell{RedStrain/Error/L10N}
+		@cell{@mon data/io-l10n} @cell{@mon io-l10n} @cell{blob}
+				@cell{@mon blob_io_l10n} @cell{RedStrain/IO/L10N}
+		@cell{@mon data/locale-core} @cell{@mon locale-core} @cell{blob}
+				@cell{@mon blob_locale_core} @cell{RedStrain/Locale/Core}
+		@cell{@mon data/platform-l10n} @cell{@mon platform-l10n} @cell{blob}
+				@cell{@mon blob_platform_l10n} @cell{RedStrain/Platform/L10N}
+		@cell{@mon data/stacktrace-l10n} @cell{@mon stacktrace-l10n} @cell{blob}
+				@cell{@mon blob_stacktrace_l10n} @cell{RedStrain/Error/StackTrace-L10N}
+		@cell{@mon tools/build} @cell{@mon build} @cell{tool}
+				@cell{@mon redbuild} @cell{redbuild}
+		@cell{@mon tools/csconv} @cell{@mon csconv} @cell{tool}
+				@cell{@mon redcsconv} @cell{redcsconv}
+		@cell{@mon tools/lnblob} @cell{@mon lnblob} @cell{tool}
+				@cell{@mon redlnblob} @cell{redlnblob}
+		@cell{@mon tools/mkblob} @cell{@mon mkblob} @cell{tool}
+				@cell{@mon redmkblob} @cell{redmkblob}
+		@cell{@mon tools/mkcodetable} @cell{@mon mkcodetable} @cell{tool}
+				@cell{@mon redmkcodetable} @cell{redmkcodetable}
+		@cell{@mon tools/mkctreg} @cell{@mon mkctreg} @cell{tool}
+				@cell{@mon redmkctreg} @cell{redmkctreg}
+		@cell{@mon tools/mkgrisu} @cell{@mon mkgrisu} @cell{tool}
+				@cell{@mon redmkgrisu} @cell{redmkgrisu}
+		@cell{@mon tools/mkmsgs} @cell{@mon mkmsgs} @cell{tool}
+				@cell{@mon redmkmsgs} @cell{redmkmsgs}
+		@cell{@mon tools/msgshdr} @cell{@mon msgshdr} @cell{tool}
+				@cell{@mon redmsgshdr} @cell{redmsgshdr}
+		@cell{@mon tools/unmangle} @cell{@mon unmangle} @cell{tool}
+				@cell{@mon redunmangle} @cell{redunmangle}
+		@cell{@mon tools/updmsgs} @cell{@mon updmsgs} @cell{tool}
+				@cell{@mon redupdmsgs} @cell{redupdmsgs}
+	}
+
+	Each component may depend on any number of modules, thus building on top of
+	the definitions provided by those modules. Components cannot depend on blobs
+	(as the framework must be able to build correctly without any blobs being
+	present, since only @mon mod_build can build a "blobful" version of the
+	framework and thus bootstrapping is involved in the build procedure).
+	Similarly, components cannot depend on tools, as executables cannot generally
+	be linked against. See the chapter @page blobs {} for more information about
+	blobs.
+	@p
+	The headers exposed by a module will be installed in a directory named
+	@mon redstrain and inside a subdirectory within, whose name equates the
+	@i{internal name} of the module (e.g. the headers of @mon mod_util would be
+	referenced as @c{#include <redstrain/util/...>} by client code).
+
+	@section{Usage of RedStrain components by client components}
+	Some platforms require that libraries that depend on other libraries be
+	linked against the latter at build time, while other platforms not only
+	do not require this but actually discourage it. As such, a client component
+	should link against all RedStrain modules used (even if only transitively,
+	e.g. using @mon mod_error requires linking against @mon mod_redmond as well,
+	as the former depends on the latter) if and only if the client component is
+	an executable (as opposed to a library) @i or the target platform requires
+	interlinked libraries. Furthermore, platform-specific system libraries
+	(external to RedStrain) may be required (on the same condition).
+
+	@table 3 {
+		@cell{target platform} @cell{interlinked libraries?} @cell{required system libraries}
+		@cell{Linux} @cell{no} @cell{
+			@ul{
+				@li{@mon pthread}
+				@li{@mon dl}
+				@li{@mon rt}
+			}
+		}
+		@cell{Windows} @cell{yes} @cell{
+			@ul{
+				@li{@mon ws2_32 if @mon mod_platform is used}
+			}
+		}
+	}
+
+	Each module puts its provided C++ elements in the namespace @mon redengine
+	and a namespace whose name equates the @i{internal name} of the module within
+	(e.g. the definitions of @mon mod_util all have names starting with
+	@mon redengine::util:: (except unscoped names such as preprocessor macros)).
+
+`

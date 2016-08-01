@@ -1,0 +1,7 @@
+page mod_redmond "The RedStrain/Redmond Module" `
+
+	The @mon mod_redmond module started out as a workaround for the
+	quirks of a certain compiler (hence the name of the component).
+	TODO
+
+`

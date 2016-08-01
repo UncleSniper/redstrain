@@ -1,0 +1,53 @@
+namespace redengine.redmond {
+
+	enum OperatingSystem {
+		header "redstrain/redmond/constants.hpp"
+		since 0.1
+		`
+			@brief{Identifier of known operating system.}
+			Identifies a supported operating system or denotes that
+			an operating system is not supported (in case of the
+			@link OS_UNKNOWN - - constant).
+		`
+		OS_LINUX since 0.1 `The GNU/Linux operating system.`
+		OS_WINDOWS since 0.1 `The Microsoft Window operating system.`
+		OS_UNKNOWN since 0.1 `"None of the above", i.e. an unsupported operating system.`
+	}
+
+	enum CompilerFlavor {
+		header "redstrain/redmond/constants.hpp"
+		since 0.1
+		`
+			@brief{Identifier of known C++ compiler.}
+			Identifies a supported C++ compiler or denotes that a
+			compiler is not supported (in case of the @link COMP_UNKNOWN - -
+			constant).
+		`
+		COMP_GCC since 0.1 `
+			The GNU Compiler Collection, specifically the @mon g++ component of it.
+		`
+		COMP_MSVC since 0.1 `The Microsoft Visual C++ compiler.`
+		COMP_UNKNOWN since 0.1 `"None of the above", i.e. an unsupported C++ compiler.`
+	}
+
+	enum Architecture {
+		header "redstrain/redmond/constants.hpp"
+		since 0.1
+		`
+			@brief{Identifier of known processor architecture.}
+			Identifies a supported microprocessor architecture or denotes
+			that an architecture is not supported (in case of the
+			@link ARCH_UNKNOWN - - constant).
+		`
+		ARCH_I686 since 0.1 `
+			The IA-32 architecture, also known as i386, i686, x86 or simply (but
+			extremely inaccurately) "32 bit".
+		`
+		ARCH_X86_64 since 0.1 `
+			The AMD64 architecture, also known as x86_64, (falsely and very dilettantishly)
+			x64 or simply (but extremely inaccurately) "64 bit".
+		`
+		ARCH_UNKNOWN since 0.1 `"None of the above", i.e. an unsupported processor architecture.`
+	}
+
+}
