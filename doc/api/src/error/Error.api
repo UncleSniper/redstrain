@@ -1,0 +1,13 @@
+namespace redengine.error {
+
+	class Error {
+
+		header "redstrain/error/Error.hpp"
+		since 0.1
+		`
+			TODO.
+		`
+
+	}
+
+}

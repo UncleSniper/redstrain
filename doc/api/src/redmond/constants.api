@@ -10,7 +10,7 @@ namespace redengine.redmond {
 			@link OS_UNKNOWN - - constant).
 		`
 		OS_LINUX since 0.1 `The GNU/Linux operating system.`
-		OS_WINDOWS since 0.1 `The Microsoft Window operating system.`
+		OS_WINDOWS since 0.1 `The Microsoft Windows operating system.`
 		OS_UNKNOWN since 0.1 `"None of the above", i.e. an unsupported operating system.`
 	}
 
@@ -48,6 +48,65 @@ namespace redengine.redmond {
 			x64 or simply (but extremely inaccurately) "64 bit".
 		`
 		ARCH_UNKNOWN since 0.1 `"None of the above", i.e. an unsupported processor architecture.`
+	}
+
+	var buildHostOS {
+		const
+		type OperatingSystem
+		header "redstrain/redmond/constants.hpp"
+		since 0.1
+		`
+			@brief{Operating system this library was built on.}
+			The operating system the providing instance of @mon mod_redmond was built @i on
+			(i.e. what OS whoever compiled @mon redstrain/redmond/constants.cpp used to do so).
+			@p
+			@b Note that this might differ from the OS the library was built @i for and that
+			you should use @link buildTargetOS - - instead if you intend to introspect what OS
+			the client process is running on.
+		`
+	}
+
+	var buildCompiler {
+		const
+		type CompilerFlavor
+		header "redstrain/redmond/constants.hpp"
+		since 0.1
+		`
+			@brief{Compiler this library was built by.}
+			The C++ compiler the providing instance of @mon mod_redmond was built by
+			(i.e. what compiler whoever compiled @mon redstrain/redmond/constants.cpp used
+			to do so).
+		`
+	}
+
+	var buildTargetOS {
+		const
+		type OperatingSystem
+		header "redstrain/redmond/constants.hpp"
+		since 0.1
+		`
+			@brief{Operating system this library was built for.}
+			The operating system the providing instance of @mon mod_redmond was built @i for
+			(i.e. what OS it can run on, and, by extension, what OS the client process is
+			running on). Note that this might differ from the OS the library was built @i on
+			and that you should use @link buildHostOS - - instead if you intend to introspect
+			what OS was used to build the library.
+		`
+	}
+
+	var buildArchitecture {
+		const
+		type Architecture
+		header "redstrain/redmond/constants.hpp"
+		since 0.1
+		`
+			@brief{Processor architecture this library was built for.}
+			The microprocessor architecture the providing instance of @mon mod_redmond was
+			built @i for (i.e. what processors it can run on, and, by extension, what type of
+			processor the client process is running on). Note that this might differ from the
+			architecture the library was built @i on and that there is no way to introspect
+			the latter.
+		`
 	}
 
 }

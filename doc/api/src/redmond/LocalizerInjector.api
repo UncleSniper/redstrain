@@ -1,0 +1,59 @@
+namespace redengine.redmond {
+
+	class LocalizerInjector {
+
+		tparams {
+			LocalizerFunctionT class `TODO.`
+		}
+		header "redstrain/redmond/LocalizerInjector.hpp"
+		since 0.1
+		`
+			@brief{Set localization function pointer for exception class.}
+			TODO.
+		`
+
+		typedef LocalizerFunction {
+			type LocalizerFunctionT
+			public
+			since 0.1
+			`TODO.`
+		}
+
+		var localizer {
+			const
+			type LocalizerFunctionT
+			private
+			since 0.1
+			`TODO.`
+		}
+
+		ctor {
+			params {
+				hook LocalizerFunctionT ref `TODO.`
+				localizer LocalizerFunctionT `TODO.`
+			}
+			public
+			since 0.1
+			`TODO.`
+		}
+
+		ctor {
+			params {
+				injector LocalizerInjector(LocalizerFunctionT) const ref `TODO.`
+			}
+			public
+			since 0.1
+			`TODO.`
+		}
+
+		method getLocalizerFunction {
+			const
+			return LocalizerFunctionT
+			public
+			since 0.1
+			`TODO.`
+		}
+
+	}
+
+}

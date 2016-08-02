@@ -1,0 +1,143 @@
+macro REDSTRAIN_ENV_ARCH_AMD64 {
+	header "redstrain/redmond/environment.hpp"
+	since 0.1
+	`
+		@brief{Defined on AMD64 machines.}
+		This macro will be defined if and only if the referencing source file
+		is being compiled targeting AMD64 processors, also known as x86_64,
+		(falsely and very dilettantishly) x64 or simply (but extremely
+		inaccurately) "64 bit".
+		@p
+		@see @link REDSTRAIN_ENV_ARCH_I686 - -
+	`
+}
+
+macro REDSTRAIN_ENV_ARCH_I686 {
+	header "redstrain/redmond/environment.hpp"
+	since 0.1
+	`
+		@brief{Defined on IA-32 machines.}
+		This macro will be defined if and only if the referencing source file
+		is being compiled targeting IA-32 processors, also known as i386, i686,
+		x86 or simply (but extremely inaccurately) "32 bit".
+		@p
+		@see @link REDSTRAIN_ENV_ARCH_AMD64 - -
+	`
+}
+
+macro REDSTRAIN_ENV_COMPILER_GNU {
+	header "redstrain/redmond/environment.hpp"
+	since 0.1
+	`
+		@brief{Defined for GCC compilers.}
+		This macro will be defined if and only if the referencing source file
+		is being compiled by the GNU Compiler Collection.
+		@p
+		@see @link REDSTRAIN_ENV_COMPILER_MSVC - -
+	`
+}
+
+macro REDSTRAIN_ENV_COMPILER_MSVC {
+	header "redstrain/redmond/environment.hpp"
+	since 0.1
+	`
+		@brief{Defined for Microsoft compilers.}
+		This macro will be defined if and only if the referencing source file
+		is being compiled by the Microsoft Visual C++ compiler.
+		@p
+		@see @link REDSTRAIN_ENV_COMPILER_GNU - -
+	`
+}
+
+macro REDSTRAIN_ENV_COMPILER_MAJOR {
+	header "redstrain/redmond/environment.hpp"
+	since 0.1
+	`
+		@brief{Version major of the C++ compiler.}
+		This macro expands to the "major" component of the version of the
+		compiler the referencing source file is being compiled by, as an
+		@mon int value.
+		@p
+		@b Note: The definition of this macro is not guaranteed to be an
+		integer literal, so stringifying its expansion using the preprocessor's
+		@mon # operator may not have the intended effect. It is, however
+		guaranteed to expand to a compile-time constant.
+		@p
+		@defpreq a known compiler is being used.
+		@p
+		@see @ul{
+			@li{@link REDSTRAIN_ENV_COMPILER_MINOR - -}
+			@li{@link REDSTRAIN_ENV_COMPILER_REVISION - -}
+		}
+	`
+}
+
+macro REDSTRAIN_ENV_COMPILER_MINOR {
+	header "redstrain/redmond/environment.hpp"
+	since 0.1
+	`
+		@brief{Version minor of the C++ compiler.}
+		This macro expands to the "minor" component of the version of the
+		compiler the referencing source file is being compiled by, as an
+		@mon int value.
+		@p
+		@b Note: The definition of this macro is not guaranteed to be an
+		integer literal, so stringifying its expansion using the preprocessor's
+		@mon # operator may not have the intended effect. It is, however
+		guaranteed to expand to a compile-time constant.
+		@p
+		@defpreq a known compiler is being used.
+		@p
+		@see @ul{
+			@li{@link REDSTRAIN_ENV_COMPILER_MAJOR - -}
+			@li{@link REDSTRAIN_ENV_COMPILER_REVISION - -}
+		}
+	`
+}
+
+macro REDSTRAIN_ENV_COMPILER_REVISION {
+	header "redstrain/redmond/environment.hpp"
+	since 0.1
+	`
+		@brief{Version revision of the C++ compiler.}
+		This macro expands to the "revision" component of the version of the
+		compiler the referencing source file is being compiled by, as an
+		@mon int value.
+		@p
+		@b Note: The definition of this macro is not guaranteed to be an
+		integer literal, so stringifying its expansion using the preprocessor's
+		@mon # operator may not have the intended effect. It is, however
+		guaranteed to expand to a compile-time constant.
+		@p
+		@defpreq a known compiler is being used.
+		@p
+		@see @ul{
+			@li{@link REDSTRAIN_ENV_COMPILER_MAJOR - -}
+			@li{@link REDSTRAIN_ENV_COMPILER_MINOR - -}
+		}
+	`
+}
+
+macro REDSTRAIN_ENV_OS_LINUX {
+	header "redstrain/redmond/environment.hpp"
+	since 0.1
+	`
+		@brief{Defined for Linux targets.}
+		This macro will be defined if and only if the referencing source file
+		is being compiled targeting the GNU/Linux operating system.
+		@p
+		@see @link REDSTRAIN_ENV_OS_WINDOWS - -
+	`
+}
+
+macro REDSTRAIN_ENV_OS_WINDOWS {
+	header "redstrain/redmond/environment.hpp"
+	since 0.1
+	`
+		@brief{Defined for Windows targets.}
+		This macro will be defined if and only if the referencing source file
+		is being compiled targeting the Microsoft Windows operating system.
+		@p
+		@see @link REDSTRAIN_ENV_OS_LINUX - -
+	`
+}

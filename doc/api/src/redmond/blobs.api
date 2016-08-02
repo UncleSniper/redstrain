@@ -1,0 +1,129 @@
+namespace redengine.redmond {
+
+	func registerBlobModule {
+		return void
+		params {
+			name std.string const ref `
+				@page welcome {human-readable name} of the blob being registered
+			`
+		}
+		header "redstrain/redmond/blobs.hpp"
+		since 0.1
+		`
+			@brief{Announce presence of blob component.}
+			Add the given @mon name to the internal registry of present
+			@page welcome {blob components} in the calling process. Applications
+			may then use @link hasBlobModule - - to query the presence of the
+			blob by any such name. By convention, the @mon name should be a
+			human-readable name for the component. The prefix of @mon "RedStrain/"
+			is reserved for RedStrain blobs; if the client code uses blob
+			components as well, it may use this mechanism with names outside of
+			the @mon RedStrain "namespace". Note, however, that there is no
+			naming authority and it is the responsibility of the caller to
+			avoid name clashes.
+			@p
+			@see @link BlobModuleRegistrar - -
+		`
+	}
+
+	func hasBlobModule {
+		return bool
+		params {
+			name std.string const ref `
+				@page welcome {human-readable name} of the blob being queried
+			`
+		}
+		header "redstrain/redmond/blobs.hpp"
+		since 0.1
+		`
+			@brief{Query presence of blob component.}
+			Check whether the given @mon name is present in the internal registry
+			of present @page welcome {blob components} in the calling process, i.e.
+			if @link registerBlobModule - - has been used to register that name.
+			Code that depends on blobs being present at run-time may use this
+			mechanism to determine such presence ahead of time without provoking
+			an error should the blob be absent.
+			@p
+			For example, to test whether the supplementary character sets can be
+			used:
+			@code{
+				if(hasBlobModule("RedStrain/Text/Charsets"))
+					cout << "Can use charsets." << endl;
+			}
+		`
+	}
+
+	class BlobModuleRegistrar {
+
+		header "redstrain/redmond/blobs.hpp"
+		since 0.1
+		`
+			@brief{Announce presence of blob component during module initalization.}
+			This class calls @link registerBlobModule - - in its constructor. The
+			intended use for this is for blob components to create a module static
+			(i.e. neither @mon auto nor @mon static member) object of this type in
+			order to announce their presence when that object is initalized, e.g.:
+			@code{static BlobModuleRegistrar registerBlobModule("MyBlobComponent");}
+		`
+
+		var name {
+			const
+			type std.string
+			private
+			since 0.1
+			`
+				@brief{Human-readable name of the blob being registered.}
+				@page welcome {Human-readable name} of the blob being registered.
+				This is the name given in the @link BlobModuleRegistrar
+				{std.string const ref -> void} constructor and it may be obtained
+				using @link getName - - for reference.
+			`
+		}
+
+		ctor {
+			params {
+				name std.string const ref `
+					@page welcome {human-readable name} of the blob being registered
+				`
+			}
+			public
+			since 0.1
+			`
+				@brief{Announce presence of blob component.}
+				Call @link registerBlobModule - - with the @mon name given.
+			`
+		}
+
+		ctor {
+			params {
+				registrar BlobModuleRegistrar const ref `object to be copied`
+			}
+			public
+			since 0.1
+			`
+				@brief{Typical copy-constructor.}
+				Initialize the @link name - - with the one of the given
+				@mon registrar object. Note that this constructor does @b not
+				call @link registerBlobModule - - again, since this was already
+				done for the name in question when @mon registrar was initialized.
+			`
+		}
+
+		method getName {
+			const
+			return std.string const ref
+			public
+			since 0.1
+			`
+				@brief{Obtain the human-readable name of the blob being registered.}
+				Return the @page welcome {human-readable name} of the blob being registered.
+				This is the name given in the @link BlobModuleRegistrar
+				{std.string const ref -> void} constructor and is only provided for
+				reference, as the blob in question has already been registered if this
+				function can be called.
+			`
+		}
+
+	}
+
+}
