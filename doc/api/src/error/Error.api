@@ -11,3 +11,80 @@ namespace redengine.error {
 	}
 
 }
+
+macro REDSTRAIN_DECLARE_ERROR {
+	params {
+		'type' `TODO.`
+	}
+	header "redstrain/error/Error.hpp"
+	since 0.1
+	`
+		TODO.
+	`
+}
+
+macro REDSTRAIN_DEFINE_ERROR {
+	params {
+		'type' `TODO.`
+	}
+	header "redstrain/error/Error.hpp"
+	since 0.1
+	`
+		TODO.
+	`
+}
+
+macro REDSTRAIN_DECLARE_ABSTRACT_ERROR {
+	params {
+		'type' `TODO.`
+	}
+	header "redstrain/error/Error.hpp"
+	since 0.1
+	`
+		TODO.
+	`
+}
+
+macro REDSTRAIN_DEFINE_ABSTRACT_ERROR {
+	params {
+		'type' `TODO.`
+	}
+	header "redstrain/error/Error.hpp"
+	since 0.1
+	`
+		TODO.
+	`
+}
+
+macro _REDSTRAIN_LOCALIZE_ERROR16_BASE {
+	params {
+		'type' `TODO.`
+	}
+	header "redstrain/error/Error.hpp"
+	since 0.1
+	`
+		TODO.
+	`
+}
+
+macro REDSTRAIN_LOCALIZE_ERROR16 {
+	params {
+		'type' `TODO.`
+	}
+	header "redstrain/error/Error.hpp"
+	since 0.1
+	`
+		TODO.
+	`
+}
+
+macro REDSTRAIN_LOCALIZE_ERROR16_NOUSE {
+	params {
+		'type' `TODO.`
+	}
+	header "redstrain/error/Error.hpp"
+	since 0.1
+	`
+		TODO.
+	`
+}

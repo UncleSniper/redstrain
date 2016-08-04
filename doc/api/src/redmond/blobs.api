@@ -61,7 +61,7 @@ namespace redengine.redmond {
 			@brief{Announce presence of blob component during module initalization.}
 			This class calls @link registerBlobModule - - in its constructor. The
 			intended use for this is for blob components to create a module static
-			(i.e. neither @mon auto nor @mon static member) object of this type in
+			(i.e. neither @mon auto nor instance member) object of this type in
 			order to announce their presence when that object is initalized, e.g.:
 			@code{static BlobModuleRegistrar registerBlobModule("MyBlobComponent");}
 		`

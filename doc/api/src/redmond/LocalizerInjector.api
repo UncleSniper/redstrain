@@ -3,13 +3,44 @@ namespace redengine.redmond {
 	class LocalizerInjector {
 
 		tparams {
-			LocalizerFunctionT class `TODO.`
+			LocalizerFunctionT class `
+				Type of the variable to be assigned.
+				@p
+				@constrs @mon LocalizerFunctionT& must be assignable from
+				@mon LocalizerFunctionT& using the @mon = operator.
+			`
 		}
 		header "redstrain/redmond/LocalizerInjector.hpp"
 		since 0.1
 		`
 			@brief{Set localization function pointer for exception class.}
-			TODO.
+			This class assigns the given value to the given variable in its
+			constructor. The intended use for this is for localization code
+			to create module static (i.e. neither @mon auto nor instance
+			member) objects of this type in order to set function pointer
+			variables to @link error.Error - {exception class} localization
+			functions when that object is initialized, e.g.:
+			@code{
+				static void localizeFrameIndexOutOfBoundsError16(
+					const FrameIndexOutOfBoundsError& error,
+					const Locale& locale,
+					StreamSink16& sink
+				) {
+					...
+				}
+
+				static LocalizerInjector<
+					FrameIndexOutOfBoundsError::FrameIndexOutOfBoundsErrorLocalizerFunction
+				> injectFrameIndexOutOfBoundsErrorLocalizer16(
+					FrameIndexOutOfBoundsError::localizeFrameIndexOutOfBoundsError16,
+					localizeFrameIndexOutOfBoundsError16
+				);
+			}
+			Note that this is normally done by using the
+			@link REDSTRAIN_LOCALIZE_ERROR16 - - macro and thus client code
+			should have no need to use this class directly.
+			@p
+			@see @page mod_error -
 		`
 
 		typedef LocalizerFunction {
