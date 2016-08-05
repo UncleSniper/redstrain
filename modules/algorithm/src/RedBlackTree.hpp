@@ -1,10 +1,12 @@
 #ifndef REDSTRAIN_MOD_ALGORITHM_REDBLACKTREE_HPP
 #define REDSTRAIN_MOD_ALGORITHM_REDBLACKTREE_HPP
 
+#include <utility>
 #include <redstrain/util/BareType.hpp>
 #include <redstrain/util/WithAlign.hpp>
 #include <redstrain/error/ListIndexOutOfBoundsError.hpp>
 
+#include "NoElementInThisStateError.hpp"
 #include "ordering.hpp"
 #include "allocators.hpp"
 #include "destructors.hpp"
@@ -29,6 +31,12 @@ namespace algorithm {
 	  public:
 		typedef KeyT Key;
 		typedef ValueT Value;
+
+	  public:
+		static const int LOWER_BOUND_INCLUSIVE = 001;
+		static const int UPPER_BOUND_INCLUSIVE = 002;
+		static const int IGNORE_LOWER_BOUND    = 004;
+		static const int IGNORE_UPPER_BOUND    = 010;
 
 	  private:
 		typedef typename util::WithAlign<util::AlignOf<KeyT>::ALIGNMENT>::Primitive AlignKey;
@@ -457,21 +465,8 @@ namespace algorithm {
 				removeFixup(tofix, fixParent, isRightChild);
 		}
 
-	  public:
-		RedBlackTree() : root(NULL), cursize(static_cast<util::MemorySize>(0u)) {}
-
-		RedBlackTree(const RedBlackTree& tree) : root(tree.root ? RedBlackTree::clone(tree.root) : NULL),
-				cursize(tree.cursize) {}
-
-		~RedBlackTree() {
-			if(root) {
-				root->destroy();
-				delete root;
-			}
-		}
-
-		bool put(const KeyT& key, const ValueT& value) {
-			Node* node = new Node(RED);
+		bool insert(const KeyT& key, const ValueT& value, Node*& node) {
+			node = new Node(RED);
 			{
 				new(&node->getKey()) KeyT(key);
 				DeleteSingleNode newNode(node, DeleteSingleNode::HAS_KEY);
@@ -503,6 +498,755 @@ namespace algorithm {
 			return false;
 		}
 
+		Node* putIntoNode(Node* existing, const KeyT& key, const ValueT& value) {
+			Node* node = new Node(RED);
+			{
+				new(&node->getKey()) KeyT(key);
+				DeleteSingleNode newNode(node, DeleteSingleNode::HAS_KEY);
+				new(&node->getValue()) ValueT(value);
+				newNode.node = NULL;
+			}
+			replace(*node, *existing);
+			KeyDestructor(existing->getKey());
+			ValueDestructor(existing->getValue());
+			delete existing;
+			return node;
+		}
+
+	  private:
+		template<typename TreeT>
+		class IteratorBase {
+
+		  protected:
+			TreeT* tree;
+			Node* node;
+			bool reverse;
+
+		  protected:
+			void forward() {
+				if(!node)
+					return;
+				if(node->right) {
+					node = node->right;
+					while(node->left)
+						node = node->left;
+				}
+				else {
+					Node* original;
+					do {
+						original = node;
+						node = node->parent;
+					} while(node && original == node->right);
+				}
+			}
+
+			void backward() {
+				if(!node)
+					return;
+				if(node->left) {
+					node = node->left;
+					while(node->right)
+						node = node->right;
+				}
+				else {
+					Node* original;
+					do {
+						original = node;
+						node = node->parent;
+					} while(node && original == node->left);
+				}
+			}
+
+			void assignIteratorBase(const IteratorBase& iterator) {
+				tree = iterator.tree;
+				node = iterator.node;
+				reverse = iterator.reverse;
+			}
+
+			util::OrderRelation compareTo(const IteratorBase& iterator) const {
+				if(!this->node)
+					return iterator.node ? util::OR_GREATER : util::OR_EQUAL;
+				if(!iterator.node)
+					return util::OR_LESS;
+				if(this->node == iterator.node)
+					return util::OR_EQUAL;
+				return Comparison(this->node->getKey(), iterator.node->getKey());
+			}
+
+		  public:
+			IteratorBase(TreeT& tree, bool reverse) : tree(&tree), node(tree.root), reverse(reverse) {}
+
+			IteratorBase(TreeT& tree, Node* node) : tree(&tree), node(node), reverse(false) {}
+
+			IteratorBase(const IteratorBase& iterator)
+					: tree(iterator.tree), node(iterator.node), reverse(iterator.reverse) {}
+
+			inline bool valid() const {
+				return !!node;
+			}
+
+			inline bool isReverse() const {
+				return reverse;
+			}
+
+			const KeyT& getKey() const {
+				if(!node)
+					throw NoElementInThisStateError();
+				return node->getKey();
+			}
+
+			operator bool() const {
+				return !!node;
+			}
+
+		};
+
+		template<typename TreeT>
+		class UnboundedIteratorBase : public virtual IteratorBase<TreeT> {
+
+		  public:
+			UnboundedIteratorBase(TreeT& tree, bool reverse) : IteratorBase<TreeT>(tree, reverse) {
+				reset();
+			}
+
+			UnboundedIteratorBase(TreeT& tree, Node* node) : IteratorBase<TreeT>(tree, node) {}
+
+			UnboundedIteratorBase(const UnboundedIteratorBase& iterator) : IteratorBase<TreeT>(iterator) {}
+
+			void reset() {
+				this->node = this->tree->root;
+				if(this->node) {
+					if(this->reverse) {
+						while(this->node->right)
+							this->node = this->node->right;
+					}
+					else {
+						while(this->node->left)
+							this->node = this->node->left;
+					}
+				}
+			}
+
+			bool moveTo(const KeyT& key) {
+				util::OrderRelation relation;
+				if(this->tree->findNode(key, this->node, relation))
+					return true;
+				this->node = NULL;
+				return false;
+			}
+
+		};
+
+		template<typename TreeT>
+		class BoundedIteratorBase : public virtual IteratorBase<TreeT> {
+
+		  private:
+			KeyT lowerBound, upperBound;
+			int flags;
+
+		  protected:
+			bool isWithinBounds(Node* node) const {
+				if(!node)
+					return false;
+				if(!(flags & RedBlackTree::IGNORE_LOWER_BOUND)) {
+					switch(Comparison(node->getKey(), lowerBound)) {
+						case util::OR_LESS:
+							return false;
+						case util::OR_GREATER:
+							break;
+						case util::OR_EQUAL:
+						default:
+							if(!(flags & RedBlackTree::LOWER_BOUND_INCLUSIVE))
+								return false;
+							break;
+					}
+				}
+				if(!(flags & RedBlackTree::IGNORE_UPPER_BOUND)) {
+					switch(Comparison(node->getKey(), upperBound)) {
+						case util::OR_LESS:
+							break;
+						case util::OR_GREATER:
+							return false;
+						case util::OR_EQUAL:
+						default:
+							if(!(flags & RedBlackTree::UPPER_BOUND_INCLUSIVE))
+								return false;
+							break;
+					}
+				}
+				return true;
+			}
+
+			void assignBoundedIterator(const BoundedIteratorBase& iterator) {
+				lowerBound = iterator.lowerBound;
+				upperBound = iterator.upperBound;
+				flags = iterator.flags;
+			}
+
+		  public:
+			BoundedIteratorBase(TreeT& tree, bool reverse,
+					const KeyT& lowerBound, const KeyT& upperBound, int flags)
+					: IteratorBase<TreeT>(tree, reverse), lowerBound(lowerBound), upperBound(upperBound),
+					flags(flags) {
+				reset();
+			}
+
+			BoundedIteratorBase(const BoundedIteratorBase& iterator)
+					: IteratorBase<TreeT>(iterator), lowerBound(iterator.lowerBound),
+					upperBound(iterator.upperBound), flags(iterator.flags) {}
+
+			inline const KeyT& getLowerBound() const {
+				return lowerBound;
+			}
+
+			inline const KeyT& getUpperBound() const {
+				return upperBound;
+			}
+
+			inline int getFlags() const {
+				return flags;
+			}
+
+			void reset() {
+				this->node = this->tree->root;
+				if(!this->node)
+					return;
+				if(!isWithinBounds(this->node)) {
+					this->node = NULL;
+					return;
+				}
+				if(this->reverse) {
+					while(isWithinBounds(this->node->right))
+						this->node = this->node->right;
+				}
+				else {
+					while(isWithinBounds(this->node->left))
+						this->node = this->node->left;
+				}
+			}
+
+			bool moveTo(const KeyT& key) {
+				util::OrderRelation relation;
+				if(this->tree->findNode(key, this->node, relation)) {
+					if(isWithinBounds(this->node))
+						return true;
+				}
+				this->node = NULL;
+				return false;
+			}
+
+		};
+
+		class ConstIteratorBase : public virtual IteratorBase<const RedBlackTree> {
+
+		  public:
+			ConstIteratorBase(const RedBlackTree& tree, bool reverse)
+					: IteratorBase<const RedBlackTree>(tree, reverse) {}
+
+			ConstIteratorBase(const RedBlackTree& tree, Node* node)
+					: IteratorBase<const RedBlackTree>(tree, node) {}
+
+			ConstIteratorBase(const ConstIteratorBase& iterator) : IteratorBase<const RedBlackTree>(iterator) {}
+
+			inline const RedBlackTree& getTree() const {
+				return *this->tree;
+			}
+
+			const ValueT& getValue() const {
+				if(!this->node)
+					throw NoElementInThisStateError();
+				return this->node->getValue();
+			}
+
+			std::pair<const KeyT&, const ValueT&> operator*() const {
+				if(!this->node)
+					throw NoElementInThisStateError();
+				return std::pair<const KeyT&, const ValueT&>(this->node->getKey(), this->node->getValue());
+			}
+
+		};
+
+		class MutableIteratorBase : public virtual IteratorBase<RedBlackTree> {
+
+		  public:
+			MutableIteratorBase(RedBlackTree& tree, bool reverse)
+					: IteratorBase<RedBlackTree>(tree, reverse) {}
+
+			MutableIteratorBase(RedBlackTree& tree, Node* node)
+					: IteratorBase<RedBlackTree>(tree, node) {}
+
+			MutableIteratorBase(const MutableIteratorBase& iterator) : IteratorBase<RedBlackTree>(iterator) {}
+
+			inline const RedBlackTree& getTree() const {
+				return *this->tree;
+			}
+
+			inline RedBlackTree& getTree() {
+				return *this->tree;
+			}
+
+			const ValueT& getValue() const {
+				if(!this->node)
+					throw NoElementInThisStateError();
+				return this->node->getValue();
+			}
+
+			ValueT& getValue() {
+				if(!this->node)
+					throw NoElementInThisStateError();
+				return this->node->getValue();
+			}
+
+			std::pair<const KeyT&, const ValueT&> operator*() const {
+				if(!this->node)
+					throw NoElementInThisStateError();
+				return std::pair<const KeyT&, const ValueT&>(this->node->getKey(), this->node->getValue());
+			}
+
+			std::pair<const KeyT&, ValueT&> operator*() {
+				if(!this->node)
+					throw NoElementInThisStateError();
+				return std::pair<const KeyT&, ValueT&>(this->node->getKey(), this->node->getValue());
+			}
+
+		};
+
+	  public:
+		class ConstIterator : public ConstIteratorBase, public UnboundedIteratorBase<const RedBlackTree> {
+
+		  public:
+			ConstIterator(const RedBlackTree& tree, bool reverse)
+					: IteratorBase<const RedBlackTree>(tree, reverse), ConstIteratorBase(tree, reverse),
+					UnboundedIteratorBase<const RedBlackTree>(tree, reverse) {}
+
+			ConstIterator(const RedBlackTree& tree, Node* node)
+					: IteratorBase<const RedBlackTree>(tree, node), ConstIteratorBase(tree, node),
+					UnboundedIteratorBase<const RedBlackTree>(tree, node) {}
+
+			ConstIterator(const ConstIterator& iterator)
+					: IteratorBase<const RedBlackTree>(iterator), ConstIteratorBase(iterator),
+					UnboundedIteratorBase<const RedBlackTree>(iterator) {}
+
+			ConstIterator& operator++() {
+				if(this->reverse)
+					this->backward();
+				else
+					this->forward();
+				return *this;
+			}
+
+			ConstIterator operator++(int) {
+				ConstIterator iterator(*this);
+				if(this->reverse)
+					this->backward();
+				else
+					this->forward();
+				return iterator;
+			}
+
+			ConstIterator& operator--() {
+				if(this->reverse)
+					this->forward();
+				else
+					this->backward();
+				return *this;
+			}
+
+			ConstIterator operator--(int) {
+				ConstIterator iterator(*this);
+				if(this->reverse)
+					this->forward();
+				else
+					this->backward();
+				return iterator;
+			}
+
+			ConstIterator& operator=(const ConstIterator& iterator) {
+				this->assignIteratorBase(iterator);
+				return *this;
+			}
+
+			bool operator==(const ConstIterator& iterator) const {
+				return this->compareTo(iterator) == util::OR_EQUAL;
+			}
+
+			bool operator!=(const ConstIterator& iterator) const {
+				return this->compareTo(iterator) != util::OR_EQUAL;
+			}
+
+			bool operator<(const ConstIterator& iterator) const {
+				return this->compareTo(iterator) == util::OR_LESS;
+			}
+
+			bool operator<=(const ConstIterator& iterator) const {
+				return this->compareTo(iterator) != util::OR_GREATER;
+			}
+
+			bool operator>(const ConstIterator& iterator) const {
+				return this->compareTo(iterator) == util::OR_GREATER;
+			}
+
+			bool operator>=(const ConstIterator& iterator) const {
+				return this->compareTo(iterator) != util::OR_LESS;
+			}
+
+		};
+
+		class ConstBoundedIterator : public ConstIteratorBase, public BoundedIteratorBase<const RedBlackTree> {
+
+		  public:
+			ConstBoundedIterator(const RedBlackTree& tree, bool reverse,
+					const KeyT& lowerBound, const KeyT& upperBound, int flags)
+					: IteratorBase<const RedBlackTree>(tree, reverse), ConstIteratorBase(tree, reverse),
+					BoundedIteratorBase<const RedBlackTree>(tree, reverse, lowerBound, upperBound, flags) {}
+
+			ConstBoundedIterator(const ConstBoundedIterator& iterator)
+					: IteratorBase<const RedBlackTree>(iterator), ConstIteratorBase(iterator),
+					BoundedIteratorBase<const RedBlackTree>(iterator) {}
+
+			ConstBoundedIterator& operator++() {
+				if(this->reverse)
+					this->backward();
+				else
+					this->forward();
+				if(!this->isWithinBounds(this->node))
+					this->node = NULL;
+				return *this;
+			}
+
+			ConstBoundedIterator operator++(int) {
+				ConstBoundedIterator iterator(*this);
+				if(this->reverse)
+					this->backward();
+				else
+					this->forward();
+				if(!this->isWithinBounds(this->node))
+					this->node = NULL;
+				return iterator;
+			}
+
+			ConstBoundedIterator& operator--() {
+				if(this->reverse)
+					this->forward();
+				else
+					this->backward();
+				if(!this->isWithinBounds(this->node))
+					this->node = NULL;
+				return *this;
+			}
+
+			ConstBoundedIterator operator--(int) {
+				ConstBoundedIterator iterator(*this);
+				if(this->reverse)
+					this->forward();
+				else
+					this->backward();
+				if(!this->isWithinBounds(this->node))
+					this->node = NULL;
+				return iterator;
+			}
+
+			ConstBoundedIterator& operator=(const ConstBoundedIterator& iterator) {
+				this->assignIteratorBase(iterator);
+				this->assignBoundedIterator(iterator);
+				return *this;
+			}
+
+			bool operator==(const ConstBoundedIterator& iterator) const {
+				return this->compareTo(iterator) == util::OR_EQUAL;
+			}
+
+			bool operator!=(const ConstBoundedIterator& iterator) const {
+				return this->compareTo(iterator) != util::OR_EQUAL;
+			}
+
+			bool operator<(const ConstBoundedIterator& iterator) const {
+				return this->compareTo(iterator) == util::OR_LESS;
+			}
+
+			bool operator<=(const ConstBoundedIterator& iterator) const {
+				return this->compareTo(iterator) != util::OR_GREATER;
+			}
+
+			bool operator>(const ConstBoundedIterator& iterator) const {
+				return this->compareTo(iterator) == util::OR_GREATER;
+			}
+
+			bool operator>=(const ConstBoundedIterator& iterator) const {
+				return this->compareTo(iterator) != util::OR_LESS;
+			}
+
+		};
+
+		class Iterator : public MutableIteratorBase, public UnboundedIteratorBase<RedBlackTree> {
+
+		  public:
+			Iterator(RedBlackTree& tree, bool reverse)
+					: IteratorBase<RedBlackTree>(tree, reverse), MutableIteratorBase(tree, reverse),
+					UnboundedIteratorBase<RedBlackTree>(tree, reverse) {}
+
+			Iterator(RedBlackTree& tree, Node* node)
+					: IteratorBase<RedBlackTree>(tree, node), MutableIteratorBase(tree, node),
+					UnboundedIteratorBase<RedBlackTree>(tree, node) {}
+
+			Iterator(const Iterator& iterator)
+					: IteratorBase<RedBlackTree>(iterator), MutableIteratorBase(iterator),
+					UnboundedIteratorBase<RedBlackTree>(iterator) {}
+
+			void erase() {
+				if(!this->node)
+					throw NoElementInThisStateError();
+				Node* condemned = this->node;
+				if(this->reverse)
+					this->backward();
+				else
+					this->forward();
+				this->tree->removeNode(condemned);
+				--this->tree->cursize;
+			}
+
+			Iterator& operator++() {
+				if(this->reverse)
+					this->backward();
+				else
+					this->forward();
+				return *this;
+			}
+
+			Iterator operator++(int) {
+				Iterator iterator(*this);
+				if(this->reverse)
+					this->backward();
+				else
+					this->forward();
+				return iterator;
+			}
+
+			Iterator& operator--() {
+				if(this->reverse)
+					this->forward();
+				else
+					this->backward();
+				return *this;
+			}
+
+			Iterator operator--(int) {
+				Iterator iterator(*this);
+				if(this->reverse)
+					this->forward();
+				else
+					this->backward();
+				return iterator;
+			}
+
+			Iterator& operator=(const Iterator& iterator) {
+				this->assignIteratorBase(iterator);
+				return *this;
+			}
+
+			Iterator& operator=(const ValueT& value) {
+				if(!this->node)
+					throw NoElementInThisStateError();
+				this->node->getValue() = value;
+				return *this;
+			}
+
+			bool operator==(const Iterator& iterator) const {
+				return this->compareTo(iterator) == util::OR_EQUAL;
+			}
+
+			bool operator!=(const Iterator& iterator) const {
+				return this->compareTo(iterator) != util::OR_EQUAL;
+			}
+
+			bool operator<(const Iterator& iterator) const {
+				return this->compareTo(iterator) == util::OR_LESS;
+			}
+
+			bool operator<=(const Iterator& iterator) const {
+				return this->compareTo(iterator) != util::OR_GREATER;
+			}
+
+			bool operator>(const Iterator& iterator) const {
+				return this->compareTo(iterator) == util::OR_GREATER;
+			}
+
+			bool operator>=(const Iterator& iterator) const {
+				return this->compareTo(iterator) != util::OR_LESS;
+			}
+
+		};
+
+		class BoundedIterator : public MutableIteratorBase, public BoundedIteratorBase<RedBlackTree> {
+
+		  public:
+			BoundedIterator(RedBlackTree& tree, bool reverse,
+					const KeyT& lowerBound, const KeyT& upperBound, int flags)
+					: IteratorBase<RedBlackTree>(tree, reverse), MutableIteratorBase(tree, reverse),
+					BoundedIteratorBase<RedBlackTree>(tree, reverse, lowerBound, upperBound, flags) {}
+
+			BoundedIterator(const BoundedIterator& iterator)
+					: IteratorBase<RedBlackTree>(iterator), MutableIteratorBase(iterator),
+					BoundedIteratorBase<RedBlackTree>(iterator) {}
+
+			void erase() {
+				if(!this->node)
+					throw NoElementInThisStateError();
+				Node* condemned = this->node;
+				if(this->reverse)
+					this->backward();
+				else
+					this->forward();
+				if(!this->isWithinBounds(this->node))
+					this->node = NULL;
+				this->tree->removeNode(condemned);
+				--this->tree->cursize;
+			}
+
+			BoundedIterator& operator++() {
+				if(this->reverse)
+					this->backward();
+				else
+					this->forward();
+				if(!this->isWithinBounds(this->node))
+					this->node = NULL;
+				return *this;
+			}
+
+			BoundedIterator operator++(int) {
+				BoundedIterator iterator(*this);
+				if(this->reverse)
+					this->backward();
+				else
+					this->forward();
+				if(!this->isWithinBounds(this->node))
+					this->node = NULL;
+				return iterator;
+			}
+
+			BoundedIterator& operator--() {
+				if(this->reverse)
+					this->forward();
+				else
+					this->backward();
+				if(!this->isWithinBounds(this->node))
+					this->node = NULL;
+				return *this;
+			}
+
+			BoundedIterator operator--(int) {
+				BoundedIterator iterator(*this);
+				if(this->reverse)
+					this->forward();
+				else
+					this->backward();
+				if(!this->isWithinBounds(this->node))
+					this->node = NULL;
+				return iterator;
+			}
+
+			BoundedIterator& operator=(const Iterator& iterator) {
+				this->assignIteratorBase(iterator);
+				this->assignBoundedIterator(iterator);
+				return *this;
+			}
+
+			BoundedIterator& operator=(const ValueT& value) {
+				if(!this->node)
+					throw NoElementInThisStateError();
+				this->node->getValue() = value;
+				return *this;
+			}
+
+			bool operator==(const BoundedIterator& iterator) const {
+				return this->compareTo(iterator) == util::OR_EQUAL;
+			}
+
+			bool operator!=(const BoundedIterator& iterator) const {
+				return this->compareTo(iterator) != util::OR_EQUAL;
+			}
+
+			bool operator<(const BoundedIterator& iterator) const {
+				return this->compareTo(iterator) == util::OR_LESS;
+			}
+
+			bool operator<=(const BoundedIterator& iterator) const {
+				return this->compareTo(iterator) != util::OR_GREATER;
+			}
+
+			bool operator>(const BoundedIterator& iterator) const {
+				return this->compareTo(iterator) == util::OR_GREATER;
+			}
+
+			bool operator>=(const BoundedIterator& iterator) const {
+				return this->compareTo(iterator) != util::OR_LESS;
+			}
+
+		};
+
+		class InsertionCookie {
+
+		  private:
+			RedBlackTree* tree;
+			const KeyT key;
+			Node* node;
+
+		  public:
+			InsertionCookie(RedBlackTree& tree, const KeyT& key) : tree(&tree), key(key), node(NULL) {}
+
+			InsertionCookie(const InsertionCookie& cookie)
+					: tree(cookie.tree), key(cookie.key), node(cookie.node) {}
+
+			inline RedBlackTree& getTree() {
+				return *tree;
+			}
+
+			inline const RedBlackTree& getTree() const {
+				return *tree;
+			}
+
+			inline const KeyT& getKey() const {
+				return key;
+			}
+
+			bool put(const ValueT& value) {
+				if(node) {
+					node = tree->putIntoNode(node, key, value);
+					return true;
+				}
+				else
+					return tree->insert(key, value, node);
+			}
+
+			InsertionCookie& operator=(const ValueT& value) {
+				put(value);
+				return *this;
+			}
+
+		};
+
+	  public:
+		RedBlackTree() : root(NULL), cursize(static_cast<util::MemorySize>(0u)) {}
+
+		RedBlackTree(const RedBlackTree& tree) : root(tree.root ? RedBlackTree::clone(tree.root) : NULL),
+				cursize(tree.cursize) {}
+
+		~RedBlackTree() {
+			if(root) {
+				root->destroy();
+				delete root;
+			}
+		}
+
+		inline util::MemorySize size() const {
+			return cursize;
+		}
+
+		bool put(const KeyT& key, const ValueT& value) {
+			Node* node;
+			return insert(key, value, node);
+		}
+
 		bool erase(const KeyT& key) {
 			Node* existing;
 			util::OrderRelation relation;
@@ -520,6 +1264,90 @@ namespace algorithm {
 				root = NULL;
 				cursize = static_cast<util::MemorySize>(0u);
 			}
+		}
+
+		Iterator all() {
+			return Iterator(*this, false);
+		}
+
+		Iterator rall() {
+			return Iterator(*this, true);
+		}
+
+		ConstIterator call() const {
+			return ConstIterator(*this, false);
+		}
+
+		ConstIterator crall() const {
+			return ConstIterator(*this, true);
+		}
+
+		BoundedIterator range(const KeyT& lowerBound, const KeyT& upperBound, int flags) {
+			return BoundedIterator(*this, false, lowerBound, upperBound, flags);
+		}
+
+		BoundedIterator rrange(const KeyT& lowerBound, const KeyT& upperBound, int flags) {
+			return BoundedIterator(*this, true, lowerBound, upperBound, flags);
+		}
+
+		ConstBoundedIterator crange(const KeyT& lowerBound, const KeyT& upperBound, int flags) const {
+			return ConstBoundedIterator(*this, false, lowerBound, upperBound, flags);
+		}
+
+		ConstBoundedIterator crrange(const KeyT& lowerBound, const KeyT& upperBound, int flags) const {
+			return ConstBoundedIterator(*this, true, lowerBound, upperBound, flags);
+		}
+
+		Iterator operator[](const KeyT& key) {
+			Iterator iterator(*this, false);
+			iterator.moveTo(key);
+			return iterator;
+		}
+
+		ConstIterator operator[](const KeyT& key) const {
+			ConstIterator iterator(*this, false);
+			iterator.moveTo(key);
+			return iterator;
+		}
+
+		InsertionCookie operator()(const Key& key) {
+			return InsertionCookie(*this, key);
+		}
+
+		BoundedIterator operator<(const KeyT& upperBound) {
+			return BoundedIterator(*this, false, upperBound, upperBound,
+					RedBlackTree::UPPER_BOUND_INCLUSIVE | RedBlackTree::IGNORE_LOWER_BOUND);
+		}
+
+		BoundedIterator operator<=(const KeyT& upperBound) {
+			return BoundedIterator(*this, false, upperBound, upperBound, RedBlackTree::IGNORE_LOWER_BOUND);
+		}
+
+		BoundedIterator operator>(const KeyT& lowerBound) {
+			return BoundedIterator(*this, false, lowerBound, lowerBound,
+					RedBlackTree::LOWER_BOUND_INCLUSIVE | RedBlackTree::IGNORE_UPPER_BOUND);
+		}
+
+		BoundedIterator operator>=(const KeyT& lowerBound) {
+			return BoundedIterator(*this, false, lowerBound, lowerBound, RedBlackTree::IGNORE_UPPER_BOUND);
+		}
+
+		ConstBoundedIterator operator<(const KeyT& upperBound) const {
+			return ConstBoundedIterator(*this, false, upperBound, upperBound,
+					RedBlackTree::UPPER_BOUND_INCLUSIVE | RedBlackTree::IGNORE_LOWER_BOUND);
+		}
+
+		ConstBoundedIterator operator<=(const KeyT& upperBound) const {
+			return ConstBoundedIterator(*this, false, upperBound, upperBound, RedBlackTree::IGNORE_LOWER_BOUND);
+		}
+
+		ConstBoundedIterator operator>(const KeyT& lowerBound) const {
+			return ConstBoundedIterator(*this, false, lowerBound, lowerBound,
+					RedBlackTree::LOWER_BOUND_INCLUSIVE | RedBlackTree::IGNORE_UPPER_BOUND);
+		}
+
+		ConstBoundedIterator operator>=(const KeyT& lowerBound) const {
+			return ConstBoundedIterator(*this, false, lowerBound, lowerBound, RedBlackTree::IGNORE_UPPER_BOUND);
 		}
 
 	};
