@@ -39,7 +39,8 @@ namespace algorithm {
 		typename ElementT,
 		void (*Destructor)(ElementT&) = explicitDestructor<ElementT>,
 		typename RopeTraitsT = DefaultRopeTraits<ElementT>,
-		void* (*Allocator)(util::MemorySize) = standardAlloc
+		void* (*Allocator)(util::MemorySize) = standardAlloc,
+		void (*Deallocator)(void*) = standardFree
 	>
 	class Rope {
 
@@ -169,6 +170,10 @@ namespace algorithm {
 						+ nodeSize * sizeof(ElementT)));
 			}
 
+			static void operator delete(void* address) {
+				Deallocator(address);
+			}
+
 		};
 
 		struct Concat : Node {
@@ -208,6 +213,10 @@ namespace algorithm {
 
 			static void* operator new(size_t size) {
 				return Allocator(static_cast<util::MemorySize>(size));
+			}
+
+			static void operator delete(void* address) {
+				Deallocator(address);
 			}
 
 		};

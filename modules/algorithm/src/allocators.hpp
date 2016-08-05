@@ -10,6 +10,7 @@ namespace redengine {
 namespace algorithm {
 
 	REDSTRAIN_ALGORITHM_API void* standardAlloc(util::MemorySize);
+	REDSTRAIN_ALGORITHM_API void standardFree(void*);
 
 }}
 
