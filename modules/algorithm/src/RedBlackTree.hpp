@@ -6,6 +6,7 @@
 #include <redstrain/util/WithAlign.hpp>
 #include <redstrain/error/ListIndexOutOfBoundsError.hpp>
 
+#include "CreateOrModify.hpp"
 #include "NoElementInThisStateError.hpp"
 #include "ordering.hpp"
 #include "allocators.hpp"
@@ -1245,6 +1246,34 @@ namespace algorithm {
 		bool put(const KeyT& key, const ValueT& value) {
 			Node* node;
 			return insert(key, value, node);
+		}
+
+		bool put(const KeyT& key, CreateOrModify<ValueT>& value) {
+			Node* existing;
+			util::OrderRelation relation;
+			if(findNode(key, existing, relation)) {
+				value.modifyElement(existing->getValue());
+				return true;
+			}
+			Node* node = new Node(RED);
+			{
+				new(&node->getKey()) KeyT(key);
+				DeleteSingleNode newNode(node, DeleteSingleNode::HAS_KEY);
+				value.createElement(node->getValue());
+				newNode.node = NULL;
+			}
+			node->parent = existing;
+			if(existing) {
+				if(relation == util::OR_LESS)
+					existing->left = node;
+				else
+					existing->right = node;
+			}
+			else
+				root = node;
+			insertFixup(node);
+			++cursize;
+			return false;
 		}
 
 		bool erase(const KeyT& key) {
