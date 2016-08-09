@@ -106,6 +106,37 @@ namespace text {
 	makeGetFactory(Transcoder1632, trc1632reg)
 	makeGetFactory(Transcoder3216, trc3216reg)
 
+#define makeLoadFactory(ftype, regMember, resolvMember) \
+	CodecManager::ftype ## Factory* CodecManager::load ## ftype ## Factory(const string& name) { \
+		ProviderLocker<CodecManager> locker(lockProvider, this); \
+		ftype ## Iterator it = regMember.find(name); \
+		ftype ## Factory* factory; \
+		if(it != regMember.end()) { \
+			factory = it->second; \
+			locker.release(); \
+			return factory; \
+		} \
+		factory = NULL; \
+		ftype ## ResolverIterator resbegin(resolvMember.begin()), resend(resolvMember.end()); \
+		for(; resbegin != resend; ++resbegin) { \
+			factory = (*resbegin)->resolveCodec(name); \
+			if(factory) { \
+				regMember[name] = factory; \
+				factory->ref(); \
+				break; \
+			} \
+		} \
+		locker.release(); \
+		return factory; \
+	}
+
+	makeLoadFactory(Encoder16, enc16reg, enc16resolv)
+	makeLoadFactory(Decoder16, dec16reg, dec16resolv)
+	makeLoadFactory(Encoder32, enc32reg, enc32resolv)
+	makeLoadFactory(Decoder32, dec32reg, dec32resolv)
+	makeLoadFactory(Transcoder1632, trc1632reg, trc1632resolv)
+	makeLoadFactory(Transcoder3216, trc3216reg, trc3216resolv)
+
 #define makeGet(ftype, member, except) \
 	ftype* CodecManager::get ## ftype(const string& name) const { \
 		ProviderLocker<CodecManager> locker(lockProvider, this); \

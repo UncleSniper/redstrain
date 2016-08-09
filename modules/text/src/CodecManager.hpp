@@ -97,6 +97,13 @@ namespace text {
 		Transcoder1632Factory* getTranscoder1632Factory(const std::string&) const;
 		Transcoder3216Factory* getTranscoder3216Factory(const std::string&) const;
 
+		Encoder16Factory* loadEncoder16Factory(const std::string&);
+		Decoder16Factory* loadDecoder16Factory(const std::string&);
+		Encoder32Factory* loadEncoder32Factory(const std::string&);
+		Decoder32Factory* loadDecoder32Factory(const std::string&);
+		Transcoder1632Factory* loadTranscoder1632Factory(const std::string&);
+		Transcoder3216Factory* loadTranscoder3216Factory(const std::string&);
+
 		Encoder16* getEncoder16(const std::string&) const;
 		Decoder16* getDecoder16(const std::string&) const;
 		Encoder32* getEncoder32(const std::string&, bool) const;

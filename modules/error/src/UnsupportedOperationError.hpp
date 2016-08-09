@@ -14,6 +14,7 @@ namespace error {
 	  public:
 		UnsupportedOperationError(const std::string&);
 		UnsupportedOperationError(const UnsupportedOperationError&);
+		virtual ~UnsupportedOperationError();
 
 		inline const std::string& getOperation() const {
 			return operation;
