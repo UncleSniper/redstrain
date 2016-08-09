@@ -16,6 +16,14 @@ if [ ! -x "$MSGSHDR" -a -x run-msgshdr ]; then
 	MSGSHDR=./run-msgshdr
 fi
 
+CUNT=tools/cunt/cunt-static
+TERMDB=modules/damnation/src/termdb.cpp
+TERMCAP_URL=http://invisible-island.net/datafiles/current/termcap.src.gz
+
+if [ ! -x "$CUNT" -a -x run-cunt ]; then
+	CUNT=./run-cunt
+fi
+
 if [ ! -f "$GRISUTABLES" ]; then
 	if [ -x "$MKGRISU" ]; then
 		echo "Generating '$GRISUTABLES'..."
@@ -55,3 +63,23 @@ if [ -x "$MSGSHDR" ]; then
 else
 	echo "Missing '$MSGSHDR', skipping generation of '$COREMSGKEY' and others." >&2
 fi
+
+function genTermDB {
+	tcsrc="$(basename -- "$TERMCAP_URL")"
+	if [ ! -f "$tcsrc" ]; then
+		wget -O "$tcsrc" -- "$TERMCAP_URL"
+	fi
+	if [ -f "$TERMDB" ]; then
+		if [ "$(stat -c '%Y' -- "$tcsrc")" -le "$(stat -c '%Y' -- "$TERMDB")" ]; then
+			return
+		fi
+	fi
+	if [ ! -x "$CUNT" ]; then
+		echo "Missing '$CUNT', skipping generation of '$TERMDB'." >&2
+		return
+	fi
+	echo "Generating '$TERMDB'..."
+	zcat -- "$tcsrc" | "$CUNT" -- - "$TERMDB"
+}
+
+genTermDB

@@ -152,6 +152,8 @@ page welcome "The RedEngine RedStrain C++ Framework" `
 				@cell{@mon redunmangle} @cell{redunmangle}
 		@cell{@mon tools/updmsgs} @cell{@mon updmsgs} @cell{tool}
 				@cell{@mon redupdmsgs} @cell{redupdmsgs}
+		@cell{@mon tools/cunt} @cell{@mon cunt} @cell{tool}
+				@cell{@mon redcunt} @cell{redcunt}
 	}
 
 	Each component may depend on any number of modules, thus building on top of
