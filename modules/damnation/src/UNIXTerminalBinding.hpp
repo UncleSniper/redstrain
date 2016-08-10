@@ -2,6 +2,8 @@
 #define REDSTRAIN_MOD_DAMNATION_UNIXTERMINALBINDING_HPP
 
 #include <redstrain/text/CodecManager.hpp>
+#include <redstrain/util/StringBuilder.hpp>
+#include <redstrain/util/types.hpp>
 #include <redstrain/redmond/environment.hpp>
 
 #include "TermSpec.hpp"
@@ -10,7 +12,22 @@
 namespace redengine {
 namespace damnation {
 
+	class ColorMap;
+
 	class REDSTRAIN_DAMNATION_API UNIXTerminalBinding : public TerminalBinding {
+
+	  public:
+		enum ColorMode {
+			CM_MONOCHROME,
+			CM_LOW_COLOR,
+			CM_HIGH_COLOR
+		};
+
+		enum WriteMode {
+			WM_DIRECT,
+			WM_BLOCKED,
+			WM_BUFFERED
+		};
 
 	  private:
 		int readfd, writefd;
@@ -21,6 +38,14 @@ namespace damnation {
 		text::CodecFactory<text::Decoder16>* decoderFactory;
 		void* oldTermios;
 		bool usingUTF8;
+		unsigned prevWidth, prevHeight;
+		const ColorMode colorMode;
+		const ColorMap* colorMap;
+		int currentAttributes;
+		WriteMode writeMode;
+		char* writeBlock;
+		util::MemorySize blockFill;
+		util::StringBuilder<char> writeBuffer;
 
 	  private:
 		void setEncoderFactoryFromEncoding();
@@ -28,6 +53,14 @@ namespace damnation {
 		void catchSIGWINCH();
 		void setRaw();
 		void setCooked();
+		void wrappedWrite(const char*, util::MemorySize);
+		void wrappedWrite(const std::string&);
+		void doWrite(const char*, util::MemorySize);
+		unsigned setColor(unsigned, unsigned);
+		void enterUnderline();
+		void leaveUnderline();
+
+		static ColorMode colorModeFromColorCount(uint32_t);
 
 	  public:
 		UNIXTerminalBinding(const TermSpec&);
@@ -80,6 +113,26 @@ namespace damnation {
 
 		void setDecoderFactory(text::CodecFactory<text::Decoder16>*);
 
+		inline ColorMode getColorMode() const {
+			return colorMode;
+		}
+
+		inline const ColorMap* getColorMap() const {
+			return colorMap;
+		}
+
+		inline void setColorMap(const ColorMap* colorMap) {
+			this->colorMap = colorMap;
+		}
+
+		inline WriteMode getWriteMode() const {
+			return writeMode;
+		}
+
+		void setWriteMode(WriteMode);
+
+		void dumpCapabilities() const;
+
 		virtual InputMode getInputMode();
 		virtual void setInputMode(InputMode);
 		virtual bool hasSizeChanged();
@@ -87,10 +140,14 @@ namespace damnation {
 
 		virtual bool supportsOperation(OptionalOperation);
 		virtual bool carriageReturn();
-		virtual bool newLine();
+		virtual void newLine();
 		virtual bool clearScreen();
 		virtual bool moveTo(unsigned, unsigned);
+		virtual bool rowTo(unsigned);
+		virtual bool columnTo(unsigned);
 		virtual bool moveBy(int, int);
+		virtual bool rowBy(int);
+		virtual bool columnBy(int);
 		virtual bool cursorDown();
 		virtual bool cursorDownBy(unsigned);
 		virtual bool cursorUp();
@@ -106,7 +163,7 @@ namespace damnation {
 		virtual int setTextAttributes(int);
 		virtual int addTextAttributes(int);
 		virtual int removeTextAttributes(int);
-		virtual void resetTextAttributes(int);
+		virtual void resetTextAttributes();
 
 		virtual KeySym read(bool);
 		virtual void write(char);

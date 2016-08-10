@@ -18,10 +18,13 @@ namespace damnation {
 
 		enum OptionalOperation {
 			OO_CARRIAGE_RETURN,
-			OO_NEW_LINE,
 			OO_CLEAR_SCREEN,
 			OO_MOVE_TO,
+			OO_ROW_TO,
+			OO_COLUMN_TO,
 			OO_MOVE_BY,
+			OO_ROW_BY,
+			OO_COLUMN_BY,
 			OO_CURSOR_DOWN,
 			OO_CURSOR_DOWN_BY,
 			OO_CURSOR_UP,
@@ -47,10 +50,14 @@ namespace damnation {
 
 		virtual bool supportsOperation(OptionalOperation) = 0;
 		virtual bool carriageReturn() = 0;
-		virtual bool newLine() = 0;
+		virtual void newLine() = 0;
 		virtual bool clearScreen() = 0;
 		virtual bool moveTo(unsigned, unsigned) = 0;
+		virtual bool rowTo(unsigned) = 0;
+		virtual bool columnTo(unsigned) = 0;
 		virtual bool moveBy(int, int) = 0;
+		virtual bool rowBy(int) = 0;
+		virtual bool columnBy(int) = 0;
 		virtual bool cursorDown() = 0;
 		virtual bool cursorDownBy(unsigned) = 0;
 		virtual bool cursorUp() = 0;
@@ -66,7 +73,7 @@ namespace damnation {
 		virtual int setTextAttributes(int) = 0;
 		virtual int addTextAttributes(int) = 0;
 		virtual int removeTextAttributes(int) = 0;
-		virtual void resetTextAttributes(int) = 0;
+		virtual void resetTextAttributes() = 0;
 
 		virtual KeySym read(bool) = 0;
 		virtual void write(char) = 0;

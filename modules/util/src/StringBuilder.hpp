@@ -73,6 +73,17 @@ namespace util {
 			}
 		}
 
+		void clear() {
+			Segment *current = first, *next;
+			while(current) {
+				next = current->next;
+				delete current;
+				current = next;
+			}
+			length = static_cast<MemorySize>(0u);
+			first = last = NULL;
+		}
+
 		inline MemorySize getLength() const {
 			return length;
 		}
@@ -126,7 +137,7 @@ namespace util {
 			++length;
 		}
 
-		void copyTo(CharT* buffer) {
+		void copyTo(CharT* buffer) const {
 			const Segment* segment;
 			for(segment = first; segment; segment = segment->next) {
 				memcpy(buffer, segment->data, static_cast<size_t>(segment->fill) * sizeof(CharT));
@@ -134,18 +145,26 @@ namespace util {
 			}
 		}
 
-		void appendTo(std::basic_string<CharT>& string) {
+		void appendTo(std::basic_string<CharT>& string) const {
 			const Segment* segment;
 			for(segment = first; segment; segment = segment->next)
 				string.append(segment->data,
 						static_cast<typename std::basic_string<CharT>::size_type>(segment->fill));
 		}
 
-		std::basic_string<CharT> toString() {
+		std::basic_string<CharT> toString() const {
 			std::basic_string<CharT> result;
 			result.reserve(static_cast<typename std::basic_string<CharT>::size_type>(length));
 			appendTo(result);
 			return result;
+		}
+
+		CharT* toCharArray() const {
+			if(!length)
+				return NULL;
+			CharT* array = new CharT[length];
+			copyTo(array);
+			return array;
 		}
 
 	};
