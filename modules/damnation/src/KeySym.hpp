@@ -73,6 +73,9 @@ namespace damnation {
 			this->value = value;
 		}
 
+		void assign(Type, Modifier, char);
+		void assign(Type, Modifier, text::Char16);
+
 		KeySym& operator=(const KeySym&);
 		bool operator==(const KeySym&) const;
 		bool operator!=(const KeySym&) const;

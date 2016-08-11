@@ -56,6 +56,18 @@ namespace damnation {
 
 	KeySym::KeySym(const KeySym& key) : type(key.type), modifier(key.modifier), value(key.value) {}
 
+	void KeySym::assign(Type type, Modifier modifier, char value) {
+		this->type = type;
+		this->modifier = modifier;
+		this->value = static_cast<Char16>(static_cast<unsigned char>(value));
+	}
+
+	void KeySym::assign(Type type, Modifier modifier, Char16 value) {
+		this->type = type;
+		this->modifier = modifier;
+		this->value = value;
+	}
+
 	KeySym& KeySym::operator=(const KeySym& key) {
 		type = key.type;
 		modifier = key.modifier;
