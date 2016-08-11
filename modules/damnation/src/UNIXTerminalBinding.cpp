@@ -8,6 +8,7 @@
 #include <redstrain/text/UTF8Encoder.hpp>
 #include <redstrain/text/UTF8Decoder.hpp>
 #include <redstrain/util/DeleteArray.hpp>
+#include <redstrain/platform/FileIOError.hpp>
 #include <redstrain/error/ProgrammingError.hpp>
 #include <redstrain/text/DefaultCodecFactory.hpp>
 #include <redstrain/text/UnrepresentableCharacterError.hpp>
@@ -38,6 +39,7 @@ using redengine::util::Unref;
 using redengine::util::Delete;
 using redengine::text::Char16;
 using redengine::text::String16;
+using redengine::platform::File;
 using redengine::text::Encoder16;
 using redengine::text::Decoder16;
 using redengine::text::Transcode;
@@ -48,6 +50,7 @@ using redengine::text::CodecManager;
 using redengine::text::CodecFactory;
 using redengine::text::UTF8Encoder16;
 using redengine::text::UTF8Decoder16;
+using redengine::platform::FileIOError;
 using redengine::error::ProgrammingError;
 using redengine::text::DefaultCodecFactory;
 using redengine::text::UnrepresentableCharacterError;
@@ -772,6 +775,16 @@ namespace damnation {
 		return spec.max_colors < static_cast<uint32_t>(2u) ? 2u : static_cast<unsigned>(spec.max_colors);
 	}
 
+	void UNIXTerminalBinding::doWrite(const char* buffer, MemorySize size) {
+		while(size) {
+			ssize_t count = ::write(writefd, buffer, static_cast<size_t>(size));
+			if(count == static_cast<ssize_t>(-1))
+				throw FileIOError(File::OUTPUT, errno);
+			buffer += count;
+			size -= static_cast<MemorySize>(count);
+		}
+	}
+
 #define GET_COLOR_MAP (colorMap ? *colorMap : ColorMap::getDefaultColorMap())
 
 	unsigned UNIXTerminalBinding::setColor(unsigned base, unsigned color) {
@@ -1081,6 +1094,10 @@ namespace damnation {
 	}
 
 	void UNIXTerminalBinding::flush() {
+		NOT_UNIX
+	}
+
+	void UNIXTerminalBinding::doWrite(const char*, MemorySize) {
 		NOT_UNIX
 	}
 
