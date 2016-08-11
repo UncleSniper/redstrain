@@ -46,6 +46,7 @@ namespace damnation {
 		char* writeBlock;
 		util::MemorySize blockFill;
 		util::StringBuilder<char> writeBuffer;
+		bool inCAMode;
 
 	  private:
 		void setEncoderFactoryFromEncoding();
@@ -133,6 +134,8 @@ namespace damnation {
 
 		void dumpCapabilities() const;
 
+		virtual void startTerminalUse(bool);
+		virtual void stopTerminalUse();
 		virtual InputMode getInputMode();
 		virtual void setInputMode(InputMode);
 		virtual bool hasSizeChanged();

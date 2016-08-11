@@ -65,7 +65,8 @@ namespace damnation {
 	UNIXTerminalBinding::UNIXTerminalBinding(const TermSpec& spec) : readfd(0), writefd(1), spec(spec),
 			codecManager(NULL), encoderFactory(NULL), decoderFactory(NULL), oldTermios(NULL), usingUTF8(false),
 			prevWidth(0u), prevHeight(0u), colorMode(UNIXTerminalBinding::colorModeFromColorCount(spec.max_colors)),
-			currentAttributes(0), writeMode(WM_DIRECT), writeBlock(NULL), blockFill(static_cast<MemorySize>(0u)) {
+			currentAttributes(0), writeMode(WM_DIRECT), writeBlock(NULL), blockFill(static_cast<MemorySize>(0u)),
+			inCAMode(false) {
 #if defined(REDSTRAIN_ENV_OS_LINUX)
 		setEncoding(guessTerminalCharset());
 		catchSIGWINCH();
@@ -81,7 +82,7 @@ namespace damnation {
 			prevWidth(binding.prevWidth), prevHeight(binding.prevHeight), colorMode(binding.colorMode),
 			currentAttributes(binding.currentAttributes), writeMode(binding.writeMode),
 			writeBlock(writeMode == WM_BLOCKED ? new char[REDSTRAIN_DAMNATION_UNIXTERMINALBINDING_BLOCK_SIZE]
-			: NULL), blockFill(static_cast<MemorySize>(0u)) {
+			: NULL), blockFill(static_cast<MemorySize>(0u)), inCAMode(binding.inCAMode) {
 #if defined(REDSTRAIN_ENV_OS_LINUX)
 		if(encoderFactory)
 			encoderFactory->ref();
@@ -294,6 +295,24 @@ namespace damnation {
 	}
 
 #if defined(REDSTRAIN_ENV_OS_LINUX)
+
+	void UNIXTerminalBinding::startTerminalUse(bool saveScreenContents) {
+		// So yeah, technically, we should use smcup if and only if we
+		// use cup, but the fact of the matter is that modern terminals
+		// seem to interpret it as "switch to alternate screen" instead,
+		// with no actual impact on cup usability...
+		if(saveScreenContents && !inCAMode && spec.enter_ca_mode && spec.exit_ca_mode) {
+			wrappedWrite(termParam(spec.enter_ca_mode));
+			inCAMode = true;
+		}
+	}
+
+	void UNIXTerminalBinding::stopTerminalUse() {
+		if(inCAMode) {
+			wrappedWrite(termParam(spec.exit_ca_mode));
+			inCAMode = false;
+		}
+	}
 
 	static volatile bool caughtWinch = false;
 
@@ -947,6 +966,14 @@ namespace damnation {
 	void UNIXTerminalBinding::setCooked() {}
 	void UNIXTerminalBinding::enterUnderline() {}
 	void UNIXTerminalBinding::leaveUnderline() {}
+
+	void UNIXTerminalBinding::startTerminalUse(bool) {
+		NOT_UNIX
+	}
+
+	void UNIXTerminalBinding::stopTerminalUse() {
+		NOT_UNIX
+	}
 
 	TerminalBinding::InputMode UNIXTerminalBinding::getInputMode() {
 		NOT_UNIX

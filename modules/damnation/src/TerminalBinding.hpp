@@ -43,6 +43,8 @@ namespace damnation {
 		TerminalBinding(const TerminalBinding&);
 		virtual ~TerminalBinding();
 
+		virtual void startTerminalUse(bool) = 0;
+		virtual void stopTerminalUse() = 0;
 		virtual InputMode getInputMode() = 0;
 		virtual void setInputMode(InputMode) = 0;
 		virtual bool hasSizeChanged() = 0;
