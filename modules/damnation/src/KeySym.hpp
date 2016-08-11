@@ -41,6 +41,7 @@ namespace damnation {
 		text::Char16 value;
 
 	  public:
+		KeySym();
 		KeySym(Type, Modifier, char);
 		KeySym(Type, Modifier, text::Char16);
 		KeySym(const KeySym&);

@@ -49,6 +49,8 @@ namespace damnation {
 	const KeySym KeySym::ESCAPE(T_GENERIC, M_NONE, '\033');
 	const KeySym KeySym::SPACE(T_GENERIC, M_NONE, ' ');
 
+	KeySym::KeySym() : type(T_NONE), modifier(M_NONE), value(c16(0u)) {}
+
 	KeySym::KeySym(Type type, Modifier modifier, char value) : type(type), modifier(modifier),
 			value(static_cast<Char16>(static_cast<unsigned char>(value))) {}
 
