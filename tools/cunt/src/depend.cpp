@@ -7,6 +7,7 @@
 #include <redstrain/redmond/modinfo.hpp>
 #include <redstrain/platform/modinfo.hpp>
 #include <redstrain/protostr/modinfo.hpp>
+#include <redstrain/algorithm/modinfo.hpp>
 #include <redstrain/damnation/modinfo.hpp>
 
 REDSTRAIN_DEPEND_MODULE(IO,
@@ -27,5 +28,7 @@ REDSTRAIN_DEPEND_MODULE(Platform,
 		redcunt, RedStrain/Platform, REDSTRAIN_MOD_PLATFORM, ::redengine::platform)
 REDSTRAIN_DEPEND_MODULE(ProtoStreams,
 		redcunt, RedStrain/ProtoStreams, REDSTRAIN_MOD_PROTOSTR, ::redengine::protostr)
+REDSTRAIN_DEPEND_MODULE(Algorithm,
+		redcunt, RedStrain/Algorithm, REDSTRAIN_MOD_ALGORITHM, ::redengine::algorithm)
 REDSTRAIN_DEPEND_MODULE(Damnation,
 		redcunt, RedStrain/Damnation, REDSTRAIN_MOD_DAMNATION, ::redengine::damnation)

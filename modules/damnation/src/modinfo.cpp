@@ -5,6 +5,7 @@
 #include <redstrain/redmond/modinfo.hpp>
 #include <redstrain/platform/modinfo.hpp>
 #include <redstrain/protostr/modinfo.hpp>
+#include <redstrain/algorithm/modinfo.hpp>
 
 #include "modinfo.hpp"
 
@@ -27,5 +28,7 @@ namespace damnation {
 			RedStrain/Damnation, RedStrain/Platform, REDSTRAIN_MOD_PLATFORM, ::redengine::platform)
 	REDSTRAIN_DEPEND_MODULE(ProtoStreams,
 			RedStrain/Damnation, RedStrain/ProtoStreams, REDSTRAIN_MOD_PROTOSTR, ::redengine::protostr)
+	REDSTRAIN_DEPEND_MODULE(Algorithm,
+			RedStrain/Damnation, RedStrain/Algorithm, REDSTRAIN_MOD_ALGORITHM, ::redengine::algorithm)
 
 }}
