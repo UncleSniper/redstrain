@@ -10,6 +10,8 @@ NO_ERROR_LOCALIZER_REGISTERED=Cannot localize error message: No localizer functi
 PROGRAMMING_ERROR=Programmer fsck(8)ed up: %s
 # Error message for UnsupportedOperationError instances. Arguments: string operation
 UNSUPPORTED_OPERATION=Operation not supported: %s
+# Error message for UnsupportedPlatformFeatureError instances. Arguments: string feature
+UNSUPPORTED_PLATFORM_FEATURE=Feature not supported on this platform: %s
 # Error message for IllegalByteOrderError instances. Arguments: int32_t byteOrder
 ILLEGAL_BYTE_ORDER=Not a valid ByteOrder: %i
 # Error message for FrameIndexOutOfBoundsError instances. Arguments: uint64_t index
