@@ -89,8 +89,9 @@ namespace damnation {
 		Delete<UNIXTerminalBindingInputConverter> decinconv(new UNIXTerminalBindingInputConverter(*this));
 		inputConverter.addInputConverter(**decinconv);
 		decoderInputConverter = *decinconv;
-		registerSpecialKeys();
 		decinconv.set();
+		registerSpecialKeys();
+		inputConverter.addInputConverter(specialKeyConverter);
 	}
 
 	UNIXTerminalBinding::UNIXTerminalBinding(const UNIXTerminalBinding& binding) : TerminalBinding(binding),

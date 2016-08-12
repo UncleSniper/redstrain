@@ -1,4 +1,5 @@
 #include <cstring>
+#include <iostream>
 #include <redstrain/util/Delete.hpp>
 
 #include "SingleByteConverter.hpp"
@@ -275,8 +276,11 @@ namespace unixutils {
 			if(stages[u])
 				delete stages[u];
 		}
-		if(stages)
+		if(stages) {
 			delete[] stages;
+			stages = NULL;
+			stageCount = static_cast<MemorySize>(0u);
+		}
 		if(lastSymbol.getType() == KeySym::T_NONE) {
 			lastSymbol.assign(KeySym::T_GENERIC, KeySym::M_NONE, input);
 			lastLength = static_cast<MemorySize>(1u);
@@ -294,8 +298,11 @@ namespace unixutils {
 			if(stages[u])
 				delete stages[u];
 		}
-		if(stages)
+		if(stages) {
 			delete[] stages;
+			stages = NULL;
+			stageCount = static_cast<MemorySize>(0u);
+		}
 		symbolQueue.push_back(lastSymbol);
 		lastSymbol = KeySym::NONE;
 		flushChunks();
