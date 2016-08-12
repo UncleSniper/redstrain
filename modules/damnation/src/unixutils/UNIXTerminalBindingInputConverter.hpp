@@ -21,6 +21,8 @@ namespace unixutils {
 		  private:
 			DecoderStage(const DecoderStage&);
 
+			void setCurrentSymbolGeneric(text::Char16);
+
 		  public:
 			DecoderStage(text::Decoder16&);
 			virtual ~DecoderStage();

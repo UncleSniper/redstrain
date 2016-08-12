@@ -1,5 +1,4 @@
 #include <cstring>
-#include <iostream>
 #include <redstrain/util/Delete.hpp>
 
 #include "SingleByteConverter.hpp"
@@ -248,12 +247,15 @@ namespace unixutils {
 	}
 
 	void BinaryToKeySymConverter::processSingles(char input) {
+		if(lastSymbol.getType() != KeySym::T_NONE)
+			return;
 		SingleByteConverterIterator begin(singleByteConverters.begin()), end(singleByteConverters.end());
 		for(; begin != end; ++begin) {
 			KeySym sym((*begin)->byteToKeySym(input));
-			if(lastSymbol.getType() == KeySym::T_NONE && sym.getType() != KeySym::T_NONE) {
+			if(sym.getType() != KeySym::T_NONE) {
 				lastSymbol = sym;
 				lastLength = static_cast<MemorySize>(1u);
+				break;
 			}
 		}
 	}

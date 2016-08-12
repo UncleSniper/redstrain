@@ -70,6 +70,7 @@ namespace damnation {
 		void leaveUnderline();
 		void registerSpecialKeys();
 		void registerSpecialKey(const char*, KeySym::Type, KeySym::Modifier, unsigned);
+		bool hasSpecialKey(const char*) const;
 
 		static ColorMode colorModeFromColorCount(uint32_t);
 

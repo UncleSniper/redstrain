@@ -61,7 +61,6 @@ namespace damnation {
 			T_RESUME,
 			T_SAVE,
 			T_SELECT,
-			T_SEND,
 			T_SCROLL_FORWARD,
 			T_SCROLL_BACKWARD,
 			T_SUSPEND,

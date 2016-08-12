@@ -264,10 +264,11 @@ namespace damnation {
 		reg(key_sdc, T_DELETE, M_SHIFT, 0u)
 		reg(key_sdl, T_DELETE_LINE, M_SHIFT, 0u)
 		reg(key_select, T_SELECT, M_NONE, 0u)
-		reg(key_send, T_SEND, M_NONE, 0u)
+		reg(key_send, T_END, M_SHIFT, 0u)
 		reg(key_seol, T_CLEAR_TO_END_OF_LINE, M_SHIFT, 0u)
 		reg(key_sexit, T_EXIT, M_SHIFT, 0u)
-		reg(key_sf, T_SCROLL_FORWARD, M_NONE, 0u)
+		//reg(key_sf, T_SCROLL_FORWARD, M_NONE, 0u) <-- used in place of missing key_sdown
+		reg(key_sf, T_DOWN, M_SHIFT, 0u)
 		reg(key_sfind, T_FIND, M_SHIFT, 0u)
 		reg(key_shelp, T_HELP, M_SHIFT, 0u)
 		reg(key_shome, T_HOME, M_SHIFT, 0u)
@@ -279,7 +280,8 @@ namespace damnation {
 		reg(key_soptions, T_OPTIONS, M_SHIFT, 0u)
 		reg(key_sprevious, T_PREVIOUS, M_SHIFT, 0u)
 		reg(key_sprint, T_PRINT, M_SHIFT, 0u)
-		reg(key_sr, T_SCROLL_BACKWARD, M_NONE, 0u)
+		//reg(key_sr, T_SCROLL_BACKWARD, M_NONE, 0u) <-- used in place of missing key_sup
+		reg(key_sr, T_UP, M_SHIFT, 0u)
 		reg(key_sredo, T_REDO, M_SHIFT, 0u)
 		reg(key_sreplace, T_REPLACE, M_SHIFT, 0u)
 		reg(key_sright, T_RIGHT, M_SHIFT, 0u)
@@ -291,6 +293,19 @@ namespace damnation {
 		reg(key_suspend, T_SUSPEND, M_NONE, 0u)
 		reg(key_undo, T_UNDO, M_NONE, 0u)
 		reg(key_up, T_UP, M_NONE, 0u)
+		// hacks
+		if(spec.key_left && !strcmp(spec.key_left, "\033OD") && !hasSpecialKey("\033[D"))
+			registerSpecialKey("\033[D", KeySym::T_LEFT, KeySym::M_NONE, 0u);
+		if(spec.key_right && !strcmp(spec.key_right, "\033OC") && !hasSpecialKey("\033[C"))
+			registerSpecialKey("\033[C", KeySym::T_RIGHT, KeySym::M_NONE, 0u);
+		if(spec.key_up && !strcmp(spec.key_up, "\033OA") && !hasSpecialKey("\033[A"))
+			registerSpecialKey("\033[A", KeySym::T_UP, KeySym::M_NONE, 0u);
+		if(spec.key_down && !strcmp(spec.key_down, "\033OB") && !hasSpecialKey("\033[B"))
+			registerSpecialKey("\033[B", KeySym::T_DOWN, KeySym::M_NONE, 0u);
+		if(spec.key_home && !strcmp(spec.key_home, "\033OH") && !hasSpecialKey("\033[H"))
+			registerSpecialKey("\033[H", KeySym::T_HOME, KeySym::M_NONE, 0u);
+		if(spec.key_end && !strcmp(spec.key_end, "\033OF") && !hasSpecialKey("\033[F"))
+			registerSpecialKey("\033[F", KeySym::T_END, KeySym::M_NONE, 0u);
 #undef chr
 #undef reg
 	}
@@ -303,6 +318,17 @@ namespace damnation {
 		for(; *controlSequence; ++controlSequence)
 			node = &node->put(*controlSequence);
 		node->setValue(KeySym(type, modifier, static_cast<Char16>(index)));
+	}
+
+	bool UNIXTerminalBinding::hasSpecialKey(const char* controlSequence) const {
+		const SequenceMapInputConverter::Map::Node* node = &specialKeyMap.getRoot();
+		for(; *controlSequence; ++controlSequence) {
+			const SequenceMapInputConverter::Map::Node* nextNode = node->get(*controlSequence);
+			if(!nextNode)
+				return false;
+			node = nextNode;
+		}
+		return node->hasValue();
 	}
 
 	void UNIXTerminalBinding::setEncoding(const string& encoding) {

@@ -43,20 +43,55 @@ namespace unixutils {
 				consumed = decoder.transcodeBlock(&inputByte, static_cast<MemorySize>(1u),
 						&outputChar, static_cast<MemorySize>(1u), outcount);
 				if(outcount)
-					currentSymbol.assign(KeySym::T_GENERIC, KeySym::M_NONE, outputChar);
+					setCurrentSymbolGeneric(outputChar);
 			} while(!consumed);
 			for(;;) {
 				decoder.transcodeBlock(NULL, static_cast<MemorySize>(0u),
 						&outputChar, static_cast<MemorySize>(1u), outcount);
 				if(!outcount)
 					return true;
-				currentSymbol.assign(KeySym::T_GENERIC, KeySym::M_NONE, outputChar);
+				setCurrentSymbolGeneric(outputChar);
 			}
 		}
 		catch(const TextError&) {
 			failed = true;
 			return false;
 		}
+	}
+
+	void UNIXTerminalBindingInputConverter::DecoderStage::setCurrentSymbolGeneric(Char16 c) {
+#define c16(x) static_cast<Char16>(x)
+		switch(c) {
+			case c16(1u):
+			case c16(2u):
+			case c16(3u):
+			case c16(4u):
+			case c16(5u):
+			case c16(6u):
+			case c16(7u):
+			case c16(11u):
+			case c16(12u):
+			case c16(14u):
+			case c16(15u):
+			case c16(16u):
+			case c16(17u):
+			case c16(18u):
+			case c16(19u):
+			case c16(20u):
+			case c16(21u):
+			case c16(22u):
+			case c16(23u):
+			case c16(24u):
+			case c16(25u):
+			case c16(26u):
+				currentSymbol.assign(KeySym::T_GENERIC, KeySym::M_CONTROL,
+						static_cast<Char16>(c + static_cast<Char16>(96u)));
+				break;
+			default:
+				currentSymbol.assign(KeySym::T_GENERIC, KeySym::M_NONE, c);
+				break;
+		}
+#undef c16
 	}
 
 	// ======== UNIXTerminalBindingInputConverter ========

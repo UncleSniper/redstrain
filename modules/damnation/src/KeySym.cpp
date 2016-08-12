@@ -291,8 +291,6 @@ namespace damnation {
 				return "Save";
 			case T_SELECT:
 				return "Select";
-			case T_SEND:
-				return "Send";
 			case T_SCROLL_FORWARD:
 				return "ScrollForward";
 			case T_SCROLL_BACKWARD:
@@ -421,7 +419,6 @@ namespace damnation {
 	static const Char16 TYPENAME16_SELECT[] = {
 		c16('S'), c16('e'), c16('l'), c16('e'), c16('c'), c16('t'), c16('\0')
 	};
-	static const Char16 TYPENAME16_SEND[] = {c16('S'), c16('e'), c16('n'), c16('d'), c16('\0')};
 	static const Char16 TYPENAME16_SCROLL_FORWARD[] = {
 		c16('S'), c16('c'), c16('r'), c16('o'), c16('l'), c16('l'),
 		c16('F'), c16('o'), c16('r'), c16('w'), c16('a'), c16('r'), c16('d'), c16('\0')
@@ -540,8 +537,6 @@ namespace damnation {
 				return TYPENAME16_SAVE;
 			case T_SELECT:
 				return TYPENAME16_SELECT;
-			case T_SEND:
-				return TYPENAME16_SEND;
 			case T_SCROLL_FORWARD:
 				return TYPENAME16_SCROLL_FORWARD;
 			case T_SCROLL_BACKWARD:
