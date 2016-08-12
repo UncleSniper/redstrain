@@ -1,7 +1,6 @@
 #ifndef REDSTRAIN_MOD_DAMNATION_UNIXUTILS_BINARYTOKEYSYMCONVERTER_HPP
 #define REDSTRAIN_MOD_DAMNATION_UNIXUTILS_BINARYTOKEYSYMCONVERTER_HPP
 
-#include <set>
 #include <list>
 #include <redstrain/util/types.hpp>
 
@@ -28,8 +27,8 @@ namespace unixutils {
 
 		};
 
-		typedef std::set<InputConverter*> InputConverters;
-		typedef std::set<SingleByteConverter*> SingleByteConverters;
+		typedef std::list<InputConverter*> InputConverters;
+		typedef std::list<SingleByteConverter*> SingleByteConverters;
 		typedef std::list<Chunk*> Chunks;
 		typedef std::list<KeySym> KeySyms;
 
@@ -63,12 +62,12 @@ namespace unixutils {
 		~BinaryToKeySymConverter();
 
 		void getInputConverters(InputConverterIterator&, InputConverterIterator&) const;
-		bool addInputConverter(InputConverter&);
+		void addInputConverter(InputConverter&);
 		bool removeInputConverter(InputConverter&);
 		void clearInputConverters();
 
 		void getSingleByteConverters(SingleByteConverterIterator&, SingleByteConverterIterator&) const;
-		bool addSingleByteConverter(SingleByteConverter&);
+		void addSingleByteConverter(SingleByteConverter&);
 		bool removeSingleByteConverter(SingleByteConverter&);
 		void clearSingleByteConverters();
 

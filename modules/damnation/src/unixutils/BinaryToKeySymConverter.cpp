@@ -69,18 +69,21 @@ namespace unixutils {
 		end = inputConverters.end();
 	}
 
-	bool BinaryToKeySymConverter::addInputConverter(InputConverter& converter) {
-		if(!inputConverters.insert(&converter).second)
-			return false;
+	void BinaryToKeySymConverter::addInputConverter(InputConverter& converter) {
+		inputConverters.push_back(&converter);
 		converter.ref();
-		return true;
 	}
 
 	bool BinaryToKeySymConverter::removeInputConverter(InputConverter& converter) {
-		if(!inputConverters.erase(&converter))
-			return false;
-		converter.unref();
-		return true;
+		InputConverters::iterator begin(inputConverters.begin()), end(inputConverters.end());
+		for(; begin != end; ++begin) {
+			if(*begin == &converter) {
+				inputConverters.erase(begin);
+				converter.unref();
+				return true;
+			}
+		}
+		return false;
 	}
 
 	void BinaryToKeySymConverter::clearInputConverters() {
@@ -96,18 +99,21 @@ namespace unixutils {
 		end = singleByteConverters.end();
 	}
 
-	bool BinaryToKeySymConverter::addSingleByteConverter(SingleByteConverter& converter) {
-		if(!singleByteConverters.insert(&converter).second)
-			return false;
+	void BinaryToKeySymConverter::addSingleByteConverter(SingleByteConverter& converter) {
+		singleByteConverters.push_back(&converter);
 		converter.ref();
-		return true;
 	}
 
 	bool BinaryToKeySymConverter::removeSingleByteConverter(SingleByteConverter& converter) {
-		if(!singleByteConverters.erase(&converter))
-			return false;
-		converter.unref();
-		return true;
+		SingleByteConverters::iterator begin(singleByteConverters.begin()), end(singleByteConverters.end());
+		for(; begin != end; ++begin) {
+			if(*begin == &converter) {
+				singleByteConverters.erase(begin);
+				converter.unref();
+				return true;
+			}
+		}
+		return false;
 	}
 
 	void BinaryToKeySymConverter::clearSingleByteConverters() {
