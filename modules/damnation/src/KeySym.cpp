@@ -309,7 +309,7 @@ namespace damnation {
 		}
 	}
 
-	static const Char16 TYPENAME16_NONE[] = {c16('<'), c16('N'), c16('o'), c16('n'), c16('c'), c16('\0')};
+	static const Char16 TYPENAME16_NONE[] = {c16('<'), c16('N'), c16('o'), c16('n'), c16('e'), c16('>'), c16('\0')};
 	static const Char16 TYPENAME16_WINCH[] = {
 		c16('<'), c16('w'), c16('i'), c16('n'), c16('c'), c16('h'), c16('>'), c16('\0')
 	};
