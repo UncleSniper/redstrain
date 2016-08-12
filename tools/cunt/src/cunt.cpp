@@ -376,7 +376,7 @@ struct Entry {
 	set<string> boolCaps;
 	map<string, uint32_t> intCaps;
 	map<string, string> stringCaps;
-	set<string> pendingImports;
+	list<string> pendingImports;
 	string nameList;
 
 	void insert() {
@@ -398,21 +398,28 @@ struct Entry {
 		for(; bbegin != bend; ++bbegin)
 			boolCaps.insert(*bbegin);
 		map<string, uint32_t>::const_iterator ibegin(other.intCaps.begin()), iend(other.intCaps.end());
-		for(; ibegin != iend; ++ibegin)
-			intCaps.insert(*ibegin);
+		for(; ibegin != iend; ++ibegin) {
+			if(intCaps.find(ibegin->first) == intCaps.end())
+				intCaps.insert(*ibegin);
+		}
 		map<string, string>::const_iterator sbegin(other.stringCaps.begin()), send(other.stringCaps.end());
-		for(; sbegin != send; ++sbegin)
-			stringCaps.insert(*sbegin);
+		for(; sbegin != send; ++sbegin) {
+			if(stringCaps.find(sbegin->first) == stringCaps.end())
+				stringCaps.insert(*sbegin);
+		}
 	}
 
 	int importAll() {
-		set<string>::const_iterator begin(pendingImports.begin()), end(pendingImports.end());
+		list<string>::const_iterator begin(pendingImports.begin()), end(pendingImports.end());
 		for(; begin != end; ++begin) {
 			map<string, Entry*>::const_iterator it = entries.find(*begin);
 			if(it == entries.end()) {
 				cerr << "Entry '" << names.front() << "' refers to undefined entry '" << *begin << "'" << endl;
 				return 1;
 			}
+			int status = it->second->importAll();
+			if(status)
+				return status;
 			import(*it->second);
 		}
 		pendingImports.clear();
@@ -695,13 +702,8 @@ int parse(FormattedInputStream<char>& instream) {
 				case ST_STRINGVALUE:
 					switch(c) {
 						case ':':
-							if(name == "tc") {
-								map<string, Entry*>::const_iterator it = entries.find(strvalue);
-								if(it == entries.end())
-									entry->pendingImports.insert(strvalue);
-								else
-									entry->import(*it->second);
-							}
+							if(name == "tc")
+								entry->pendingImports.push_back(strvalue);
 							else
 								entry->stringCaps[name] = strvalue;
 							name.clear();
