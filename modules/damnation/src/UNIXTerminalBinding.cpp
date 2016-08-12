@@ -75,7 +75,8 @@ namespace damnation {
 			codecManager(NULL), encoderFactory(NULL), decoderFactory(NULL), oldTermios(NULL), usingUTF8(false),
 			prevWidth(0u), prevHeight(0u), colorMode(UNIXTerminalBinding::colorModeFromColorCount(spec.max_colors)),
 			currentAttributes(0), writeMode(WM_DIRECT), writeBlock(NULL), blockFill(static_cast<MemorySize>(0u)),
-			inCAMode(false), specialKeyConverter(specialKeyMap), specialKeyFlushDelay(static_cast<uint64_t>(
+			inCAMode(false), specialKeyConverter(specialKeyMap), currentlyBlocking(false),
+			specialKeyFlushDelay(static_cast<uint64_t>(
 			REDSTRAIN_DAMNATION_UNIXTERMINALBINDING_SPECIAL_KEY_FLUSH_DELAY)) {
 #if defined(REDSTRAIN_ENV_OS_LINUX)
 		setEncoding(guessTerminalCharset());
@@ -101,7 +102,8 @@ namespace damnation {
 			writeBlock(writeMode == WM_BLOCKED ? new char[REDSTRAIN_DAMNATION_UNIXTERMINALBINDING_BLOCK_SIZE]
 			: NULL), blockFill(static_cast<MemorySize>(0u)), inCAMode(binding.inCAMode),
 			inputConverter(binding.inputConverter), specialKeyMap(binding.specialKeyMap),
-			specialKeyConverter(specialKeyMap), specialKeyFlushDelay(binding.specialKeyFlushDelay) {
+			specialKeyConverter(specialKeyMap), currentlyBlocking(binding.currentlyBlocking),
+			specialKeyFlushDelay(binding.specialKeyFlushDelay) {
 #if defined(REDSTRAIN_ENV_OS_LINUX)
 		if(encoderFactory)
 			encoderFactory->ref();
@@ -1090,7 +1092,7 @@ namespace damnation {
 	static bool setBlocking(int readfd, struct termios& currentState, bool& currentlyBlocking, bool blocking) {
 		if(!(currentState.c_lflag & ICANON) && !blocking != !currentlyBlocking) {
 			currentState.c_cc[VTIME] = static_cast<cc_t>(0);
-			currentState.c_cc[VMIN] = static_cast<cc_t>(!!currentlyBlocking);
+			currentState.c_cc[VMIN] = static_cast<cc_t>(!!blocking);
 			if(!setattr(readfd, TCSADRAIN, currentState))
 				return false;
 			currentlyBlocking = blocking;
@@ -1139,9 +1141,9 @@ namespace damnation {
 		// prepare for read(2)
 		struct termios currentState;
 		if(!getattr(readfd, currentState))
-			return KeySym::NONE;
+			throw FileIOError(File::INPUT, errno);
 		if(!setBlocking(readfd, currentState, currentlyBlocking, blocking))
-			return KeySym::NONE;
+			throw FileIOError(File::INPUT, errno);
 		// do the actual read(2)
 		char buffer[128];
 		bool winch;
@@ -1151,7 +1153,7 @@ namespace damnation {
 		if(!count)
 			return KeySym::NONE;
 		inputConverter.feedInput(buffer, count);
-		if(!setBlocking(readfd, currentState, currentlyBlocking, true))
+		if(!setBlocking(readfd, currentState, currentlyBlocking, false))
 			throw FileIOError(File::INPUT, errno);
 		for(;;) {
 			count = doRead(readfd, buffer, sizeof(buffer), winch);
