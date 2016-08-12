@@ -1,7 +1,6 @@
 #include <cstring>
 #include <redstrain/util/Delete.hpp>
 
-#include "InputConverter.hpp"
 #include "SingleByteConverter.hpp"
 #include "BinaryToKeySymConverter.hpp"
 
@@ -42,7 +41,14 @@ namespace unixutils {
 			: inputConverters(converter.inputConverters), singleByteConverters(converter.singleByteConverters),
 			stages(NULL), stageCount(static_cast<MemorySize>(0u)), lastSymbol(KeySym::NONE),
 			lastLength(static_cast<MemorySize>(0u)), flushPointer(static_cast<MemorySize>(0u)),
-			currentDepth(static_cast<MemorySize>(0u)), pathCount(static_cast<MemorySize>(0u)) {}
+			currentDepth(static_cast<MemorySize>(0u)), pathCount(static_cast<MemorySize>(0u)) {
+		InputConverterIterator icbegin(inputConverters.begin()), icend(inputConverters.end());
+		for(; icbegin != icend; ++icbegin)
+			(*icbegin)->ref();
+		SingleByteConverterIterator sbcbegin(singleByteConverters.begin()), sbcend(singleByteConverters.end());
+		for(; sbcbegin != sbcend; ++sbcbegin)
+			(*sbcbegin)->ref();
+	}
 
 	BinaryToKeySymConverter::~BinaryToKeySymConverter() {
 		InputConverterIterator icbegin(inputConverters.begin()), icend(inputConverters.end());
@@ -74,12 +80,13 @@ namespace unixutils {
 		converter.ref();
 	}
 
-	bool BinaryToKeySymConverter::removeInputConverter(InputConverter& converter) {
+	bool BinaryToKeySymConverter::removeInputConverter(const InputConverter& converter) {
 		InputConverters::iterator begin(inputConverters.begin()), end(inputConverters.end());
 		for(; begin != end; ++begin) {
 			if(*begin == &converter) {
+				InputConverter& nonConst = **begin;
 				inputConverters.erase(begin);
-				converter.unref();
+				nonConst.unref();
 				return true;
 			}
 		}
@@ -104,12 +111,13 @@ namespace unixutils {
 		converter.ref();
 	}
 
-	bool BinaryToKeySymConverter::removeSingleByteConverter(SingleByteConverter& converter) {
+	bool BinaryToKeySymConverter::removeSingleByteConverter(const SingleByteConverter& converter) {
 		SingleByteConverters::iterator begin(singleByteConverters.begin()), end(singleByteConverters.end());
 		for(; begin != end; ++begin) {
 			if(*begin == &converter) {
+				SingleByteConverter& nonConst = **begin;
 				singleByteConverters.erase(begin);
-				converter.unref();
+				nonConst.unref();
 				return true;
 			}
 		}

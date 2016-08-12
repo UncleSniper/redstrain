@@ -1,10 +1,12 @@
 #include <redstrain/util/Delete.hpp>
+#include <redstrain/text/TextError.hpp>
 
 #include "UNIXTerminalBindingInputConverter.hpp"
 
 using redengine::util::Delete;
 using redengine::text::Char16;
 using redengine::text::Decoder16;
+using redengine::text::TextError;
 using redengine::util::MemorySize;
 
 namespace redengine {
@@ -13,7 +15,8 @@ namespace unixutils {
 
 	// ======== DecoderStage ========
 
-	UNIXTerminalBindingInputConverter::DecoderStage::DecoderStage(Decoder16& decoder) : decoder(decoder) {}
+	UNIXTerminalBindingInputConverter::DecoderStage::DecoderStage(Decoder16& decoder)
+			: decoder(decoder), failed(false) {}
 
 	UNIXTerminalBindingInputConverter::DecoderStage::DecoderStage(const DecoderStage& stage)
 			: Stage(stage), decoder(stage.decoder) {}
@@ -27,24 +30,32 @@ namespace unixutils {
 	}
 
 	bool UNIXTerminalBindingInputConverter::DecoderStage::isInputLeaf() {
-		return currentSymbol.getType() != KeySym::T_NONE;
+		return failed || currentSymbol.getType() != KeySym::T_NONE;
 	}
 
 	bool UNIXTerminalBindingInputConverter::DecoderStage::advanceStage(char inputByte) {
-		Char16 outputChar;
-		MemorySize outcount, consumed;
-		do {
-			consumed = decoder.transcodeBlock(&inputByte, static_cast<MemorySize>(1u),
-					&outputChar, static_cast<MemorySize>(1u), outcount);
-			if(outcount)
+		if(failed)
+			return false;
+		try {
+			Char16 outputChar;
+			MemorySize outcount, consumed;
+			do {
+				consumed = decoder.transcodeBlock(&inputByte, static_cast<MemorySize>(1u),
+						&outputChar, static_cast<MemorySize>(1u), outcount);
+				if(outcount)
+					currentSymbol.assign(KeySym::T_GENERIC, KeySym::M_NONE, outputChar);
+			} while(!consumed);
+			for(;;) {
+				decoder.transcodeBlock(NULL, static_cast<MemorySize>(0u),
+						&outputChar, static_cast<MemorySize>(1u), outcount);
+				if(!outcount)
+					return true;
 				currentSymbol.assign(KeySym::T_GENERIC, KeySym::M_NONE, outputChar);
-		} while(!consumed);
-		for(;;) {
-			decoder.transcodeBlock(NULL, static_cast<MemorySize>(0u),
-					&outputChar, static_cast<MemorySize>(1u), outcount);
-			if(!outcount)
-				return true;
-			currentSymbol.assign(KeySym::T_GENERIC, KeySym::M_NONE, outputChar);
+			}
+		}
+		catch(const TextError&) {
+			failed = true;
+			return false;
 		}
 	}
 

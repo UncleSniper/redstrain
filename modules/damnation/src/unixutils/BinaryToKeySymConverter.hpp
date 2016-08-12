@@ -4,13 +4,12 @@
 #include <list>
 #include <redstrain/util/types.hpp>
 
-#include "../KeySym.hpp"
+#include "InputConverter.hpp"
 
 namespace redengine {
 namespace damnation {
 namespace unixutils {
 
-	class InputConverter;
 	class SingleByteConverter;
 
 	class REDSTRAIN_DAMNATION_API BinaryToKeySymConverter {
@@ -63,12 +62,12 @@ namespace unixutils {
 
 		void getInputConverters(InputConverterIterator&, InputConverterIterator&) const;
 		void addInputConverter(InputConverter&);
-		bool removeInputConverter(InputConverter&);
+		bool removeInputConverter(const InputConverter&);
 		void clearInputConverters();
 
 		void getSingleByteConverters(SingleByteConverterIterator&, SingleByteConverterIterator&) const;
 		void addSingleByteConverter(SingleByteConverter&);
-		bool removeSingleByteConverter(SingleByteConverter&);
+		bool removeSingleByteConverter(const SingleByteConverter&);
 		void clearSingleByteConverters();
 
 		KeySym nextKey();

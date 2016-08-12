@@ -223,6 +223,86 @@ namespace damnation {
 				return "Enter";
 			case T_FUNCTION:
 				return "Function";
+			case T_BEGIN:
+				return "Begin";
+			case T_BACK_TAB:
+				return "BackTab";
+			case T_CANCEL:
+				return "Cancel";
+			case T_CLEAR_ALL_TABS:
+				return "ClearAllTabs";
+			case T_CLEAR_SCREEN:
+				return "ClearScreen";
+			case T_CLOSE:
+				return "Close";
+			case T_COMMAND:
+				return "Command";
+			case T_COPY:
+				return "Copy";
+			case T_CREATE:
+				return "Create";
+			case T_CLEAR_TAB:
+				return "ClearTab";
+			case T_DELETE_LINE:
+				return "DeleteLine";
+			case T_CLEAR_TO_END_OF_LINE:
+				return "ClearToEndOfLine";
+			case T_CLEAR_TO_END_OF_SCREEN:
+				return "ClearToEndOfScreen";
+			case T_EXIT:
+				return "Exit";
+			case T_FIND:
+				return "Find";
+			case T_HELP:
+				return "Help";
+			case T_INSERT_LINE:
+				return "InsertLine";
+			case T_LOWER_LEFT:
+				return "LowerLeft";
+			case T_MARK:
+				return "Mark";
+			case T_MESSAGE:
+				return "Message";
+			case T_MOVE:
+				return "Move";
+			case T_NEXT:
+				return "Next";
+			case T_OPEN:
+				return "Open";
+			case T_OPTIONS:
+				return "Options";
+			case T_PREVIOUS:
+				return "Previous";
+			case T_PRINT:
+				return "Print";
+			case T_REDO:
+				return "Redo";
+			case T_REFERENCE:
+				return "Reference";
+			case T_REFRESH:
+				return "Refresh";
+			case T_REPLACE:
+				return "Replace";
+			case T_RESTART:
+				return "Restart";
+			case T_RESUME:
+				return "Resume";
+			case T_SAVE:
+				return "Save";
+			case T_SELECT:
+				return "Select";
+			case T_SEND:
+				return "Send";
+			case T_SCROLL_FORWARD:
+				return "ScrollForward";
+			case T_SCROLL_BACKWARD:
+				return "ScrollBackward";
+			case T_SUSPEND:
+				return "Suspend";
+			case T_SET_TAB:
+				return "SetTab";
+			case T_UNDO:
+				return "Undo";
 			case T_GENERIC:
 			default:
 				return "Key";
@@ -252,6 +332,111 @@ namespace damnation {
 		c16('P'), c16('a'), c16('g'), c16('e'), c16('U'), c16('p'), c16('\0')
 	};
 	static const Char16 TYPENAME16_ENTER[] = {c16('E'), c16('n'), c16('t'), c16('e'), c16('r'), c16('\0')};
+	static const Char16 TYPENAME16_BEGIN[] = {c16('B'), c16('e'), c16('g'), c16('i'), c16('n'), c16('\0')};
+	static const Char16 TYPENAME16_BACK_TAB[] = {
+		c16('B'), c16('a'), c16('c'), c16('k'), c16('T'), c16('a'), c16('b'), c16('\0')
+	};
+	static const Char16 TYPENAME16_CANCEL[] = {
+		c16('C'), c16('a'), c16('n'), c16('c'), c16('e'), c16('l'), c16('\0')
+	};
+	static const Char16 TYPENAME16_CLEAR_ALL_TABS[] = {
+		c16('C'), c16('l'), c16('e'), c16('a'), c16('r'),
+		c16('A'), c16('l'), c16('l'),
+		c16('T'), c16('a'), c16('b'), c16('s'), c16('\0')
+	};
+	static const Char16 TYPENAME16_CLEAR_SCREEN[] = {
+		c16('C'), c16('l'), c16('e'), c16('a'), c16('r'),
+		c16('S'), c16('c'), c16('r'), c16('e'), c16('e'), c16('n'), c16('\0')
+	};
+	static const Char16 TYPENAME16_CLOSE[] = {c16('C'), c16('l'), c16('o'), c16('s'), c16('e'), c16('\0')};
+	static const Char16 TYPENAME16_COMMAND[] = {
+		c16('C'), c16('o'), c16('m'), c16('m'), c16('a'), c16('n'), c16('d'), c16('\0')
+	};
+	static const Char16 TYPENAME16_COPY[] = {c16('C'), c16('o'), c16('p'), c16('y'), c16('\0')};
+	static const Char16 TYPENAME16_CREATE[] = {
+		c16('C'), c16('r'), c16('e'), c16('a'), c16('t'), c16('e'), c16('\0')
+	};
+	static const Char16 TYPENAME16_CLEAR_TAB[] = {
+		c16('C'), c16('l'), c16('e'), c16('a'), c16('r'), c16('T'), c16('a'), c16('b'), c16('\0')
+	};
+	static const Char16 TYPENAME16_DELETE_LINE[] = {
+		c16('D'), c16('e'), c16('l'), c16('e'), c16('t'), c16('e'),
+		c16('L'), c16('i'), c16('n'), c16('e'), c16('\0')
+	};
+	static const Char16 TYPENAME16_CLEAR_TO_END_OF_LINE[] = {
+		c16('C'), c16('l'), c16('e'), c16('a'), c16('r'),
+		c16('T'), c16('o'),
+		c16('E'), c16('n'), c16('d'),
+		c16('O'), c16('f'),
+		c16('L'), c16('i'), c16('n'), c16('e'), c16('\0')
+	};
+	static const Char16 TYPENAME16_CLEAR_TO_END_OF_SCREEN[] = {
+		c16('C'), c16('l'), c16('e'), c16('a'), c16('r'),
+		c16('T'), c16('o'),
+		c16('E'), c16('n'), c16('d'),
+		c16('O'), c16('f'),
+		c16('S'), c16('c'), c16('r'), c16('e'), c16('e'), c16('n'), c16('\0')
+	};
+	static const Char16 TYPENAME16_EXIT[] = {c16('E'), c16('x'), c16('i'), c16('t'), c16('\0')};
+	static const Char16 TYPENAME16_FIND[] = {c16('F'), c16('i'), c16('n'), c16('d'), c16('\0')};
+	static const Char16 TYPENAME16_HELP[] = {c16('H'), c16('e'), c16('l'), c16('p'), c16('\0')};
+	static const Char16 TYPENAME16_INSERT_LINE[] = {
+		c16('I'), c16('n'), c16('s'), c16('e'), c16('r'), c16('t'),
+		c16('L'), c16('i'), c16('n'), c16('e'), c16('\0')
+	};
+	static const Char16 TYPENAME16_LOWER_LEFT[] = {
+		c16('L'), c16('o'), c16('w'), c16('e'), c16('r'), c16('L'), c16('e'), c16('f'), c16('t'), c16('\0')
+	};
+	static const Char16 TYPENAME16_MARK[] = {c16('M'), c16('a'), c16('r'), c16('k'), c16('\0')};
+	static const Char16 TYPENAME16_MESSAGE[] = {
+		c16('M'), c16('e'), c16('s'), c16('s'), c16('a'), c16('g'), c16('e'), c16('\0')
+	};
+	static const Char16 TYPENAME16_MOVE[] = {c16('M'), c16('o'), c16('v'), c16('e'), c16('\0')};
+	static const Char16 TYPENAME16_NEXT[] = {c16('N'), c16('e'), c16('x'), c16('t'), c16('\0')};
+	static const Char16 TYPENAME16_OPEN[] = {c16('O'), c16('p'), c16('e'), c16('n'), c16('\0')};
+	static const Char16 TYPENAME16_OPTIONS[] = {
+		c16('O'), c16('p'), c16('t'), c16('i'), c16('o'), c16('n'), c16('s'), c16('\0')
+	};
+	static const Char16 TYPENAME16_PREVIOUS[] = {
+		c16('P'), c16('r'), c16('e'), c16('v'), c16('i'), c16('o'), c16('o'), c16('s'), c16('\0')
+	};
+	static const Char16 TYPENAME16_PRINT[] = {c16('P'), c16('r'), c16('i'), c16('n'), c16('t'), c16('\0')};
+	static const Char16 TYPENAME16_REDO[] = {c16('R'), c16('e'), c16('d'), c16('o'), c16('\0')};
+	static const Char16 TYPENAME16_REFERENCE[] = {
+		c16('R'), c16('e'), c16('f'), c16('e'), c16('r'), c16('e'), c16('n'), c16('c'), c16('e'), c16('\0')
+	};
+	static const Char16 TYPENAME16_REFRESH[] = {
+		c16('R'), c16('e'), c16('f'), c16('r'), c16('e'), c16('s'), c16('h'), c16('\0')
+	};
+	static const Char16 TYPENAME16_REPLACE[] = {
+		c16('R'), c16('e'), c16('p'), c16('l'), c16('a'), c16('c'), c16('e'), c16('\0')
+	};
+	static const Char16 TYPENAME16_RESTART[] = {
+		c16('R'), c16('e'), c16('s'), c16('t'), c16('a'), c16('r'), c16('t'), c16('\0')
+	};
+	static const Char16 TYPENAME16_RESUME[] = {
+		c16('R'), c16('e'), c16('s'), c16('u'), c16('m'), c16('e'), c16('\0')
+	};
+	static const Char16 TYPENAME16_SAVE[] = {c16('S'), c16('a'), c16('v'), c16('e'), c16('\0')};
+	static const Char16 TYPENAME16_SELECT[] = {
+		c16('S'), c16('e'), c16('l'), c16('e'), c16('c'), c16('t'), c16('\0')
+	};
+	static const Char16 TYPENAME16_SEND[] = {c16('S'), c16('e'), c16('n'), c16('d'), c16('\0')};
+	static const Char16 TYPENAME16_SCROLL_FORWARD[] = {
+		c16('S'), c16('c'), c16('r'), c16('o'), c16('l'), c16('l'),
+		c16('F'), c16('o'), c16('r'), c16('w'), c16('a'), c16('r'), c16('d'), c16('\0')
+	};
+	static const Char16 TYPENAME16_SCROLL_BACKWARD[] = {
+		c16('S'), c16('c'), c16('r'), c16('o'), c16('l'), c16('l'),
+		c16('B'), c16('a'), c16('c'), c16('k'), c16('w'), c16('a'), c16('r'), c16('d'), c16('\0')
+	};
+	static const Char16 TYPENAME16_SUSPEND[] = {
+		c16('S'), c16('u'), c16('s'), c16('p'), c16('e'), c16('n'), c16('d'), c16('\0')
+	};
+	static const Char16 TYPENAME16_SET_TAB[] = {
+		c16('S'), c16('e'), c16('t'), c16('T'), c16('a'), c16('b'), c16('\0')
+	};
+	static const Char16 TYPENAME16_UNDO[] = {c16('U'), c16('n'), c16('d'), c16('o'), c16('\0')};
 	static const Char16 TYPENAME16_FUNCTION[] = {
 		c16('F'), c16('u'), c16('n'), c16('c'), c16('t'), c16('i'), c16('o'), c16('n'), c16('\0')
 	};
@@ -287,6 +472,86 @@ namespace damnation {
 				return TYPENAME16_ENTER;
 			case T_FUNCTION:
 				return TYPENAME16_FUNCTION;
+			case T_BEGIN:
+				return TYPENAME16_BEGIN;
+			case T_BACK_TAB:
+				return TYPENAME16_BACK_TAB;
+			case T_CANCEL:
+				return TYPENAME16_CANCEL;
+			case T_CLEAR_ALL_TABS:
+				return TYPENAME16_CLEAR_ALL_TABS;
+			case T_CLEAR_SCREEN:
+				return TYPENAME16_CLEAR_SCREEN;
+			case T_CLOSE:
+				return TYPENAME16_CLOSE;
+			case T_COMMAND:
+				return TYPENAME16_COMMAND;
+			case T_COPY:
+				return TYPENAME16_COPY;
+			case T_CREATE:
+				return TYPENAME16_CREATE;
+			case T_CLEAR_TAB:
+				return TYPENAME16_CLEAR_TAB;
+			case T_DELETE_LINE:
+				return TYPENAME16_DELETE_LINE;
+			case T_CLEAR_TO_END_OF_LINE:
+				return TYPENAME16_CLEAR_TO_END_OF_LINE;
+			case T_CLEAR_TO_END_OF_SCREEN:
+				return TYPENAME16_CLEAR_TO_END_OF_SCREEN;
+			case T_EXIT:
+				return TYPENAME16_EXIT;
+			case T_FIND:
+				return TYPENAME16_FIND;
+			case T_HELP:
+				return TYPENAME16_HELP;
+			case T_INSERT_LINE:
+				return TYPENAME16_INSERT_LINE;
+			case T_LOWER_LEFT:
+				return TYPENAME16_LOWER_LEFT;
+			case T_MARK:
+				return TYPENAME16_MARK;
+			case T_MESSAGE:
+				return TYPENAME16_MESSAGE;
+			case T_MOVE:
+				return TYPENAME16_MOVE;
+			case T_NEXT:
+				return TYPENAME16_NEXT;
+			case T_OPEN:
+				return TYPENAME16_OPEN;
+			case T_OPTIONS:
+				return TYPENAME16_OPTIONS;
+			case T_PREVIOUS:
+				return TYPENAME16_PREVIOUS;
+			case T_PRINT:
+				return TYPENAME16_PRINT;
+			case T_REDO:
+				return TYPENAME16_REDO;
+			case T_REFERENCE:
+				return TYPENAME16_REFERENCE;
+			case T_REFRESH:
+				return TYPENAME16_REFRESH;
+			case T_REPLACE:
+				return TYPENAME16_REPLACE;
+			case T_RESTART:
+				return TYPENAME16_RESTART;
+			case T_RESUME:
+				return TYPENAME16_RESUME;
+			case T_SAVE:
+				return TYPENAME16_SAVE;
+			case T_SELECT:
+				return TYPENAME16_SELECT;
+			case T_SEND:
+				return TYPENAME16_SEND;
+			case T_SCROLL_FORWARD:
+				return TYPENAME16_SCROLL_FORWARD;
+			case T_SCROLL_BACKWARD:
+				return TYPENAME16_SCROLL_BACKWARD;
+			case T_SUSPEND:
+				return TYPENAME16_SUSPEND;
+			case T_SET_TAB:
+				return TYPENAME16_SET_TAB;
+			case T_UNDO:
+				return TYPENAME16_UNDO;
 			case T_GENERIC:
 			default:
 				return TYPENAME16_GENERIC;

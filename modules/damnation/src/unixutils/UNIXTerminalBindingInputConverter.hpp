@@ -16,6 +16,7 @@ namespace unixutils {
 		  private:
 			text::Decoder16& decoder;
 			KeySym currentSymbol;
+			bool failed;
 
 		  private:
 			DecoderStage(const DecoderStage&);
@@ -36,6 +37,10 @@ namespace unixutils {
 	  public:
 		UNIXTerminalBindingInputConverter(const UNIXTerminalBinding&);
 		UNIXTerminalBindingInputConverter(const UNIXTerminalBindingInputConverter&);
+
+		inline const UNIXTerminalBinding& getTerminal() const {
+			return terminal;
+		}
 
 		virtual Stage* newSequence();
 

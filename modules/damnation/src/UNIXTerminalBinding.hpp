@@ -8,6 +8,8 @@
 
 #include "TermSpec.hpp"
 #include "TerminalBinding.hpp"
+#include "unixutils/BinaryToKeySymConverter.hpp"
+#include "unixutils/SequenceMapInputConverter.hpp"
 
 namespace redengine {
 namespace damnation {
@@ -47,6 +49,12 @@ namespace damnation {
 		util::MemorySize blockFill;
 		util::StringBuilder<char> writeBuffer;
 		bool inCAMode;
+		unixutils::BinaryToKeySymConverter inputConverter;
+		unixutils::InputConverter* decoderInputConverter;
+		unixutils::SequenceMapInputConverter::Map specialKeyMap;
+		unixutils::SequenceMapInputConverter specialKeyConverter;
+		bool currentlyBlocking;
+		uint64_t specialKeyFlushDelay;
 
 	  private:
 		void setEncoderFactoryFromEncoding();
@@ -60,6 +68,8 @@ namespace damnation {
 		unsigned setColor(unsigned, unsigned);
 		void enterUnderline();
 		void leaveUnderline();
+		void registerSpecialKeys();
+		void registerSpecialKey(const char*, KeySym::Type, KeySym::Modifier, unsigned);
 
 		static ColorMode colorModeFromColorCount(uint32_t);
 
@@ -131,6 +141,30 @@ namespace damnation {
 		}
 
 		void setWriteMode(WriteMode);
+
+		inline unixutils::BinaryToKeySymConverter& getInputConverter() {
+			return inputConverter;
+		}
+
+		inline const unixutils::BinaryToKeySymConverter& getInputConverter() const {
+			return inputConverter;
+		}
+
+		inline unixutils::SequenceMapInputConverter::Map& getSpecialKeyMap() {
+			return specialKeyMap;
+		}
+
+		inline const unixutils::SequenceMapInputConverter::Map& getSpecialKeyMap() const {
+			return specialKeyMap;
+		}
+
+		inline uint64_t getSpecialKeyFlushDelay() const {
+			return specialKeyFlushDelay;
+		}
+
+		inline void setSpecialKeyFlushDelay(uint64_t delay) {
+			specialKeyFlushDelay = delay;
+		}
 
 		void dumpCapabilities() const;
 

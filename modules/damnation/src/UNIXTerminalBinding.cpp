@@ -4,6 +4,7 @@
 #include <redstrain/util/Unref.hpp>
 #include <redstrain/util/Delete.hpp>
 #include <redstrain/text/Transcode.hpp>
+#include <redstrain/platform/Thread.hpp>
 #include <redstrain/util/StringUtils.hpp>
 #include <redstrain/text/UTF8Encoder.hpp>
 #include <redstrain/text/UTF8Decoder.hpp>
@@ -14,6 +15,7 @@
 #include <redstrain/text/UnrepresentableCharacterError.hpp>
 #include <redstrain/error/UnsupportedPlatformFeatureError.hpp>
 #include <redstrain/text/l10n.hpp>
+#include <redstrain/platform/utils.hpp>
 #include <redstrain/redmond/environment.hpp>
 
 #if defined(REDSTRAIN_ENV_OS_LINUX)
@@ -28,6 +30,8 @@
 #include "UNIXTerminalBinding.hpp"
 #include "IllegalColorIndexError.hpp"
 #include "IllegalUNIXTerminalWriteModeError.hpp"
+#include "unixutils/MappingSingleByteConverter.hpp"
+#include "unixutils/UNIXTerminalBindingInputConverter.hpp"
 #include "tparm.hpp"
 #include "tweaks.hpp"
 
@@ -43,6 +47,7 @@ using redengine::platform::File;
 using redengine::text::Encoder16;
 using redengine::text::Decoder16;
 using redengine::text::Transcode;
+using redengine::platform::Thread;
 using redengine::util::MemorySize;
 using redengine::util::DeleteArray;
 using redengine::util::StringUtils;
@@ -55,7 +60,11 @@ using redengine::error::ProgrammingError;
 using redengine::text::DefaultCodecFactory;
 using redengine::text::UnrepresentableCharacterError;
 using redengine::error::UnsupportedPlatformFeatureError;
+using redengine::damnation::unixutils::SequenceMapInputConverter;
+using redengine::damnation::unixutils::MappingSingleByteConverter;
+using redengine::damnation::unixutils::UNIXTerminalBindingInputConverter;
 using redengine::text::guessTerminalCharset;
+using redengine::platform::currentTimeMillis;
 
 #define NOT_UNIX throw UnsupportedPlatformFeatureError("UNIXTerminalBinding");
 
@@ -66,13 +75,21 @@ namespace damnation {
 			codecManager(NULL), encoderFactory(NULL), decoderFactory(NULL), oldTermios(NULL), usingUTF8(false),
 			prevWidth(0u), prevHeight(0u), colorMode(UNIXTerminalBinding::colorModeFromColorCount(spec.max_colors)),
 			currentAttributes(0), writeMode(WM_DIRECT), writeBlock(NULL), blockFill(static_cast<MemorySize>(0u)),
-			inCAMode(false) {
+			inCAMode(false), specialKeyConverter(specialKeyMap), specialKeyFlushDelay(static_cast<uint64_t>(
+			REDSTRAIN_DAMNATION_UNIXTERMINALBINDING_SPECIAL_KEY_FLUSH_DELAY)) {
 #if defined(REDSTRAIN_ENV_OS_LINUX)
 		setEncoding(guessTerminalCharset());
 		catchSIGWINCH();
 #else /* non-UNIX */
 		NOT_UNIX
 #endif /* UNIX? */
+		inputConverter.addSingleByteConverter(MappingSingleByteConverter::getControlKeysConverter());
+		inputConverter.addSingleByteConverter(MappingSingleByteConverter::getAlternateBackspaceConverter());
+		Delete<UNIXTerminalBindingInputConverter> decinconv(new UNIXTerminalBindingInputConverter(*this));
+		inputConverter.addInputConverter(**decinconv);
+		decoderInputConverter = *decinconv;
+		registerSpecialKeys();
+		decinconv.set();
 	}
 
 	UNIXTerminalBinding::UNIXTerminalBinding(const UNIXTerminalBinding& binding) : TerminalBinding(binding),
@@ -82,7 +99,9 @@ namespace damnation {
 			prevWidth(binding.prevWidth), prevHeight(binding.prevHeight), colorMode(binding.colorMode),
 			currentAttributes(binding.currentAttributes), writeMode(binding.writeMode),
 			writeBlock(writeMode == WM_BLOCKED ? new char[REDSTRAIN_DAMNATION_UNIXTERMINALBINDING_BLOCK_SIZE]
-			: NULL), blockFill(static_cast<MemorySize>(0u)), inCAMode(binding.inCAMode) {
+			: NULL), blockFill(static_cast<MemorySize>(0u)), inCAMode(binding.inCAMode),
+			inputConverter(binding.inputConverter), specialKeyMap(binding.specialKeyMap),
+			specialKeyConverter(specialKeyMap), specialKeyFlushDelay(binding.specialKeyFlushDelay) {
 #if defined(REDSTRAIN_ENV_OS_LINUX)
 		if(encoderFactory)
 			encoderFactory->ref();
@@ -93,6 +112,12 @@ namespace damnation {
 #else /* non-UNIX */
 		NOT_UNIX
 #endif /* UNIX? */
+		inputConverter.removeInputConverter(*binding.decoderInputConverter);
+		Delete<UNIXTerminalBindingInputConverter> decinconv(new UNIXTerminalBindingInputConverter(*this));
+		inputConverter.addInputConverter(**decinconv);
+		decoderInputConverter = decinconv.set();
+		inputConverter.removeInputConverter(binding.specialKeyConverter);
+		inputConverter.addInputConverter(specialKeyConverter);
 	}
 
 	UNIXTerminalBinding::~UNIXTerminalBinding() {
@@ -115,6 +140,166 @@ namespace damnation {
 			return CM_LOW_COLOR;
 		else
 			return CM_MONOCHROME;
+	}
+
+	void UNIXTerminalBinding::registerSpecialKeys() {
+#define reg(skey, ktype, kmod, index) registerSpecialKey(spec.skey, KeySym::ktype, KeySym::kmod, index);
+#define chr(c) static_cast<unsigned>(static_cast<unsigned char>(c))
+		reg(key_backspace, T_GENERIC, M_NONE, chr('\b'))
+		reg(key_beg, T_BEGIN, M_NONE, 0u)
+		reg(key_btab, T_BACK_TAB, M_NONE, 0u)
+		reg(key_cancel, T_CANCEL, M_NONE, 0u)
+		reg(key_catab, T_CLEAR_ALL_TABS, M_NONE, 0u)
+		reg(key_clear, T_CLEAR_SCREEN, M_NONE, 0u)
+		reg(key_close, T_CLOSE, M_NONE, 0u)
+		reg(key_command, T_COMMAND, M_NONE, 0u)
+		reg(key_copy, T_COPY, M_NONE, 0u)
+		reg(key_create, T_CREATE, M_NONE, 0u)
+		reg(key_ctab, T_CLEAR_TAB, M_NONE, 0u)
+		reg(key_dc, T_DELETE, M_NONE, 0u)
+		reg(key_dl, T_DELETE_LINE, M_NONE, 0u)
+		reg(key_down, T_DOWN, M_NONE, 0u)
+		reg(key_end, T_END, M_NONE, 0u)
+		reg(key_enter, T_ENTER, M_NONE, 0u)
+		reg(key_eol, T_CLEAR_TO_END_OF_LINE, M_NONE, 0u)
+		reg(key_eos, T_CLEAR_TO_END_OF_SCREEN, M_NONE, 0u)
+		reg(key_exit, T_EXIT, M_NONE, 0u)
+		reg(key_f0, T_FUNCTION, M_NONE, 0u)
+		reg(key_f1, T_FUNCTION, M_NONE, 1u)
+		reg(key_f10, T_FUNCTION, M_NONE, 10u)
+		reg(key_f11, T_FUNCTION, M_NONE, 11u)
+		reg(key_f12, T_FUNCTION, M_NONE, 12u)
+		reg(key_f13, T_FUNCTION, M_NONE, 13u)
+		reg(key_f14, T_FUNCTION, M_NONE, 14u)
+		reg(key_f15, T_FUNCTION, M_NONE, 15u)
+		reg(key_f16, T_FUNCTION, M_NONE, 16u)
+		reg(key_f17, T_FUNCTION, M_NONE, 17u)
+		reg(key_f18, T_FUNCTION, M_NONE, 18u)
+		reg(key_f19, T_FUNCTION, M_NONE, 19u)
+		reg(key_f2, T_FUNCTION, M_NONE, 2u)
+		reg(key_f20, T_FUNCTION, M_NONE, 20u)
+		reg(key_f21, T_FUNCTION, M_NONE, 21u)
+		reg(key_f22, T_FUNCTION, M_NONE, 22u)
+		reg(key_f23, T_FUNCTION, M_NONE, 23u)
+		reg(key_f24, T_FUNCTION, M_NONE, 24u)
+		reg(key_f25, T_FUNCTION, M_NONE, 25u)
+		reg(key_f26, T_FUNCTION, M_NONE, 26u)
+		reg(key_f27, T_FUNCTION, M_NONE, 27u)
+		reg(key_f28, T_FUNCTION, M_NONE, 28u)
+		reg(key_f29, T_FUNCTION, M_NONE, 29u)
+		reg(key_f3, T_FUNCTION, M_NONE, 3u)
+		reg(key_f30, T_FUNCTION, M_NONE, 30u)
+		reg(key_f31, T_FUNCTION, M_NONE, 31u)
+		reg(key_f32, T_FUNCTION, M_NONE, 32u)
+		reg(key_f33, T_FUNCTION, M_NONE, 33u)
+		reg(key_f34, T_FUNCTION, M_NONE, 34u)
+		reg(key_f35, T_FUNCTION, M_NONE, 35u)
+		reg(key_f36, T_FUNCTION, M_NONE, 36u)
+		reg(key_f37, T_FUNCTION, M_NONE, 37u)
+		reg(key_f38, T_FUNCTION, M_NONE, 38u)
+		reg(key_f39, T_FUNCTION, M_NONE, 39u)
+		reg(key_f4, T_FUNCTION, M_NONE, 4u)
+		reg(key_f40, T_FUNCTION, M_NONE, 40u)
+		reg(key_f41, T_FUNCTION, M_NONE, 41u)
+		reg(key_f42, T_FUNCTION, M_NONE, 42u)
+		reg(key_f43, T_FUNCTION, M_NONE, 43u)
+		reg(key_f44, T_FUNCTION, M_NONE, 44u)
+		reg(key_f45, T_FUNCTION, M_NONE, 45u)
+		reg(key_f46, T_FUNCTION, M_NONE, 46u)
+		reg(key_f47, T_FUNCTION, M_NONE, 47u)
+		reg(key_f48, T_FUNCTION, M_NONE, 48u)
+		reg(key_f49, T_FUNCTION, M_NONE, 49u)
+		reg(key_f5, T_FUNCTION, M_NONE, 5u)
+		reg(key_f50, T_FUNCTION, M_NONE, 50u)
+		reg(key_f51, T_FUNCTION, M_NONE, 51u)
+		reg(key_f52, T_FUNCTION, M_NONE, 52u)
+		reg(key_f53, T_FUNCTION, M_NONE, 53u)
+		reg(key_f54, T_FUNCTION, M_NONE, 54u)
+		reg(key_f55, T_FUNCTION, M_NONE, 55u)
+		reg(key_f56, T_FUNCTION, M_NONE, 56u)
+		reg(key_f57, T_FUNCTION, M_NONE, 57u)
+		reg(key_f58, T_FUNCTION, M_NONE, 58u)
+		reg(key_f59, T_FUNCTION, M_NONE, 59u)
+		reg(key_f6, T_FUNCTION, M_NONE, 6u)
+		reg(key_f60, T_FUNCTION, M_NONE, 60u)
+		reg(key_f61, T_FUNCTION, M_NONE, 61u)
+		reg(key_f62, T_FUNCTION, M_NONE, 62u)
+		reg(key_f63, T_FUNCTION, M_NONE, 63u)
+		reg(key_f7, T_FUNCTION, M_NONE, 7u)
+		reg(key_f8, T_FUNCTION, M_NONE, 8u)
+		reg(key_f9, T_FUNCTION, M_NONE, 9u)
+		reg(key_find, T_FIND, M_NONE, 0u)
+		reg(key_help, T_HELP, M_NONE, 0u)
+		reg(key_home, T_HOME, M_NONE, 0u)
+		reg(key_ic, T_INSERT, M_NONE, 0u)
+		reg(key_il, T_INSERT_LINE, M_NONE, 0u)
+		reg(key_left, T_LEFT, M_NONE, 0u)
+		reg(key_ll, T_LOWER_LEFT, M_NONE, 0u)
+		reg(key_mark, T_MARK, M_NONE, 0u)
+		reg(key_message, T_MESSAGE, M_NONE, 0u)
+		reg(key_move, T_MOVE, M_NONE, 0u)
+		reg(key_next, T_NEXT, M_NONE, 0u)
+		reg(key_npage, T_PAGE_DOWN, M_NONE, 0u)
+		reg(key_open, T_OPEN, M_NONE, 0u)
+		reg(key_options, T_OPTIONS, M_NONE, 0u)
+		reg(key_ppage, T_PAGE_UP, M_NONE, 0u)
+		reg(key_previous, T_PREVIOUS, M_NONE, 0u)
+		reg(key_print, T_PRINT, M_NONE, 0u)
+		reg(key_redo, T_REDO, M_NONE, 0u)
+		reg(key_reference, T_REFERENCE, M_NONE, 0u)
+		reg(key_refresh, T_REFRESH, M_NONE, 0u)
+		reg(key_replace, T_REPLACE, M_NONE, 0u)
+		reg(key_restart, T_RESTART, M_NONE, 0u)
+		reg(key_resume, T_RESUME, M_NONE, 0u)
+		reg(key_right, T_RIGHT, M_NONE, 0u)
+		reg(key_save, T_SAVE, M_NONE, 0u)
+		reg(key_sbeg, T_BEGIN, M_SHIFT, 0u)
+		reg(key_scancel, T_CANCEL, M_SHIFT, 0u)
+		reg(key_scommand, T_COMMAND, M_SHIFT, 0u)
+		reg(key_scopy, T_COPY, M_SHIFT, 0u)
+		reg(key_screate, T_CREATE, M_SHIFT, 0u)
+		reg(key_sdc, T_DELETE, M_SHIFT, 0u)
+		reg(key_sdl, T_DELETE_LINE, M_SHIFT, 0u)
+		reg(key_select, T_SELECT, M_NONE, 0u)
+		reg(key_send, T_SEND, M_NONE, 0u)
+		reg(key_seol, T_CLEAR_TO_END_OF_LINE, M_SHIFT, 0u)
+		reg(key_sexit, T_EXIT, M_SHIFT, 0u)
+		reg(key_sf, T_SCROLL_FORWARD, M_NONE, 0u)
+		reg(key_sfind, T_FIND, M_SHIFT, 0u)
+		reg(key_shelp, T_HELP, M_SHIFT, 0u)
+		reg(key_shome, T_HOME, M_SHIFT, 0u)
+		reg(key_sic, T_INSERT, M_SHIFT, 0u)
+		reg(key_sleft, T_LEFT, M_SHIFT, 0u)
+		reg(key_smessage, T_MESSAGE, M_SHIFT, 0u)
+		reg(key_smove, T_MOVE, M_SHIFT, 0u)
+		reg(key_snext, T_NEXT, M_SHIFT, 0u)
+		reg(key_soptions, T_OPTIONS, M_SHIFT, 0u)
+		reg(key_sprevious, T_PREVIOUS, M_SHIFT, 0u)
+		reg(key_sprint, T_PRINT, M_SHIFT, 0u)
+		reg(key_sr, T_SCROLL_BACKWARD, M_NONE, 0u)
+		reg(key_sredo, T_REDO, M_SHIFT, 0u)
+		reg(key_sreplace, T_REPLACE, M_SHIFT, 0u)
+		reg(key_sright, T_RIGHT, M_SHIFT, 0u)
+		reg(key_srsume, T_RESUME, M_SHIFT, 0u)
+		reg(key_ssave, T_SAVE, M_SHIFT, 0u)
+		reg(key_ssuspend, T_SUSPEND, M_SHIFT, 0u)
+		reg(key_stab, T_SET_TAB, M_NONE, 0u)
+		reg(key_sundo, T_UNDO, M_SHIFT, 0u)
+		reg(key_suspend, T_SUSPEND, M_NONE, 0u)
+		reg(key_undo, T_UNDO, M_NONE, 0u)
+		reg(key_up, T_UP, M_NONE, 0u)
+#undef chr
+#undef reg
+	}
+
+	void UNIXTerminalBinding::registerSpecialKey(const char* controlSequence,
+			KeySym::Type type, KeySym::Modifier modifier, unsigned index) {
+		if(!controlSequence || !*controlSequence)
+			return;
+		SequenceMapInputConverter::Map::Node* node = &specialKeyMap.getRoot();
+		for(; *controlSequence; ++controlSequence)
+			node = &node->put(*controlSequence);
+		node->setValue(KeySym(type, modifier, static_cast<Char16>(index)));
 	}
 
 	void UNIXTerminalBinding::setEncoding(const string& encoding) {
@@ -376,8 +561,8 @@ namespace damnation {
 		clear(l, ISIG | ICANON | ECHO);
 #undef set
 #undef clear
-		currentState.c_cc[VTIME] = (cc_t)0;
-		currentState.c_cc[VMIN] = (cc_t)1;
+		currentState.c_cc[VTIME] = static_cast<cc_t>(0);
+		currentState.c_cc[VMIN] = static_cast<cc_t>(!!currentlyBlocking);
 		setattr(readfd, TCSADRAIN, currentState);
 	}
 
@@ -902,9 +1087,90 @@ namespace damnation {
 		currentAttributes = 0;
 	}
 
-	KeySym UNIXTerminalBinding::read(bool) {
-		//TODO
-		return KeySym::NONE;
+	static bool setBlocking(int readfd, struct termios& currentState, bool& currentlyBlocking, bool blocking) {
+		if(!(currentState.c_lflag & ICANON) && !blocking != !currentlyBlocking) {
+			currentState.c_cc[VTIME] = static_cast<cc_t>(0);
+			currentState.c_cc[VMIN] = static_cast<cc_t>(!!currentlyBlocking);
+			if(!setattr(readfd, TCSADRAIN, currentState))
+				return false;
+			currentlyBlocking = blocking;
+		}
+		return true;
+	}
+
+	static MemorySize doRead(int readfd, char* buffer, size_t size, bool& winch) {
+		for(;;) {
+			ssize_t count = ::read(readfd, buffer, size);
+			if(count != static_cast<ssize_t>(-1)) {
+				winch = false;
+				return static_cast<MemorySize>(count);
+			}
+			if(errno != EINTR)
+				throw FileIOError(File::INPUT, errno);
+			if(caughtWinch) {
+				caughtWinch = false;
+				winch = true;
+				return static_cast<MemorySize>(0u);
+			}
+		}
+	}
+
+	static void doSleep(uint64_t delay) {
+		uint64_t start = currentTimeMillis();
+		for(;;) {
+			Thread::sleep(delay);
+			uint64_t now = currentTimeMillis();
+			uint64_t delta = now - start;
+			if(delta >= delay)
+				break;
+			delay -= delta;
+			start = now;
+		}
+	}
+
+	KeySym UNIXTerminalBinding::read(bool blocking) {
+		if(caughtWinch) {
+			caughtWinch = false;
+			return KeySym::WINCH;
+		}
+		KeySym key(inputConverter.nextKey());
+		if(key.getType() != KeySym::T_NONE)
+			return key;
+		// prepare for read(2)
+		struct termios currentState;
+		if(!getattr(readfd, currentState))
+			return KeySym::NONE;
+		if(!setBlocking(readfd, currentState, currentlyBlocking, blocking))
+			return KeySym::NONE;
+		// do the actual read(2)
+		char buffer[128];
+		bool winch;
+		MemorySize count = doRead(readfd, buffer, sizeof(buffer), winch);
+		if(winch)
+			return KeySym::WINCH;
+		if(!count)
+			return KeySym::NONE;
+		inputConverter.feedInput(buffer, count);
+		if(!setBlocking(readfd, currentState, currentlyBlocking, true))
+			throw FileIOError(File::INPUT, errno);
+		for(;;) {
+			count = doRead(readfd, buffer, sizeof(buffer), winch);
+			if(winch)
+				return KeySym::WINCH;
+			if(!count) {
+				if(!inputConverter.hasPendingKey())
+					break;
+				doSleep(specialKeyFlushDelay);
+				count = doRead(readfd, buffer, sizeof(buffer), winch);
+				if(winch)
+					return KeySym::WINCH;
+				if(!count)
+					break;
+			}
+			inputConverter.feedInput(buffer, count);
+		}
+		inputConverter.flushSequences();
+		return inputConverter.nextKey();
 	}
 
 	void UNIXTerminalBinding::write(char c) {
