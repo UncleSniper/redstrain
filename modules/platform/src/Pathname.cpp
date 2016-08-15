@@ -20,10 +20,12 @@ namespace platform {
 
 #if REDSTRAIN_PLATFORM_OS == REDSTRAIN_PLATFORM_OS_UNIX
 	const char *const Pathname::SEPARATOR = "/";
+	const char *const Pathname::PATHNAME_SEPARATOR = ":";
 	const char *const Pathname::THIS_DIRECTORY = ".";
 	const char *const Pathname::PARENT_DIRECTORY = "..";
 #elif REDSTRAIN_PLATFORM_OS == REDSTRAIN_PLATFORM_OS_WINDOWS
 	const char *const Pathname::SEPARATOR = "\\";
+	const char *const Pathname::PATHNAME_SEPARATOR = ";";
 	const char *const Pathname::THIS_DIRECTORY = ".";
 	const char *const Pathname::PARENT_DIRECTORY = "..";
 #else /* OS not implemented */

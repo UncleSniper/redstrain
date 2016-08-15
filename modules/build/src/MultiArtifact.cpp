@@ -1,13 +1,17 @@
+#include <sstream>
+#include <redstrain/platform/Pathname.hpp>
 #include <redstrain/io/streamoperators.hpp>
 
 #include "MultiArtifact.hpp"
 #include "ArtifactMultiplicityError.hpp"
 
 using std::string;
+using std::stringstream;
 using redengine::util::Appender;
 using redengine::io::InputStream;
 using redengine::io::OutputStream;
 using redengine::util::MemorySize;
+using redengine::platform::Pathname;
 using redengine::io::DefaultConfiguredOutputStream;
 using redengine::io::endln;
 using redengine::io::shift;
@@ -163,6 +167,20 @@ namespace build {
 
 	string MultiArtifact::getLabel() {
 		return label;
+	}
+
+	string MultiArtifact::getCanonicalReference() {
+		stringstream ss;
+		ArtifactIterator begin(artifacts.begin()), end(artifacts.end());
+		bool first = true;
+		for(; begin != end; ++begin) {
+			if(first)
+				first = false;
+			else
+				ss << Pathname::PATHNAME_SEPARATOR;
+			ss << (*begin)->getCanonicalReference();
+		}
+		return ss.str();
 	}
 
 	void MultiArtifact::dumpArtifact(DefaultConfiguredOutputStream<char>::Stream& stream) const {

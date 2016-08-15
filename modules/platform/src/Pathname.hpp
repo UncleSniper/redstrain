@@ -19,6 +19,7 @@ namespace platform {
 
 	  public:
 		static const char *const SEPARATOR;
+		static const char *const PATHNAME_SEPARATOR;
 		static const char *const THIS_DIRECTORY;
 		static const char *const PARENT_DIRECTORY;
 

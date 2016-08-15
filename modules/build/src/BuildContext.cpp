@@ -18,12 +18,51 @@ using redengine::io::operator<<;
 namespace redengine {
 namespace build {
 
+	// ======== CachedHeaderReference ========
+
+	BuildContext::CachedHeaderReference::CachedHeaderReference(const string& path, bool local)
+			: path(path), local(local) {}
+
+	BuildContext::CachedHeaderReference::CachedHeaderReference(const CachedHeaderReference& reference)
+			: path(reference.path), local(reference.local) {}
+
+	void BuildContext::CachedHeaderReference::setPath(const string& path) {
+		this->path = path;
+	}
+
+	BuildContext::CachedHeaderReference&
+	BuildContext::CachedHeaderReference::operator=(const CachedHeaderReference& reference) {
+		path = reference.path;
+		local = reference.local;
+		return *this;
+	}
+
+	// ======== CachedArtifactIncludes ========
+
+	BuildContext::CachedArtifactIncludes::CachedArtifactIncludes() : timestamp(static_cast<time_t>(0u)) {}
+
+	BuildContext::CachedArtifactIncludes::CachedArtifactIncludes(const CachedArtifactIncludes& includes)
+			: timestamp(includes.timestamp), references(includes.references) {}
+
+	void BuildContext::CachedArtifactIncludes::getReferences(ReferenceIterator& begin,
+			ReferenceIterator& end) const {
+		begin = references.begin();
+		end = references.end();
+	}
+
+	void BuildContext::CachedArtifactIncludes::addReference(const CachedHeaderReference& reference) {
+		references.push_back(reference);
+	}
+
+	// ======== BuildContext ========
+
 	BuildContext::BuildContext(BuildUI& ui) : ui(ui), virtualTime(static_cast<time_t>(0u)), defaultGoal(NULL) {}
 
 	BuildContext::BuildContext(const BuildContext& context)
 			: ui(context.ui), virtualTime(context.virtualTime), goals(context.goals),
 			fileArtifacts(context.fileArtifacts), buildingComponents(context.buildingComponents),
-			builtComponents(context.builtComponents), defaultGoal(context.defaultGoal) {
+			builtComponents(context.builtComponents), defaultGoal(context.defaultGoal),
+			includeCachePath(context.includeCachePath) {
 		ConstGoalIterator gbegin(goals.begin()), gend(goals.end());
 		for(; gbegin != gend; ++gbegin)
 			gbegin->second->ref();
@@ -47,6 +86,10 @@ namespace build {
 
 	time_t BuildContext::tickVirtualTime() {
 		return ++virtualTime;
+	}
+
+	void BuildContext::setIncludeCachePath(const string& path) {
+		includeCachePath = path;
 	}
 
 	Goal* BuildContext::getGoal(const string& name) const {

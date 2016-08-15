@@ -3,6 +3,7 @@
 
 #include <map>
 #include <set>
+#include <list>
 #include <string>
 #include <redstrain/util/MapKeyIterator.hpp>
 #include <redstrain/io/streamtypes.hpp>
@@ -18,6 +19,64 @@ namespace build {
 	class FileArtifact;
 
 	class REDSTRAIN_BUILD_API BuildContext {
+
+	  public:
+		class REDSTRAIN_BUILD_API CachedHeaderReference {
+
+		  private:
+			std::string path;
+			bool local;
+
+		  public:
+			CachedHeaderReference(const std::string&, bool);
+			CachedHeaderReference(const CachedHeaderReference&);
+
+			inline const std::string& getPath() const {
+				return path;
+			}
+
+			void setPath(const std::string&);
+
+			inline bool isLocal() const {
+				return local;
+			}
+
+			inline void setLocal(bool local) {
+				this->local = local;
+			}
+
+			CachedHeaderReference& operator=(const CachedHeaderReference&);
+
+		};
+
+		class REDSTRAIN_BUILD_API CachedArtifactIncludes {
+
+		  private:
+			typedef std::list<CachedHeaderReference> References;
+
+		  public:
+			typedef References::const_iterator ReferenceIterator;
+
+		  private:
+			time_t timestamp;
+			References references;
+
+		  public:
+			CachedArtifactIncludes();
+			CachedArtifactIncludes(const CachedArtifactIncludes&);
+
+			inline time_t getTimestamp() const {
+				return timestamp;
+			}
+
+			inline void setTimestamp(time_t timestamp) {
+				this->timestamp = timestamp;
+			}
+
+			void getReferences(ReferenceIterator&, ReferenceIterator&) const;
+			void addReference(const CachedHeaderReference&);
+
+		};
 
 	  private:
 		typedef std::map<std::string, Goal*> Goals;
@@ -37,6 +96,7 @@ namespace build {
 		FileArtifacts fileArtifacts;
 		Components buildingComponents, builtComponents;
 		Goal* defaultGoal;
+		std::string includeCachePath;
 
 	  private:
 		BuildContext(const BuildContext&);
@@ -58,6 +118,12 @@ namespace build {
 		}
 
 		time_t tickVirtualTime();
+
+		const std::string& getIncludeCachePath() const {
+			return includeCachePath;
+		}
+
+		void setIncludeCachePath(const std::string&);
 
 		Goal* getGoal(const std::string&) const;
 		bool addGoal(const std::string&, Goal&);

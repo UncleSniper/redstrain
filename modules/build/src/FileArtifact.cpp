@@ -172,6 +172,10 @@ namespace build {
 		return label;
 	}
 
+	string FileArtifact::getCanonicalReference() {
+		return Pathname::tidy(path);
+	}
+
 	void FileArtifact::dumpArtifact(DefaultConfiguredOutputStream<char>::Stream& stream) const {
 		stream << indent << "FileArtifact " << this << " {" << endln << shift;
 		stream << indent << "path = '" << path << '\'' << endln;

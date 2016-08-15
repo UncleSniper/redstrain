@@ -55,6 +55,7 @@ namespace build {
 		virtual bool isTransformable();
 		virtual std::string getName();
 		virtual std::string getLabel();
+		virtual std::string getCanonicalReference();
 
 		virtual void dumpArtifact(io::DefaultConfiguredOutputStream<char>::Stream&) const;
 
