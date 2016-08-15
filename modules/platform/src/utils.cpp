@@ -5,6 +5,7 @@
 #include "api.hpp"
 
 #if REDSTRAIN_PLATFORM_OS == REDSTRAIN_PLATFORM_OS_UNIX
+#include <unistd.h>
 #include <sys/time.h>
 #endif /* OS-specific includes */
 
@@ -18,6 +19,10 @@ namespace platform {
 		gettimeofday(&tv, NULL);
 		tv.tv_usec /= static_cast<suseconds_t>(1000u);
 		return static_cast<uint64_t>(tv.tv_sec) * static_cast<uint64_t>(1000u) + static_cast<uint64_t>(tv.tv_usec);
+	}
+
+	REDSTRAIN_PLATFORM_API unsigned numberOfProcessors() {
+		return static_cast<unsigned>(sysconf(_SC_NPROCESSORS_ONLN));
 	}
 
 #elif REDSTRAIN_PLATFORM_OS == REDSTRAIN_PLATFORM_OS_WINDOWS

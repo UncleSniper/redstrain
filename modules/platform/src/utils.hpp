@@ -9,6 +9,7 @@ namespace redengine {
 namespace platform {
 
 	REDSTRAIN_PLATFORM_API uint64_t currentTimeMillis();
+	REDSTRAIN_PLATFORM_API unsigned numberOfProcessors();
 
 }}
 
