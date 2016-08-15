@@ -1,5 +1,8 @@
+#include <cstdlib>
+#include <iostream>
 #include <redstrain/util/Unref.hpp>
 #include <redstrain/util/Delete.hpp>
+#include <redstrain/platform/utils.hpp>
 
 #include "Project.hpp"
 #include "RuleBuilder.hpp"
@@ -12,9 +15,12 @@
 #include "DependencyResolver.hpp"
 #include "DuplicateComponentError.hpp"
 
+using std::cerr;
+using std::endl;
 using std::string;
 using redengine::util::Unref;
 using redengine::util::Delete;
+using redengine::platform::currentTimeMillis;
 
 namespace redengine {
 namespace build {
@@ -43,11 +49,15 @@ namespace build {
 		project = projectFactory.newProject(baseDirectory);
 		if(!project)
 			return;
+		uint64_t start = currentTimeMillis();
 		finder.findComponents(*project, *this);
 		Project::ComponentNameIterator cnbegin, cnend;
 		project->getComponents(cnbegin, cnend);
 		for(; cnbegin != cnend; ++cnbegin)
 			resolver.resolveDependencies(*project, *project->getComponent(*cnbegin));
+		uint64_t delta = currentTimeMillis() - start;
+		if(getenv("REDBUILD_TIME_PROJECT_BUILDER"))
+			cerr << "***DEBUG: Built project model in " << delta << " msec" << endl;
 	}
 
 	Project* ProjectBuilder::takeProject() {

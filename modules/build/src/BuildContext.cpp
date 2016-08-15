@@ -1,4 +1,11 @@
 #include <redstrain/util/Unref.hpp>
+#include <redstrain/util/Delete.hpp>
+#include <redstrain/io/StreamCloser.hpp>
+#include <redstrain/io/FileInputStream.hpp>
+#include <redstrain/io/FileOutputStream.hpp>
+#include <redstrain/platform/Filesystem.hpp>
+#include <redstrain/protostr/ProtocolReader.hpp>
+#include <redstrain/protostr/ProtocolWriter.hpp>
 #include <redstrain/io/streamoperators.hpp>
 
 #include "Goal.hpp"
@@ -8,6 +15,17 @@
 
 using std::string;
 using redengine::util::Unref;
+using redengine::util::Delete;
+using redengine::platform::Stat;
+using redengine::io::InputStream;
+using redengine::io::OutputStream;
+using redengine::util::MemorySize;
+using redengine::io::StreamCloser;
+using redengine::io::FileInputStream;
+using redengine::io::FileOutputStream;
+using redengine::platform::Filesystem;
+using redengine::protostr::ProtocolReader;
+using redengine::protostr::ProtocolWriter;
 using redengine::io::DefaultConfiguredOutputStream;
 using redengine::io::endln;
 using redengine::io::shift;
@@ -43,6 +61,10 @@ namespace build {
 
 	BuildContext::CachedArtifactIncludes::CachedArtifactIncludes(const CachedArtifactIncludes& includes)
 			: timestamp(includes.timestamp), references(includes.references) {}
+
+	MemorySize BuildContext::CachedArtifactIncludes::getReferenceCount() const {
+		return static_cast<MemorySize>(references.size());
+	}
 
 	void BuildContext::CachedArtifactIncludes::getReferences(ReferenceIterator& begin,
 			ReferenceIterator& end) const {
@@ -82,6 +104,9 @@ namespace build {
 			fabegin->second->unref();
 		if(defaultGoal)
 			defaultGoal->unref();
+		ArtifactIncludeIterator aibegin(artifactIncludes.begin()), aiend(artifactIncludes.end());
+		for(; aibegin != aiend; ++aibegin)
+			delete aibegin->second;
 	}
 
 	time_t BuildContext::tickVirtualTime() {
@@ -155,6 +180,99 @@ namespace build {
 		if(defaultGoal)
 			defaultGoal->unref();
 		defaultGoal = goal;
+	}
+
+	BuildContext::CachedArtifactIncludes* BuildContext::getArtifactIncludes(const string& reference) const {
+		ArtifactIncludeIterator it = artifactIncludes.find(reference);
+		return it == artifactIncludes.end() ? NULL : it->second;
+	}
+
+	BuildContext::CachedArtifactIncludes& BuildContext::getOrMakeArtifactIncludes(const string& reference) {
+		ArtifactIncludeIterator it = artifactIncludes.find(reference);
+		if(it != artifactIncludes.end())
+			return *it->second;
+		Delete<CachedArtifactIncludes> cai(new CachedArtifactIncludes);
+		artifactIncludes[reference] = *cai;
+		return *cai.set();
+	}
+
+	void BuildContext::clearArtifactIncludes() {
+		ArtifactIncludeIterator aibegin(artifactIncludes.begin()), aiend(artifactIncludes.end());
+		for(; aibegin != aiend; ++aibegin)
+			delete aibegin->second;
+	}
+
+	bool BuildContext::loadArtifactIncludes() {
+		if(!includeCachePath.empty())
+			return false;
+		if(!Filesystem::access(includeCachePath, Filesystem::FILE_EXISTS))
+			return false;
+		Stat info;
+		Filesystem::stat(includeCachePath, info);
+		if(info.getType() != Stat::REGULAR_FILE)
+			return false;
+		FileInputStream fis(includeCachePath);
+		StreamCloser closeFIS(fis);
+		loadArtifactIncludes(fis);
+		closeFIS.close();
+		return true;
+	}
+
+	void BuildContext::loadArtifactIncludes(InputStream<char>& in) {
+		clearArtifactIncludes();
+		ProtocolReader proto(in);
+		uint32_t aiidx, aicnt = proto.readUInt32();
+		for(aiidx = static_cast<uint32_t>(0u); aiidx < aicnt; ++aiidx) {
+			string canonRef;
+			proto.readString32(canonRef);
+			CachedArtifactIncludes& includes = getOrMakeArtifactIncludes(canonRef);
+			time_t timestamp = static_cast<time_t>(proto.readUInt64());
+			if(timestamp > includes.getTimestamp())
+				includes.setTimestamp(timestamp);
+			uint32_t hridx, hrcnt = proto.readUInt32();
+			for(hridx = static_cast<uint32_t>(0u); hridx < hrcnt; ++hridx) {
+				string path;
+				proto.readString32(path);
+				bool local = static_cast<bool>(proto.readUInt8());
+				includes.addReference(CachedHeaderReference(path, local));
+			}
+		}
+	}
+
+	bool BuildContext::saveArtifactIncludes() const {
+		if(!includeCachePath.empty())
+			return false;
+		if(Filesystem::access(includeCachePath, Filesystem::FILE_EXISTS)) {
+			Stat info;
+			Filesystem::stat(includeCachePath, info);
+			if(info.getType() != Stat::REGULAR_FILE)
+				return false;
+		}
+		FileOutputStream fos(includeCachePath);
+		StreamCloser closeFOS(fos);
+		saveArtifactIncludes(fos);
+		closeFOS.close();
+		return true;
+	}
+
+	void BuildContext::saveArtifactIncludes(OutputStream<char>& out) const {
+		ProtocolWriter proto(out);
+		proto.writeUInt32(static_cast<uint32_t>(artifactIncludes.size()));
+		ArtifactIncludeIterator aibegin(artifactIncludes.begin()), aiend(artifactIncludes.end());
+		for(; aibegin != aiend; ++aibegin) {
+			proto.writeString32(aibegin->first);
+			const CachedArtifactIncludes& includes = *aibegin->second;
+			proto.writeUInt64(static_cast<uint64_t>(includes.getTimestamp()));
+			proto.writeUInt32(static_cast<uint32_t>(includes.getReferenceCount()));
+			CachedArtifactIncludes::ReferenceIterator rbegin, rend;
+			includes.getReferences(rbegin, rend);
+			for(; rbegin != rend; ++rbegin) {
+				const CachedHeaderReference& reference = *rbegin;
+				proto.writeString32(reference.getPath());
+				proto.writeUInt8(static_cast<uint8_t>(reference.isLocal()));
+			}
+		}
+		proto.flush();
 	}
 
 	void BuildContext::dumpContext(DefaultConfiguredOutputStream<char>::Stream& stream) const {

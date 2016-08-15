@@ -5,7 +5,10 @@
 #include <set>
 #include <list>
 #include <string>
+#include <redstrain/io/InputStream.hpp>
+#include <redstrain/io/OutputStream.hpp>
 #include <redstrain/util/MapKeyIterator.hpp>
+#include <redstrain/util/types.hpp>
 #include <redstrain/io/streamtypes.hpp>
 
 #include "api.hpp"
@@ -73,6 +76,7 @@ namespace build {
 				this->timestamp = timestamp;
 			}
 
+			util::MemorySize getReferenceCount() const;
 			void getReferences(ReferenceIterator&, ReferenceIterator&) const;
 			void addReference(const CachedHeaderReference&);
 
@@ -84,6 +88,8 @@ namespace build {
 		typedef Goals::const_iterator ConstGoalIterator;
 		typedef std::map<std::string, FileArtifact*> FileArtifacts;
 		typedef std::set<const Component*> Components;
+		typedef std::map<std::string, CachedArtifactIncludes*> ArtifactIncludes;
+		typedef ArtifactIncludes::const_iterator ArtifactIncludeIterator;
 
 	  public:
 		typedef util::MapKeyIterator<std::string, Goal*> GoalNameIterator;
@@ -97,9 +103,13 @@ namespace build {
 		Components buildingComponents, builtComponents;
 		Goal* defaultGoal;
 		std::string includeCachePath;
+		ArtifactIncludes artifactIncludes;
 
 	  private:
 		BuildContext(const BuildContext&);
+
+		void loadArtifactIncludes(io::InputStream<char>&);
+		void saveArtifactIncludes(io::OutputStream<char>&) const;
 
 	  public:
 		BuildContext(BuildUI&);
@@ -142,6 +152,12 @@ namespace build {
 		}
 
 		void setDefaultGoal(Goal*);
+
+		CachedArtifactIncludes* getArtifactIncludes(const std::string&) const;
+		CachedArtifactIncludes& getOrMakeArtifactIncludes(const std::string&);
+		void clearArtifactIncludes();
+		bool loadArtifactIncludes();
+		bool saveArtifactIncludes() const;
 
 		void dumpContext(io::DefaultConfiguredOutputStream<char>::Stream&) const;
 
