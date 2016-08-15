@@ -1,8 +1,8 @@
-#ifndef REDSTRAIN_MOD_ALGORITHM_DESTRUCTORS_HPP
-#define REDSTRAIN_MOD_ALGORITHM_DESTRUCTORS_HPP
+#ifndef REDSTRAIN_MOD_UTIL_DESTRUCTORS_HPP
+#define REDSTRAIN_MOD_UTIL_DESTRUCTORS_HPP
 
 namespace redengine {
-namespace algorithm {
+namespace util {
 
 	template<typename SubjectT>
 	void noDestructor(SubjectT&) {}
@@ -20,4 +20,4 @@ namespace algorithm {
 
 }}
 
-#endif /* REDSTRAIN_MOD_ALGORITHM_DESTRUCTORS_HPP */
+#endif /* REDSTRAIN_MOD_UTIL_DESTRUCTORS_HPP */

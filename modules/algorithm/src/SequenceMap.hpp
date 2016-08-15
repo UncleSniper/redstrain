@@ -7,9 +7,9 @@
 #include <redstrain/util/WithAlign.hpp>
 #include <redstrain/util/MapKeyIterator.hpp>
 #include <redstrain/util/types.hpp>
+#include <redstrain/util/destructors.hpp>
 
 #include "allocators.hpp"
-#include "destructors.hpp"
 
 namespace redengine {
 namespace algorithm {
@@ -18,7 +18,7 @@ namespace algorithm {
 		typename KeyT,
 		typename ValueT,
 		typename NameT = void,
-		void (*ValueDestructor)(ValueT&) = explicitDestructor<ValueT>,
+		void (*ValueDestructor)(ValueT&) = util::explicitDestructor<ValueT>,
 		void* (*Allocator)(util::MemorySize) = standardAlloc,
 		void (*Deallocator)(void*) = standardFree
 	>

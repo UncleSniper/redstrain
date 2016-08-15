@@ -5,12 +5,12 @@
 #include <redstrain/util/BareType.hpp>
 #include <redstrain/util/WithAlign.hpp>
 #include <redstrain/error/ListIndexOutOfBoundsError.hpp>
+#include <redstrain/util/destructors.hpp>
 
 #include "CreateOrModify.hpp"
 #include "NoElementInThisStateError.hpp"
 #include "ordering.hpp"
 #include "allocators.hpp"
-#include "destructors.hpp"
 
 namespace redengine {
 namespace algorithm {
@@ -22,8 +22,8 @@ namespace algorithm {
 			typename util::BareType<KeyT>::ConstRef,
 			typename util::BareType<KeyT>::ConstRef
 		) = standardCompare<typename util::BareType<KeyT>::ConstRef>,
-		void (*KeyDestructor)(KeyT&) = explicitDestructor<KeyT>,
-		void (*ValueDestructor)(ValueT&) = explicitDestructor<ValueT>,
+		void (*KeyDestructor)(KeyT&) = util::explicitDestructor<KeyT>,
+		void (*ValueDestructor)(ValueT&) = util::explicitDestructor<ValueT>,
 		void* (*Allocator)(util::MemorySize) = standardAlloc,
 		void (*Deallocator)(void*) = standardFree
 	>

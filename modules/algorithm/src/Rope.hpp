@@ -6,9 +6,9 @@
 #include <redstrain/util/WithAlign.hpp>
 #include <redstrain/error/ListIndexOutOfBoundsError.hpp>
 #include <redstrain/util/types.hpp>
+#include <redstrain/util/destructors.hpp>
 
 #include "allocators.hpp"
-#include "destructors.hpp"
 
 namespace redengine {
 namespace algorithm {
@@ -37,7 +37,7 @@ namespace algorithm {
 
 	template<
 		typename ElementT,
-		void (*Destructor)(ElementT&) = explicitDestructor<ElementT>,
+		void (*Destructor)(ElementT&) = util::explicitDestructor<ElementT>,
 		typename RopeTraitsT = DefaultRopeTraits<ElementT>,
 		void* (*Allocator)(util::MemorySize) = standardAlloc,
 		void (*Deallocator)(void*) = standardFree
