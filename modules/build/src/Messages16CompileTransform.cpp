@@ -91,6 +91,10 @@ namespace build {
 		target.wouldModify(context);
 	}
 
+	bool Messages16CompileTransform::onlyModifiesTarget() const {
+		return true;
+	}
+
 	void Messages16CompileTransform::dumpTransform(DefaultConfiguredOutputStream<char>::Stream& stream) const {
 		stream << indent << "Messages16CompileTransform " << this << " {" << endln << shift;
 		dumpOneToOneTransformAspects(stream);

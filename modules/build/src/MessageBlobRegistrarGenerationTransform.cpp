@@ -55,6 +55,10 @@ namespace build {
 		target.wouldModify(context);
 	}
 
+	bool MessageBlobRegistrarGenerationTransform::onlyModifiesTarget() const {
+		return true;
+	}
+
 	void MessageBlobRegistrarGenerationTransform::dumpTransform(DefaultConfiguredOutputStream<char>::Stream& stream)
 			const {
 		stream << indent << "MessageBlobRegistrarGenerationTransform " << this << " {" << endln << shift;

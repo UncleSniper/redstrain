@@ -47,6 +47,7 @@ namespace build {
 
 		virtual void perform(BuildContext&, Artifact&) = 0;
 		virtual void wouldPerform(BuildContext&, Artifact&);
+		virtual bool onlyModifiesTarget() const;
 
 		virtual void dumpTransform(io::DefaultConfiguredOutputStream<char>::Stream&) const = 0;
 

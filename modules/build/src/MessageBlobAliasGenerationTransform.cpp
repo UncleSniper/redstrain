@@ -65,6 +65,10 @@ namespace build {
 		target.wouldModify(context);
 	}
 
+	bool MessageBlobAliasGenerationTransform::onlyModifiesTarget() const {
+		return true;
+	}
+
 	void MessageBlobAliasGenerationTransform::dumpTransform(DefaultConfiguredOutputStream<char>::Stream& stream)
 			const {
 		stream << indent << "MessageBlobAliasGenerationTransform " << this << " {" << endln << shift;

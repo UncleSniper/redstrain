@@ -75,6 +75,10 @@ namespace build {
 		target.wouldModify(context);
 	}
 
+	bool CodeTable16RegistrarGenerationTransform::onlyModifiesTarget() const {
+		return true;
+	}
+
 	void CodeTable16RegistrarGenerationTransform::dumpTransform(DefaultConfiguredOutputStream<char>::Stream& stream)
 			const {
 		stream << indent << "CodeTable16RegistrarGenerationTransform " << this << " {" << endln << shift;

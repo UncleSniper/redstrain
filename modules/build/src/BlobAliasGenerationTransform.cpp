@@ -67,6 +67,10 @@ namespace build {
 		target.wouldModify(context);
 	}
 
+	bool BlobAliasGenerationTransform::onlyModifiesTarget() const {
+		return true;
+	}
+
 	void BlobAliasGenerationTransform::dumpTransform(DefaultConfiguredOutputStream<char>::Stream& stream) const {
 		stream << indent << "BlobAliasGenerationTransform " << this << " {" << endln << shift;
 		dumpOneToOneTransformAspects(stream);

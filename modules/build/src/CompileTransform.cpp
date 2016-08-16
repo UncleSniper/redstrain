@@ -120,6 +120,10 @@ namespace build {
 		sourceSink.target.wouldModify(sourceSink.context);
 	}
 
+	bool CompileTransform::onlyModifiesTarget() const {
+		return true;
+	}
+
 	void CompileTransform::dumpTransform(DefaultConfiguredOutputStream<char>::Stream& stream) const {
 		stream << indent << "CompileTransform " << this << " {" << endln << shift;
 		stream << indent << "mode = " << Compilation::getCompileModeName(mode) << endln;

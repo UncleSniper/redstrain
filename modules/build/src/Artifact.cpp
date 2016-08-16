@@ -63,6 +63,14 @@ namespace build {
 		transform.perform(context, target);
 	}
 
+	bool Artifact::DefinitiveMood::isStaticallyUpToDate(const Artifact& artifact) const {
+		return !!(artifact.artifactFlags & Artifact::AFL_DEFINITIVE_STATICALLY_UP_TO_DATE);
+	}
+
+	void Artifact::DefinitiveMood::markAsStaticallyUpToDate(Artifact& artifact) const {
+		artifact.artifactFlags |= Artifact::AFL_DEFINITIVE_STATICALLY_UP_TO_DATE;
+	}
+
 	// ======== PredictiveMood ========
 
 	Artifact::PredictiveMood Artifact::PredictiveMood::instance;
@@ -99,6 +107,14 @@ namespace build {
 		transform.wouldPerform(context, target);
 	}
 
+	bool Artifact::PredictiveMood::isStaticallyUpToDate(const Artifact& artifact) const {
+		return !!(artifact.artifactFlags & Artifact::AFL_PREDICTIVE_STATICALLY_UP_TO_DATE);
+	}
+
+	void Artifact::PredictiveMood::markAsStaticallyUpToDate(Artifact& artifact) const {
+		artifact.artifactFlags |= Artifact::AFL_PREDICTIVE_STATICALLY_UP_TO_DATE;
+	}
+
 	// ======== FollowupTransformPropertyInjector ========
 
 	Artifact::FollowupTransformPropertyInjector::FollowupTransformPropertyInjector() {}
@@ -108,11 +124,12 @@ namespace build {
 
 	// ======== Artifact ========
 
-	Artifact::Artifact() : generatingTransform(NULL) {}
+	Artifact::Artifact() : generatingTransform(NULL), artifactFlags(0) {}
 
 	Artifact::Artifact(const Artifact& artifact) : ReferenceCounted(artifact),
 			generatingTransform(artifact.generatingTransform),
-			followupTransformPropertyInjectors(artifact.followupTransformPropertyInjectors) {
+			followupTransformPropertyInjectors(artifact.followupTransformPropertyInjectors),
+			artifactFlags(artifact.artifactFlags) {
 		if(generatingTransform)
 			generatingTransform->ref();
 		FollowupTransformPropertyInjectorIterator ftpibegin(followupTransformPropertyInjectors.begin()),
@@ -176,6 +193,8 @@ namespace build {
 	}
 
 	void Artifact::require(const Mood& mood, BuildContext& context) {
+		if(mood.isStaticallyUpToDate(*this))
+			return;
 		Transform::PrerequisiteIterator pqbegin, pqend;
 		if(generatingTransform) {
 			generatingTransform->getPrerequisites(pqbegin, pqend);
@@ -186,6 +205,8 @@ namespace build {
 			if(!generatingTransform)
 				throw NoGeneratingTransformError(*this);
 			rebuild(mood, context);
+			if(generatingTransform->onlyModifiesTarget())
+				mood.markAsStaticallyUpToDate(*this);
 			return;
 		}
 		if(!generatingTransform)
@@ -204,6 +225,8 @@ namespace build {
 			|| virtualNewestSource.getMaximum() > virtualOldestTarget.getMinimum()
 		)
 			rebuild(mood, context);
+		if(generatingTransform->onlyModifiesTarget())
+			mood.markAsStaticallyUpToDate(*this);
 	}
 
 	void Artifact::require(BuildContext& context) {

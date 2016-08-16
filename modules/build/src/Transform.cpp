@@ -59,6 +59,10 @@ namespace build {
 		target.wouldModify(context);
 	}
 
+	bool Transform::onlyModifiesTarget() const {
+		return false;
+	}
+
 	void Transform::dumpTransformAspects(DefaultConfiguredOutputStream<char>::Stream& stream) const {
 		dumpComponentUIInfoAspects(stream);
 		stream << indent << "prerequisites = {" << endln << shift;

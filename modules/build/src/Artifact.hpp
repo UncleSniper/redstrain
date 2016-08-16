@@ -39,6 +39,8 @@ namespace build {
 			virtual void remove(Artifact&) const = 0;
 			virtual void require(Artifact&, BuildContext&) const = 0;
 			virtual void perform(Transform&, BuildContext&, Artifact&) const = 0;
+			virtual bool isStaticallyUpToDate(const Artifact&) const = 0;
+			virtual void markAsStaticallyUpToDate(Artifact&) const = 0;
 
 		};
 
@@ -55,6 +57,8 @@ namespace build {
 			virtual void remove(Artifact&) const;
 			virtual void require(Artifact&, BuildContext&) const;
 			virtual void perform(Transform&, BuildContext&, Artifact&) const;
+			virtual bool isStaticallyUpToDate(const Artifact&) const;
+			virtual void markAsStaticallyUpToDate(Artifact&) const;
 
 		  public:
 			static DefinitiveMood instance;
@@ -74,6 +78,8 @@ namespace build {
 			virtual void remove(Artifact&) const;
 			virtual void require(Artifact&, BuildContext&) const;
 			virtual void perform(Transform&, BuildContext&, Artifact&) const;
+			virtual bool isStaticallyUpToDate(const Artifact&) const;
+			virtual void markAsStaticallyUpToDate(Artifact&) const;
 
 		  public:
 			static PredictiveMood instance;
@@ -108,8 +114,13 @@ namespace build {
 		typedef FollowupTransformPropertyInjectors::const_iterator FollowupTransformPropertyInjectorIterator;
 
 	  private:
+		static const int AFL_DEFINITIVE_STATICALLY_UP_TO_DATE = 01;
+		static const int AFL_PREDICTIVE_STATICALLY_UP_TO_DATE = 02;
+
+	  private:
 		Transform* generatingTransform;
 		FollowupTransformPropertyInjectors followupTransformPropertyInjectors;
+		int artifactFlags;
 
 	  private:
 		void require(const Mood&, BuildContext&);

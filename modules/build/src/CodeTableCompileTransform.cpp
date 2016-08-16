@@ -52,6 +52,10 @@ namespace build {
 		target.wouldModify(context);
 	}
 
+	bool CodeTableCompileTransform::onlyModifiesTarget() const {
+		return true;
+	}
+
 	void CodeTableCompileTransform::dumpTransform(DefaultConfiguredOutputStream<char>::Stream& stream) const {
 		stream << indent << "CodeTableCompileTransform " << this << " {" << endln << shift;
 		dumpOneToOneTransformAspects(stream);
