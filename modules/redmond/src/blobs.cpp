@@ -8,14 +8,18 @@ using std::string;
 namespace redengine {
 namespace redmond {
 
-	static set<string> presentBlobs;
+	static set<string>* presentBlobs = NULL;
 
 	REDSTRAIN_REDMOND_API void registerBlobModule(const string& name) {
-		presentBlobs.insert(name);
+		if(!presentBlobs)
+			presentBlobs = new set<string>;
+		presentBlobs->insert(name);
 	}
 
 	REDSTRAIN_REDMOND_API bool hasBlobModule(const string& name) {
-		return presentBlobs.find(name) != presentBlobs.end();
+		if(!presentBlobs)
+			return false;
+		return presentBlobs->find(name) != presentBlobs->end();
 	}
 
 	BlobModuleRegistrar::BlobModuleRegistrar(const string& name) : name(name) {
