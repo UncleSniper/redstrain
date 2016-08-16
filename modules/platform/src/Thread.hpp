@@ -307,6 +307,7 @@ namespace platform {
 		static std::string getErrorMessage(ErrorCode);
 
 		static void sleep(uint64_t);
+		static Handle selfHandle();
 
 	};
 

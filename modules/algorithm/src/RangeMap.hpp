@@ -33,7 +33,7 @@ namespace algorithm {
 			Edge*,
 			char,
 			standardCompare<Edge *const&>,
-			deleteDestructor<Edge>,
+			deleteDestructor<Edge*>,
 			noDestructor<char>,
 			Allocator,
 			Deallocator

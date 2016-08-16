@@ -224,3 +224,4 @@ TCP_SOCKET_CONNECT_ERROR=Error message for TCPSocketConnectError instances. Argu
 TCP_SOCKET_CREATE_ERROR=Error message for TCPSocketCreateError instances. Arguments: string sysErrorMsg
 TCP_SOCKET_IO_ERROR=Error message for TCPSocketIOError instances. Arguments: string direction, string sysErrorMsg (where 'direction' arises from SOCKET_IO_ERROR_DIRECTION)
 TCP_SOCKET_LISTEN_ERROR=Error message for TCPSocketCreateError instances. Arguments: string sysErrorMsg
+DEADLOCK_ERROR=Error message for DeadlockError instances.

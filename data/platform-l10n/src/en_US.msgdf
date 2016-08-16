@@ -454,3 +454,5 @@ TCP_SOCKET_CREATE_ERROR=Failed to create TCP socket: %s
 TCP_SOCKET_IO_ERROR=%s across TCP socket: %s
 # Error message for TCPSocketCreateError instances. Arguments: string sysErrorMsg
 TCP_SOCKET_LISTEN_ERROR=Failed to listen on TCP socket: %s
+# Error message for DeadlockError instances.
+DEADLOCK_ERROR=Deadlock detected

@@ -8,3 +8,4 @@ UNSUPPORTED_PLATFORM_FEATURE=Error message for UnsupportedPlatformFeatureError i
 ILLEGAL_BYTE_ORDER=Error message for IllegalByteOrderError instances. Arguments: int32_t byteOrder
 FRAME_INDEX_OUT_OF_BOUNDS=Error message for FrameIndexOutOfBoundsError instances. Arguments: uint64_t index
 ERROR_HANDLING_ERROR=Error message for ErrorHandlingError instances. Arguments: string subsequentErrorMessage
+UNCAUGHT_EXCEPTION=Error message for UncaughtExceptionError instances.

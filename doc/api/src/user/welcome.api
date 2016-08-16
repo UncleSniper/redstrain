@@ -110,6 +110,8 @@ page welcome "The RedEngine RedStrain C++ Framework" `
 				@cell{@mon mod_zweigana} @cell{RedStrain/Zweigana}
 		@cell{@mon modules/damnation} @cell{@mon damnation} @cell{module}
 				@cell{@mon mod_damnation} @cell{RedStrain/Damnation}
+		@cell{@mon modules/parallel} @cell{@mon parallel} @cell{module}
+				@cell{@mon mod_parallel} @cell{RedStrain/Parallel}
 		@cell{@mon modules/build} @cell{@mon build} @cell{module}
 				@cell{@mon mod_build} @cell{RedStrain/Build}
 		@cell{@mon data/calendar-formats} @cell{@mon calendar-formats} @cell{blob}

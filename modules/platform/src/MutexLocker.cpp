@@ -5,20 +5,29 @@ namespace platform {
 
 	MutexLocker::MutexLocker(const MutexLocker& locker) : mutex(locker.mutex) {}
 
-	MutexLocker::MutexLocker(Mutex& mutex) : mutex(mutex), unlocked(false) {
+	MutexLocker::MutexLocker(Mutex& mutex) : mutex(&mutex) {
 		mutex.lock();
 	}
 
 	MutexLocker::~MutexLocker() {
-		if(!unlocked)
-			mutex._uncheckedUnlock();
+		if(mutex)
+			mutex->_uncheckedUnlock();
 	}
 
 	void MutexLocker::release() {
-		if(!unlocked) {
-			mutex.unlock();
-			unlocked = true;
+		if(mutex) {
+			mutex->unlock();
+			mutex = NULL;
 		}
+	}
+
+	void MutexLocker::lock(Mutex& newMutex) {
+		if(mutex) {
+			mutex->unlock();
+			mutex = NULL;
+		}
+		newMutex.lock();
+		mutex = &newMutex;
 	}
 
 }}

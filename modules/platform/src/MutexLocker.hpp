@@ -9,8 +9,7 @@ namespace platform {
 	class REDSTRAIN_PLATFORM_API MutexLocker {
 
 	  private:
-		Mutex& mutex;
-		bool unlocked;
+		Mutex* mutex;
 
 	  private:
 		MutexLocker(const MutexLocker&);
@@ -20,9 +19,10 @@ namespace platform {
 		~MutexLocker();
 
 		void release();
+		void lock(Mutex&);
 
 		inline bool isLocked() const {
-			return !unlocked;
+			return !!mutex;
 		}
 
 	};

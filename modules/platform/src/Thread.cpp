@@ -127,6 +127,10 @@ namespace platform {
 		} while(millis);
 	}
 
+	Thread::Handle selfHandle() {
+		return pthread_self();
+	}
+
 #elif REDSTRAIN_PLATFORM_OS == REDSTRAIN_PLATFORM_OS_WINDOWS
 
 	DWORD Thread::bootstrap(void* ptr) {
@@ -222,6 +226,10 @@ namespace platform {
 			Sleep(static_cast<DWORD>(chunk));
 			millis -= chunk;
 		} while(millis);
+	}
+
+	Thread::Handle selfHandle() {
+		return GetCurrentThreadId();
 	}
 
 #else /* OS not implemented */
