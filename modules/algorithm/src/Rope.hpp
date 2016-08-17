@@ -2520,6 +2520,15 @@ namespace algorithm {
 			}
 		}
 
+		Rope& operator=(const Rope& other) {
+			Node* newRoot = other.root ? other.root->clone(other.cursize) : NULL;
+			if(root)
+				root->destroy(cursize, static_cast<util::MemorySize>(0u), cursize);
+			root = newRoot;
+			cursize = other.cursize;
+			return *this;
+		}
+
 	};
 
 }}
