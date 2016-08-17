@@ -438,6 +438,8 @@ namespace damnation {
 		const char* get_mouse;
 		const char* req_mouse_pos;
 
+		bool hasFlag(TSFlag) const;
+
 	};
 
 	REDSTRAIN_DAMNATION_API const TermSpec* getTermSpecFor(const char*);

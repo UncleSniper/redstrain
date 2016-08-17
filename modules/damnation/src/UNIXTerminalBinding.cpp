@@ -691,6 +691,15 @@ namespace damnation {
 		}
 	}
 
+	bool UNIXTerminalBinding::hasAutoRightMargin() {
+		return spec.hasFlag(TSF_AUTO_RIGHT_MARGIN);
+	}
+
+	unsigned UNIXTerminalBinding::getTabSpacing() {
+		unsigned tabs = static_cast<unsigned>(spec.init_tabs);
+		return tabs ? tabs : 1u;
+	}
+
 	bool UNIXTerminalBinding::carriageReturn() {
 		if(!spec.carriage_return)
 			return false;

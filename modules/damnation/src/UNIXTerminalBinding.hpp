@@ -177,6 +177,8 @@ namespace damnation {
 		virtual Size getSize();
 
 		virtual bool supportsOperation(OptionalOperation);
+		virtual bool hasAutoRightMargin();
+		virtual unsigned getTabSpacing();
 		virtual bool carriageReturn();
 		virtual void newLine();
 		virtual bool clearScreen();

@@ -13,6 +13,13 @@ using std::string;
 namespace redengine {
 namespace damnation {
 
+	bool TermSpec::hasFlag(TSFlag flag) const {
+		if(static_cast<int>(flag) < 0 || flag >= TSF__LAST)
+			return false;
+		unsigned bit = static_cast<unsigned>(flag);
+		return !!(flags[bit / 8u] & (static_cast<uint32_t>(1u) << (bit % 8u)));
+	}
+
 	typedef map<string, const TermSpec*> TermDBCache;
 
 	static TermDBCache* termDBCache = NULL;
