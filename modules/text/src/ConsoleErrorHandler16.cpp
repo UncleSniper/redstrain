@@ -17,7 +17,8 @@ namespace text {
 			: ConsoleOutputStreamErrorHandler16(handle == Console::STANDARD_ERROR
 					? getStandardErrorStream16() : getStandardOutputStream16(), indenter, NULL),
 			indenter(getStream()), console(handle) {
-		if(console.getFile().getHandle() != File::INVALID_HANDLE)
+		if(console.getFile().getHandle() != File::INVALID_HANDLE
+				&& Console::isConsole(console.getFile().getHandle()))
 			setConsole(&console);
 	}
 
@@ -26,7 +27,8 @@ namespace text {
 			ErrorHandlerBase16(handler),
 			ConsoleOutputStreamErrorHandler16(const_cast<OutputStream<Char16>&>(handler.getStream()),
 			indenter, NULL), indenter(handler.indenter), console(handler.console) {
-		if(console.getFile().getHandle() != File::INVALID_HANDLE)
+		if(console.getFile().getHandle() != File::INVALID_HANDLE
+				&& Console::isConsole(console.getFile().getHandle()))
 			setConsole(&console);
 	}
 

@@ -12,7 +12,8 @@ namespace text {
 			: ConsoleOutputStreamSymbolSink16(handle == Console::STANDARD_ERROR
 					? getStandardErrorStream16() : getStandardOutputStream16(), indenter, NULL),
 			indenter(getStream()), console(handle) {
-		if(console.getFile().getHandle() != File::INVALID_HANDLE)
+		if(console.getFile().getHandle() != File::INVALID_HANDLE
+				&& Console::isConsole(console.getFile().getHandle()))
 			setConsole(&console);
 	}
 
@@ -20,7 +21,8 @@ namespace text {
 			: SymbolSink(sink), HighlightingSymbolSink(sink),
 			ConsoleOutputStreamSymbolSink16(const_cast<OutputStream<Char16>&>(sink.getStream()), indenter, NULL),
 			indenter(sink.indenter), console(sink.console) {
-		if(console.getFile().getHandle() != File::INVALID_HANDLE)
+		if(console.getFile().getHandle() != File::INVALID_HANDLE
+				&& Console::isConsole(console.getFile().getHandle()))
 			setConsole(&console);
 	}
 

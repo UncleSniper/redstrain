@@ -15,7 +15,8 @@ namespace io {
 			: ConsoleOutputStreamErrorHandler8(stream, indenter, NULL), stream(Console::getStandardHandle(handle)),
 			indenter(stream), console(handle) {
 		stream.setCloseOnDestroy(false);
-		if(console.getFile().getHandle() != File::INVALID_HANDLE)
+		if(console.getFile().getHandle() != File::INVALID_HANDLE
+				&& Console::isConsole(console.getFile().getHandle()))
 			setConsole(&console);
 	}
 
@@ -23,7 +24,8 @@ namespace io {
 			: ErrorHandler(handler), ErrorHandlerTextBase(handler), HighlightingErrorHandler(handler),
 			ConsoleOutputStreamErrorHandler8(stream, indenter, NULL),
 			stream(handler.stream.getFile().getHandle(), File::OUTPUT), indenter(stream), console(handler.console) {
-		if(console.getFile().getHandle() != File::INVALID_HANDLE)
+		if(console.getFile().getHandle() != File::INVALID_HANDLE
+				&& Console::isConsole(console.getFile().getHandle()))
 			setConsole(&console);
 	}
 

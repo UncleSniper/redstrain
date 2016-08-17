@@ -10,7 +10,8 @@ namespace io {
 			: ConsoleOutputStreamStackTraceSink8(stream, indenter, NULL), stream(Console::getStandardHandle(handle)),
 			indenter(stream), console(handle) {
 		stream.setCloseOnDestroy(false);
-		if(console.getFile().getHandle() != File::INVALID_HANDLE)
+		if(console.getFile().getHandle() != File::INVALID_HANDLE
+				&& Console::isConsole(console.getFile().getHandle()))
 			setConsole(&console);
 	}
 
@@ -18,7 +19,8 @@ namespace io {
 			: StackTraceSink(sink), StackTraceSinkBase(sink), HighlightingStackTraceSink(sink),
 			ConsoleOutputStreamStackTraceSink8(stream, indenter, NULL),
 			stream(sink.stream.getFile().getHandle(), File::OUTPUT), indenter(stream), console(sink.console) {
-		if(console.getFile().getHandle() != File::INVALID_HANDLE)
+		if(console.getFile().getHandle() != File::INVALID_HANDLE
+				&& Console::isConsole(console.getFile().getHandle()))
 			setConsole(&console);
 	}
 
