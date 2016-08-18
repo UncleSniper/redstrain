@@ -18,7 +18,7 @@ namespace damnation {
 	}
 
 	bool Size::operator!=(const Size& size) const {
-		return width != size.width && height != size.height;
+		return width != size.width || height != size.height;
 	}
 
 }}

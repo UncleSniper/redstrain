@@ -15,7 +15,7 @@ namespace damnation {
 		Size(unsigned, unsigned);
 		Size(const Size&);
 
-		Size& operator=(const Size& size);
+		Size& operator=(const Size&);
 		bool operator==(const Size&) const;
 		bool operator!=(const Size&) const;
 
