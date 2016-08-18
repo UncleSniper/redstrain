@@ -18,6 +18,11 @@ namespace damnation {
 		Point& operator=(const Point&);
 		bool operator==(const Point&) const;
 		bool operator!=(const Point&) const;
+		Point operator+(const Point&) const;
+		Point operator-(const Point&) const;
+
+	  public:
+		static const Point ORIGIN;
 
 	};
 

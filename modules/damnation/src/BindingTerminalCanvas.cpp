@@ -8,6 +8,7 @@
 using std::string;
 using redengine::text::Char16;
 using redengine::text::String16;
+using redengine::util::MemorySize;
 using redengine::util::StringUtils;
 using redengine::error::ProgrammingError;
 
@@ -248,6 +249,10 @@ namespace damnation {
 
 	unsigned BindingTerminalCanvas::getTabSpacing() {
 		return binding.getTabSpacing();
+	}
+
+	unsigned BindingTerminalCanvas::getTabOffset() {
+		return 0u;
 	}
 
 	void BindingTerminalCanvas::carriageReturn() {
@@ -885,7 +890,11 @@ namespace damnation {
 		return key;
 	}
 
-	void BindingTerminalCanvas::doTab() {
+	void BindingTerminalCanvas::prepareForWrite() {
+		updateSize();
+	}
+
+	void BindingTerminalCanvas::writeTab() {
 		binding.write('\t');
 		if(cursorColumn == currentSize.width) {
 			if(cursorRow + 1u < currentSize.height)
@@ -902,46 +911,7 @@ namespace damnation {
 		}
 	}
 
-	void BindingTerminalCanvas::writeUntabbed(const string& data) {
-		string::size_type start = static_cast<string::size_type>(0u), end = data.length();
-		while(start < end) {
-			if(cursorColumn >= currentSize.width)
-				newLine();
-			string::size_type rest = static_cast<string::size_type>(currentSize.width - cursorColumn);
-			if(rest > end - start)
-				rest = end - start;
-			if(!start && rest == end)
-				binding.write(data);
-			else
-				binding.write(data.substr(start, rest));
-			cursorColumn += static_cast<unsigned>(rest);
-			start += rest;
-		}
-	}
-
-	void BindingTerminalCanvas::writeUntabbed(const String16& data) {
-		String16::size_type start = static_cast<String16::size_type>(0u), end = data.length();
-		while(start < end) {
-			if(cursorColumn >= currentSize.width)
-				newLine();
-			String16::size_type rest = static_cast<String16::size_type>(currentSize.width - cursorColumn);
-			if(rest > end - start)
-				rest = end - start;
-			if(!start && rest == end)
-				binding.write(data);
-			else
-				binding.write(data.substr(start, rest));
-			cursorColumn += static_cast<unsigned>(rest);
-			start += rest;
-		}
-	}
-
-	void BindingTerminalCanvas::write(char c) {
-		updateSize();
-		if(c == '\t') {
-			doTab();
-			return;
-		}
+	void BindingTerminalCanvas::writeNonControl(char c) {
 		if(cursorColumn >= currentSize.width && !binding.hasAutoRightMargin())
 			newLine();
 		binding.write(c);
@@ -954,27 +924,21 @@ namespace damnation {
 			++cursorColumn;
 	}
 
-	void BindingTerminalCanvas::write(const string& data) {
-		if(data.empty())
-			return;
-		updateSize();
-		string::size_type pos, old = static_cast<string::size_type>(0u);
-		while((pos = data.find('\t', old)) != string::npos) {
-			if(pos > old)
-				writeUntabbed(data.substr(old, pos - old));
-			doTab();
-			old = pos + static_cast<string::size_type>(1u);
+	void BindingTerminalCanvas::writeNonControl(const char* chars, MemorySize count) {
+		MemorySize start = static_cast<MemorySize>(0u);
+		while(start < count) {
+			if(cursorColumn >= currentSize.width)
+				newLine();
+			MemorySize rest = static_cast<MemorySize>(currentSize.width - cursorColumn);
+			if(rest > count - start)
+				rest = count - start;
+			binding.write(string(chars + start, static_cast<string::size_type>(rest)));
+			cursorColumn += static_cast<unsigned>(rest);
+			start += rest;
 		}
-		if(old < data.length())
-			writeUntabbed(old ? data.substr(old) : data);
 	}
 
-	void BindingTerminalCanvas::write(Char16 c) {
-		updateSize();
-		if(c == static_cast<Char16>('\t')) {
-			doTab();
-			return;
-		}
+	void BindingTerminalCanvas::writeNonControl(Char16 c) {
 		if(cursorColumn >= currentSize.width && !binding.hasAutoRightMargin())
 			newLine();
 		binding.write(c);
@@ -987,19 +951,18 @@ namespace damnation {
 			++cursorColumn;
 	}
 
-	void BindingTerminalCanvas::write(const String16& data) {
-		if(data.empty())
-			return;
-		updateSize();
-		String16::size_type pos, old = static_cast<String16::size_type>(0u);
-		while((pos = data.find(static_cast<Char16>('\t'), old)) != String16::npos) {
-			if(pos > old)
-				writeUntabbed(data.substr(old, pos - old));
-			doTab();
-			old = pos + static_cast<String16::size_type>(1u);
+	void BindingTerminalCanvas::writeNonControl(const Char16* chars, MemorySize count) {
+		MemorySize start = static_cast<MemorySize>(0u);
+		while(start < count) {
+			if(cursorColumn >= currentSize.width)
+				newLine();
+			MemorySize rest = static_cast<MemorySize>(currentSize.width - cursorColumn);
+			if(rest > count - start)
+				rest = count - start;
+			binding.write(String16(chars + start, static_cast<String16::size_type>(rest)));
+			cursorColumn += static_cast<unsigned>(rest);
+			start += rest;
 		}
-		if(old < data.length())
-			writeUntabbed(old ? data.substr(old) : data);
 	}
 
 	void BindingTerminalCanvas::write(BoxSymbol symbol) {

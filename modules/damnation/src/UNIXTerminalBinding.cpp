@@ -518,6 +518,7 @@ namespace damnation {
 		if(saveScreenContents && !inCAMode && spec.enter_ca_mode && spec.exit_ca_mode) {
 			wrappedWrite(termParam(spec.enter_ca_mode));
 			inCAMode = true;
+			flush();
 		}
 	}
 
@@ -525,6 +526,7 @@ namespace damnation {
 		if(inCAMode) {
 			wrappedWrite(termParam(spec.exit_ca_mode));
 			inCAMode = false;
+			flush();
 		}
 	}
 

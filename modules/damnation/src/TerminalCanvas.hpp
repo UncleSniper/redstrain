@@ -1,6 +1,8 @@
 #ifndef REDSTRAIN_MOD_DAMNATION_TERMINALCANVAS_HPP
 #define REDSTRAIN_MOD_DAMNATION_TERMINALCANVAS_HPP
 
+#include <redstrain/util/types.hpp>
+
 #include "Size.hpp"
 #include "KeySym.hpp"
 #include "BoxSymbol.hpp"
@@ -8,12 +10,24 @@
 namespace redengine {
 namespace damnation {
 
+	class Rectangle;
+
 	class REDSTRAIN_DAMNATION_API TerminalCanvas {
+
+	  private:
+		void makeFillRect(const Rectangle&, unsigned&, unsigned&, unsigned&, unsigned&);
 
 	  public:
 		TerminalCanvas();
 		TerminalCanvas(const TerminalCanvas&);
 		virtual ~TerminalCanvas();
+
+		void write(char);
+		void write(const std::string&);
+		void write(text::Char16);
+		void write(const text::String16&);
+		void fill(const Rectangle&, char);
+		void fill(const Rectangle&, text::Char16);
 
 		virtual bool hasSizeChanged() = 0;
 		virtual Size getSize() = 0;
@@ -22,6 +36,7 @@ namespace damnation {
 		virtual void getCursorPosition(unsigned&, unsigned&) = 0;
 
 		virtual unsigned getTabSpacing() = 0;
+		virtual unsigned getTabOffset() = 0;
 		virtual void carriageReturn() = 0;
 		virtual void newLine() = 0;
 		virtual void clearScreen(bool) = 0;
@@ -48,10 +63,12 @@ namespace damnation {
 		virtual void resetTextAttributes() = 0;
 
 		virtual KeySym read(bool) = 0;
-		virtual void write(char) = 0;
-		virtual void write(const std::string&) = 0;
-		virtual void write(text::Char16) = 0;
-		virtual void write(const text::String16&) = 0;
+		virtual void prepareForWrite() = 0;
+		virtual void writeTab() = 0;
+		virtual void writeNonControl(char) = 0;
+		virtual void writeNonControl(const char*, util::MemorySize) = 0;
+		virtual void writeNonControl(text::Char16) = 0;
+		virtual void writeNonControl(const text::Char16*, util::MemorySize) = 0;
 		virtual void write(BoxSymbol) = 0;
 		virtual void flush() = 0;
 		virtual void closeCanvas() = 0;

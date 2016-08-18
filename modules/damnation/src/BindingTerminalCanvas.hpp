@@ -139,6 +139,7 @@ namespace damnation {
 		virtual void getCursorPosition(unsigned&, unsigned&);
 
 		virtual unsigned getTabSpacing();
+		virtual unsigned getTabOffset();
 		virtual void carriageReturn();
 		virtual void newLine();
 		virtual void clearScreen(bool);
@@ -165,10 +166,12 @@ namespace damnation {
 		virtual void resetTextAttributes();
 
 		virtual KeySym read(bool);
-		virtual void write(char);
-		virtual void write(const std::string&);
-		virtual void write(text::Char16);
-		virtual void write(const text::String16&);
+		virtual void prepareForWrite();
+		virtual void writeTab();
+		virtual void writeNonControl(char);
+		virtual void writeNonControl(const char*, util::MemorySize);
+		virtual void writeNonControl(text::Char16);
+		virtual void writeNonControl(const text::Char16*, util::MemorySize);
 		virtual void write(BoxSymbol);
 		virtual void flush();
 		virtual void closeCanvas();
