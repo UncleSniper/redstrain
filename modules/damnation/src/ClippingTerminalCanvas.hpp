@@ -33,6 +33,14 @@ namespace damnation {
 		ClippingTerminalCanvas(const ClippingTerminalCanvas&);
 		virtual ~ClippingTerminalCanvas();
 
+		inline TerminalCanvas& getTerminal() {
+			return terminal;
+		}
+
+		inline const TerminalCanvas& getTerminal() const {
+			return terminal;
+		}
+
 		void pushClip(const Rectangle&);
 		void popClip();
 		void clearClip();
