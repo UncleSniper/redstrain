@@ -35,7 +35,7 @@ namespace tk {
 		Layer(const Layer&);
 
 	  public:
-		Layer(unsigned);
+		Layer(Screen&, unsigned);
 		~Layer();
 
 		inline Screen& getScreen() {
@@ -64,7 +64,7 @@ namespace tk {
 
 		unsigned addTabIndex(Widget&);
 		unsigned removeTabIndex(Widget&);
-		void setTabIndex(&Widget, unsigned);
+		void setTabIndex(Widget&, unsigned);
 		Widget* getCurrentFocus() const;
 		void setCurrentTabIndex(unsigned);
 		void shiftFocus();

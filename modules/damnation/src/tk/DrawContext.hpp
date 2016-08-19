@@ -3,6 +3,7 @@
 
 #include <deque>
 
+#include "Color.hpp"
 #include "../ClippingTerminalCanvas.hpp"
 
 namespace redengine {
@@ -11,7 +12,26 @@ namespace tk {
 
 	class Theme;
 
-	class REDSTRAIN_DAMNATION_API DrawContext {
+	class REDSTRAIN_DAMNATION_API DrawContext : public Color::ColorSource {
+
+	  public:
+		class REDSTRAIN_DAMNATION_API PopTheme {
+
+		  private:
+			DrawContext* context;
+
+		  public:
+			PopTheme(DrawContext* = NULL);
+			PopTheme(const PopTheme&);
+			~PopTheme();
+
+			inline DrawContext* get() const {
+				return context;
+			}
+
+			DrawContext* set(DrawContext* = NULL);
+
+		};
 
 	  private:
 		struct REDSTRAIN_DAMNATION_API ThemeSegment {
@@ -35,8 +55,9 @@ namespace tk {
 		ClippingTerminalCanvas canvas;
 
 	  public:
-		DrawContext(TerminalCanvas&);
+		DrawContext(TerminalCanvas&, Theme&);
 		DrawContext(const DrawContext&);
+		virtual ~DrawContext();
 
 		inline ClippingTerminalCanvas& getCanvas() {
 			return canvas;
@@ -46,12 +67,13 @@ namespace tk {
 			return canvas;
 		}
 
-		void pushTheme(Theme&);
+		void pushTheme(Theme*);
 		void popTheme();
-		unsigned getColor(const std::string&) const;
 		void reset();
-		DTheme& getTheme() const;
+		Theme& getTheme() const;
 		void setTheme(Theme&);
+
+		virtual unsigned getColor(const std::string&);
 
 	};
 

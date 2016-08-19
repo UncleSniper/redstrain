@@ -25,6 +25,7 @@ namespace tk {
 
 	  public:
 		static const unsigned NO_COLOR = 256u;
+		static const unsigned TERMINAL_DEFAULT = 257u;
 		static const unsigned SIMPLE_BLACK = 0u;
 		static const unsigned SIMPLE_WHITE = 7u;
 

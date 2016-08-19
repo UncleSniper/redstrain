@@ -6,6 +6,7 @@
 
 #include "../Size.hpp"
 #include "../Point.hpp"
+#include "InputListener.hpp"
 
 namespace redengine {
 namespace damnation {
@@ -15,13 +16,14 @@ namespace tk {
 	class Theme;
 	class Screen;
 	class Container;
-	class InputEvent;
 	class DrawContext;
-	class InputListener;
 	class FocusListener;
 	class WidgetListener;
 
 	class REDSTRAIN_DAMNATION_API Widget {
+
+	  public:
+		static const unsigned NO_SIZE_LIMIT = ~0u;
 
 	  protected:
 		Widget(const Widget&);
@@ -32,7 +34,7 @@ namespace tk {
 
 		virtual Container* getParent() = 0;
 		virtual void setParent(Container*) = 0;
-		virtual Screen& getScreen() = 0;
+		virtual Screen* getScreen() = 0;
 		virtual Layer* getLayer() = 0;
 		virtual void setLayer(Layer*) = 0;
 
@@ -72,7 +74,7 @@ namespace tk {
 		virtual void setTheme(Theme*) = 0;
 		virtual void clearCachedColors() = 0;
 
-		virtual void processInput(const InputEvent&) = 0;
+		virtual void processInput(InputListener::InputEvent&) = 0;
 
 		virtual void getInputListeners(util::Appender<InputListener*>&) = 0;
 		virtual bool addInputListener(InputListener&) = 0;
