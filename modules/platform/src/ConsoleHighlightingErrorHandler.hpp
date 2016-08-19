@@ -142,11 +142,11 @@ namespace platform {
 		ConsoleHighlightingErrorHandler(Console*, const HighlightingConfiguration&);
 		ConsoleHighlightingErrorHandler(const ConsoleHighlightingErrorHandler&);
 
-		inline Console* getConsole() const {
+		inline Console* getHighlightingConsole() const {
 			return console;
 		}
 
-		void setConsole(Console*);
+		void setHighlightingConsole(Console*);
 
 		inline HighlightingConfiguration& getHighlightingConfiguration() {
 			return configuration;

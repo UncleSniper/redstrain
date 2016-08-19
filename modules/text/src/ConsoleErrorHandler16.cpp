@@ -19,7 +19,7 @@ namespace text {
 			indenter(getStream()), console(handle) {
 		if(console.getFile().getHandle() != File::INVALID_HANDLE
 				&& Console::isConsole(console.getFile().getHandle()))
-			setConsole(&console);
+			setHighlightingConsole(&console);
 	}
 
 	ConsoleErrorHandler16::ConsoleErrorHandler16(const ConsoleErrorHandler16& handler)
@@ -29,7 +29,7 @@ namespace text {
 			indenter, NULL), indenter(handler.indenter), console(handler.console) {
 		if(console.getFile().getHandle() != File::INVALID_HANDLE
 				&& Console::isConsole(console.getFile().getHandle()))
-			setConsole(&console);
+			setHighlightingConsole(&console);
 	}
 
 	ConsoleErrorHandler16::~ConsoleErrorHandler16() {}
@@ -42,7 +42,8 @@ namespace text {
 	  protected:
 		virtual ConsoleErrorHandler16* newInstance() {
 			Delete<ConsoleErrorHandler16> handler(new ConsoleErrorHandler16(handle));
-			handler->setConsole(&handler->getConsole());   // trigger notifyConsoleChanged() to update columnCount
+			// trigger notifyConsoleChanged() to update columnCount
+			handler->setHighlightingConsole(handler->getHighlightingConsole());
 			return handler.set();
 		}
 

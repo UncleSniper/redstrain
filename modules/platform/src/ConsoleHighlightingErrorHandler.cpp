@@ -40,7 +40,7 @@ namespace platform {
 			: ErrorHandler(handler), HighlightingErrorHandler(handler),
 			console(handler.console), configuration(handler.configuration) {}
 
-	void ConsoleHighlightingErrorHandler::setConsole(Console* console) {
+	void ConsoleHighlightingErrorHandler::setHighlightingConsole(Console* console) {
 		this->console = console;
 		notifyConsoleChanged();
 	}

@@ -17,7 +17,7 @@ namespace io {
 		stream.setCloseOnDestroy(false);
 		if(console.getFile().getHandle() != File::INVALID_HANDLE
 				&& Console::isConsole(console.getFile().getHandle()))
-			setConsole(&console);
+			setHighlightingConsole(&console);
 	}
 
 	ConsoleErrorHandler8::ConsoleErrorHandler8(const ConsoleErrorHandler8& handler)
@@ -26,7 +26,7 @@ namespace io {
 			stream(handler.stream.getFile().getHandle(), File::OUTPUT), indenter(stream), console(handler.console) {
 		if(console.getFile().getHandle() != File::INVALID_HANDLE
 				&& Console::isConsole(console.getFile().getHandle()))
-			setConsole(&console);
+			setHighlightingConsole(&console);
 	}
 
 	ConsoleErrorHandler8::~ConsoleErrorHandler8() {}
@@ -50,7 +50,8 @@ namespace io {
 
 	ConsoleErrorHandler8* DefaultConsoleErrorHandler8Singleton::newInstance() {
 		Delete<ConsoleErrorHandler8> handler(new ConsoleErrorHandler8(Console::STANDARD_ERROR));
-		handler->setConsole(&handler->getConsole());   // trigger notifyConsoleChanged() to update columnCount
+		// trigger notifyConsoleChanged() to update columnCount
+		handler->setHighlightingConsole(handler->getHighlightingConsole());
 		return handler.set();
 	}
 

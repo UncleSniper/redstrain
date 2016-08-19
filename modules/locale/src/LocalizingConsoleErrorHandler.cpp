@@ -94,7 +94,8 @@ namespace locale {
 	  protected:
 		virtual LocalizingConsoleErrorHandler* newInstance() {
 			Delete<LocalizingConsoleErrorHandler> handler(new LocalizingConsoleErrorHandler(handle));
-			handler->setConsole(&handler->getConsole());   // trigger notifyConsoleChanged() to update columnCount
+			// trigger notifyConsoleChanged() to update columnCount
+			handler->setHighlightingConsole(handler->getHighlightingConsole());
 			return handler.set();
 		}
 

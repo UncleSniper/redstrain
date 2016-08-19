@@ -22,7 +22,7 @@ namespace io {
 	void ConsoleOutputStreamErrorHandler8::writeStackTrace(const StackTrace* trace) {
 		OutputStreamStackTraceIndenter8 indenter(getStream());
 		indenter.setIndentationChain(this);
-		ConsoleOutputStreamStackTraceSink8 sink(getStream(), indenter, getConsole());
+		ConsoleOutputStreamStackTraceSink8 sink(getStream(), indenter, getHighlightingConsole());
 		sink.setConsole(sink.getConsole());   // trigger notifyConsoleChanged() to update columnCount
 		sink.advanceCurrentColumn(getCurrentColumn());
 		configureStackTraceSink(sink, indenter);
