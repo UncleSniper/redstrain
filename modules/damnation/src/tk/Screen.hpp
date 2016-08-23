@@ -29,6 +29,7 @@ namespace tk {
 	  private:
 		TerminalCanvas& terminal;
 		Size termSize;
+		Layers layers;
 		DrawContext *const drawContext;
 		Layer* activeLayer;
 		util::ListenerSet<Task> tasks;
@@ -68,10 +69,11 @@ namespace tk {
 			shouldFinish = true;
 		}
 
-		Layer* addLayer();
+		Layer& addLayer();
 		Layer& getLayer(unsigned);
+		unsigned getTrueDepthOfLayer(Layer&) const;
 		void swapLayers(Layer&, Layer&);
-		void removeLayer(Layer&);
+		bool removeLayer(Layer&);
 		void notifyTerminalSizeChanged();
 		Theme& getTheme() const;
 		void setTheme(Theme&);

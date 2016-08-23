@@ -21,6 +21,7 @@ namespace tk {
 		typedef std::map<Widget*, unsigned> InverseTabs;
 
 	  public:
+		static const unsigned INVALID_LAYER_DEPTH = ~0u;
 		static const unsigned INVALID_TAB_INDEX = ~0u;
 
 	  private:
@@ -30,6 +31,7 @@ namespace tk {
 		Tabs tabs;
 		InverseTabs inverseTabs;
 		unsigned currentTabIndex;
+		bool currentlyRemoving;
 
 	  private:
 		Layer(const Layer&);
@@ -64,6 +66,11 @@ namespace tk {
 			return currentTabIndex;
 		}
 
+		inline bool isCurrentlyRemoving() const {
+			return currentlyRemoving;
+		}
+
+		bool remove();
 		unsigned addTabIndex(Widget&);
 		unsigned removeTabIndex(Widget&);
 		void removeTabIndexOfDestroyedWidget(Widget&);
@@ -73,6 +80,7 @@ namespace tk {
 		void shiftFocus();
 		void unshiftFocus();
 		void notifyActiveChanged(bool);
+		void notifyDepthChanged();
 
 	};
 

@@ -1,4 +1,5 @@
 #include "Layer.hpp"
+#include "Screen.hpp"
 #include "StagePanel.hpp"
 #include "TabIndexOutOfBoundsError.hpp"
 #include "WidgetForeignToLayerError.hpp"
@@ -11,16 +12,26 @@ namespace damnation {
 namespace tk {
 
 	Layer::Layer(Screen& screen, unsigned depth) : screen(screen), depth(depth), stage(new StagePanel),
-			currentTabIndex(0u) {
+			currentTabIndex(0u), currentlyRemoving(false) {
 		stage->setOpaque(!depth);
 		stage->setLayer(this);
 	}
 
 	Layer::Layer(const Layer& layer) : screen(layer.screen), depth(layer.depth), stage(NULL),
-			currentTabIndex(Layer::INVALID_TAB_INDEX) {}
+			currentTabIndex(Layer::INVALID_TAB_INDEX), currentlyRemoving(false) {}
 
 	Layer::~Layer() {
 		delete stage;
+	}
+
+	bool Layer::remove() {
+		if(depth == Layer::INVALID_LAYER_DEPTH || currentlyRemoving)
+			return false;
+		currentlyRemoving = true;
+		screen.removeLayer(*this);
+		currentlyRemoving = false;
+		depth = Layer::INVALID_LAYER_DEPTH;
+		return true;
 	}
 
 	struct PopBackLayerTab {
@@ -178,6 +189,14 @@ namespace tk {
 		Widget* focus = getCurrentFocus();
 		if(focus)
 			focus->notifyActiveLayerChanged(isActive);
+	}
+
+	void Layer::notifyDepthChanged() {
+		if(depth == Layer::INVALID_LAYER_DEPTH || currentlyRemoving)
+			return;
+		unsigned newDepth = screen.getTrueDepthOfLayer(*this);
+		if(newDepth != Layer::INVALID_LAYER_DEPTH)
+			depth = newDepth;
 	}
 
 }}}
