@@ -7,6 +7,7 @@
 #include "Border.hpp"
 #include "Screen.hpp"
 #include "Container.hpp"
+#include "StagePanel.hpp"
 #include "DrawContext.hpp"
 #include "AbstractWidget.hpp"
 #include "CannotRelayerSubtreeError.hpp"
@@ -53,6 +54,11 @@ namespace tk {
 			theme->ref();
 	}
 
+	AbstractWidget::~AbstractWidget() {
+		if(layer)
+			layer->removeTabIndexOfDestroyedWidget(*this);
+	}
+
 	void AbstractWidget::setBorder(Border* border) {
 		if(border)
 			border->ref();
@@ -93,6 +99,11 @@ namespace tk {
 	void AbstractWidget::makeRectVisible(const Rectangle& rectangle, Gravity gravity) {
 		if(parent)
 			parent->makeChildRectVisible(*this, rectangle, gravity);
+	}
+
+	void AbstractWidget::makeVisible(Gravity gravity) {
+		if(parent)
+			parent->makeChildVisible(*this, gravity);
 	}
 
 	void AbstractWidget::addLocalColor(Color& color) {
@@ -175,7 +186,10 @@ namespace tk {
 		if(newParent && newParent->getIndexOfChild(*this) == Container::INVALID_CHILD_INDEX)
 			throw CannotSetParentOfWidgetError();
 		WidgetListener::ReparentEvent event(*this, parent, newParent);
+		Container* oldParent = parent;
 		parent = newParent;
+		if(oldParent)
+			oldParent->removeChild(*this);
 		setLayer(parent ? parent->getLayer() : NULL);
 		fireParentChanged(event);
 	}
@@ -191,8 +205,13 @@ namespace tk {
 	void AbstractWidget::setLayer(Layer* newLayer) {
 		if(layer == newLayer)
 			return;
-		if(parent && parent->getLayer() != newLayer)
-			throw CannotRelayerSubtreeError();
+		StagePanel* oldStage = NULL;
+		if(parent && parent->getLayer() != newLayer) {
+			Layer* player = parent->getLayer();
+			if(!player || parent != &player->getStage())
+				throw CannotRelayerSubtreeError();
+			oldStage = &player->getStage();
+		}
 		WidgetListener::RelayerEvent event(*this, layer, newLayer);
 		if(layer)
 			layer->removeTabIndex(*this);
@@ -201,6 +220,10 @@ namespace tk {
 		if(newLayer && takesFocus())
 			newLayer->addTabIndex(*this);
 		updateChildrenForNewLayer();
+		if(newLayer) {
+			const StageConstraints* oldsc = oldStage ? oldStage->getConstraint(*this) : NULL;
+			newLayer->getStage().add(*this, oldsc ? *oldsc : StageConstraints());
+		}
 		fireLayerChanged(event);
 	}
 

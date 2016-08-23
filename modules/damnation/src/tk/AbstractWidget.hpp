@@ -1,3 +1,6 @@
+#ifndef REDSTRAIN_MOD_DAMNATION_TK_ABSTRACTWIDGET_HPP
+#define REDSTRAIN_MOD_DAMNATION_TK_ABSTRACTWIDGET_HPP
+
 #include <set>
 #include <redstrain/util/ListenerSet.hpp>
 #include <redstrain/util/ListenerList.hpp>
@@ -14,7 +17,7 @@ namespace tk {
 
 	class Border;
 
-	class REDSTRAIN_DAMNATION_API AbstractWidget : public Widget {
+	class REDSTRAIN_DAMNATION_API AbstractWidget : public virtual Widget {
 
 	  private:
 		typedef std::set<Color*> ColorSet;
@@ -81,6 +84,7 @@ namespace tk {
 
 	  public:
 		AbstractWidget(const char*);
+		virtual ~AbstractWidget();
 
 		inline Border* getBorder() const {
 			return border;
@@ -103,6 +107,7 @@ namespace tk {
 
 		bool isFocused() const;
 		void makeRectVisible(const Rectangle&, Gravity);
+		void makeVisible(Gravity);
 
 		virtual Container* getParent();
 		virtual void setParent(Container*);
@@ -154,3 +159,5 @@ namespace tk {
 	};
 
 }}}
+
+#endif /* REDSTRAIN_MOD_DAMNATION_TK_ABSTRACTWIDGET_HPP */

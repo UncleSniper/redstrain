@@ -34,6 +34,8 @@ namespace tk {
 	  private:
 		Layer(const Layer&);
 
+		unsigned removeTabIndex(Widget&, bool);
+
 	  public:
 		Layer(Screen&, unsigned);
 		~Layer();
@@ -64,6 +66,7 @@ namespace tk {
 
 		unsigned addTabIndex(Widget&);
 		unsigned removeTabIndex(Widget&);
+		void removeTabIndexOfDestroyedWidget(Widget&);
 		void setTabIndex(Widget&, unsigned);
 		Widget* getCurrentFocus() const;
 		void setCurrentTabIndex(unsigned);

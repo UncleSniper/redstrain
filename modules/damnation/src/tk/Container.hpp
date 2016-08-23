@@ -12,7 +12,7 @@ namespace redengine {
 namespace damnation {
 namespace tk {
 
-	class REDSTRAIN_DAMNATION_API Container : public Widget {
+	class REDSTRAIN_DAMNATION_API Container : public virtual Widget {
 
 	  public:
 		static const util::MemorySize INVALID_CHILD_INDEX = util::IntegerBounds<util::MemorySize>::MAX;
@@ -27,6 +27,7 @@ namespace tk {
 		virtual util::MemorySize getIndexOfChild(Widget&) = 0;
 		virtual bool removeChild(Widget&) = 0;
 		virtual void makeChildRectVisible(Widget&, const Rectangle&, Gravity) = 0;
+		virtual void makeChildVisible(Widget&, Gravity) = 0;
 
 	};
 
