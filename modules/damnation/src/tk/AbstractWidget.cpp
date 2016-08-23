@@ -55,6 +55,10 @@ namespace tk {
 	}
 
 	AbstractWidget::~AbstractWidget() {
+		if(border)
+			border->unref();
+		if(theme)
+			theme->unref();
 		if(layer)
 			layer->removeTabIndexOfDestroyedWidget(*this);
 	}

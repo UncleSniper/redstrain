@@ -1,14 +1,18 @@
+#include <redstrain/util/Delete.hpp>
 #include <redstrain/protostr/ProtocolReader.hpp>
 #include <redstrain/protostr/ProtocolWriter.hpp>
+#include <redstrain/platform/SynchronizedSingleton.hpp>
 
 #include "Theme.hpp"
 #include "../IllegalColorIndexError.hpp"
 
 using std::string;
+using redengine::util::Delete;
 using redengine::io::InputStream;
 using redengine::io::OutputStream;
 using redengine::protostr::ProtocolReader;
 using redengine::protostr::ProtocolWriter;
+using redengine::platform::SynchronizedSingleton;
 
 namespace redengine {
 namespace damnation {
@@ -72,6 +76,36 @@ namespace tk {
 			unsigned color = static_cast<unsigned>(proto.readUInt16());
 			putColor(key, color);
 		}
+	}
+
+	class DefaultBuiltinThemeSynchronizedSingleton : public SynchronizedSingleton<Theme> {
+
+	  protected:
+		virtual Theme* newInstance();
+
+	  public:
+		DefaultBuiltinThemeSynchronizedSingleton();
+		DefaultBuiltinThemeSynchronizedSingleton(const DefaultBuiltinThemeSynchronizedSingleton&);
+
+	};
+
+	DefaultBuiltinThemeSynchronizedSingleton::DefaultBuiltinThemeSynchronizedSingleton() {}
+
+	DefaultBuiltinThemeSynchronizedSingleton::DefaultBuiltinThemeSynchronizedSingleton(const
+			DefaultBuiltinThemeSynchronizedSingleton& singleton) : SynchronizedSingleton<Theme>(singleton) {}
+
+	Theme* DefaultBuiltinThemeSynchronizedSingleton::newInstance() {
+		Delete<Theme> theme(new Theme);
+#define def(key, color) theme->putColor(#key, color ## u);
+#include "defaultBuiltin.themepp"
+#undef def
+		return theme.set();
+	}
+
+	static DefaultBuiltinThemeSynchronizedSingleton defaultBuiltinThemeSynchronizedSingleton;
+
+	Theme& Theme::getDefaultBuiltinTheme() {
+		return defaultBuiltinThemeSynchronizedSingleton.get();
 	}
 
 }}}

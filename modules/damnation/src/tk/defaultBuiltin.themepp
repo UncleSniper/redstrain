@@ -1,0 +1,7 @@
+def(org.unclesniper.damnation.abstract.splitText.opt, 1)
+def(org.unclesniper.damnation.abstract.relyOnColor.opt, 1)
+def(org.unclesniper.damnation.abstract.usePartialBlocks.opt, 1)
+def(org.unclesniper.damnation.abstract.renderCriticalParts.opt, 1)
+
+def(org.unclesniper.damnation.abstract.window.active.bg, 0)
+def(org.unclesniper.damnation.abstract.window.inactive.bg, 0)

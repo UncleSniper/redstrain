@@ -37,6 +37,8 @@ namespace tk {
 
 		virtual unsigned getColor(const std::string&);
 
+		static Theme& getDefaultBuiltinTheme();
+
 	};
 
 }}}
