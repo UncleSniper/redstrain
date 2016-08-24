@@ -19,6 +19,12 @@ namespace util {
 	}
 
 	template<typename SubjectT>
+	void unrefDestructor(SubjectT*& subject) {
+		if(subject)
+			subject->unref();
+	}
+
+	template<typename SubjectT>
 	struct VoidableDestructorSignature {
 		typedef void (*Destructor)(SubjectT&);
 	};
@@ -60,6 +66,19 @@ namespace util {
 
 	template<>
 	struct DeleteDestructor<void> {
+		static void destructor() {}
+	};
+
+	template<typename SubjectT>
+	struct UnrefDestructor {
+		static void destructor(SubjectT*& subject) {
+			if(subject)
+				subject->unref();
+		}
+	};
+
+	template<>
+	struct UnrefDestructor<void> {
 		static void destructor() {}
 	};
 

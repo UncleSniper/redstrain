@@ -7,6 +7,7 @@
 
 #include "Color.hpp"
 #include "Widget.hpp"
+#include "Gravity.hpp"
 #include "FocusListener.hpp"
 #include "WidgetListener.hpp"
 #include "../Rectangle.hpp"
