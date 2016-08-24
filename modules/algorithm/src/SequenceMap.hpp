@@ -177,8 +177,7 @@ namespace algorithm {
 				if(!parent)
 					return;
 				parent->getKeyPath(sink);
-				if(valuePresent)
-					sink.append(*reinterpret_cast<const ValueT*>(value.buffer));
+				sink.append(key);
 			}
 
 		  public:
