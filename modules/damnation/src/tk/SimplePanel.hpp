@@ -11,10 +11,10 @@ namespace tk {
 
 	class REDSTRAIN_DAMNATION_API SimplePanel : public AbstractContainer {
 
-	  private:
+	  protected:
 		typedef std::vector<Widget*> Children;
 
-	  private:
+	  protected:
 		Children children;
 
 	  protected:

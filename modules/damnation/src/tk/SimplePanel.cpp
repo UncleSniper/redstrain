@@ -9,7 +9,8 @@ namespace redengine {
 namespace damnation {
 namespace tk {
 
-	SimplePanel::SimplePanel(const char* className) : AbstractContainer(className) {}
+	SimplePanel::SimplePanel(const char* className)
+			: AbstractContainer(className ? className : "redengine.damnation.tk.SimplePanel") {}
 
 	SimplePanel::SimplePanel(const SimplePanel& panel) : Widget(panel), AbstractContainer(panel) {}
 
