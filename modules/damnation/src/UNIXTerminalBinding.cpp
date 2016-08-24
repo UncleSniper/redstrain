@@ -688,6 +688,8 @@ namespace damnation {
 			case OO_CURSOR_RIGHT:
 			case OO_CURSOR_RIGHT_BY:
 				return spec.parm_right_cursor || spec.cursor_right;
+			case OO_SET_CURSOR_VISIBLE:
+				return spec.cursor_invisible && spec.cursor_normal;
 			default:
 				return false;
 		}
@@ -1013,6 +1015,25 @@ namespace damnation {
 			return true;
 		}
 		return false;
+	}
+
+	bool UNIXTerminalBinding::setCursorVisible(bool visible) {
+		if(visible) {
+			if(spec.cursor_normal) {
+				wrappedWrite(termParam(spec.cursor_normal));
+				return true;
+			}
+			else
+				return false;
+		}
+		else {
+			if(spec.cursor_invisible) {
+				wrappedWrite(termParam(spec.cursor_invisible));
+				return true;
+			}
+			else
+				return false;
+		}
 	}
 
 	unsigned UNIXTerminalBinding::getColorCount() {
@@ -1367,6 +1388,10 @@ namespace damnation {
 	}
 
 	bool UNIXTerminalBinding::cursorRightBy(unsigned) {
+		NOT_UNIX
+	}
+
+	bool UNIXTerminalBinding::setCursorVisible(bool) {
 		NOT_UNIX
 	}
 

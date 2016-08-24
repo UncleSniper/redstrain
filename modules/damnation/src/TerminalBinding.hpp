@@ -32,7 +32,8 @@ namespace damnation {
 			OO_CURSOR_LEFT,
 			OO_CURSOR_LEFT_BY,
 			OO_CURSOR_RIGHT,
-			OO_CURSOR_RIGHT_BY
+			OO_CURSOR_RIGHT_BY,
+			OO_SET_CURSOR_VISIBLE
 		};
 
 	  public:
@@ -70,6 +71,7 @@ namespace damnation {
 		virtual bool cursorLeftBy(unsigned) = 0;
 		virtual bool cursorRight() = 0;
 		virtual bool cursorRightBy(unsigned) = 0;
+		virtual bool setCursorVisible(bool) = 0;
 
 		virtual unsigned getColorCount() = 0;
 		virtual unsigned setForegroundColor(unsigned) = 0;

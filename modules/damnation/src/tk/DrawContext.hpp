@@ -53,6 +53,8 @@ namespace tk {
 	  private:
 		ThemeStack themes;
 		ClippingTerminalCanvas canvas;
+		Point cursorPosition;
+		bool cursorVisible;
 
 	  public:
 		DrawContext(TerminalCanvas&, Theme&);
@@ -66,6 +68,16 @@ namespace tk {
 		inline const ClippingTerminalCanvas& getCanvas() const {
 			return canvas;
 		}
+
+		inline const Point& getCursorPosition() const {
+			return cursorPosition;
+		}
+
+		inline bool isCursorVisible() const {
+			return cursorVisible;
+		}
+
+		void setCursorPosition(const Point&, bool);
 
 		void pushTheme(Theme*);
 		void popTheme();

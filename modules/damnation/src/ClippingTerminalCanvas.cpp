@@ -255,6 +255,10 @@ namespace damnation {
 		cursorColumn += static_cast<int>(columns);
 	}
 
+	void ClippingTerminalCanvas::setCursorVisible(bool visible) {
+		terminal.setCursorVisible(visible);
+	}
+
 	unsigned ClippingTerminalCanvas::setForegroundColor(unsigned color) {
 		return terminal.setForegroundColor(color);
 	}

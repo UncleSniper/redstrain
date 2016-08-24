@@ -155,14 +155,20 @@ namespace tk {
 	}
 
 	void Screen::draw() {
-		//TODO: cursor position stuff
 		if(terminal.hasSizeChanged())
 			notifyTerminalSizeChanged();
+		drawContext->setCursorPosition(Point::ORIGIN, true);
 		Layers::const_iterator lbegin(layers.begin()), lend(layers.end());
 		for(; lbegin != lend; ++lbegin) {
 			drawContext->reset();
 			(*lbegin)->getStage().draw(Point(0, 0), *drawContext);
 		}
+		const Point cursorPosition(drawContext->getCursorPosition());
+		terminal.moveTo(
+			cursorPosition.row < 0 ? 0u : static_cast<unsigned>(cursorPosition.row),
+			cursorPosition.column < 0 ? 0u : static_cast<unsigned>(cursorPosition.column)
+		);
+		terminal.setCursorVisible(drawContext->isCursorVisible());
 		terminal.flush();
 	}
 

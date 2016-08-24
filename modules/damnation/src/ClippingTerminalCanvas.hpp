@@ -76,6 +76,7 @@ namespace damnation {
 		virtual void cursorLeftBy(unsigned);
 		virtual void cursorRight();
 		virtual void cursorRightBy(unsigned);
+		virtual void setCursorVisible(bool);
 
 		virtual unsigned setForegroundColor(unsigned);
 		virtual unsigned setBackgroundColor(unsigned);

@@ -32,6 +32,8 @@ namespace tk {
 		Widget();
 		virtual ~Widget();
 
+		Point getAbsolutePosition();
+
 		virtual Container* getParent() = 0;
 		virtual void setParent(Container*) = 0;
 		virtual Screen* getScreen() = 0;

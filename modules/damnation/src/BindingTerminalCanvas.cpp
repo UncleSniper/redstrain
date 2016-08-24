@@ -854,6 +854,10 @@ namespace damnation {
 		}
 	}
 
+	void BindingTerminalCanvas::setCursorVisible(bool visible) {
+		binding.setCursorVisible(visible);
+	}
+
 	unsigned BindingTerminalCanvas::setForegroundColor(unsigned color) {
 		return binding.setForegroundColor(color);
 	}

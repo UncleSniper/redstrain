@@ -196,6 +196,7 @@ namespace damnation {
 		virtual bool cursorLeftBy(unsigned);
 		virtual bool cursorRight();
 		virtual bool cursorRightBy(unsigned);
+		virtual bool setCursorVisible(bool);
 
 		virtual unsigned getColorCount();
 		virtual unsigned setForegroundColor(unsigned);

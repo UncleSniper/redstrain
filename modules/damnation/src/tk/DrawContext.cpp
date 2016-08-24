@@ -51,14 +51,21 @@ namespace tk {
 
 	// ======== DrawContext ========
 
-	DrawContext::DrawContext(TerminalCanvas& terminal, Theme& rootTheme) : canvas(terminal) {
+	DrawContext::DrawContext(TerminalCanvas& terminal, Theme& rootTheme)
+			: canvas(terminal), cursorPosition(0, 0), cursorVisible(true) {
 		themes.push_back(ThemeSegment(rootTheme));
 	}
 
 	DrawContext::DrawContext(const DrawContext& context) : ColorSource(context), themes(context.themes),
-			canvas(const_cast<TerminalCanvas&>(context.canvas.getTerminal())) {}
+			canvas(const_cast<TerminalCanvas&>(context.canvas.getTerminal())),
+			cursorPosition(context.cursorPosition), cursorVisible(context.cursorVisible) {}
 
 	DrawContext::~DrawContext() {}
+
+	void DrawContext::setCursorPosition(const Point& position, bool visible) {
+		cursorPosition = position;
+		cursorVisible = visible;
+	}
 
 	void DrawContext::pushTheme(Theme* theme) {
 		if(theme)
