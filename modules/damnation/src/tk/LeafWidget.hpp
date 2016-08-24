@@ -77,6 +77,11 @@ namespace tk {
 		LeafWidget(const LeafWidget&);
 		virtual ~LeafWidget();
 
+		void bindKey(const InputAction::InputSequenceEvent::KeySequence&, InputAction&);
+		void bindKey(const KeySym&, InputAction&);
+		bool unbindKey(const InputAction::InputSequenceEvent::KeySequence&);
+		bool unbindKey(const KeySym&);
+
 		virtual void pack();
 
 	};

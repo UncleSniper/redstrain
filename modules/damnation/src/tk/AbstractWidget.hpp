@@ -101,6 +101,26 @@ namespace tk {
 			this->opaque = opaque;
 		}
 
+		inline Color& getBackground() {
+			return background;
+		}
+
+		inline const Color& getBackground() const {
+			return background;
+		}
+
+		void setBackground(const Color&);
+
+		inline Color& getInactiveBackground() {
+			return inactiveBackground;
+		}
+
+		inline const Color& getInactiveBackground() const {
+			return inactiveBackground;
+		}
+
+		void setInactiveBackground(const Color&);
+
 		unsigned getBackgroundColor();
 		void setBackgroundColor(unsigned);
 		unsigned getInactiveBackgroundColor();

@@ -84,6 +84,8 @@ namespace tk {
 		unsigned get(ColorSource&);
 		void clearCache();
 
+		Color& operator=(const Color&);
+
 	};
 
 }}}

@@ -71,6 +71,14 @@ namespace tk {
 		this->border = border;
 	}
 
+	void AbstractWidget::setBackground(const Color& color) {
+		background = color;
+	}
+
+	void AbstractWidget::setInactiveBackground(const Color& color) {
+		inactiveBackground = color;
+	}
+
 	unsigned AbstractWidget::getBackgroundColor() {
 		return background.getLocal();
 	}

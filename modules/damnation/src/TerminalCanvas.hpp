@@ -26,8 +26,31 @@ namespace damnation {
 		void write(const std::string&);
 		void write(text::Char16);
 		void write(const text::String16&);
+
 		void fill(const Rectangle&, char);
 		void fill(const Rectangle&, text::Char16);
+
+		void hline(unsigned, unsigned, unsigned, BoxSymbol, BoxSymbol, BoxSymbol);
+		void hline(unsigned, unsigned, unsigned, BoxSymbol);
+		void hline(unsigned, unsigned, unsigned);
+		void hline(unsigned, unsigned, unsigned, char, char, char);
+		void hline(unsigned, unsigned, unsigned, char);
+		void hline(unsigned, unsigned, unsigned, text::Char16, text::Char16, text::Char16);
+		void hline(unsigned, unsigned, unsigned, text::Char16);
+
+		void vline(unsigned, unsigned, unsigned, BoxSymbol, BoxSymbol, BoxSymbol);
+		void vline(unsigned, unsigned, unsigned, BoxSymbol);
+		void vline(unsigned, unsigned, unsigned);
+		void vline(unsigned, unsigned, unsigned, char, char, char);
+		void vline(unsigned, unsigned, unsigned, char);
+		void vline(unsigned, unsigned, unsigned, text::Char16, text::Char16, text::Char16);
+		void vline(unsigned, unsigned, unsigned, text::Char16);
+
+		void box(const Rectangle&, BoxSymbol, BoxSymbol, BoxSymbol, BoxSymbol, BoxSymbol, BoxSymbol);
+		void box(const Rectangle&, char, char, char, char, char, char);
+		void box(const Rectangle&, text::Char16, text::Char16,
+				text::Char16, text::Char16, text::Char16, text::Char16);
+		void box(const Rectangle&, bool = false);
 
 		virtual bool hasSizeChanged() = 0;
 		virtual Size getSize() = 0;

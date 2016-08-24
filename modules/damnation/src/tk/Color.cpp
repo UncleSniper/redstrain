@@ -21,7 +21,7 @@ namespace tk {
 			cached(Color::NO_COLOR) {}
 
 	Color::Color(const Color& color) : type(color.type), use(color.use), placement(color.placement),
-			container(color.container), fallback(color.fallback), local(color.local), cached(color.cached) {}
+			container(color.container), fallback(color.fallback), local(color.local), cached(Color::NO_COLOR) {}
 
 	void Color::setType(const string& type) {
 		this->type = type;
@@ -69,6 +69,17 @@ namespace tk {
 
 	void Color::clearCache() {
 		cached = Color::NO_COLOR;
+	}
+
+	Color& Color::operator=(const Color& color) {
+		type = color.type;
+		use = color.use;
+		placement = color.placement;
+		container = color.container;
+		fallback = color.fallback;
+		local = color.local;
+		cached = Color::NO_COLOR;
+		return *this;
 	}
 
 }}}

@@ -5,3 +5,11 @@ def(org.unclesniper.damnation.abstract.renderCriticalParts.opt, 1)
 
 def(org.unclesniper.damnation.abstract.window.active.bg, 0)
 def(org.unclesniper.damnation.abstract.window.inactive.bg, 0)
+
+def(org.unclesniper.damnation.abstract.control.active.fg, 15)
+def(org.unclesniper.damnation.abstract.control.inactive.fg, 7)
+
+def(org.unclesniper.damnation.abstract.border.active.fg, 39)
+def(org.unclesniper.damnation.abstract.border.active.bg, 0)
+def(org.unclesniper.damnation.abstract.border.inactive.fg, 7)
+def(org.unclesniper.damnation.abstract.border.inactive.bg, 0)

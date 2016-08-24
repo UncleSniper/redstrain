@@ -2,9 +2,11 @@
 #include <redstrain/util/stloperators.hpp>
 
 #include "LeafWidget.hpp"
+#include "listeners/ShiftFocusInputAction.hpp"
 
 using redengine::util::MemorySize;
 using redengine::util::PlusAssignAppender;
+using redengine::damnation::tk::listeners::ShiftFocusInputAction;
 using redengine::util::operator+=;
 
 namespace redengine {
@@ -64,12 +66,48 @@ namespace tk {
 
 	LeafWidget::LeafWidget(const LeafWidget& widget) : Widget(widget), AbstractWidget(widget),
 			inputState(&keyBindings.getRoot()), lastInputAction(NULL),
-			lastInputLength(static_cast<MemorySize>(0u)), currentInputDepth(static_cast<MemorySize>(0u)) {}
+			lastInputLength(static_cast<MemorySize>(0u)), currentInputDepth(static_cast<MemorySize>(0u)) {
+		addDefaultKeyBindings();
+	}
 
 	LeafWidget::~LeafWidget() {}
 
 	void LeafWidget::addDefaultKeyBindings() {
-		//TODO
+		bindKey(KeySym::TAB, ShiftFocusInputAction::getUnboundInstance(false));
+		bindKey(KeySym(KeySym::T_BACK_TAB, KeySym::M_NONE, '\0'), ShiftFocusInputAction::getUnboundInstance(true));
+	}
+
+	void LeafWidget::bindKey(const InputAction::InputSequenceEvent::KeySequence& keys, InputAction& action) {
+		KeyBindings::Node* node = &keyBindings.getRoot();
+		InputAction::InputSequenceEvent::KeySequence::const_iterator begin(keys.begin()), end(keys.end());
+		for(; begin != end; ++begin)
+			node = &node->put(*begin);
+		action.ref();
+		node->setValue(&action);
+		clearKeyBindingState();
+	}
+
+	void LeafWidget::bindKey(const KeySym& key, InputAction& action) {
+		InputAction::InputSequenceEvent::KeySequence keys;
+		keys.push_back(key);
+		bindKey(keys, action);
+	}
+
+	bool LeafWidget::unbindKey(const InputAction::InputSequenceEvent::KeySequence& keys) {
+		KeyBindings::Node* node = &keyBindings.getRoot();
+		InputAction::InputSequenceEvent::KeySequence::const_iterator begin(keys.begin()), end(keys.end());
+		for(; begin != end; ++begin) {
+			node = node->get(*begin);
+			if(!node)
+				return false;
+		}
+		return node->remove();
+	}
+
+	bool LeafWidget::unbindKey(const KeySym& key) {
+		InputAction::InputSequenceEvent::KeySequence keys;
+		keys.push_back(key);
+		return unbindKey(keys);
 	}
 
 	bool LeafWidget::feedKey(const KeySym& key) {
