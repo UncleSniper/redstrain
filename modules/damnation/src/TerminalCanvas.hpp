@@ -26,6 +26,7 @@ namespace damnation {
 		void write(const std::string&);
 		void write(text::Char16);
 		void write(const text::String16&);
+		void write(BoxSymbol);
 
 		void fill(const Rectangle&, char);
 		void fill(const Rectangle&, text::Char16);
@@ -93,7 +94,7 @@ namespace damnation {
 		virtual void writeNonControl(const char*, util::MemorySize) = 0;
 		virtual void writeNonControl(text::Char16) = 0;
 		virtual void writeNonControl(const text::Char16*, util::MemorySize) = 0;
-		virtual void write(BoxSymbol) = 0;
+		virtual void writeSymbol(BoxSymbol) = 0;
 		virtual void flush() = 0;
 		virtual void closeCanvas() = 0;
 

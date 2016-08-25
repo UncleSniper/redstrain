@@ -123,6 +123,10 @@ namespace damnation {
 		}
 	}
 
+	void TerminalCanvas::write(BoxSymbol symbol) {
+		writeSymbol(symbol);
+	}
+
 	static void _makeFillRect(const Rectangle& area, const Size& size,
 			unsigned& row, unsigned& column, unsigned& width, unsigned& height) {
 		row = area.row < 0 ? 0u : static_cast<unsigned>(area.row);

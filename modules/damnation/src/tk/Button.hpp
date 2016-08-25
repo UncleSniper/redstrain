@@ -5,8 +5,10 @@
 #include <redstrain/util/FireEventAppender.hpp>
 
 #include "LeafWidget.hpp"
+#include "DrawContext.hpp"
 #include "SimpleBorder.hpp"
 #include "CommandListener.hpp"
+#include "listeners/PressButtonInputAction.hpp"
 
 namespace redengine {
 namespace damnation {
@@ -24,7 +26,7 @@ namespace tk {
 	Color::SIMPLE_WHITE
 
 	template<typename CommandT>
-	class Button : public LeafWidget {
+	class Button : public LeafWidget, public Pressable {
 
 	  public:
 		typedef CommandT Command;
@@ -38,7 +40,7 @@ namespace tk {
 
 	  private:
 		void setDefaultBorderColors(const char* className) {
-			const string cn(className ? className : "redengine.damnation.tk.Button");
+			const std::string cn(className ? className : "redengine.damnation.tk.Button");
 			defaultBorder.getForeground().setUse(cn + ".defaultBorder.active.fg");
 			defaultBorder.getBackground().setUse(cn + ".defaultBorder.active.bg");
 			defaultBorder.getInactiveForeground().setUse(cn + ".defaultBorder.inactive.fg");
@@ -46,12 +48,16 @@ namespace tk {
 		}
 
 		void addDefaultKeyBindings() {
-			//TODO
+			InputAction& press = listeners::PressButtonInputAction::getUnboundInstance();
+			bindKey(KeySym::ENTER, press);
+			bindKey(KeySym::NEWLINE, press);
+			bindKey(KeySym::RETURN, press);
+			bindKey(KeySym::SPACE, press);
 		}
 
 	  protected:
-		void fireCommandIssued(CommandListener<CommandT>::CommandEvent& event) {
-			util::FireEventAppender<CommandListener<CommandT>, CommandListener<CommandT>::CommandEvent>
+		void fireCommandIssued(typename CommandListener<CommandT>::CommandEvent& event) {
+			util::FireEventAppender<CommandListener<CommandT>, typename CommandListener<CommandT>::CommandEvent>
 					sink(&CommandListener<CommandT>::commandIssued, event);
 			commandListeners.getListeners(sink);
 		}
@@ -105,7 +111,7 @@ namespace tk {
 			canvas.moveTo(ur, uc);
 			canvas.write(cpt);
 			if(focused)
-				context.setCursorPosition(ur, uc, false);
+				context.setCursorPosition(Point(r, c), false);
 		}
 
 	  public:
@@ -133,8 +139,8 @@ namespace tk {
 			addDefaultKeyBindings();
 		}
 
-		Button(const Button& button) : Widget(button), LeafWidget(button), caption(button.caption),
-				command(button.command), commandListeners(button.commandListeners),
+		Button(const Button& button) : Widget(button), LeafWidget(button), Pressable(button),
+				caption(button.caption), command(button.command), commandListeners(button.commandListeners),
 				defaultBorder(button.defaultBorder), foreground(button.foreground),
 				inactiveForeground(button.inactiveForeground) {
 			if(button.getBorder() == &button.defaultBorder)
@@ -234,8 +240,8 @@ namespace tk {
 			commandListeners.clearListeners();
 		}
 
-		void press() {
-			CommandListener<CommandT>::CommandEvent event(*this, command);
+		virtual void press() {
+			typename CommandListener<CommandT>::CommandEvent event(*this, command);
 			fireCommandIssued(event);
 		}
 

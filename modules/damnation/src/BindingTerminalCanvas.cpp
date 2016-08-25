@@ -969,7 +969,7 @@ namespace damnation {
 		}
 	}
 
-	void BindingTerminalCanvas::write(BoxSymbol symbol) {
+	void BindingTerminalCanvas::writeSymbol(BoxSymbol symbol) {
 		updateSize();
 		if(cursorColumn >= currentSize.width && !binding.hasAutoRightMargin())
 			newLine();

@@ -374,7 +374,7 @@ namespace damnation {
 		terminal.columnTo(cursorColumn < 0 ? 0u : static_cast<unsigned>(cursorColumn));
 	}
 
-	void ClippingTerminalCanvas::write(BoxSymbol symbol) {
+	void ClippingTerminalCanvas::writeSymbol(BoxSymbol symbol) {
 		updateSize();
 		if(getCurrentClipMask().contains(Point(cursorRow, cursorColumn)))
 			terminal.write(symbol);

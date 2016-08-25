@@ -92,7 +92,7 @@ namespace damnation {
 		virtual void writeNonControl(const char*, util::MemorySize);
 		virtual void writeNonControl(text::Char16);
 		virtual void writeNonControl(const text::Char16*, util::MemorySize);
-		virtual void write(BoxSymbol);
+		virtual void writeSymbol(BoxSymbol);
 		virtual void flush();
 		virtual void closeCanvas();
 
