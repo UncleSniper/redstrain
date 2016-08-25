@@ -8,7 +8,7 @@
 namespace redengine {
 namespace damnation {
 namespace tk {
-namespace util {
+namespace utils {
 
 	class REDSTRAIN_DAMNATION_API SetWidgetLayerAppender : public redengine::util::Appender<Widget*> {
 

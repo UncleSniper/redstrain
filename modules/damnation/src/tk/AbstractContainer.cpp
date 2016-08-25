@@ -1,11 +1,11 @@
 #include "Border.hpp"
 #include "AbstractContainer.hpp"
-#include "util/SetWidgetLayerAppender.hpp"
-#include "util/ClearWidgetCachedColorsAppender.hpp"
+#include "utils/SetWidgetLayerAppender.hpp"
+#include "utils/ClearWidgetCachedColorsAppender.hpp"
 
 using redengine::util::MemorySize;
-using redengine::damnation::tk::util::SetWidgetLayerAppender;
-using redengine::damnation::tk::util::ClearWidgetCachedColorsAppender;
+using redengine::damnation::tk::utils::SetWidgetLayerAppender;
+using redengine::damnation::tk::utils::ClearWidgetCachedColorsAppender;
 
 namespace redengine {
 namespace damnation {

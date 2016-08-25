@@ -3,7 +3,7 @@
 namespace redengine {
 namespace damnation {
 namespace tk {
-namespace util {
+namespace utils {
 
 	SetWidgetLayerAppender::SetWidgetLayerAppender(Layer* layer) : layer(layer) {}
 
