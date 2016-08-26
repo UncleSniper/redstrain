@@ -63,7 +63,7 @@ namespace tk {
 	DrawContext::~DrawContext() {}
 
 	void DrawContext::setCursorPosition(const Point& position, bool visible) {
-		cursorPosition = position;
+		cursorPosition = position + canvas.getCurrentOrigin();
 		cursorVisible = visible;
 	}
 

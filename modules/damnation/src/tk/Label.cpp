@@ -27,7 +27,7 @@ namespace tk {
 				string(className ? className : "redengine.damnation.tk.Label") + ".foreground.fg",
 				"labelForeground",
 				Color::SIMPLE_WHITE
-			) {
+			), setCursorPosition(false) {
 		addLocalColor(foreground);
 		lineBreaker->ref();
 	}
@@ -40,14 +40,15 @@ namespace tk {
 				string(className ? className : "redengine.damnation.tk.Label") + ".foreground.fg",
 				"labelForeground",
 				Color::SIMPLE_WHITE
-			) {
+			), setCursorPosition(false) {
 		addLocalColor(foreground);
 		lineBreaker->ref();
 	}
 
 	Label::Label(const Label& label) : Widget(label), LeafWidget(label), caption(label.caption),
 			lineBreaker(label.lineBreaker), brokenLines(label.brokenLines), breakingCached(label.breakingCached),
-			brokenWidth(label.brokenWidth), foreground(label.foreground) {
+			brokenWidth(label.brokenWidth), foreground(label.foreground),
+			setCursorPosition(label.setCursorPosition) {
 		addLocalColor(foreground);
 		if(lineBreaker)
 			lineBreaker->ref();
@@ -158,7 +159,7 @@ namespace tk {
 		canvas.setForegroundColor(foreground.get(context));
 		canvas.setBackgroundColor((isFocused() ? background : inactiveBackground).get(context));
 		int r = rectangle.row, bottom = r + static_cast<int>(rectangle.height);
-		unsigned c = rectangle.column < 0 ? 0u : rectangle.column;
+		const unsigned c = rectangle.column < 0 ? 0u : rectangle.column;
 		Lines::const_iterator begin(brokenLines.begin()), end(brokenLines.end());
 		for(; begin != end; ++begin, ++r) {
 			if(r >= bottom)
@@ -168,6 +169,8 @@ namespace tk {
 			canvas.moveTo(static_cast<unsigned>(r), c);
 			canvas.write(*begin);
 		}
+		if(setCursorPosition)
+			context.setCursorPosition(Point(rectangle.row < 0 ? 0 : rectangle.row, static_cast<int>(c)), false);
 	}
 
 }}}

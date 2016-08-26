@@ -25,6 +25,7 @@ namespace tk {
 		bool breakingCached;
 		util::MemorySize brokenWidth;
 		Color foreground;
+		bool setCursorPosition;
 
 	  private:
 		void rebreak(util::MemorySize);
@@ -68,6 +69,14 @@ namespace tk {
 		void setForeground(const Color&);
 		unsigned getForegroundColor() const;
 		void setForegroundColor(unsigned);
+
+		inline bool isSetCursorPosition() const {
+			return setCursorPosition;
+		}
+
+		inline void setSetCursorPosition(bool setCursorPosition) {
+			this->setCursorPosition = setCursorPosition;
+		}
 
 		virtual bool takesFocus();
 
