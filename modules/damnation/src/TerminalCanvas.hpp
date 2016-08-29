@@ -30,6 +30,7 @@ namespace damnation {
 
 		void fill(const Rectangle&, char);
 		void fill(const Rectangle&, text::Char16);
+		void fill(const Rectangle&, BoxSymbol);
 
 		void hline(unsigned, unsigned, unsigned, BoxSymbol, BoxSymbol, BoxSymbol);
 		void hline(unsigned, unsigned, unsigned, BoxSymbol);

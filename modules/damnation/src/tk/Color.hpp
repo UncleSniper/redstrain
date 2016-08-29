@@ -28,6 +28,8 @@ namespace tk {
 		static const unsigned TERMINAL_DEFAULT = 257u;
 		static const unsigned SIMPLE_BLACK = 0u;
 		static const unsigned SIMPLE_WHITE = 7u;
+		static const unsigned TRUE = 1u;
+		static const unsigned FALSE = 0u;
 
 	  private:
 		std::string type, use, placement, container;

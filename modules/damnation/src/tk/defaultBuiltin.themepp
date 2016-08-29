@@ -7,6 +7,8 @@ def(org.unclesniper.damnation.abstract.window.active.bg, 0)
 def(org.unclesniper.damnation.abstract.window.inactive.bg, 0)
 
 def(org.unclesniper.damnation.abstract.text.fg, 7)
+def(org.unclesniper.damnation.abstract.fill.fg, 34)
+def(org.unclesniper.damnation.abstract.reverseFill.fg, 7)
 
 def(org.unclesniper.damnation.abstract.control.active.fg, 15)
 def(org.unclesniper.damnation.abstract.control.inactive.fg, 7)

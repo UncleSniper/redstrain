@@ -176,4 +176,40 @@ namespace damnation {
 		return index >= BS_CHAR_COUNT16 ? static_cast<Char16>(0u) : BS_CHARS16[index];
 	}
 
+	static const BoxSymbol LEFT_BLOCKS[] = {
+		BS_BLANK,
+		BS_LEFT_BLOCK_18,
+		BS_LEFT_BLOCK_28,
+		BS_LEFT_BLOCK_38,
+		BS_LEFT_BLOCK_48,
+		BS_LEFT_BLOCK_58,
+		BS_LEFT_BLOCK_68,
+		BS_LEFT_BLOCK_78,
+		BS_FULL_BLOCK
+	};
+
+	static const BoxSymbol LOWER_BLOCKS[] = {
+		BS_BLANK,
+		BS_LOWER_BLOCK_18,
+		BS_LOWER_BLOCK_28,
+		BS_LOWER_BLOCK_38,
+		BS_LOWER_BLOCK_48,
+		BS_LOWER_BLOCK_58,
+		BS_LOWER_BLOCK_68,
+		BS_LOWER_BLOCK_78,
+		BS_FULL_BLOCK
+	};
+
+	REDSTRAIN_DAMNATION_API BoxSymbol leftBlockSymbol(unsigned fraction) {
+		if(fraction > 8u)
+			fraction = 8u;
+		return LEFT_BLOCKS[fraction];
+	}
+
+	REDSTRAIN_DAMNATION_API BoxSymbol lowerBlockSymbol(unsigned fraction) {
+		if(fraction > 8u)
+			fraction = 8u;
+		return LOWER_BLOCKS[fraction];
+	}
+
 }}

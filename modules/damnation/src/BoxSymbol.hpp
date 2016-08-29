@@ -89,6 +89,8 @@ namespace damnation {
 
 	REDSTRAIN_DAMNATION_API char getBoxChar8(BoxSymbol);
 	REDSTRAIN_DAMNATION_API text::Char16 getBoxChar16(BoxSymbol);
+	REDSTRAIN_DAMNATION_API BoxSymbol leftBlockSymbol(unsigned);
+	REDSTRAIN_DAMNATION_API BoxSymbol lowerBlockSymbol(unsigned);
 
 }}
 

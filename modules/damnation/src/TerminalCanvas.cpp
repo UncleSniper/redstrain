@@ -1,3 +1,5 @@
+#include <redstrain/text/UnrepresentableCharacterError.hpp>
+
 #include "Rectangle.hpp"
 #include "TerminalCanvas.hpp"
 
@@ -5,6 +7,7 @@ using std::string;
 using redengine::text::Char16;
 using redengine::text::String16;
 using redengine::util::MemorySize;
+using redengine::text::UnrepresentableCharacterError;
 
 namespace redengine {
 namespace damnation {
@@ -205,6 +208,45 @@ namespace damnation {
 					for(u = 0u; u < height; ++u) {
 						moveTo(row + u, column);
 						write(line);
+					}
+				}
+				break;
+		}
+	}
+
+	void TerminalCanvas::fill(const Rectangle& area, BoxSymbol symbol) {
+		if(!area.width || !area.height)
+			return;
+		unsigned row, column, width, height;
+		makeFillRect(area, row, column, width, height);
+		if(!height)
+			return;
+		unsigned u;
+		switch(width) {
+			case 0u:
+				break;
+			case 1u:
+				for(u = 0u; u < height; ++u) {
+					moveTo(row + u, column);
+					writeSymbol(symbol);
+				}
+				break;
+			default:
+				{
+					String16 line16(static_cast<String16::size_type>(width), getBoxChar16(symbol));
+					u = 0u;
+					try {
+						for(; u < height; ++u) {
+							moveTo(row + u, column);
+							write(line16);
+						}
+					}
+					catch(const UnrepresentableCharacterError&) {
+						string line8(static_cast<string::size_type>(width), getBoxChar8(symbol));
+						for(; u < height; ++u) {
+							moveTo(row + u, column);
+							write(line16);
+						}
 					}
 				}
 				break;

@@ -157,7 +157,7 @@ namespace tk {
 	void Screen::draw() {
 		if(terminal.hasSizeChanged())
 			notifyTerminalSizeChanged();
-		drawContext->setCursorPosition(Point::ORIGIN, true);
+		drawContext->setCursorPosition(Point::ORIGIN, false);
 		Layers::const_iterator lbegin(layers.begin()), lend(layers.end());
 		for(; lbegin != lend; ++lbegin) {
 			drawContext->reset();
