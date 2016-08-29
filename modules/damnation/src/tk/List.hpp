@@ -18,7 +18,7 @@ namespace damnation {
 namespace tk {
 
 	template<typename ElementT>
-	class List : public LeafWidget {
+	class List : public LeafWidget, private ListModelListener<ElementT>, private ListSelectionListener {
 
 	  private:
 		static const int HAVE_MINIMUM_SIZE   = 01;
@@ -26,161 +26,6 @@ namespace tk {
 		static const int HAVE_PREFERRED_SIZE = 04;
 
 	  private:
-		class ModelListener : public ListModelListener<ElementT> {
-
-		  private:
-			List& list;
-
-		  public:
-			ModelListener(List& list) : list(list) {}
-
-			ModelListener(const ModelListener& listener)
-					: ListModelListener<ElementT>(listener), list(listener.list) {}
-
-			virtual void elementsInserted(typename SequenceModelListener<ElementT>::SequenceModelEvent& event) {
-				const ModelElementIndex start = event.getStartIndex(), end = event.getEndIndex();
-				if(list.greedyGeometryUpdates)
-					list.recalculateGeometry();
-				else if(list.cachedSizes) {
-					bool active = list.isFocused();
-					ModelElementIndex index;
-					for(index = start; index < end; ++index) {
-						Widget& rendition = list.renderer->getRenditionFor(active,
-								list.model->getElementAt(index), list.selectionStateOf(index), NULL);
-						if(list.cachedSizes & List::HAVE_MINIMUM_SIZE) {
-							const Size size(rendition.getMinimumSize());
-							if(size.width > list.minimumSize.width)
-								list.minimumSize.width = size.width;
-							list.minimumSize.height += size.height;
-						}
-						if(list.cachedSizes & List::HAVE_MAXIMUM_SIZE) {
-							const Size size(rendition.getMaximumSize());
-							if(size.width != Widget::NO_SIZE_LIMIT
-									&& (list.maximumSize.width == Widget::NO_SIZE_LIMIT
-									|| size.width < list.maximumSize.width))
-								list.maximumSize.width = size.width;
-							if(size.height == Widget::NO_SIZE_LIMIT)
-								list.maximumSize.height = Widget::NO_SIZE_LIMIT;
-							else if(list.maximumSize.height != Widget::NO_SIZE_LIMIT)
-								list.maximumSize.height += size.height;
-						}
-						if(list.cachedSizes & List::HAVE_PREFERRED_SIZE) {
-							const Size size(rendition.getPreferredSize());
-							if(size.width > list.preferredSize.width)
-								list.preferredSize.width = size.width;
-							list.preferredSize.height += size.height;
-						}
-					}
-					list.notifyListContentGeometryChanged();
-				}
-				if(end > start)
-					list.selectionModel->listElementsInserted(start, end - start,
-							end >= list.model->getElementCount());
-			}
-
-			virtual void elementsRemoved(typename SequenceModelListener<ElementT>::SequenceModelEvent& event) {
-				const ModelElementIndex start = event.getStartIndex(), end = event.getEndIndex();
-				if(list.greedyGeometryUpdates || end != start + static_cast<ModelElementIndex>(1u)
-						|| !event.getOldElement())
-					list.recalculateGeometry();
-				else if(list.cachedSizes) {
-					Widget& rendition = list.renderer->getRenditionFor(list.isFocused(),
-							*event.getOldElement(), list.selectionStateOf(start), NULL);
-					if(list.cachedSizes & List::HAVE_MINIMUM_SIZE)
-						list.minimumSize.height -= rendition.getMinimumSize().height;
-					if((list.cachedSizes & List::HAVE_MAXIMUM_SIZE)
-							&& list.maximumSize.height != Widget::NO_SIZE_LIMIT) {
-						const Size size(rendition.getMaximumSize());
-						if(size.height != Widget::NO_SIZE_LIMIT)
-							list.maximumSize.height -= size.height;
-					}
-					if(list.cachedSizes & List::HAVE_PREFERRED_SIZE)
-						list.preferredSize.height -= rendition.getPreferredSize().height;
-					list.notifyListContentGeometryChanged();
-				}
-				if(end > start)
-					list.selectionModel->listElementsRemoved(start, end, start >= list.model->getElementCount());
-			}
-
-			virtual void elementReplaced(typename SequenceModelListener<ElementT>::SequenceModelEvent& event) {
-				const ModelElementIndex start = event.getStartIndex(), end = event.getEndIndex();
-				if(list.greedyGeometryUpdates || end != start + static_cast<ModelElementIndex>(1u)
-						|| !event.getOldElement())
-					list.recalculateGeometry();
-				else if(list.cachedSizes) {
-					bool active = list.isFocused();
-					typename ElementRenderer<ElementT>::SelectionState state = list.selectionStateOf(start);
-					Widget& oldRendition = list.renderer->getRenditionFor(active,
-							*event.getOldElement(), state, NULL);
-					const Size oldMinimum(oldRendition.getMinimumSize());
-					const Size oldMaximum(oldRendition.getMaximumSize());
-					const Size oldPreferred(oldRendition.getPreferredSize());
-					const ElementT* newElement = event.getNewElement();
-					if(!newElement)
-						newElement = &list.model->getElementAt(start);
-					Widget& newRendition = list.renderer->getRenditionFor(active, *newElement, state, NULL);
-					if(list.cachedSizes & List::HAVE_MINIMUM_SIZE) {
-						const Size newMinimum(newRendition.getMinimumSize());
-						if(newMinimum.width > list.minimumSize.width)
-							list.minimumSize.width = newMinimum.width;
-						list.minimumSize.height += newMinimum.height;
-						list.minimumSize.height = list.minimumSize.height > oldMinimum.height
-								? list.minimumSize.height - oldMinimum.height : 0u;
-					}
-					if(list.cachedSizes & List::HAVE_MAXIMUM_SIZE) {
-						const Size newMaximum(newRendition.getMaximumSize());
-						if(newMaximum.height == Widget::NO_SIZE_LIMIT)
-							list.maximumSize.height = Widget::NO_SIZE_LIMIT;
-						else if(list.maximumSize.height != Widget::NO_SIZE_LIMIT
-								&& oldMaximum.height != Widget::NO_SIZE_LIMIT) {
-							list.maximumSize.height += newMaximum.height;
-							list.maximumSize.height = list.maximumSize.height > oldMaximum.height
-									? list.maximumSize.height - oldMaximum.height : 0u;
-						}
-						if(newMaximum.width != Widget::NO_SIZE_LIMIT
-								&& (list.maximumSize.width == Widget::NO_SIZE_LIMIT
-								|| newMaximum.width < list.maximumSize.width))
-							list.maximumSize.width = newMaximum.width;
-					}
-					if(list.cachedSizes & List::HAVE_PREFERRED_SIZE) {
-						const Size newPreferred(newRendition.getPreferredSize());
-						if(newPreferred.width > list.preferredSize.width)
-							list.preferredSize.width = newPreferred.width;
-						list.preferredSize.height += newPreferred.height;
-						list.preferredSize.height = list.preferredSize.height > oldPreferred.height
-								? list.preferredSize.height - oldPreferred.height : 0u;
-					}
-					list.notifyListContentGeometryChanged();
-				}
-			}
-
-			virtual void elementModified(typename SequenceModelListener<ElementT>::SequenceModelEvent&) {
-				list.recalculateGeometry();
-			}
-
-		};
-
-		class SelectionListener : public ListSelectionListener {
-
-		  private:
-			List& list;
-
-		  public:
-			SelectionListener(List& list) : list(list) {}
-
-			SelectionListener(const SelectionListener& listener)
-					: ListSelectionListener(listener), list(listener.list) {}
-
-			virtual void primaryListSelectionChanged(PrimaryListSelectionEvent& event) {
-				ModelElementIndex selectedIndex = event.getNewIndex();
-				if(selectedIndex != ListSelectionModel::NO_SELECTION)
-					list.makeRectVisible(list.getItemGeometry(selectedIndex), GRAV_WEST);
-			}
-
-			virtual void listItemSelectionChanged(SecondaryListSelectionEvent&) {}
-
-		};
-
 		class CalculateSizeElementAppender : public util::Appender<ElementT> {
 
 		  private:
@@ -405,11 +250,9 @@ namespace tk {
 
 	  private:
 		ListModel<ElementT>* model;
-		ModelListener modelListener;
 		ListItemRenderer<ElementT>* renderer;
 		SingleListSelectionModel defaultSelectionModel;
 		ListSelectionModel* selectionModel;
-		SelectionListener selectionListener;
 		Size minimumSize, maximumSize, preferredSize;
 		int cachedSizes;
 		bool greedyGeometryUpdates;
@@ -522,13 +365,140 @@ namespace tk {
 			repack();
 		}
 
+	  private:
+		virtual void elementsInserted(typename SequenceModelListener<ElementT>::SequenceModelEvent& event) {
+			const ModelElementIndex start = event.getStartIndex(), end = event.getEndIndex();
+			if(greedyGeometryUpdates)
+				recalculateGeometry();
+			else if(cachedSizes) {
+				bool active = isFocused();
+				ModelElementIndex index;
+				for(index = start; index < end; ++index) {
+					Widget& rendition = renderer->getRenditionFor(active,
+							model->getElementAt(index), selectionStateOf(index), NULL);
+					if(cachedSizes & List::HAVE_MINIMUM_SIZE) {
+						const Size size(rendition.getMinimumSize());
+						if(size.width > minimumSize.width)
+							minimumSize.width = size.width;
+						minimumSize.height += size.height;
+					}
+					if(cachedSizes & List::HAVE_MAXIMUM_SIZE) {
+						const Size size(rendition.getMaximumSize());
+						if(size.width != Widget::NO_SIZE_LIMIT
+								&& (maximumSize.width == Widget::NO_SIZE_LIMIT || size.width < maximumSize.width))
+							maximumSize.width = size.width;
+						if(size.height == Widget::NO_SIZE_LIMIT)
+							maximumSize.height = Widget::NO_SIZE_LIMIT;
+						else if(maximumSize.height != Widget::NO_SIZE_LIMIT)
+							maximumSize.height += size.height;
+					}
+					if(cachedSizes & List::HAVE_PREFERRED_SIZE) {
+						const Size size(rendition.getPreferredSize());
+						if(size.width > preferredSize.width)
+							preferredSize.width = size.width;
+						preferredSize.height += size.height;
+					}
+				}
+				notifyListContentGeometryChanged();
+			}
+			if(end > start)
+				selectionModel->listElementsInserted(start, end - start, end >= model->getElementCount());
+		}
+
+		virtual void elementsRemoved(typename SequenceModelListener<ElementT>::SequenceModelEvent& event) {
+			const ModelElementIndex start = event.getStartIndex(), end = event.getEndIndex();
+			if(greedyGeometryUpdates || end != start + static_cast<ModelElementIndex>(1u)
+					|| !event.getOldElement())
+				recalculateGeometry();
+			else if(cachedSizes) {
+				Widget& rendition = renderer->getRenditionFor(isFocused(),
+						*event.getOldElement(), selectionStateOf(start), NULL);
+				if(cachedSizes & List::HAVE_MINIMUM_SIZE)
+					minimumSize.height -= rendition.getMinimumSize().height;
+				if((cachedSizes & List::HAVE_MAXIMUM_SIZE) && maximumSize.height != Widget::NO_SIZE_LIMIT) {
+					const Size size(rendition.getMaximumSize());
+					if(size.height != Widget::NO_SIZE_LIMIT)
+						maximumSize.height -= size.height;
+				}
+				if(cachedSizes & List::HAVE_PREFERRED_SIZE)
+					preferredSize.height -= rendition.getPreferredSize().height;
+				notifyListContentGeometryChanged();
+			}
+			if(end > start)
+				selectionModel->listElementsRemoved(start, end, start >= model->getElementCount());
+		}
+
+		virtual void elementReplaced(typename SequenceModelListener<ElementT>::SequenceModelEvent& event) {
+			const ModelElementIndex start = event.getStartIndex(), end = event.getEndIndex();
+			if(greedyGeometryUpdates || end != start + static_cast<ModelElementIndex>(1u)
+					|| !event.getOldElement())
+				recalculateGeometry();
+			else if(cachedSizes) {
+				bool active = isFocused();
+				typename ElementRenderer<ElementT>::SelectionState state = selectionStateOf(start);
+				Widget& oldRendition = renderer->getRenditionFor(active,
+						*event.getOldElement(), state, NULL);
+				const Size oldMinimum(oldRendition.getMinimumSize());
+				const Size oldMaximum(oldRendition.getMaximumSize());
+				const Size oldPreferred(oldRendition.getPreferredSize());
+				const ElementT* newElement = event.getNewElement();
+				if(!newElement)
+					newElement = &model->getElementAt(start);
+				Widget& newRendition = renderer->getRenditionFor(active, *newElement, state, NULL);
+				if(cachedSizes & List::HAVE_MINIMUM_SIZE) {
+					const Size newMinimum(newRendition.getMinimumSize());
+					if(newMinimum.width > minimumSize.width)
+						minimumSize.width = newMinimum.width;
+					minimumSize.height += newMinimum.height;
+					minimumSize.height = minimumSize.height > oldMinimum.height
+							? minimumSize.height - oldMinimum.height : 0u;
+				}
+				if(cachedSizes & List::HAVE_MAXIMUM_SIZE) {
+					const Size newMaximum(newRendition.getMaximumSize());
+					if(newMaximum.height == Widget::NO_SIZE_LIMIT)
+						maximumSize.height = Widget::NO_SIZE_LIMIT;
+					else if(maximumSize.height != Widget::NO_SIZE_LIMIT
+							&& oldMaximum.height != Widget::NO_SIZE_LIMIT) {
+						maximumSize.height += newMaximum.height;
+						maximumSize.height = maximumSize.height > oldMaximum.height
+								? maximumSize.height - oldMaximum.height : 0u;
+					}
+					if(newMaximum.width != Widget::NO_SIZE_LIMIT
+							&& (maximumSize.width == Widget::NO_SIZE_LIMIT || newMaximum.width < maximumSize.width))
+						maximumSize.width = newMaximum.width;
+				}
+				if(cachedSizes & List::HAVE_PREFERRED_SIZE) {
+					const Size newPreferred(newRendition.getPreferredSize());
+					if(newPreferred.width > preferredSize.width)
+						preferredSize.width = newPreferred.width;
+					preferredSize.height += newPreferred.height;
+					preferredSize.height = preferredSize.height > oldPreferred.height
+							? preferredSize.height - oldPreferred.height : 0u;
+				}
+				notifyListContentGeometryChanged();
+			}
+		}
+
+		virtual void elementModified(typename SequenceModelListener<ElementT>::SequenceModelEvent&) {
+			recalculateGeometry();
+		}
+
+	  private:
+		virtual void primaryListSelectionChanged(PrimaryListSelectionEvent& event) {
+			ModelElementIndex selectedIndex = event.getNewIndex();
+			if(selectedIndex != ListSelectionModel::NO_SELECTION)
+				makeRectVisible(getItemGeometry(selectedIndex), GRAV_WEST);
+		}
+
+		virtual void listItemSelectionChanged(SecondaryListSelectionEvent&) {}
+
 	  public:
 		List(ListModel<ElementT>& model, ListItemRenderer<ElementT>& renderer)
-				: model(&model), modelListener(*this), renderer(&renderer), selectionModel(&defaultSelectionModel),
-				selectionListener(*this), minimumSize(0u, 0u), maximumSize(0u, 0u), preferredSize(0u, 0u),
+				: model(&model), renderer(&renderer), selectionModel(&defaultSelectionModel),
+				minimumSize(0u, 0u), maximumSize(0u, 0u), preferredSize(0u, 0u),
 				cachedSizes(0), greedyGeometryUpdates(false) {
-			model.addListModelListener(modelListener);
-			defaultSelectionModel.addListSelectionListener(selectionListener);
+			model.addListModelListener(*this);
+			defaultSelectionModel.addListSelectionListener(*this);
 			model.ref();
 			renderer.ref();
 			defaultSelectionModel.ref();
@@ -539,13 +509,14 @@ namespace tk {
 			unrefRenderer.set();
 		}
 
-		List(const List& list) : Widget(list), LeafWidget(list), model(list.model), modelListener(*this),
-				renderer(list.renderer), selectionModel(list.selectionModel == &list.defaultSelectionModel
-				? &defaultSelectionModel : list.selectionModel), selectionListener(*this),
+		List(const List& list) : Widget(list), LeafWidget(list), ListModelListener<ElementT>(list),
+				ListSelectionListener(list), model(list.model), renderer(list.renderer),
+				selectionModel(list.selectionModel == &list.defaultSelectionModel
+				? &defaultSelectionModel : list.selectionModel),
 				minimumSize(list.minimumSize), maximumSize(list.maximumSize), preferredSize(list.preferredSize),
 				cachedSizes(list.cachedSizes), greedyGeometryUpdates(list.greedyGeometryUpdates) {
-			model->addListModelListener(modelListener);
-			selectionModel->addListSelectionListener(selectionListener);
+			model->addListModelListener(*this);
+			selectionModel->addListSelectionListener(*this);
 			model->ref();
 			renderer->ref();
 			selectionModel->ref();
@@ -571,8 +542,8 @@ namespace tk {
 		void setListModel(ListModel<ElementT>& model) {
 			if(this->model == &model)
 				return;
-			model.addListModelListener(modelListener);
-			this->model->removeListModelListener(modelListener);
+			model.addListModelListener(*this);
+			this->model->removeListModelListener(*this);
 			model.ref();
 			this->model->unref();
 			this->model = &model;
@@ -607,8 +578,8 @@ namespace tk {
 		void setListSelectionModel(ListSelectionModel& selectionModel) {
 			if(this->selectionModel == &selectionModel)
 				return;
-			selectionModel.addListSelectionListener(selectionListener);
-			this->selectionModel->removeListSelectionListener(selectionListener);
+			selectionModel.addListSelectionListener(*this);
+			this->selectionModel->removeListSelectionListener(*this);
 			selectionModel.ref();
 			this->selectionModel->unref();
 			this->selectionModel = &selectionModel;
