@@ -9,7 +9,7 @@ namespace damnation {
 namespace tk {
 
 	template<typename ElementT>
-	class MutableListModel : public ListModel<ElementT>, public MutableSequenceModel<ElementT> {
+	class MutableListModel : public virtual ListModel<ElementT>, public MutableSequenceModel<ElementT> {
 
 	  public:
 		MutableListModel() {}

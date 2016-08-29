@@ -11,40 +11,40 @@ namespace damnation {
 namespace tk {
 
 	template<typename ElementT>
-	class AbstractListModel : public ListModel<ElementT> {
+	class AbstractListModel : public virtual ListModel<ElementT> {
 
 	  private:
 		util::ListenerSet<ListModelListener<ElementT> > modelListeners;
 
 	  protected:
-		void fireElementsInserted(SequenceModelEvent& event) const {
+		void fireElementsInserted(typename SequenceModelListener<ElementT>::SequenceModelEvent& event) const {
 			util::FireEventAppender<
 				ListModelListener<ElementT>,
-				SequenceModelListener<ElementT>::SequenceModelEvent
+				typename SequenceModelListener<ElementT>::SequenceModelEvent
 			> sink(&ListModelListener<ElementT>::elementsInserted, event);
 			modelListeners.getListeners(sink);
 		}
 
-		void fireElementsRemoved(SequenceModelEvent& event) const {
+		void fireElementsRemoved(typename SequenceModelListener<ElementT>::SequenceModelEvent& event) const {
 			util::FireEventAppender<
 				ListModelListener<ElementT>,
-				SequenceModelListener<ElementT>::SequenceModelEvent
+				typename SequenceModelListener<ElementT>::SequenceModelEvent
 			> sink(&ListModelListener<ElementT>::elementsRemoved, event);
 			modelListeners.getListeners(sink);
 		}
 
-		void fireElementReplaced(SequenceModelEvent& event) const {
+		void fireElementReplaced(typename SequenceModelListener<ElementT>::SequenceModelEvent& event) const {
 			util::FireEventAppender<
 				ListModelListener<ElementT>,
-				SequenceModelListener<ElementT>::SequenceModelEvent
+				typename SequenceModelListener<ElementT>::SequenceModelEvent
 			> sink(&ListModelListener<ElementT>::elementReplaced, event);
 			modelListeners.getListeners(sink);
 		}
 
-		void fireElementModified(SequenceModelEvent& event) const {
+		void fireElementModified(typename SequenceModelListener<ElementT>::SequenceModelEvent& event) const {
 			util::FireEventAppender<
 				ListModelListener<ElementT>,
-				SequenceModelListener<ElementT>::SequenceModelEvent
+				typename SequenceModelListener<ElementT>::SequenceModelEvent
 			> sink(&ListModelListener<ElementT>::elementModified, event);
 			modelListeners.getListeners(sink);
 		}

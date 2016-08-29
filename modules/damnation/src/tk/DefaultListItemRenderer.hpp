@@ -13,7 +13,7 @@ namespace tk {
 		typename StringifierT = typename AbstractDefaultElementRenderer<ElementT>::Stringifier
 	>
 	class DefaultListItemRenderer
-			: public AbstractDefaultElementRenderer<ElementT, StringifierT>, ListItemRenderer<ElementT> {
+			: public AbstractDefaultElementRenderer<ElementT, StringifierT>, public ListItemRenderer<ElementT> {
 
 	  public:
 		DefaultListItemRenderer(const StringifierT& stringifier)

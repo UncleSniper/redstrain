@@ -26,6 +26,7 @@ namespace tk {
 
 	  public:
 		typedef StringifierT Stringifier;
+		typedef typename ElementRenderer<ElementT>::SelectionState SelectionState;
 
 	  protected:
 		StringifierT stringifier;
@@ -335,15 +336,15 @@ namespace tk {
 			if(context) {
 				if(active) {
 					switch(selected) {
-						case UNSELECTED:
+						case ElementRenderer<ElementT>::UNSELECTED:
 							rendition.setForegroundColor(unselectedForeground.get(*context));
 							rendition.setInactiveBackgroundColor(unselectedBackground.get(*context));
 							break;
-						case SELECTED:
+						case ElementRenderer<ElementT>::SELECTED:
 							rendition.setForegroundColor(selectedForeground.get(*context));
 							rendition.setInactiveBackgroundColor(selectedBackground.get(*context));
 							break;
-						case PRIMARY:
+						case ElementRenderer<ElementT>::PRIMARY:
 							rendition.setForegroundColor(primaryForeground.get(*context));
 							rendition.setInactiveBackgroundColor(primaryBackground.get(*context));
 							break;
@@ -355,15 +356,15 @@ namespace tk {
 				}
 				else {
 					switch(selected) {
-						case UNSELECTED:
+						case ElementRenderer<ElementT>::UNSELECTED:
 							rendition.setForegroundColor(unselectedInactiveForeground.get(*context));
 							rendition.setInactiveBackgroundColor(unselectedInactiveBackground.get(*context));
 							break;
-						case SELECTED:
+						case ElementRenderer<ElementT>::SELECTED:
 							rendition.setForegroundColor(selectedInactiveForeground.get(*context));
 							rendition.setInactiveBackgroundColor(selectedInactiveBackground.get(*context));
 							break;
-						case PRIMARY:
+						case ElementRenderer<ElementT>::PRIMARY:
 							rendition.setForegroundColor(primaryInactiveForeground.get(*context));
 							rendition.setInactiveBackgroundColor(primaryInactiveBackground.get(*context));
 							break;
@@ -374,7 +375,7 @@ namespace tk {
 					}
 				}
 			}
-			rendition.setSetCursorPosition(active && selected == PRIMARY);
+			rendition.setSetCursorPosition(active && selected == ElementRenderer<ElementT>::PRIMARY);
 			return rendition;
 		}
 

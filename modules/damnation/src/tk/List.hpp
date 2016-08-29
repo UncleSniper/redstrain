@@ -6,8 +6,10 @@
 #include <redstrain/error/ProgrammingError.hpp>
 
 #include "Axis.hpp"
+#include "Border.hpp"
 #include "ListModel.hpp"
 #include "LeafWidget.hpp"
+#include "DrawContext.hpp"
 #include "ListItemRenderer.hpp"
 #include "SingleListSelectionModel.hpp"
 
@@ -16,7 +18,7 @@ namespace damnation {
 namespace tk {
 
 	template<typename ElementT>
-	class List : public LeafWidget, private ListModelListener<ElementT>, private ListSelectionListener {
+	class List : public LeafWidget {
 
 	  private:
 		static const int HAVE_MINIMUM_SIZE   = 01;
@@ -35,7 +37,7 @@ namespace tk {
 			ModelListener(const ModelListener& listener)
 					: ListModelListener<ElementT>(listener), list(listener.list) {}
 
-			virtual void elementsInserted(SequenceModelEvent& event) {
+			virtual void elementsInserted(typename SequenceModelListener<ElementT>::SequenceModelEvent& event) {
 				const ModelElementIndex start = event.getStartIndex(), end = event.getEndIndex();
 				if(list.greedyGeometryUpdates)
 					list.recalculateGeometry();
@@ -73,10 +75,10 @@ namespace tk {
 				}
 				if(end > start)
 					list.selectionModel->listElementsInserted(start, end - start,
-							end >= list->model->getElementCount());
+							end >= list.model->getElementCount());
 			}
 
-			virtual void elementsRemoved(SequenceModelEvent& event) {
+			virtual void elementsRemoved(typename SequenceModelListener<ElementT>::SequenceModelEvent& event) {
 				const ModelElementIndex start = event.getStartIndex(), end = event.getEndIndex();
 				if(list.greedyGeometryUpdates || end != start + static_cast<ModelElementIndex>(1u)
 						|| !event.getOldElement())
@@ -97,17 +99,17 @@ namespace tk {
 					list.notifyListContentGeometryChanged();
 				}
 				if(end > start)
-					list.selectionModel->listElementsRemoved(start, end, start >= list->model->getElementCount());
+					list.selectionModel->listElementsRemoved(start, end, start >= list.model->getElementCount());
 			}
 
-			virtual void elementReplaced(SequenceModelEvent& event) {
+			virtual void elementReplaced(typename SequenceModelListener<ElementT>::SequenceModelEvent& event) {
 				const ModelElementIndex start = event.getStartIndex(), end = event.getEndIndex();
 				if(list.greedyGeometryUpdates || end != start + static_cast<ModelElementIndex>(1u)
 						|| !event.getOldElement())
 					list.recalculateGeometry();
 				else if(list.cachedSizes) {
 					bool active = list.isFocused();
-					ElementRenderer::SelectionState state = list.selectionStateOf(start);
+					typename ElementRenderer<ElementT>::SelectionState state = list.selectionStateOf(start);
 					Widget& oldRendition = list.renderer->getRenditionFor(active,
 							*event.getOldElement(), state, NULL);
 					const Size oldMinimum(oldRendition.getMinimumSize());
@@ -118,7 +120,7 @@ namespace tk {
 						newElement = &list.model->getElementAt(start);
 					Widget& newRendition = list.renderer->getRenditionFor(active, *newElement, state, NULL);
 					if(list.cachedSizes & List::HAVE_MINIMUM_SIZE) {
-						const Size newMinimum(rendition.getMinimumSize());
+						const Size newMinimum(newRendition.getMinimumSize());
 						if(newMinimum.width > list.minimumSize.width)
 							list.minimumSize.width = newMinimum.width;
 						list.minimumSize.height += newMinimum.height;
@@ -126,7 +128,7 @@ namespace tk {
 								? list.minimumSize.height - oldMinimum.height : 0u;
 					}
 					if(list.cachedSizes & List::HAVE_MAXIMUM_SIZE) {
-						const Size newMaximum(rendition.getMaximumSize());
+						const Size newMaximum(newRendition.getMaximumSize());
 						if(newMaximum.height == Widget::NO_SIZE_LIMIT)
 							list.maximumSize.height = Widget::NO_SIZE_LIMIT;
 						else if(list.maximumSize.height != Widget::NO_SIZE_LIMIT
@@ -141,7 +143,7 @@ namespace tk {
 							list.maximumSize.width = newMaximum.width;
 					}
 					if(list.cachedSizes & List::HAVE_PREFERRED_SIZE) {
-						const Size newPreferred(rendition.getPreferredSize());
+						const Size newPreferred(newRendition.getPreferredSize());
 						if(newPreferred.width > list.preferredSize.width)
 							list.preferredSize.width = newPreferred.width;
 						list.preferredSize.height += newPreferred.height;
@@ -152,7 +154,7 @@ namespace tk {
 				}
 			}
 
-			virtual void elementModified(SequenceModelEvent&) {
+			virtual void elementModified(typename SequenceModelListener<ElementT>::SequenceModelEvent&) {
 				list.recalculateGeometry();
 			}
 
@@ -195,7 +197,7 @@ namespace tk {
 					index(static_cast<ModelElementIndex>(0u)), mode(mode), context(context) {}
 
 			CalculateSizeElementAppender(const CalculateSizeElementAppender& appender)
-					: Appender<ElementT>(appender), list(appender.list), size(appender.size),
+					: util::Appender<ElementT>(appender), list(appender.list), size(appender.size),
 					active(appender.active), index(appender.index), mode(appender.mode), context(appender.context) {}
 
 			inline const Size& getSize() const {
@@ -260,7 +262,7 @@ namespace tk {
 					index(static_cast<ModelElementIndex>(0u)), axis(axis) {}
 
 			CalculateDimensionElementAppender(const CalculateDimensionElementAppender& appender)
-					: Appender<ElementT>(appender), list(appender.list), size(appender.size),
+					: util::Appender<ElementT>(appender), list(appender.list), size(appender.size),
 					constraint(appender.constraint), active(appender.active), index(appender.index),
 					axis(appender.axis) {}
 
@@ -307,7 +309,7 @@ namespace tk {
 					: list(list), index(static_cast<ModelElementIndex>(0u)), progress(0u), active(active),
 					area(area), context(context) {}
 
-			DrawElementAppender(const DrawElementAppender& appender) : Appender<ElementT>(appender),
+			DrawElementAppender(const DrawElementAppender& appender) : util::Appender<ElementT>(appender),
 					list(appender.list), index(appender.index), progress(appender.progress), active(appender.active),
 					area(appender.area), context(appender.context) {}
 
@@ -320,7 +322,7 @@ namespace tk {
 					return;
 				Widget& rendition = list.renderer->getRenditionFor(active, element,
 						list.selectionStateOf(index), &context);
-				Size rsize(rectangle.height < list.preferredSize.height
+				Size rsize(area.height < list.preferredSize.height
 						? rendition.getMinimumSize() : rendition.getPreferredSize());
 				unsigned available = area.height - progress;
 				if(rsize.height > available)
@@ -359,7 +361,7 @@ namespace tk {
 			}
 
 			FindRenditionRowElementAppender(const FindRenditionRowElementAppender& appender)
-					: Appender<ElementT>(appender), list(appender.list), targetIndex(appender.targetIndex),
+					: util::Appender<ElementT>(appender), list(appender.list), targetIndex(appender.targetIndex),
 					index(appender.index), progress(appender.progress), rheight(appender.rheight),
 					found(appender.found), active(appender.active), containerSize(appender.containerSize),
 					useMinimum(appender.useMinimum) {}
@@ -381,7 +383,7 @@ namespace tk {
 					return;
 				Widget& rendition = list.renderer->getRenditionFor(active, element,
 						list.selectionStateOf(index), NULL);
-				const Size rsize(useMinimum ? rendition.getMinimumSize() : rendition.getPreferredSize());
+				Size rsize(useMinimum ? rendition.getMinimumSize() : rendition.getPreferredSize());
 				unsigned available = containerSize.height - progress;
 				if(rsize.height > available)
 					rsize.height = available;
@@ -426,12 +428,12 @@ namespace tk {
 			recalculateGeometry();
 		}
 
-		ElementRenderer::SelectionState selectionStateOf(ModelElementIndex index) const {
+		typename ElementRenderer<ElementT>::SelectionState selectionStateOf(ModelElementIndex index) const {
 			if(index == selectionModel->getPrimaryListSelectionIndex())
-				return ElementRenderer::PRIMARY;
+				return ElementRenderer<ElementT>::PRIMARY;
 			if(selectionModel->isListIndexSelected(index))
-				return ElementRenderer::SELECTED;
-			return ElementRenderer::UNSELECTED;
+				return ElementRenderer<ElementT>::SELECTED;
+			return ElementRenderer<ElementT>::UNSELECTED;
 		}
 
 		Size calculateMinimumSize(DrawContext* context) {
@@ -481,16 +483,16 @@ namespace tk {
 		virtual unsigned getHeightForWidthWithinBorder(unsigned width) {
 			CalculateDimensionElementAppender sink(*this, width, isFocused(), AXS_VERTICAL);
 			model->getElements(sink);
-			return size.getSize();
+			return sink.getSize();
 		}
 
 		virtual unsigned getWidthForHeightWithinBorder(unsigned height) {
-			ModelElementIndex count = mode->getElementCount();
+			ModelElementIndex count = model->getElementCount();
 			const unsigned heightPerElement
 					= count ? static_cast<unsigned>(static_cast<ModelElementIndex>(height) / count) : height;
 			CalculateDimensionElementAppender sink(*this, heightPerElement, isFocused(), AXS_HORIZONTAL);
 			model->getElements(sink);
-			return size.getSize();
+			return sink.getSize();
 		}
 
 		virtual void drawIntoBorder(const Rectangle& rectangle, DrawContext& context) {
@@ -511,8 +513,8 @@ namespace tk {
 			if(progress < rectangle.height) {
 				ClippingTerminalCanvas& canvas = context.getCanvas();
 				canvas.setBackgroundColor((active ? background : inactiveBackground).get(context));
-				canvas.fill(Rectangle(area.row + static_cast<int>(progress), area.column,
-						area.width, area.height - progress), ' ');
+				canvas.fill(Rectangle(rectangle.row + static_cast<int>(progress), rectangle.column,
+						rectangle.width, rectangle.height - progress), ' ');
 			}
 		}
 
@@ -537,8 +539,8 @@ namespace tk {
 			unrefRenderer.set();
 		}
 
-		List(const List& list) : model(list.model), modelListener(*this), renderer(list.renderer),
-				selectionModel(list.selectionModel == &list.defaultSelectionModel
+		List(const List& list) : Widget(list), LeafWidget(list), model(list.model), modelListener(*this),
+				renderer(list.renderer), selectionModel(list.selectionModel == &list.defaultSelectionModel
 				? &defaultSelectionModel : list.selectionModel), selectionListener(*this),
 				minimumSize(list.minimumSize), maximumSize(list.maximumSize), preferredSize(list.preferredSize),
 				cachedSizes(list.cachedSizes), greedyGeometryUpdates(list.greedyGeometryUpdates) {
@@ -636,6 +638,11 @@ namespace tk {
 
 		virtual bool takesFocus() {
 			return true;
+		}
+
+		virtual void clearCachedColors() {
+			renderer->clearCachedRenditionColors();
+			AbstractWidget::clearCachedColors();
 		}
 
 	};
