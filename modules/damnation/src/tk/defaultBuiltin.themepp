@@ -17,3 +17,6 @@ def(org.unclesniper.damnation.abstract.border.active.fg, 39)
 def(org.unclesniper.damnation.abstract.border.active.bg, 0)
 def(org.unclesniper.damnation.abstract.border.inactive.fg, 7)
 def(org.unclesniper.damnation.abstract.border.inactive.bg, 0)
+
+def(org.unclesniper.damnation.abstract.sideBar.fg, 45)
+def(org.unclesniper.damnation.abstract.sideBar.bg, 33)
