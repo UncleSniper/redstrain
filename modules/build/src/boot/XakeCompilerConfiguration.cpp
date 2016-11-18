@@ -1,3 +1,5 @@
+#include <redstrain/util/StringUtils.hpp>
+#include <redstrain/platform/Pathname.hpp>
 #include <redstrain/redmond/constants.hpp>
 
 #include "XakeProject.hpp"
@@ -7,6 +9,9 @@
 
 using std::list;
 using std::string;
+using redengine::util::Appender;
+using redengine::util::StringUtils;
+using redengine::platform::Pathname;
 using redengine::redmond::buildTargetOS;
 using redengine::redmond::OS_LINUX;
 using redengine::redmond::OS_WINDOWS;
@@ -19,6 +24,20 @@ namespace boot {
 
 	XakeCompilerConfiguration::XakeCompilerConfiguration(const XakeCompilerConfiguration& configuration)
 			: CompilerConfiguration(configuration), component(configuration.component) {}
+
+	struct ExternalIncludeDirectoryAppender : Appender<string> {
+
+		Compilation& compilation;
+
+		ExternalIncludeDirectoryAppender(Compilation& compilation) : compilation(compilation) {}
+
+		virtual void append(const string& directory) {
+			string path(StringUtils::trim(directory));
+			if(!path.empty())
+				compilation.addIncludeDirectory(path);
+		}
+
+	};
 
 	void XakeCompilerConfiguration::applyConfiguration(Compilation& compilation) {
 		XakeProject& project = component.getProject();
@@ -45,6 +64,14 @@ namespace boot {
 		}
 		compilation.defineMacro("XAKE_COMPILER_GCC", "1");
 		compilation.defineMacro("XAKE_COMPILER", "XAKE_COMPILER_" + project.getCompilerName());
+		// external include directories
+		ExternalIncludeDirectoryAppender incDirSink(compilation);
+		string dirs(component.getComponentConfiguration().getProperty(Resources::RES_EXTERNAL_INCLUDE_DIRECTORIES));
+		if(!dirs.empty())
+			StringUtils::split(dirs, Pathname::PATHNAME_SEPARATOR, incDirSink);
+		dirs = project.getProjectConfiguration().getProperty(Resources::RES_EXTERNAL_INCLUDE_DIRECTORIES);
+		if(!dirs.empty())
+			StringUtils::split(dirs, Pathname::PATHNAME_SEPARATOR, incDirSink);
 		// include directories
 		list<Component*> dependencies;
 		component.getTransitiveDependencies(dependencies);

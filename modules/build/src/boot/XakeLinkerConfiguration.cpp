@@ -1,4 +1,5 @@
 #include <redstrain/util/StringUtils.hpp>
+#include <redstrain/platform/Pathname.hpp>
 
 #include "XakeProject.hpp"
 #include "XakeComponent.hpp"
@@ -10,6 +11,7 @@ using std::list;
 using std::string;
 using redengine::util::Appender;
 using redengine::util::StringUtils;
+using redengine::platform::Pathname;
 using redengine::redmond::OS_LINUX;
 using redengine::redmond::OS_WINDOWS;
 
@@ -38,6 +40,20 @@ namespace boot {
 
 	};
 
+	struct ExternalLibraryDirectoryAppender : Appender<string> {
+
+		Linkage& linkage;
+
+		ExternalLibraryDirectoryAppender(Linkage& linkage) : linkage(linkage) {}
+
+		virtual void append(const string& directory) {
+			string path(StringUtils::trim(directory));
+			if(!path.empty())
+				linkage.addLibraryDirectory(path);
+		}
+
+	};
+
 	void XakeLinkerConfiguration::applyConfiguration(Linkage& linkage) {
 		XakeProject& project = component.getProject();
 		const Language& objlang = project.getObjectFileLanguage();
@@ -56,9 +72,16 @@ namespace boot {
 		}
 		// external dependencies
 		ExternalDependencyAppender sink(linkage);
-		string deps(component.getComponentConfiguration().getProperty(Resources::RES_EXTERNAL_LIBRARIES));
+		ExternalLibraryDirectoryAppender dirSink(linkage);
+		//   - external.library.directories
+		string deps(component.getComponentConfiguration().getProperty(Resources::RES_EXTERNAL_LIBRARY_DIRECTORIES));
+		if(!deps.empty())
+			StringUtils::split(deps, Pathname::PATHNAME_SEPARATOR, dirSink);
+		//   - external.libraries (component)
+		deps = component.getComponentConfiguration().getProperty(Resources::RES_EXTERNAL_LIBRARIES);
 		if(!deps.empty())
 			StringUtils::split(deps, ",", sink);
+		//   - <os>.external.libraries (component)
 		Resources::ID osid;
 		switch(project.getLinker().getTargetOperatingSystem()) {
 			case OS_LINUX:
@@ -76,14 +99,17 @@ namespace boot {
 			if(!deps.empty())
 				StringUtils::split(deps, ",", sink);
 		}
+		//  - external.libraries (project)
 		deps = project.getProjectConfiguration().getProperty(Resources::RES_EXTERNAL_LIBRARIES);
 		if(!deps.empty())
 			StringUtils::split(deps, ",", sink);
+		//  - <os>.external.libraries (project)
 		if(osid != Resources::RES__LAST) {
 			deps = project.getProjectConfiguration().getProperty(osid);
 			if(!deps.empty())
 				StringUtils::split(deps, ",", sink);
 		}
+		//  - <mode>.external.libraries
 		Resources::ID lmid;
 		switch(linkage.getLinkMode()) {
 			case Linkage::STATIC_EXECUTABLE:
