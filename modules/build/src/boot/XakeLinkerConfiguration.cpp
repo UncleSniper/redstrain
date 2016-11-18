@@ -84,6 +84,28 @@ namespace boot {
 			if(!deps.empty())
 				StringUtils::split(deps, ",", sink);
 		}
+		Resources::ID lmid;
+		switch(linkage.getLinkMode()) {
+			case Linkage::STATIC_EXECUTABLE:
+			case Linkage::STATIC_LIBRARY:
+				lmid = Resources::RES_PFX_STATIC_EXTERNAL_LIBRARIES;
+				break;
+			case Linkage::DYNAMIC_EXECUTABLE:
+			case Linkage::DYNAMIC_LIBRARY:
+				lmid = Resources::RES_PFX_DYNAMIC_EXTERNAL_LIBRARIES;
+				break;
+			default:
+				lmid = Resources::RES__LAST;
+				break;
+		}
+		if(lmid != Resources::RES__LAST) {
+			deps = component.getComponentConfiguration().getProperty(lmid);
+			if(!deps.empty())
+				StringUtils::split(deps, ",", sink);
+			deps = project.getProjectConfiguration().getProperty(lmid);
+			if(!deps.empty())
+				StringUtils::split(deps, ",", sink);
+		}
 	}
 
 }}}

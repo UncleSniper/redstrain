@@ -96,7 +96,9 @@ namespace boot {
 		"blobful.depend.macro",
 		"message.blob.mapping",
 		"linux.external.libraries",
-		"windows.external.libraries"
+		"windows.external.libraries",
+		"static.external.libraries",
+		"dynamic.external.libraries"
 	};
 
 	Resources::Resources() {}
