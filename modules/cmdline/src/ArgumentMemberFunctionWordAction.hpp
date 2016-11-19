@@ -1,6 +1,8 @@
 #ifndef REDSTRAIN_MOD_CMDLINE_ARGUMENTMEMBERFUNCTIONWORDACTION_HPP
 #define REDSTRAIN_MOD_CMDLINE_ARGUMENTMEMBERFUNCTIONWORDACTION_HPP
 
+#include <redstrain/util/MemberFunctionPointer.hpp>
+
 #include "MemberFunctionWordAction.hpp"
 
 namespace redengine {
@@ -8,17 +10,25 @@ namespace cmdline {
 
 	template<typename BaseT, typename ReturnT = void>
 	class ArgumentMemberFunctionWordAction
-			: public MemberFunctionWordAction<BaseT, ReturnT (BaseT::*)(const std::string&)> {
+			: public MemberFunctionWordAction<
+				BaseT,
+				typename util::MemberFunctionPointer<BaseT, ReturnT, const std::string&>::Type
+			> {
+
+	  private:
+		typedef util::MemberFunctionPointer<BaseT, ReturnT, const std::string&> MFP;
 
 	  public:
-		ArgumentMemberFunctionWordAction(BaseT *const *base,
-				ReturnT (BaseT::*function)(const std::string&))
-				: MemberFunctionWordAction<BaseT, ReturnT (BaseT::*)(const std::string&)>(base, function) {}
+		typedef typename MFP::Type Callback;
+
+	  public:
+		ArgumentMemberFunctionWordAction(BaseT *const *base, Callback function)
+				: MemberFunctionWordAction<BaseT, Callback>(base, function) {}
 		ArgumentMemberFunctionWordAction(const ArgumentMemberFunctionWordAction& action)
-				: MemberFunctionWordAction<BaseT, ReturnT (BaseT::*)(const std::string&)>(action) {}
+				: MemberFunctionWordAction<BaseT, Callback>(action) {}
 
 		virtual void wordEncountered(const std::string&, const std::string& value) {
-			((*this->base)->*this->function)(value);
+			MFP::call(this->function, **this->base, value);
 		}
 
 	};
