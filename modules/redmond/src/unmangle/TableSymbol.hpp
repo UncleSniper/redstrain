@@ -1,3 +1,6 @@
+#ifndef REDSTRAIN_MOD_REDMOND_UNMANGLE_TABLESYMBOL_HPP
+#define REDSTRAIN_MOD_REDMOND_UNMANGLE_TABLESYMBOL_HPP
+
 #include "SpecialSymbol.hpp"
 
 namespace redengine {
@@ -40,3 +43,5 @@ namespace unmangle {
 	};
 
 }}}
+
+#endif /* REDSTRAIN_MOD_REDMOND_UNMANGLE_TABLESYMBOL_HPP */
