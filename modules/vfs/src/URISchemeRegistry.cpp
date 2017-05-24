@@ -1,6 +1,3 @@
-#ifndef REDSTRAIN_MOD_VFS_URISCHEMEREGISTRY_CPP
-#define REDSTRAIN_MOD_VFS_URISCHEMEREGISTRY_CPP
-
 #include <redstrain/util/Unref.hpp>
 #include <redstrain/util/Delete.hpp>
 #include <redstrain/text/Transcode.hpp>
@@ -294,5 +291,3 @@ namespace vfs {
 	}
 
 }}
-
-#endif /* REDSTRAIN_MOD_VFS_URISCHEMEREGISTRY_CPP */

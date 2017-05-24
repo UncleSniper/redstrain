@@ -1,6 +1,3 @@
-#ifndef REDSTRAIN_MOD_REDMOND_UNMANGLE_ENUMLITERALEXPRESSION_CPP
-#define REDSTRAIN_MOD_REDMOND_UNMANGLE_ENUMLITERALEXPRESSION_CPP
-
 #include "Name.hpp"
 #include "SymbolSink.hpp"
 #include "EnumLiteralExpression.hpp"
@@ -40,5 +37,3 @@ namespace unmangle {
 	}
 
 }}}
-
-#endif /* REDSTRAIN_MOD_REDMOND_UNMANGLE_ENUMLITERALEXPRESSION_CPP */

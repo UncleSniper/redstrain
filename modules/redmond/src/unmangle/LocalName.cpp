@@ -1,6 +1,3 @@
-#ifndef REDSTRAIN_MOD_REDMOND_UNMANGLE_LOCALNAME_CPP
-#define REDSTRAIN_MOD_REDMOND_UNMANGLE_LOCALNAME_CPP
-
 #include "LocalName.hpp"
 #include "CPPSymbol.hpp"
 #include "SymbolSink.hpp"
@@ -58,5 +55,3 @@ namespace unmangle {
 	}
 
 }}}
-
-#endif /* REDSTRAIN_MOD_REDMOND_UNMANGLE_LOCALNAME_CPP */
