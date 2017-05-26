@@ -24,6 +24,9 @@ namespace platform {
 			case ThreadOperationError::JOIN:
 				out << "join thread";
 				break;
+			case ThreadOperationError::SETUP_UNWINDER:
+				out << "set up multi-threaded stack unwinder";
+				break;
 			default:
 				out << "perform requested operation on thread";
 				break;

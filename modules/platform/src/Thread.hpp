@@ -274,6 +274,7 @@ namespace platform {
 		virtual void* runImpl(void*) = 0;
 
 	  private:
+		static void setupBottomOfCallStack();
 		static BodyReturn bootstrap(void*);
 
 	  public:

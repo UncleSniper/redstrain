@@ -14,7 +14,8 @@ namespace platform {
 			START,
 			STOP,
 			INTERRUPT,
-			JOIN
+			JOIN,
+			SETUP_UNWINDER
 		};
 
 	  private:

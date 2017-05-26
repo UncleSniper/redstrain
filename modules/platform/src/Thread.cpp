@@ -1,6 +1,7 @@
 #include <redstrain/util/IntegerBounds.hpp>
+#include <redstrain/redmond/StackUnwinder.hpp>
 
-#include "MutexPool.hpp"
+#include "MutexPoolLocker.hpp"
 #include "ThreadOperationError.hpp"
 #include "IllegalThreadStateError.hpp"
 
@@ -13,6 +14,8 @@
 
 using std::string;
 using redengine::util::IntegerBounds;
+using redengine::redmond::bottomOfCallStackSource;
+using redengine::redmond::singleThreadedBottomOfCallStackSource;
 
 namespace redengine {
 namespace platform {
@@ -28,7 +31,9 @@ namespace platform {
 
 	Thread::Thread(Handle handle, State state) : handle(handle), state(state) {}
 
-	Thread::Thread() : state(PRISTINE) {}
+	Thread::Thread() : state(PRISTINE) {
+		Thread::setupBottomOfCallStack();
+	}
 
 	Thread::Thread(const Thread& thread) : handle(thread.handle), state(thread.state) {}
 
@@ -36,8 +41,37 @@ namespace platform {
 
 #if REDSTRAIN_PLATFORM_OS == REDSTRAIN_PLATFORM_OS_UNIX
 
+	static pthread_key_t bottomOfStackKey;
+	static volatile bool hasBottomOfStackKey = false;
+
+	static void* multiThreadedBottomOfCallStackSource() {
+		if(!hasBottomOfStackKey)
+			return NULL;
+		return pthread_getspecific(bottomOfStackKey);
+	}
+
+	void Thread::setupBottomOfCallStack() {
+		if(hasBottomOfStackKey)
+			return;
+		MutexPoolLocker<pthread_key_t> lock(bottomOfStackKey);
+		if(!hasBottomOfStackKey) {
+			int err = pthread_key_create(&bottomOfStackKey, NULL);
+			if(err) {
+				lock.release();
+				throw ThreadOperationError(ThreadOperationError::SETUP_UNWINDER, err);
+			}
+			pthread_setspecific(bottomOfStackKey, singleThreadedBottomOfCallStackSource());
+			if(bottomOfCallStackSource == singleThreadedBottomOfCallStackSource)
+				bottomOfCallStackSource = multiThreadedBottomOfCallStackSource;
+			hasBottomOfStackKey = true;
+		}
+		lock.release();
+	}
+
 	void* Thread::bootstrap(void* ptr) {
 		StartupInfo* info = reinterpret_cast<StartupInfo*>(ptr);
+		if(hasBottomOfStackKey)
+			pthread_setspecific(bottomOfStackKey, reinterpret_cast<const void*>(&info));
 		StartupInfo stacked(*info);
 		delete info;
 		try {
@@ -132,6 +166,10 @@ namespace platform {
 	}
 
 #elif REDSTRAIN_PLATFORM_OS == REDSTRAIN_PLATFORM_OS_WINDOWS
+
+	void Thread::setupBottomOfCallStack() {
+#error Not implemented on Windows yet
+	}
 
 	DWORD Thread::bootstrap(void* ptr) {
 		StartupInfo* info = reinterpret_cast<StartupInfo*>(ptr);
