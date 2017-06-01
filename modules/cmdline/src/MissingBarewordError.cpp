@@ -10,6 +10,8 @@ namespace cmdline {
 	MissingBarewordError::MissingBarewordError(const MissingBarewordError& error)
 			: CommandLineError(error), word(error.word) {}
 
+	MissingBarewordError::~MissingBarewordError() {}
+
 	REDSTRAIN_DEFINE_ERROR(MissingBarewordError) {
 		out << "Missing required non-option argument: " << word;
 	}

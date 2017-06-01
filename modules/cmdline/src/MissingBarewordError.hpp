@@ -14,6 +14,7 @@ namespace cmdline {
 	  public:
 		MissingBarewordError(const std::string&);
 		MissingBarewordError(const MissingBarewordError&);
+		virtual ~MissingBarewordError();
 
 		inline const std::string& getWord() const {
 			return word;
