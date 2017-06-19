@@ -12,7 +12,7 @@ namespace platform {
 
 	REDSTRAIN_DEFINE_ERROR(LocalSocketIOError) {
 		printDirection(out);
-		out << "across local socket: " << LocalSocket::getErrorMessage(code);
+		out << " across local socket: " << LocalSocket::getErrorMessage(code);
 	}
 
 }}

@@ -11,7 +11,7 @@ namespace platform {
 
 	REDSTRAIN_DEFINE_ERROR(TCPSocketIOError) {
 		printDirection(out);
-		out << "across TCP socket: " << TCPSocket::getErrorMessage(code);
+		out << " across TCP socket: " << TCPSocket::getErrorMessage(code);
 	}
 
 }}
